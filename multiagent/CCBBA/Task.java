@@ -16,6 +16,8 @@ public class Task {
     protected boolean complete;                 // Status of task
     protected double[][] T;                     // Max allowable time of arrival between tasks j and q
     protected int[][] D;                        // Dependency Matrix
+    protected double S_max = 100.0;             // Maximum score
+    protected double gamma = 1.0;               // Proximity parameter
 
     /**
      * Task constructor
@@ -39,17 +41,17 @@ public class Task {
         // Create subtask list from Sensor list
         // WARNING: Method set to only accommodate for I <= 2. Needs generalized function based on I
         if (I == 1) {
-            Subtask subtask01 = new Subtask(req_sensors.get(0), 1, this);
+            Subtask subtask01 = new Subtask(req_sensors.get(0), 1, this, 1);
             J.add(subtask01);
             K.add(1);
         }
         else if(I == 2){
-            Subtask subtask01 = new Subtask(req_sensors.get(0),1, this);
+            Subtask subtask01 = new Subtask(req_sensors.get(0),1, this, 2);
             subtask01.addDep_task(req_sensors.get(1),2);
-            Subtask subtask02 = new Subtask(req_sensors.get(1),2, this);
+            Subtask subtask02 = new Subtask(req_sensors.get(1),2, this, 2);
             subtask02.addDep_task(req_sensors.get(0),1);
-            Subtask subtask03 = new Subtask(req_sensors.get(0),1, this);
-            Subtask subtask04 = new Subtask(req_sensors.get(1),2, this);
+            Subtask subtask03 = new Subtask(req_sensors.get(0),1, this, 1);
+            Subtask subtask04 = new Subtask(req_sensors.get(1),2, this, 1);
 
             J.add(subtask01);
             J.add(subtask02);
@@ -170,6 +172,17 @@ public class Task {
     }
 
     public Vector<Subtask> getJ(){ return J; }
+
+    public double getCost(){ return cost; }
+
+    public double getS_max(){ return S_max; }
+
+    public double getI(){ return I; }
+
+    public double getGamma(){ return gamma; }
+
+
+
     /*
     public static void main(String[] args){
         Dimension location1 = new Dimension(0,3);

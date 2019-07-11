@@ -40,23 +40,27 @@ public class Scenario extends Watcher {
         Vector<Double> tc_1 = new Vector<>();
         Vector<Double> tc_2 = new Vector<>();
 
+        // Define task 1
         e_1.add("IR");
         e_1.add("MW");
-        e_2.add("MW");
 
         tc_1.add(0.0);
         tc_1.add(inf);
         tc_1.add(5.0);
         tc_1.add(1.0);
 
+        Task task1 = new Task( x_1, 2.0, e_1, tc_1);
+        scenarioTasks.add(task1);
+
+        //Define task 2
+        e_2.add("MW");
+
         tc_2.add(0.0);
         tc_2.add(inf);
         tc_2.add(5.0);
         tc_2.add(1.0);
 
-        Task task1 = new Task( x_1, 2.0, e_1, tc_1);
         Task task2 = new Task( x_2, 2.0, e_2, tc_2);
-        scenarioTasks.add(task1);
         scenarioTasks.add(task2);
 
         // 1 : request my role so that the viewer can probe me

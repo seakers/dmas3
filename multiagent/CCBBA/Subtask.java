@@ -10,19 +10,21 @@ public class Subtask {
     protected String name;
     protected boolean complete = false;
     protected Task parentTask;
+    protected int K;
 
     /**
      * Subtask Constructor
      * @param new_main main subtask name
      * @param new_num main subtask number
      */
-    public Subtask(String new_main, int new_num, Task parent){
+    public Subtask(String new_main, int new_num, Task parent, int k){
         main_task = new_main;
         main_num = new_num;
         dep_tasks = new Vector<String>();
         dep_nums = new Vector<Integer>();
         name = new_main;
         parentTask = parent;
+        K = k;
     }
 
     public String getMain_task(){
@@ -56,6 +58,8 @@ public class Subtask {
     public boolean getComplete(){ return complete; }
 
     public Task getParentTask(){ return parentTask; }
+
+    public int getK(){ return K; }
 
     public void addDep_task(String new_task, int new_num){
         dep_tasks.add(new_task);

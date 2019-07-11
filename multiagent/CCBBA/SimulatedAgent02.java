@@ -12,7 +12,7 @@ public class SimulatedAgent02 extends SimulatedAbstractAgent {
     }
 
     @Override
-    protected Dimension getInitialPositoin(){
+    protected Dimension getInitialPosition(){
         Dimension position = new Dimension(4,0);
         return position;
     }

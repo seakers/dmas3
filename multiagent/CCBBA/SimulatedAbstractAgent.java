@@ -1,6 +1,7 @@
 package seakers.orekit.multiagent.CCBBA;
 
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import jmetal.encodings.variable.Int;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Agent;
 import madkit.kernel.Message;
@@ -37,8 +38,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected Vector<Subtask> path = new Vector();                  // path list
     protected Vector<Dimension> X = new Vector<>();                 // location of realization list
     protected Vector<Double> t_a = new Vector<>();                  // Vector of execution times
+    protected Vector<Vector<Integer>> h_a;                          // Availability vectors
 
     Vector<Vector<SimulatedAbstractAgent>> coalitionMates = new Vector<>(); // coalition mates matrix
+    protected double miu = 1.0;                                     // Travel cost
 
     /**
      * initialize my role and fields
@@ -49,7 +52,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
 
         // Initiate position
-        location = getInitialPositoin();
+        location = getInitialPosition();
 
         // Initiate Sensor Vector
         sensors = getSensorList();
@@ -81,64 +84,82 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             // Get available subtasks
             J = getAvailableSubtasks();
 
+            // Initiate iteration results
+            Vector<Vector> iteration_results = new Vector();
+            Vector<Double> y_aj = new Vector<>();                   y_aj.setSize(J.size());
+            Vector<SimulatedAbstractAgent> z_aj = new Vector<>();   z_aj.setSize(J.size());
+            Vector<Double> tz_aj = new Vector<>();                  tz_aj.setSize(J.size());
+            Vector<Double> c_aj = new Vector<>();                   c_aj.setSize(J.size());
+            Vector<Integer> s_aj = new Vector<>();                  s_aj.setSize(J.size());
+            Vector<Integer> h_aj = new Vector<>();                  h_aj.setSize(J.size());     // availability vector
+
             if (zeta == 0) {
                 // Initialize all variables to 0
-                y_a = new Vector<>();
-                z_a = new Vector<>();
-                tz_a = new Vector<>();
-                c_a = new Vector<>();
-                s_a = new Vector<>();
-                //path = new Vector();
-                //X = new Vector<>();
-                //t_a = new Vector<>();
-
-                Vector<Double> y_aj = new Vector<>();                   y_aj.setSize(J.size());
-                Vector<SimulatedAbstractAgent> z_aj = new Vector<>();   z_aj.setSize(J.size());
-                Vector<Double> tz_aj = new Vector<>();                  tz_aj.setSize(J.size());
-                Vector<Double> c_aj = new Vector<>();                   c_aj.setSize(J.size());
-                Vector<Integer> s_aj = new Vector<>();                  s_aj.setSize(J.size());
-
                 for(int i = 0; i < J.size(); i++){
                     y_aj.setElementAt(0.0 ,i);
                     z_aj.setElementAt(null ,i);
                     tz_aj.setElementAt(0.0 ,i);
                     c_aj.setElementAt(0.0 ,i);
                     s_aj.setElementAt(0 ,i);
+                    h_aj.setElementAt(1, i);
                 }
 
-                y_a.add(y_aj);
-                z_a.add(z_aj);
-                tz_a.add(tz_aj);
-                c_a.add(c_aj);
-                s_a.add(s_aj);
+                y_a = new Vector<>();   y_a.add(y_aj);
+                z_a = new Vector<>();   z_a.add(z_aj);
+                tz_a = new Vector<>();  tz_a.add(tz_aj);
+                c_a = new Vector<>();   c_a.add(c_aj);
+                s_a = new Vector<>();   s_a.add(s_aj);
+                h_a = new Vector();     h_a.add(h_aj);
+                path = new Vector();
+                X = new Vector<>();
 
             } else {
                 // load previous iteration's vectors
-                y_a.add(y_a.get(zeta));
-                z_a.add(z_a.get(zeta));
-                tz_a.add(tz_a.get(zeta));
-                c_a.add(c_a.get(zeta));
-                s_a.add(s_a.get(zeta));
+                y_a.add(y_a.get(zeta - 1));
+                z_a.add(z_a.get(zeta - 1));
+                tz_a.add(tz_a.get(zeta - 1));
+                c_a.add(c_a.get(zeta - 1));
+                s_a.add(s_a.get(zeta - 1));
+                h_a.add(h_a.get(zeta - 1));
+
+                y_aj = y_a.get(zeta - 1);
+                z_aj = z_a.get(zeta - 1);
+                tz_aj = tz_a.get(zeta - 1);
+                c_aj = c_a.get(zeta - 1);
+                s_aj = s_a.get(zeta - 1);
+                h_aj = h_a.get(zeta - 1);
             }
 
-            do{ // While the bundle is empty or smaller than M:
-                Vector<Integer> h_aj = new Vector<>();          h_aj.setSize(J.size());     // availability vector
+            iteration_results.add(y_aj);
+            iteration_results.add(z_aj);
+            iteration_results.add(tz_aj);
+            iteration_results.add(c_aj);
+            iteration_results.add(s_aj);
+
+
+
+            do{ // While the bundle is empty or smaller than M and tasks are available:
                 Vector<SubtaskBid> bid_list = new Vector<>();   bid_list.setSize(J.size()); // list of bids for available tasks
 
                 // Calculate bid for each task
                 for(int j = 0; j < J.size(); j++){
                     Subtask j_j = J.get(j);
-
+                    /*
                     // Calculate all possible paths when adding j_j to the bundle
                     Vector<Vector<Subtask>> possiblePaths = getPossiblePaths(bundle, j_j);
 
                     // Create bids for each path and obtain maximum bid for this subtask
                     SubtaskBid bid_j = new SubtaskBid();
-                    bid_j.calcBidForSubtask(possiblePaths, j_j,this);
+                    //bid_j.calcBidForSubtask(possiblePaths, j_j,this);
+                    bid_j.calcBidForSubtask(possiblePaths, j_j, j, this);
                     bid_list.setElementAt(bid_j, j);
+                    */
+
+                    SubtaskBid bid_j = new SubtaskBid();
+                    bid_j.calcBidForSubtask(path, bundle, j_j, iteration_results, this);
 
                     // Coalition and mux tests
-                    h_aj.setElementAt(coalitionTest(bid_j, this) , j);
+                    h_aj.setElementAt(coalitionTest(bid_j, j_j, iteration_results, j) , j);
                     if(h_aj.get(j) == 1){
                         h_aj.setElementAt(mutexTest(bid_j, this) , j);
                     }
@@ -156,6 +177,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 t_a.add(maxBid.getI_opt(), maxBid.getTStart());
 
                 // Update lists
+                /*
                 Vector<Double> y_aj = y_a.get(zeta);
                 Vector<SimulatedAbstractAgent> z_aj = z_a.get(zeta);
                 Vector<Integer> s_aj = s_a.get(zeta);
@@ -170,17 +192,18 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 z_a.setElementAt(z_aj, zeta);
                 s_a.setElementAt(s_aj, zeta);
                 tz_a.setElementAt(tz_aj, zeta);
+                */
 
                 // Update Coalition Mate Matrix
                 coalitionMates = updateCoalitionMates();
 
-            }while ((bundle.size() <= M) );
+            }while ( (bundle.size() <= M) && (h_aj.contains(1)) );
 
             // Phase 2 - Consult with other agents
             getLogger().info("Sharing Tasks...");
 
             zeta++;
-            consensus = true;
+            if(zeta > 3) consensus = true; //<- DEBUGGING TOOL. REMOVE WHEN DONE
         }
     }
 
@@ -194,27 +217,31 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
     }
 
+
+
     /**
      * Misc tools and functions
      */
+
     protected Vector<Subtask> getAvailableSubtasks(){
         //Looks for tasks from environment and checks for completion
         Vector<Task> V = environment.getTasks();
         Vector<Subtask> J_available = new Vector<>();
 
-        boolean req1;   // Subtask requires sensor contained in this agent?
+        //boolean req1;   // Subtask requires sensor contained in this agent?
         boolean req2;   // Is subtask complete?
 
         for(int i = 0; i < V.size(); i++){
             Vector<Subtask> J_i = V.get(i).getJ();
             for(int j = 0; j < J_i.size(); j++) {
+                /*
                 if(sensors.contains(J_i.get(j).getMain_task())) req1 = true;
                 else req1 = false;
 
-                if(!J_i.get(j).getComplete()) req2 = true;
+                if(J_i.get(j).getComplete()) req2 = true;
                 else req2 = false;
-
-                if (req1 && req2) {
+                */
+                if (!J_i.get(j).getComplete()) {
                     J_available.add(J_i.get(j));
                 }
             }
@@ -234,9 +261,16 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
         temp_bundle.add(j);
 
-        // INCOMPLETE, RETURNS SINGLE PATH FROM BUNDLE + J
-        possiblePaths.add(temp_bundle);
-        // ************************************************
+        Vector<Integer> count = new Vector<>();
+        Vector<Subtask> combination = new Vector<>();
+        combination.setSize(temp_bundle.size());
+        count.setSize(temp_bundle.size());
+        for(int i = 0; i < count.size(); i++){
+            count.setElementAt(1,i);
+        }
+
+        generateCombinations(combination, temp_bundle, possiblePaths, count, 0);
+
 
         return possiblePaths;
     }
@@ -256,21 +290,114 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return max_i;
     }
 
-    protected int coalitionTest(SubtaskBid bid, SimulatedAbstractAgent agent){
+    protected int coalitionTest(SubtaskBid bid, Subtask j, Vector<Vector> iteration_results, int i_task){
+        double new_bid = 0.0;
+        double coalition_bid = 0.0;
+        Vector<Double> y = iteration_results.get(0);
+        Vector<SimulatedAbstractAgent> z = iteration_results.get(1);
+        int[][] D = j.getParentTask().getD();
+        int D_jq = 0;
+        int D_jk = 0;
 
-        return 1;
+        for(int i = 0; i < y.size(); i++){
+            if((z.get(i) == z.get(i_task)) && (D_jq == 1) ){
+                // add to coalition_bid
+                coalition_bid = coalition_bid + y.get(i);
+            }
+            if((z.get(i) == this) && (D_jk == 1) ){
+                // add to new_bid
+                new_bid = new_bid + y.get(i);
+            }
+        }
+        new_bid = new_bid + bid.getC();
+
+        if(new_bid > coalition_bid){
+            return 1;
+        }
+        else{ return 0; }
     }
 
     protected int mutexTest(SubtaskBid bid, SimulatedAbstractAgent agent){
+        double new_bid = 0.0;
+        double coalition_bid = 0.0;
 
-        return 1;
+        if(new_bid > coalition_bid){
+            return 1;
+        }
+        else{ return 0; }
     }
 
-    private Vector<Vector<SimulatedAbstractAgent>> updateCoalitionMates() {
+    protected Vector<Vector<SimulatedAbstractAgent>> updateCoalitionMates() {
         Vector<Vector<SimulatedAbstractAgent>> newCoalitions = new Vector<>();
 
         return newCoalitions;
     }
+
+    protected void generateCombinations(Vector<Subtask> combination, Vector<Subtask> temp_bundle, Vector<Vector<Subtask>> possiblePaths, Vector<Integer> count, int level){
+        if(level == combination.size()){
+            Vector<Subtask> addedPath = new Vector<>();
+            for(int i = 0; i < combination.size(); i++){
+                addedPath.add(combination.get(i));
+            }
+
+            possiblePaths.add(addedPath);
+            return;
+        }
+        for(int i = 0; i < temp_bundle.size(); i++){
+            if(count.get(i)==0){
+                continue;
+            }
+            combination.setElementAt(temp_bundle.get(i), level);
+            count.setElementAt(count.get(i)-1 ,i);
+            generateCombinations(combination, temp_bundle, possiblePaths, count, level+1);
+            count.setElementAt(count.get(i)+1 ,i);
+        }
+    }
+
+    /*
+    protected void generateCombinations(Vector<Integer> combination, Vector<Integer> temp_bundle, Vector<Vector<Integer>> possiblePaths, Vector<Integer> count, int level){
+        if(level == combination.size()){
+            Vector<Integer> addedPath = new Vector<>();
+            for(int i = 0; i < combination.size(); i++){
+                addedPath.add(combination.get(i));
+            }
+
+            possiblePaths.add(addedPath);
+            return;
+        }
+        for(int i = 0; i < temp_bundle.size(); i++){
+            if(count.get(i)==0){
+                continue;
+            }
+            combination.setElementAt(temp_bundle.get(i), level);
+            count.setElementAt(count.get(i)-1 ,i);
+            generateCombinations(combination, temp_bundle, possiblePaths, count, level+1);
+            count.setElementAt(count.get(i)+1 ,i);
+        }
+    }
+
+        /*
+        // PERMUTATION TEST********************** GOES ON THINK FUNCTION
+        Vector<Subtask> b = new Vector<>();
+        Vector<Subtask> combination = new Vector<>();
+        Vector<Integer> count = new Vector<>();
+        Vector<Vector<Subtask>> paths = new Vector<>();
+
+        b.setSize(3);
+        combination.setSize(3);
+        count.setSize(3);
+        for(int i = 0; i < 3; i++){
+            Subtask temp_subtask = new Subtask("IR", 1, j.getParentTask());
+            b.setElementAt(temp_subtask,i);
+            combination.setElementAt(null,i);
+            count.setElementAt(1,i);
+        }
+
+        generateCombinations(combination, b, paths, count, 0);
+
+        System.out.println(paths);
+        // ************************************************
+        */
 
     /**
      * Abstract Agent Settings
@@ -281,7 +408,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return sensor_list;
     }
 
-    protected Dimension getInitialPositoin(){
+    protected Dimension getInitialPosition(){
         Dimension position = new Dimension(0,0);
         return position;
     }
@@ -290,4 +417,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         int M_agent = 2;
         return M_agent;
     }
+
+    public double getMiu(){ return miu; }
+    public double getSpeed(){ return speed; }
+    public Vector<Subtask> getPath(){ return path; }
 }

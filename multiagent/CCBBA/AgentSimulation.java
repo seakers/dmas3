@@ -24,7 +24,7 @@ public class AgentSimulation extends AbstractAgent {
 
         // 3 : launch some simulated agents
         for (int i = 0; i < 2; i++) {
-            launchAgent(new SimulatedAbstractAgent());
+            launchAgent(new SimulatedAgent01());
             //launchAgent(new SimulatedAgent02());
         }
 
