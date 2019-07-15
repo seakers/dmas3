@@ -16,26 +16,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     /**
      * Properties
      */
-    protected Dimension location = new Dimension();
-    protected double speed = 1.0;
-    protected Vector<String> sensors = new Vector<>();
-
-    protected Vector<Vector<Double>> y_a = new Vector<>();          // winner bid list
-    protected Vector<Vector<SimulatedAbstractAgent>> z_a = new Vector<>();// winner agents list
-    protected Vector<Vector<Double>> tz_a = new Vector<>();         // arrival times list
-    protected Vector<Vector<Double>> c_a = new Vector<>();          // self bid list
-    protected Vector<Vector<Integer>> s_a = new Vector<>();         // iteration stamp vector
-    //protected Vector<Vector<Integer>> h_a = new Vector<>();         // availability digit
-
-    protected Vector<Subtask> bundle = new Vector<>();              // bundle of tasks chosen by agent
+    protected Dimension location = new Dimension();                 // current location
+    protected double speed = 1.0;                                   // displacement speed of agent
+    protected Vector<String> sensors = new Vector<>();              // list of all sensors
     protected Vector<Subtask> J = new Vector<>();                   // list of all subtasks
     protected int M;                                                // planning horizon
-    protected Vector<Subtask> path = new Vector();                  // path list
-    protected Vector<Dimension> X = new Vector<>();                 // location of realization list
-    protected Vector<Double> t_a = new Vector<>();                  // Vector of execution times
-    protected Vector<Vector<Integer>> h_a;                          // Availability vectors
-
-    Vector<Vector<SimulatedAbstractAgent>> coalitionMates = new Vector<>(); // coalition mates matrix
     protected double miu = 1.0;                                     // Travel cost
 
     /**
@@ -75,131 +60,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         getLogger().info("Planning Tasks...");
         int zeta = 0;
         boolean consensus = false;
-        while(consensus == false) {
-            // Get available subtasks
-            J = getAvailableSubtasks();
 
-            // Initiate iteration results
-            Vector<Vector> iteration_results = new Vector();
-            Vector<Double> y_aj = new Vector<>();                   y_aj.setSize(J.size());
-            Vector<SimulatedAbstractAgent> z_aj = new Vector<>();   z_aj.setSize(J.size());
-            Vector<Double> tz_aj = new Vector<>();                  tz_aj.setSize(J.size());
-            Vector<Double> c_aj = new Vector<>();                   c_aj.setSize(J.size());
-            Vector<Integer> s_aj = new Vector<>();                  s_aj.setSize(J.size());
-            Vector<Integer> h_aj = new Vector<>();                  h_aj.setSize(J.size());     // availability vector
-
-            if (zeta == 0) {
-                // Initialize all variables to 0
-                for(int i = 0; i < J.size(); i++){
-                    y_aj.setElementAt(0.0 ,i);
-                    z_aj.setElementAt(null ,i);
-                    tz_aj.setElementAt(0.0 ,i);
-                    c_aj.setElementAt(0.0 ,i);
-                    s_aj.setElementAt(0 ,i);
-                    h_aj.setElementAt(1, i);
-                }
-
-                y_a = new Vector<>();   y_a.add(y_aj);
-                z_a = new Vector<>();   z_a.add(z_aj);
-                tz_a = new Vector<>();  tz_a.add(tz_aj);
-                c_a = new Vector<>();   c_a.add(c_aj);
-                s_a = new Vector<>();   s_a.add(s_aj);
-                h_a = new Vector();     h_a.add(h_aj);
-                path = new Vector();
-                X = new Vector<>();
-
-            } else {
-                // load previous iteration's vectors
-                y_a.add(y_a.get(zeta - 1));
-                z_a.add(z_a.get(zeta - 1));
-                tz_a.add(tz_a.get(zeta - 1));
-                c_a.add(c_a.get(zeta - 1));
-                s_a.add(s_a.get(zeta - 1));
-                h_a.add(h_a.get(zeta - 1));
-
-                y_aj = y_a.get(zeta - 1);
-                z_aj = z_a.get(zeta - 1);
-                tz_aj = tz_a.get(zeta - 1);
-                c_aj = c_a.get(zeta - 1);
-                s_aj = s_a.get(zeta - 1);
-                h_aj = h_a.get(zeta - 1);
-            }
-
-            iteration_results.add(y_aj);
-            iteration_results.add(z_aj);
-            iteration_results.add(tz_aj);
-            iteration_results.add(c_aj);
-            iteration_results.add(s_aj);
+        // Get incomplete subtasks
+        J = getIncompleteSubtasks();
 
 
-
-            do{ // While the bundle is empty or smaller than M and tasks are available:
-                Vector<SubtaskBid> bid_list = new Vector<>();   bid_list.setSize(J.size()); // list of bids for available tasks
-
-                // Calculate bid for each task
-                for(int j = 0; j < J.size(); j++){
-                    Subtask j_j = J.get(j);
-                    /*
-                    // Calculate all possible paths when adding j_j to the bundle
-                    Vector<Vector<Subtask>> possiblePaths = getPossiblePaths(bundle, j_j);
-
-                    // Create bids for each path and obtain maximum bid for this subtask
-                    SubtaskBid bid_j = new SubtaskBid();
-                    //bid_j.calcBidForSubtask(possiblePaths, j_j,this);
-                    bid_j.calcBidForSubtask(possiblePaths, j_j, j, this);
-                    bid_list.setElementAt(bid_j, j);
-                    */
-
-                    SubtaskBid bid_j = new SubtaskBid();
-                    bid_j.calcBidForSubtask(path, bundle, j_j, iteration_results, this);
-
-                    // Coalition and mux tests
-                    h_aj.setElementAt(coalitionTest(bid_j, j_j, iteration_results, j) , j);
-                    if(h_aj.get(j) == 1){
-                        h_aj.setElementAt(mutexTest(bid_j, this) , j);
-                    }
-                }
-
-                // Find max allowable bid
-                int i_max = getMax(bid_list, h_aj);
-                SubtaskBid maxBid = bid_list.get(i_max);
-                Subtask j_chosen = J.elementAt(i_max);
-
-                // Add task to bundle and path
-                bundle.add(j_chosen);
-                path.add(maxBid.getI_opt(), j_chosen);
-                X.add(maxBid.getI_opt(), maxBid.getX_aj());
-                t_a.add(maxBid.getI_opt(), maxBid.getTStart());
-
-                // Update lists
-                /*
-                Vector<Double> y_aj = y_a.get(zeta);
-                Vector<SimulatedAbstractAgent> z_aj = z_a.get(zeta);
-                Vector<Integer> s_aj = s_a.get(zeta);
-                Vector<Double> tz_aj = tz_a.get(zeta);
-
-                y_aj.setElementAt(maxBid.getC(),i_max);
-                z_aj.setElementAt(this,i_max);
-                s_aj.setElementAt(zeta,i_max);
-                tz_aj.setElementAt(maxBid.getTStart(),i_max);
-
-                y_a.setElementAt(y_aj, zeta);
-                z_a.setElementAt(z_aj, zeta);
-                s_a.setElementAt(s_aj, zeta);
-                tz_a.setElementAt(tz_aj, zeta);
-                */
-
-                // Update Coalition Mate Matrix
-                coalitionMates = updateCoalitionMates();
-
-            }while ( (bundle.size() <= M) && (h_aj.contains(1)) );
-
-            // Phase 2 - Consult with other agents
-            getLogger().info("Sharing Tasks...");
-
-            zeta++;
-            if(zeta > 3) consensus = true; //<- DEBUGGING TOOL. REMOVE WHEN DONE
-        }
     }
 
     @SuppressWarnings("unused")
@@ -218,7 +83,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
      * Misc tools and functions
      */
 
-    protected Vector<Subtask> getAvailableSubtasks(){
+    protected Vector<Subtask> getIncompleteSubtasks(){
         //Looks for tasks from environment and checks for completion
         Vector<Task> V = environment.getTasks();
         Vector<Subtask> J_available = new Vector<>();
@@ -415,5 +280,5 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
     public double getMiu(){ return miu; }
     public double getSpeed(){ return speed; }
-    public Vector<Subtask> getPath(){ return path; }
+    //public Vector<Subtask> getPath(){ return path; }
 }
