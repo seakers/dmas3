@@ -20,9 +20,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected double speed = 1.0;                                   // displacement speed of agent
     protected Vector<String> sensors = new Vector<>();              // list of all sensors
     protected Vector<Subtask> J = new Vector<>();                   // list of all subtasks
-    protected int M;                                                // planning horizon
     protected double miu = 1.0;                                     // Travel cost
-
+    protected int M;                                                // planning horizon
+    protected int O_kq = 10;                                        //
+    protected Vector<IterationResults> results;                     // list of results
+    protected Vector<Subtask> bundle;
     /**
      * initialize my role and fields
      */
@@ -39,6 +41,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         // Initiate Planning Horizon
         M = getM();
+
+        // Initiate Bundle
+        bundle = new Vector<>();
     }
 
 
@@ -58,12 +63,47 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         // Phase 1 - Create bid for individual spacecraft
         getLogger().info("Planning Tasks...");
+
+        // intialize values
         int zeta = 0;
         boolean consensus = false;
+        results = new Vector<>();
+        IterationResults localResults;
 
         // Get incomplete subtasks
         J = getIncompleteSubtasks();
 
+
+        while(consensus){
+            //Phase 1
+            if(zeta == 0){
+                // Set results to 0
+                localResults = new IterationResults(J, O_kq);
+            }
+            else{
+                // Import results from previous iteration
+                localResults = new IterationResults(results.get(zeta - 1));
+            }
+
+            // Generate Bundle
+            while(bundle.size() < M){
+                for(int i = 0; i < J.size(); i++){
+                    // Calculate possible bid for every subtask to be added to the bundle
+                    Subtask j = J.get(i);
+
+                    if(bundle.contains(j)){
+
+                        continue;
+                    }
+
+                }
+            }
+
+
+            results.add(localResults);
+
+            //Phase 2
+        }
 
     }
 
