@@ -15,6 +15,7 @@ public class IterationResults {
     private Vector<Integer> w_solo = new Vector<>();                // permission to bid solo
     private Vector<Integer> w_any = new Vector<>();                 // permission to bid any
     private Vector<Integer> h = new Vector<>();                     // availability checks vector
+    protected Vector<Vector<SimulatedAbstractAgent>> omega = new Vector<>();// coalition mates
     // *********************************************
 
     public IterationResults(Vector<Subtask> J, int O_kq){
@@ -29,6 +30,7 @@ public class IterationResults {
         w_solo.setSize(size);
         w_any.setSize(size);
         h.setSize(size);
+
 
         for(int i = 0; i < size; i ++){
             y.setElementAt(0.0, i);
@@ -68,6 +70,10 @@ public class IterationResults {
         }
     }
 
+    public void updateResults(SubtaskBid maxBid, int i_max){
+
+    }
+
     /**
      * Getters and Setters
      */
@@ -80,4 +86,15 @@ public class IterationResults {
     public Vector<Integer> getW_solo(){ return w_solo; }
     public Vector<Integer> getW_any(){ return w_any; }
     public Vector<Integer> getH(){ return h; }
+
+    public void setY(Vector<Double> y_new){ y = y_new; }
+    public void setZ(Vector<SimulatedAbstractAgent> y_new){ z = y_new; }
+    public void setTz(Vector<Double> y_new){ tz = y_new; }
+    public void setC(Vector<Double> y_new){ c = y_new; }
+    public void setS(Vector<Integer> y_new){ s = y_new; }
+    public void setV(Vector<Integer> y_new){ v = y_new; }
+    public void setW_solo(Vector<Integer> y_new){ w_solo = y_new; }
+    public void setW_any(Vector<Integer> y_new){ w_any = y_new; }
+    public void setH(Vector<Integer> y_new){ h = y_new; }
+
 }

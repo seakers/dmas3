@@ -1,11 +1,15 @@
 package CCBBA;
 
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.Agent;
+import madkit.kernel.AgentAddress;
+import madkit.kernel.Message;
 
 import java.awt.*;
 import java.util.Vector;
+import java.util.logging.Level;
 
-public class SimulatedAbstractAgent extends AbstractAgent {
+public class SimulatedAbstractAgent extends Agent {
 
     /**
      * Agent's Scenario
@@ -26,7 +30,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected int W_solo_max = 10;                                  // max permissions to bid solo
     protected int W_any_max = 100;                                  // max permissions to bid on any
     protected Vector<IterationResults> results;                     // list of results
-    protected Vector<Subtask> bundle;
+    protected Vector<Subtask> bundle;                               // bundle of chosen subtasks
+    protected Vector<Subtask> path;                                 // path chosen
+
     /**
      * initialize my role and fields
      */
@@ -77,7 +83,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
 
         while(!consensus){
-            //Phase 1 - Task Selection
+        /*
+        //Phase 1 - Task Selection
             if(zeta == 0){
                 // Set results to 0
                 localResults = new IterationResults(J, O_kq);
@@ -88,7 +95,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
 
             // Generate Bundle
-            while(bundle.size() < M){
+            while( (bundle.size() < M)&&(localResults.getH().contains(1)) ){
                 Vector<SubtaskBid> bidList = new Vector<>();
 
                 for(int i = 0; i < J.size(); i++){
@@ -108,6 +115,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                         //localBid.calcBidForSubtask();
 
                         bidList.add(localBid);
+
+                        // Coalition & Mutex Tests
+                        Vector<Integer> h = localResults.getH();
+                        h.setElementAt( coalitionTest(localBid, localResults, j, i), i);
+                        if(h.get(i) == 1){
+                            h.setElementAt( mutexTest(localBid, localResults, j, i), i);
+                        }
+                        localResults.setH( h );
                     }
                     else{
                         // task cannot be bid on
@@ -119,18 +134,56 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 }
 
                 // Choose max bid
+                double currentMax = Double.NEGATIVE_INFINITY;
+                int i_max = 0;
+                SubtaskBid maxBid = new SubtaskBid();
+
+                for(int i = 0; i < bidList.size(); i++){
+                    double c = bidList.get(i).getC();
+                    int h = localResults.getH().get(i);
+                    if( c*h > currentMax ){
+                        currentMax = c*h;
+                        i_max = i;
+                        maxBid = bidList.get(i);
+                    }
+                }
+
                 // Update results
+                localResults.updateResults(maxBid, i_max);
+                results.add(localResults);
+            }
+        */
+        //Phase 2 - Consensus
+            AgentAddress other = null;
+            while (other == null) {
+                // This way, I wait for another coming into play
+                other = getAgentWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
+                pause(1000);
             }
 
-            //Phase 2 - Consensus
+            getLogger().info("\n\tI found someone !!\n" + other + "\n\n");
+            pause(1000);
+
+            // sending the message to other: Success will be logged
+            sendMessage(other, new Message());
+            pause(1000);
+
+            // waiting other's message: The reception will be logged
+            waitNextMessage();
+            pause(10000);
 
 
-            results.add(localResults);
 
             zeta++;
             consensus = true;
         }
 
+
+        // TEST OUTPUTS <- DELETE WHEN DONE --------------------
+        System.out.println(results.get(results.size()).getY());
+        System.out.println(results.get(results.size()).getZ());
+        System.out.println(results.get(results.size()).getTz());
+        // -----------------------------------------------------
     }
 
     @SuppressWarnings("unused")
@@ -227,67 +280,32 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
     }
 
+    protected int coalitionTest(SubtaskBid bid, IterationResults localResults, Subtask j, int i_subtask){
+        Task parentTask = j.getParentTask();
+        Vector<Subtask> J_parent = parentTask.getJ();
+        Vector<Double> y = localResults.getY();
+        Vector<SimulatedAbstractAgent> z = localResults.getZ();
+        double c = bid.getC();
+        int[][] D = j.getParentTask().getD();
 
-    protected Vector<Vector<Subtask>> getPossiblePaths(Vector<Subtask> oldBundle, Subtask j){
-        // Calculates all possible permutations of paths
-        Vector<Vector<Subtask>> possiblePaths = new Vector<>();
-
-        // Adds j to temporary bundle
-        Vector<Subtask> temp_bundle = new Vector<>();
-        for(int i = 0; i < oldBundle.size(); i++) {
-            temp_bundle.add(oldBundle.get(i));
-        }
-        temp_bundle.add(j);
-
-        Vector<Integer> count = new Vector<>();
-        Vector<Subtask> combination = new Vector<>();
-        combination.setSize(temp_bundle.size());
-        count.setSize(temp_bundle.size());
-        for(int i = 0; i < count.size(); i++){
-            count.setElementAt(1,i);
-        }
-
-        generateCombinations(combination, temp_bundle, possiblePaths, count, 0);
-
-
-        return possiblePaths;
-    }
-
-    protected int getMax(Vector<SubtaskBid> bid_list, Vector<Integer> h_aj){
-        // obtains maximum value of a vector of type double
-        double max = Double.NEGATIVE_INFINITY;
-        int max_i = Integer.MIN_VALUE;
-
-        for(int i = 0; i < bid_list.size(); i++){
-            if(max < bid_list.get(i).getC()*h_aj.get(i)){
-                max = bid_list.get(i).getC();
-                max_i = i;
-            }
-        }
-
-        return max_i;
-    }
-
-    protected int coalitionTest(SubtaskBid bid, Subtask j, Vector<Vector> iteration_results, int i_task){
         double new_bid = 0.0;
         double coalition_bid = 0.0;
-        Vector<Double> y = iteration_results.get(0);
-        Vector<SimulatedAbstractAgent> z = iteration_results.get(1);
-        int[][] D = j.getParentTask().getD();
-        int D_jq = 0;
-        int D_jk = 0;
 
         for(int i = 0; i < y.size(); i++){
-            if((z.get(i) == z.get(i_task)) && (D_jq == 1) ){
-                // add to coalition_bid
-                coalition_bid = coalition_bid + y.get(i);
-            }
-            if((z.get(i) == this) && (D_jk == 1) ){
-                // add to new_bid
-                new_bid = new_bid + y.get(i);
+            // Check if j and q are in the same task
+            if( ( i > (i_subtask-J_parent.indexOf(j) ) )&&( i < ( i_subtask-J_parent.indexOf(j)+J_parent.size() ) ) ){
+                //Check if bid outmatches coalition bid
+                int j_index = J_parent.indexOf(j);
+                int q_index = i - (i_subtask - J_parent.indexOf(j));
+                if ((z.get(i) == z.get(i_subtask)) && ((D[ j_index ][ q_index ] == 0) || (D[ j_index ][ q_index ] == 1))) {
+                    coalition_bid = coalition_bid + y.get(i);
+                }
+                if ((z.get(i) == this) && (D[j_index][q_index] == 1)) {
+                    new_bid = new_bid + y.get(i);
+                }
             }
         }
-        new_bid = new_bid + bid.getC();
+        new_bid = new_bid + c;
 
         if(new_bid > coalition_bid){
             return 1;
@@ -295,11 +313,36 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         else{ return 0; }
     }
 
-    protected int mutexTest(SubtaskBid bid, SimulatedAbstractAgent agent){
-        double new_bid = 0.0;
-        double coalition_bid = 0.0;
+    protected int mutexTest(SubtaskBid bid, IterationResults localResults, Subtask j, int i_subtask){
+        Task parentTask = j.getParentTask();
+        Vector<Subtask> J_parent = parentTask.getJ();
+        Vector<Double> y = localResults.getY();
+        Vector<SimulatedAbstractAgent> z = localResults.getZ();
+        double c = bid.getC();
+        int[][] D = j.getParentTask().getD();
 
-        if(new_bid > coalition_bid){
+        double new_bid = 0.0;
+        double max_bid = 0.0;
+
+        for(int i = 0; i < y.size(); i++){
+            // Check if j and q are in the same task
+            if( ( i > (i_subtask-J_parent.indexOf(j) ) )&&( i < ( i_subtask-J_parent.indexOf(j)+J_parent.size() ) ) ){
+                int j_index = J_parent.indexOf(j);
+                int q_index = i - (i_subtask - J_parent.indexOf(j));
+
+                if(D[ j_index ][ q_index ] == 1){
+                    if(i != i_subtask){
+                        new_bid = new_bid + y.get(i);
+                    }
+
+
+                }
+
+            }
+        }
+        new_bid = new_bid + c;
+
+        if(new_bid > max_bid){
             return 1;
         }
         else{ return 0; }
