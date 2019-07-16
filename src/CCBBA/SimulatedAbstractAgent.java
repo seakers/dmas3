@@ -22,7 +22,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected Vector<Subtask> J = new Vector<>();                   // list of all subtasks
     protected double miu = 1.0;                                     // Travel cost
     protected int M;                                                // planning horizon
-    protected int O_kq = 10;                                        //
+    protected int O_kq = 10;                                        // max iterations in constraint violations
+    protected int W_solo_max = 10;                                  // max permissions to bid solo
+    protected int W_any_max = 100;                                  // max permissions to bid on any
     protected Vector<IterationResults> results;                     // list of results
     protected Vector<Subtask> bundle;
     /**
@@ -50,7 +52,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     protected void doSim(){
         thinkPlan();
-        doTasks();
+        //doTasks();
     }
 
     /**
@@ -74,8 +76,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         J = getIncompleteSubtasks();
 
 
-        while(consensus){
-            //Phase 1
+        while(!consensus){
+            //Phase 1 - Task Selection
             if(zeta == 0){
                 // Set results to 0
                 localResults = new IterationResults(J, O_kq);
@@ -87,22 +89,46 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
             // Generate Bundle
             while(bundle.size() < M){
+                Vector<SubtaskBid> bidList = new Vector<>();
+
                 for(int i = 0; i < J.size(); i++){
                     // Calculate possible bid for every subtask to be added to the bundle
                     Subtask j = J.get(i);
-
                     if(bundle.contains(j)){
-
+                        // If subtask exists in bundle, skip bid for this subtask
                         continue;
                     }
 
+                    // Check if bid can be placed on
+                    if(canBid(j, i, localResults)) {
+                        // task can be bid on
+
+                        // Calculate bid for subtask
+                        SubtaskBid localBid = new SubtaskBid();
+                        //localBid.calcBidForSubtask();
+
+                        bidList.add(localBid);
+                    }
+                    else{
+                        // task cannot be bid on
+                        // Give a bid of 0;
+                        SubtaskBid localBid = new SubtaskBid();
+                        bidList.add(localBid);
+
+                    }
                 }
+
+                // Choose max bid
+                // Update results
             }
+
+            //Phase 2 - Consensus
 
 
             results.add(localResults);
 
-            //Phase 2
+            zeta++;
+            consensus = true;
         }
 
     }
@@ -127,20 +153,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         //Looks for tasks from environment and checks for completion
         Vector<Task> V = environment.getTasks();
         Vector<Subtask> J_available = new Vector<>();
-
-        //boolean req1;   // Subtask requires sensor contained in this agent?
         boolean req2;   // Is subtask complete?
 
         for(int i = 0; i < V.size(); i++){
             Vector<Subtask> J_i = V.get(i).getJ();
             for(int j = 0; j < J_i.size(); j++) {
-                /*
-                if(sensors.contains(J_i.get(j).getMain_task())) req1 = true;
-                else req1 = false;
-
-                if(J_i.get(j).getComplete()) req2 = true;
-                else req2 = false;
-                */
                 if (!J_i.get(j).getComplete()) {
                     J_available.add(J_i.get(j));
                 }
@@ -149,6 +166,67 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         return J_available;
     }
+
+    protected boolean canBid(Subtask j, int i_av, IterationResults results){
+        //check if pessimistic or optimistic strategy
+        // if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
+        Vector<Integer> w_solo = results.getW_any();
+        Vector<Integer> w_any  = results.getW_solo();
+        Vector<SimulatedAbstractAgent> z = results.getZ();
+        Task parentTask = j.getParentTask();
+        int i_task = parentTask.getJ().indexOf(j);
+        int[][] D = parentTask.getD();
+
+        // Count number of requirements and number of completed requirements
+        int N_req = 0;
+        int n_sat = 0;
+        for(int k = 0; k < parentTask.getJ().size(); k++){
+            if(i_task == k){ continue;}
+            if( D[i_task][k] == 1){ N_req++; }
+            if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){ n_sat++; }
+        }
+
+        if(!isOptimistic(j, i_av, results)){
+            // Agent has spent all possible tries biding on this task with dependencies
+            // Pessimistic Bidding Strategy to be used
+            return (n_sat == N_req);
+        }
+        else{
+            // Agent has NOT spent all possible tries biding on this task with dependencies
+            // Optimistic Bidding Strategy to be used
+            return ( (w_any.get(i_av) > 0)&&(n_sat > 0) )||( w_solo.get(i_av) > 0 )||(n_sat == N_req);
+        }
+    }
+
+    protected boolean isOptimistic(Subtask j, int i_av, IterationResults results){
+        //check if pessimistic or optimistic strategy
+        // if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
+        Vector<Integer> w_solo = results.getW_any();
+        Vector<Integer> w_any  = results.getW_solo();
+        Vector<SimulatedAbstractAgent> z = results.getZ();
+        Task parentTask = j.getParentTask();
+        int i_task = parentTask.getJ().indexOf(j);
+        int[][] D = parentTask.getD();
+
+        // Count number of requirements and number of completed requirements
+        int N_req = 0;
+        int n_sat = 0;
+        for(int k = 0; k < parentTask.getJ().size(); k++){
+            if(i_task == k){ continue;}
+            if( D[i_task][k] == 1){ N_req++; }
+            if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){ n_sat++; }
+        }
+
+        if( (w_solo.get(i_av) == 0)&&(w_any.get(i_av) == 0) ){
+            // Agent has spent all possible tries biding on this task with dependencies
+            return false;
+        }
+        else{
+            // Agent has NOT spent all possible tries biding on this task with dependencies
+            return true;
+        }
+    }
+
 
     protected Vector<Vector<Subtask>> getPossiblePaths(Vector<Subtask> oldBundle, Subtask j){
         // Calculates all possible permutations of paths
