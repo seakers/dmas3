@@ -17,10 +17,4 @@ public class SimulatedAgent01 extends SimulatedAbstractAgent {
         return position;
     }
 
-    @Override
-    protected double getInteger(){
-        double y = 1.0;
-        return y;
-    }
-
 }

@@ -4,6 +4,7 @@ import java.util.Vector;
 
 public class IterationResults {
     // Info used with other agents*********************
+    private Vector<Subtask> J = new Vector<>();                     // available task list
     private Vector<Double> y = new Vector<>();                      // winner bid list
     private Vector<SimulatedAbstractAgent> z = new Vector<>();      // winner agent list
     private Vector<Double> tz = new Vector<>();                     // arrival time list
@@ -20,13 +21,14 @@ public class IterationResults {
 
     public IterationResults(Vector<Subtask> J, int O_kq){
         int size = J.size();
+        this.J = J;
         y.setSize(size);
         z.setSize(size);
         tz.setSize(size);
 
         c.setSize(size);
         s.setSize(size);
-        y.setSize(size);
+        v.setSize(size);
         w_solo.setSize(size);
         w_any.setSize(size);
         h.setSize(size);
@@ -77,24 +79,25 @@ public class IterationResults {
     /**
      * Getters and Setters
      */
-    public Vector<Double> getY(){ return y; }
-    public Vector<SimulatedAbstractAgent> getZ(){ return z; }
-    public Vector<Double> getTz(){ return tz; }
-    public Vector<Double> getC(){ return c; }
-    public Vector<Integer> getS(){ return s; }
-    public Vector<Integer> getV(){ return v; }
-    public Vector<Integer> getW_solo(){ return w_solo; }
-    public Vector<Integer> getW_any(){ return w_any; }
-    public Vector<Integer> getH(){ return h; }
+    public Vector<Subtask> getJ(){ return this.J; }
+    public Vector<Double> getY(){ return this.y; }
+    public Vector<SimulatedAbstractAgent> getZ(){ return this.z; }
+    public Vector<Double> getTz(){ return this.tz; }
+    public Vector<Double> getC(){ return this.c; }
+    public Vector<Integer> getS(){ return this.s; }
+    public Vector<Integer> getV(){ return this.v; }
+    public Vector<Integer> getW_solo(){ return this.w_solo; }
+    public Vector<Integer> getW_any(){ return this.w_any; }
+    public Vector<Integer> getH(){ return this.h; }
 
-    public void setY(Vector<Double> y_new){ y = y_new; }
-    public void setZ(Vector<SimulatedAbstractAgent> y_new){ z = y_new; }
-    public void setTz(Vector<Double> y_new){ tz = y_new; }
-    public void setC(Vector<Double> y_new){ c = y_new; }
-    public void setS(Vector<Integer> y_new){ s = y_new; }
-    public void setV(Vector<Integer> y_new){ v = y_new; }
-    public void setW_solo(Vector<Integer> y_new){ w_solo = y_new; }
-    public void setW_any(Vector<Integer> y_new){ w_any = y_new; }
-    public void setH(Vector<Integer> y_new){ h = y_new; }
+    public void setY(Vector<Double> y_new){ this.y = y_new; }
+    public void setZ(Vector<SimulatedAbstractAgent> y_new){ this.z = y_new; }
+    public void setTz(Vector<Double> y_new){this. tz = y_new; }
+    public void setC(Vector<Double> y_new){ this.c = y_new; }
+    public void setS(Vector<Integer> y_new){ this.s = y_new; }
+    public void setV(Vector<Integer> y_new){ this.v = y_new; }
+    public void setW_solo(Vector<Integer> y_new){ this.w_solo = y_new; }
+    public void setW_any(Vector<Integer> y_new){ this.w_any = y_new; }
+    public void setH(Vector<Integer> y_new){ this.h = y_new; }
 
 }

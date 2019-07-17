@@ -33,8 +33,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected int W_solo_max = 10;                                  // max permissions to bid solo
     protected int W_any_max = 100;                                  // max permissions to bid on any
     protected Vector<IterationResults> results;                     // list of results
-    protected Vector<Subtask> bundle;                               // bundle of chosen subtasks
-    protected Vector<Subtask> path;                                 // path chosen
+    protected Vector<Subtask> bundle = new Vector<>();              // bundle of chosen subtasks
+    protected Vector<Subtask> path = new Vector<>();                // path chosen
 
     /**
      * initialize my role and fields
@@ -70,7 +70,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
     @SuppressWarnings("unused")
     private void thinkPlan(){
+        // Request role and obtain list of planning agents
         requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
+
+        List<AgentAddress> list_agents = getAgentsWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, false);
 
         // Phase 1 - Create bid for individual spacecraft
         getLogger().info("Planning Tasks...");
@@ -103,18 +106,18 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 for(int i = 0; i < J.size(); i++){
                     // Calculate possible bid for every subtask to be added to the bundle
                     Subtask j = J.get(i);
+                    /*
                     if(bundle.contains(j)){
                         // If subtask exists in bundle, skip bid for this subtask
                         continue;
                     }
+                    */
 
                     // Check if bid can be placed on
-                    if(canBid(j, i, localResults)) {
-                        // task can be bid on
-
+                    if(canBid(j, i, localResults)) { // task can be bid on
                         // Calculate bid for subtask
                         SubtaskBid localBid = new SubtaskBid();
-                        //localBid.calcBidForSubtask();
+                        localBid.calcBidForSubtask(j, this);
 
                         bidList.add(localBid);
 
@@ -126,12 +129,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                         }
                         localResults.setH( h );
                     }
-                    else{
-                        // task cannot be bid on
+                    else{ // task CANNOT be bid on
                         // Give a bid of 0;
                         SubtaskBid localBid = new SubtaskBid();
                         bidList.add(localBid);
 
+                        Vector<Integer> h = localResults.getH();
+                        h.setElementAt( 0, i);
+                        localResults.setH( h );
                     }
                 }
 
@@ -156,7 +161,60 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
 
         //Phase 2 - Consensus
-        //
+            /*
+            Broadcast results
+            Receive results
+            Rule-based check
+                for each task
+                    if outbidden
+                        release task
+                        go to phase 3
+                    else
+                        check constraint requirements
+                        if constraints not met
+                            release task
+                            go to phase 3
+                        else
+                            check convergence
+                            if not converged
+                                go to phase 3
+                            else
+                                consensus = true
+
+            */
+
+            //Broadcast results
+            myMessage myResults = new myMessage(localResults);
+            for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
+
+            //Receive results
+            List<Message> receivedMessages = nextMessages(null);
+            Vector<IterationResults> receivedResults = new Vector<>();
+            for(int i = 0; i < receivedMessages.size(); i++){
+                myMessage message = (myMessage) receivedMessages.get(i);
+                receivedResults.add(message.myResults);
+            }
+
+            // Rule-Based Check
+            /*
+            for each task
+                if outbidden
+                    release task
+                    go to phase 3
+                else
+                    check constraint requirements
+                    if constraints not met
+                        release task
+                        go to phase 3
+                    else
+                        check convergence
+                        if not converged
+                            go to phase 3
+                        else
+                            consensus = true
+                    */
+
+        // Phase 3 - Update Self-Knowledge
 
 
             zeta++;
@@ -206,6 +264,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     protected boolean canBid(Subtask j, int i_av, IterationResults results){
+        // checks if agent contains sensor for subtask
+        if(!this.sensors.contains(j.getMain_task())){
+            return false;
+        }
+
         //check if pessimistic or optimistic strategy
         // if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
         Vector<Integer> w_solo = results.getW_any();
@@ -424,12 +487,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return M_agent;
     }
 
-    protected double getInteger(){
-        double y = 0.0;
-        return y;
-    }
-
-    public double getMiu(){ return miu; }
-    public double getSpeed(){ return speed; }
-    //public Vector<Subtask> getPath(){ return path; }
+    public double getMiu(){ return this.miu; }
+    public double getSpeed(){ return this.speed; }
+    public Vector<Subtask> getPath(){ return this.path; }
+    public Vector<Subtask> getBundle(){ return this.bundle; }
 }
