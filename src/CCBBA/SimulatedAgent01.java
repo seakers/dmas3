@@ -16,4 +16,11 @@ public class SimulatedAgent01 extends SimulatedAbstractAgent {
         Dimension position = new Dimension(0,0);
         return position;
     }
+
+    @Override
+    protected double getInteger(){
+        double y = 1.0;
+        return y;
+    }
+
 }

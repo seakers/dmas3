@@ -8,8 +8,11 @@ import madkit.kernel.Message;
 import java.awt.*;
 import java.util.Vector;
 import java.util.logging.Level;
+import java.util.List;
 
-public class SimulatedAbstractAgent extends Agent {
+import static java.awt.desktop.UserSessionEvent.Reason.LOCK;
+
+public class SimulatedAbstractAgent extends AbstractAgent {
 
     /**
      * Agent's Scenario
@@ -83,7 +86,6 @@ public class SimulatedAbstractAgent extends Agent {
 
 
         while(!consensus){
-        /*
         //Phase 1 - Task Selection
             if(zeta == 0){
                 // Set results to 0
@@ -152,26 +154,9 @@ public class SimulatedAbstractAgent extends Agent {
                 localResults.updateResults(maxBid, i_max);
                 results.add(localResults);
             }
-        */
+
         //Phase 2 - Consensus
-            AgentAddress other = null;
-            while (other == null) {
-                // This way, I wait for another coming into play
-                other = getAgentWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
-                pause(1000);
-            }
-
-            getLogger().info("\n\tI found someone !!\n" + other + "\n\n");
-            pause(1000);
-
-            // sending the message to other: Success will be logged
-            sendMessage(other, new Message());
-            pause(1000);
-
-            // waiting other's message: The reception will be logged
-            waitNextMessage();
-            pause(10000);
-
+        //
 
 
             zeta++;
@@ -437,6 +422,11 @@ public class SimulatedAbstractAgent extends Agent {
     protected int getM(){
         int M_agent = 2;
         return M_agent;
+    }
+
+    protected double getInteger(){
+        double y = 0.0;
+        return y;
     }
 
     public double getMiu(){ return miu; }

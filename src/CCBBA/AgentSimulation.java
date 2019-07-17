@@ -23,9 +23,9 @@ public class AgentSimulation extends AbstractAgent {
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 1; i++) {
             launchAgent(new SimulatedAgent01());
-            //launchAgent(new SimulatedAgent02());
+            launchAgent(new SimulatedAgent02());
         }
 
         // 4 : create the scheduler

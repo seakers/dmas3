@@ -178,3 +178,33 @@ while(consensus == false) {
 
         return max_i;
     }
+	
+	
+	// comms example
+	List<AgentAddress> list_agents = getAgentsWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, false);
+
+        while(list_agents.isEmpty()) {
+            list_agents= getAgentsWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, false);
+        }
+
+        getLogger().info("\n\tI found agents !!\n");
+
+        Vector<Double> y_cast = new Vector<>();
+        for(int i = 0; i < 5; i++){
+            y_cast.add(getInteger());
+        }
+
+        myMessage myResults = new myMessage(y_cast);
+        //broadcastMessage(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, myResults);
+        for(int i = 0; i < list_agents.size(); i++){
+            sendMessage(list_agents.get(i), myResults);
+        }
+
+        List<Message> receivedResults = nextMessages(null);
+
+        for(int i = 0; i < receivedResults.size(); i++){
+            myMessage m = (myMessage) receivedResults.get(i);
+
+            getLogger().info("\n\tReceived message from:" + m.getSender() + "\n");
+            getLogger().info("\n\ty_cast: " + m.y_cast +"\n");
+        }
