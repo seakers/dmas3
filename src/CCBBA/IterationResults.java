@@ -16,8 +16,10 @@ public class IterationResults {
     private Vector<Integer> w_solo = new Vector<>();                // permission to bid solo
     private Vector<Integer> w_any = new Vector<>();                 // permission to bid any
     private Vector<Integer> h = new Vector<>();                     // availability checks vector
-    protected Vector<Vector<SimulatedAbstractAgent>> omega = new Vector<>();// coalition mates
+    private Vector<Vector<SimulatedAbstractAgent>> omega = new Vector<>();// coalition mates
     // *********************************************
+    //private Vector<Subtask> bundle = new Vector<>();
+    //private Vector<Subtask> path = new Vector<>();
 
     public IterationResults(Vector<Subtask> J, int O_kq){
         int size = J.size();
@@ -58,21 +60,67 @@ public class IterationResults {
         v = new Vector<>();
         w_solo = new Vector<>();
         w_any = new Vector<>();
+        //bundle = new Vector<>();
+        //path = new Vector<>();
 
         for(int i = 0; i < prevResults.getY().size(); i++){
-            y.setElementAt(prevResults.getY().get(i), i );
-            z.setElementAt(prevResults.getZ().get(i), i );
-            tz.setElementAt(prevResults.getTz().get(i), i );
-            c.setElementAt(prevResults.getC().get(i), i );
-            s.setElementAt(prevResults.getS().get(i), i );
-            v.setElementAt(prevResults.getV().get(i), i );
-            w_solo.setElementAt(prevResults.getW_solo().get(i), i );
-            w_any.setElementAt(prevResults.getW_any().get(i), i );
-            h.setElementAt(prevResults.getH().get(i), i);
+            this.y.add(prevResults.getY().get(i));
+            this.z.add(prevResults.getZ().get(i));
+            this.tz.add(prevResults.getTz().get(i));
+            this.c.add(prevResults.getC().get(i));
+            this.s.add(prevResults.getS().get(i));
+            this.v.add(prevResults.getV().get(i));
+            this.w_solo.add(prevResults.getW_solo().get(i));
+            this.w_any.add(prevResults.getW_any().get(i));
+            this.h.add(prevResults.getH().get(i));
+            //bundle.setElementAt(prevResults.getBundle().get(i), i);
+            //path.setElementAt(prevResults.getPath().get(i), i);
         }
     }
 
-    public void updateResults(SubtaskBid maxBid, int i_max){
+    public void updateResults(SubtaskBid maxBid, int i_max, SimulatedAbstractAgent agent, int zeta){
+        if(y.get(i_max) < maxBid.getC()){
+            y.setElementAt(maxBid.getC() ,i_max);
+            z.setElementAt(agent, i_max);
+            s.setElementAt(zeta, i_max);
+            tz.setElementAt(maxBid.getTStart(), i_max);
+        }
+    }
+
+    public void updateResults(IterationResults receivedResults, int i, Vector<Subtask> bundle){
+        double yReceived = receivedResults.getY().get(i);
+        SimulatedAbstractAgent zReceived = receivedResults.getZ().get(i);
+
+        this.y.setElementAt(yReceived, i);
+        this.z.setElementAt(zReceived, i);
+
+        //if task is in bundle, then reset subsequent scores
+        if(bundle.contains(J.get(i))){
+            for(int i_b = bundle.indexOf( J.get(i) ); i_b < bundle.size(); i_b++){
+                int i_j = J.indexOf(bundle.get(i_b));
+
+                this.y.setElementAt(0.0, i_j);
+                this.z.setElementAt(null, i_j);
+            }
+        }
+    }
+
+    public void resetResults(IterationResults receivedResults, int i, Vector<Subtask> bundle){
+        this.y.setElementAt(0.0, i);
+        this.z.setElementAt(null, i);
+
+        //if task is in bundle, then reset subsequent scores
+        if(bundle.contains(J.get(i))){
+            for(int i_b = bundle.indexOf( J.get(i) ); i_b < bundle.size(); i_b++){
+                int i_j = J.indexOf(bundle.get(i_b));
+
+                this.y.setElementAt(0.0, i_j);
+                this.z.setElementAt(null, i_j);
+            }
+        }
+    }
+
+    public void leaveResults(IterationResults receivedResults, int i){
 
     }
 
@@ -89,6 +137,8 @@ public class IterationResults {
     public Vector<Integer> getW_solo(){ return this.w_solo; }
     public Vector<Integer> getW_any(){ return this.w_any; }
     public Vector<Integer> getH(){ return this.h; }
+    //public Vector<Subtask> getBundle(){ return this.bundle; }
+    //public Vector<Subtask> getPath(){ return this.path; }
 
     public void setY(Vector<Double> y_new){ this.y = y_new; }
     public void setZ(Vector<SimulatedAbstractAgent> y_new){ this.z = y_new; }

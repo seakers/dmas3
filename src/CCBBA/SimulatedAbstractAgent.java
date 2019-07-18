@@ -35,6 +35,12 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected Vector<IterationResults> results;                     // list of results
     protected Vector<Subtask> bundle = new Vector<>();              // bundle of chosen subtasks
     protected Vector<Subtask> path = new Vector<>();                // path chosen
+    protected Vector<Dimension> X_path = new Vector<>();            // path locations
+    protected long startTime;
+
+    List<AgentAddress> list_agents;
+    int zeta = 0;
+    IterationResults localResults;
 
     /**
      * initialize my role and fields
@@ -55,178 +61,282 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         // Initiate Bundle
         bundle = new Vector<>();
-    }
 
 
-    @SuppressWarnings("unused")
-    protected void doSim(){
-        thinkPlan();
-        //doTasks();
+        this.zeta = 0;
+        results = new Vector<>();
     }
 
     /**
      * Main Sim functions
      */
-
-    @SuppressWarnings("unused")
-    private void thinkPlan(){
+    public void phaseOne(){
         // Request role and obtain list of planning agents
         requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
 
-        List<AgentAddress> list_agents = getAgentsWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, false);
+        this.list_agents = getAgentsWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, false);
 
         // Phase 1 - Create bid for individual spacecraft
         getLogger().info("Planning Tasks...");
-
-        // intialize values
-        int zeta = 0;
-        boolean consensus = false;
-        results = new Vector<>();
-        IterationResults localResults;
+        getLogger().info("Phase one...");
 
         // Get incomplete subtasks
         J = getIncompleteSubtasks();
 
-
-        while(!consensus){
         //Phase 1 - Task Selection
-            if(zeta == 0){
-                // Set results to 0
-                localResults = new IterationResults(J, O_kq);
-            }
-            else{
-                // Import results from previous iteration
-                localResults = new IterationResults(results.get(zeta - 1));
-            }
-
-            // Generate Bundle
-            while( (bundle.size() < M)&&(localResults.getH().contains(1)) ){
-                Vector<SubtaskBid> bidList = new Vector<>();
-
-                for(int i = 0; i < J.size(); i++){
-                    // Calculate possible bid for every subtask to be added to the bundle
-                    Subtask j = J.get(i);
-                    /*
-                    if(bundle.contains(j)){
-                        // If subtask exists in bundle, skip bid for this subtask
-                        continue;
-                    }
-                    */
-
-                    // Check if bid can be placed on
-                    if(canBid(j, i, localResults)) { // task can be bid on
-                        // Calculate bid for subtask
-                        SubtaskBid localBid = new SubtaskBid();
-                        localBid.calcBidForSubtask(j, this);
-
-                        bidList.add(localBid);
-
-                        // Coalition & Mutex Tests
-                        Vector<Integer> h = localResults.getH();
-                        h.setElementAt( coalitionTest(localBid, localResults, j, i), i);
-                        if(h.get(i) == 1){
-                            h.setElementAt( mutexTest(localBid, localResults, j, i), i);
-                        }
-                        localResults.setH( h );
-                    }
-                    else{ // task CANNOT be bid on
-                        // Give a bid of 0;
-                        SubtaskBid localBid = new SubtaskBid();
-                        bidList.add(localBid);
-
-                        Vector<Integer> h = localResults.getH();
-                        h.setElementAt( 0, i);
-                        localResults.setH( h );
-                    }
-                }
-
-                // Choose max bid
-                double currentMax = Double.NEGATIVE_INFINITY;
-                int i_max = 0;
-                SubtaskBid maxBid = new SubtaskBid();
-
-                for(int i = 0; i < bidList.size(); i++){
-                    double c = bidList.get(i).getC();
-                    int h = localResults.getH().get(i);
-                    if( c*h > currentMax ){
-                        currentMax = c*h;
-                        i_max = i;
-                        maxBid = bidList.get(i);
-                    }
-                }
-
-                // Update results
-                localResults.updateResults(maxBid, i_max);
-                results.add(localResults);
-            }
-
-        //Phase 2 - Consensus
-            /*
-            Broadcast results
-            Receive results
-            Rule-based check
-                for each task
-                    if outbidden
-                        release task
-                        go to phase 3
-                    else
-                        check constraint requirements
-                        if constraints not met
-                            release task
-                            go to phase 3
-                        else
-                            check convergence
-                            if not converged
-                                go to phase 3
-                            else
-                                consensus = true
-
-            */
-
-            //Broadcast results
-            myMessage myResults = new myMessage(localResults);
-            for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
-
-            //Receive results
-            List<Message> receivedMessages = nextMessages(null);
-            Vector<IterationResults> receivedResults = new Vector<>();
-            for(int i = 0; i < receivedMessages.size(); i++){
-                myMessage message = (myMessage) receivedMessages.get(i);
-                receivedResults.add(message.myResults);
-            }
-
-            // Rule-Based Check
-            /*
-            for each task
-                if outbidden
-                    release task
-                    go to phase 3
-                else
-                    check constraint requirements
-                    if constraints not met
-                        release task
-                        go to phase 3
-                    else
-                        check convergence
-                        if not converged
-                            go to phase 3
-                        else
-                            consensus = true
-                    */
-
-        // Phase 3 - Update Self-Knowledge
-
-
-            zeta++;
-            consensus = true;
+        // -Initialize results
+        if(this.zeta == 0){
+            // Set results to 0
+            localResults = new IterationResults(J, O_kq);
+        }
+        else{
+            // Import results from previous iteration
+            localResults = new IterationResults(results.get(zeta - 1));
         }
 
+        // -Generate Bundle
+        while( (bundle.size() < M)&&(localResults.getH().contains(1)) ){
+            Vector<SubtaskBid> bidList = new Vector<>();
+            Subtask j_chosen = null;
 
-        // TEST OUTPUTS <- DELETE WHEN DONE --------------------
-        System.out.println(results.get(results.size()).getY());
-        System.out.println(results.get(results.size()).getZ());
-        System.out.println(results.get(results.size()).getTz());
-        // -----------------------------------------------------
+            // Calculate bid for every subtask
+            for(int i = 0; i < J.size(); i++){
+                Subtask j = J.get(i);
+
+                // Check if subtask can be bid on
+                if(canBid(j, i, localResults)) { // task can be bid on
+                    // Calculate bid for subtask
+                    SubtaskBid localBid = new SubtaskBid();
+                    localBid.calcBidForSubtask(j, this);
+
+                    bidList.add(localBid);
+
+                    // Coalition & Mutex Tests
+                    Vector<Integer> h = localResults.getH();
+                    h.setElementAt( coalitionTest(localBid, localResults, j, i), i);
+                    if(h.get(i) == 1){
+                        h.setElementAt( mutexTest(localBid, localResults, j, i), i);
+                    }
+                    localResults.setH( h );
+                }
+                else{ // task CANNOT be bid on
+                    // Give a bid of 0;
+                    SubtaskBid localBid = new SubtaskBid();
+                    bidList.add(localBid);
+
+                    Vector<Integer> h = localResults.getH();
+                    h.setElementAt( 0, i);
+                    localResults.setH( h );
+                }
+            }
+
+            // Choose max bid
+            double currentMax = Double.NEGATIVE_INFINITY;
+            int i_max = 0;
+            SubtaskBid maxBid = new SubtaskBid();
+
+            for(int i = 0; i < bidList.size(); i++){
+                double c = bidList.get(i).getC();
+                int h = localResults.getH().get(i);
+                if( c*h > currentMax ){
+                    currentMax = c*h;
+                    i_max = i;
+                    maxBid = bidList.get(i);
+                    j_chosen = this.J.get(i_max);
+                }
+            }
+
+            // Update results
+            this.bundle.add(j_chosen);
+            this.path.add(maxBid.getI_opt(),j_chosen);
+            this.X_path.add(maxBid.getX_aj());
+            localResults.updateResults(maxBid, i_max, this, zeta);
+        }
+
+    }
+
+    public void phaseTwo() {
+        //Phase 2 - Consensus
+        getLogger().info("Phase two...");
+
+        //Broadcast results
+        myMessage myResults = new myMessage(localResults, this.getName());
+        for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
+
+        //Receive results
+        List<Message> receivedMessages = nextMessages(null);
+        Vector<IterationResults> receivedResults = new Vector<>();
+        for(int i = 0; i < receivedMessages.size(); i++){
+            myMessage message = (myMessage) receivedMessages.get(i);
+            receivedResults.add(message.myResults);
+        }
+
+        // Rule-Based Check
+        // check consistency:
+        boolean consistent = false;
+
+            for(int i = 0; i < receivedResults.size(); i++){ // for every received result
+                // compare local results to each received result
+                for (int i_j = 0; i_j < localResults.getY().size(); i_j++){
+                    if(localResults.getY().get(i_j) != receivedResults.get(i).getY().get(i_j)){
+                        //
+                        getLogger().info("Inconsistencies in plan found !!");
+                        consistent = false;
+                        break;
+                    }
+                }
+                if(!consistent){ break; }
+                else {
+                    // no inconsistancy found
+                    getLogger().info("NO inconsistencies in plan found. Checking convergence...");
+                }
+            }
+
+            if(consistent == false) { // No consensus reached
+            getLogger().info("Fixing inconsistencies...");
+
+            // Compare bids with other results
+            for (int i = 0; i < receivedResults.size(); i++) { //for each received result
+                for (int i_j = 0; i_j < localResults.getY().size(); i_j++) { // for each subtask
+                    // Load my results
+                    double myY = localResults.getY().get(i_j);
+                    String myZ;
+                    if(localResults.getZ().get(i_j) == null){
+                        myZ = "";
+                    }
+                    else{ myZ = localResults.getZ().get(i_j).getName(); }
+                    double myTz = localResults.getTz().get(i_j);
+                    String me = this.getName();
+                    int myS = localResults.getS().get(i_j);
+
+                    // Load received results
+                    double itsY = receivedResults.get(i).getY().get(i_j);
+                    String itsZ;
+                    if(receivedResults.get(i).getZ().get(i_j) == null){
+                        itsZ = "";
+                    }
+                    else{ itsZ = receivedResults.get(i).getZ().get(i_j).getName(); }
+                    double itsTz = receivedResults.get(i).getTz().get(i_j);
+                    myMessage m = (myMessage) receivedMessages.get(i);
+                    String it = m.senderName;
+                    int itsS = receivedResults.get(i).getS().get(i_j);
+
+                    // Comparing results. See Ref 40 Table 1
+                    if( itsZ == it ){
+                        if( myZ == me ){
+                            if( itsY > myY ){
+                                // update
+                                localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                                removeFromBundle(localResults.getJ(), i_j);
+                            }
+                        }
+                        else if( myZ == it){
+                            // update
+                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        }
+                        else if( (myZ != me)&&(myZ != it) ){
+                            if( (itsS > myS)||(itsY > myY) ){
+                                // update
+                                localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                                removeFromBundle(localResults.getJ(), i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // update
+                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        }
+                    }
+                    else if( itsZ == me ){
+                        if( myZ == me ){
+                            // leave
+                            localResults.leaveResults(receivedResults.get(i), i_j, bundle);
+                        }
+                        else if( myZ == it){
+                            // reset
+                            localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        }
+                        else if( (myZ != me)&&(myZ != it) ){
+                            if(itsS > myS){
+                                // reset
+                                localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                                removeFromBundle(localResults.getJ(), i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // leave
+                            localResults.leaveResults(receivedResults.get(i), i_j);
+                        }
+                    }
+                    else if( (itsZ != it)&&( itsZ != me) ){
+                        if( myZ == me ){
+                            if( (itsS > myS)&&(itsY > myY) ){
+                                // update
+                                localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                                removeFromBundle(localResults.getJ(), i_j);
+                            }
+                        }
+                        else if( myZ == it){
+                            if( itsS > myS ){
+                                //update
+                                localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                                removeFromBundle(localResults.getJ(), i_j);
+                            }
+                            else{
+                                // reset
+                                localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                                removeFromBundle(localResults.getJ(), i_j);
+                            }
+                        }
+                        else if( myZ == itsZ ){
+                            if(itsS > myS){
+                                // update
+                                localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                                removeFromBundle(localResults.getJ(), i_j);
+                            }
+                        }
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != itsZ) ){
+                            if( (itsS > myS)&&( itsY > myY ) ){
+                                // update
+                                localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                                removeFromBundle(localResults.getJ(), i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // leave
+                            localResults.leaveResults(receivedResults.get(i), i_j);
+                        }
+                    }
+                    else if( itsZ == ""){
+                        if( myZ == me ){
+                            // leave
+                            localResults.leaveResults(receivedResults.get(i), i_j);
+                        }
+                        else if( myZ == it){
+                            // update
+                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        }
+                        else if( (myZ != me)&&(myZ != it) ){
+                            if(itsS > myS){
+                                // update
+                                localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                                removeFromBundle(localResults.getJ(), i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // leave
+                            localResults.leaveResults(receivedResults.get(i), i_j);
+                        }
+                    }
+                }
+            }
+        }
+
+        zeta++;
+        results.add(localResults);
     }
 
     @SuppressWarnings("unused")
@@ -268,6 +378,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         if(!this.sensors.contains(j.getMain_task())){
             return false;
         }
+
+        // checks if bid for the parent task already exists
+        for(int i = 0; i < bundle.size(); i++){
+            if(j.getParentTask() == bundle.get(i).getParentTask()){
+                return false;
+            }
+        }
+
 
         //check if pessimistic or optimistic strategy
         // if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
@@ -423,50 +541,25 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
     }
 
-    /*
-    protected void generateCombinations(Vector<Integer> combination, Vector<Integer> temp_bundle, Vector<Vector<Integer>> possiblePaths, Vector<Integer> count, int level){
-        if(level == combination.size()){
-            Vector<Integer> addedPath = new Vector<>();
-            for(int i = 0; i < combination.size(); i++){
-                addedPath.add(combination.get(i));
+    private void removeFromBundle(Vector<Subtask> J, int i_j){
+        //remove current and subsequent subtasks from bundle
+        Subtask j = J.get(i_j);
+
+        if(bundle.contains(j)) { // if bundle contains updated or reseted subtask
+            Vector<Subtask> deletedTasks = new Vector<>();
+            for (int i_bundle = bundle.indexOf(j); i_bundle < bundle.size(); ) {
+                deletedTasks.add(bundle.get(i_bundle));
+                bundle.remove(i_bundle);
             }
 
-            possiblePaths.add(addedPath);
-            return;
-        }
-        for(int i = 0; i < temp_bundle.size(); i++){
-            if(count.get(i)==0){
-                continue;
+            //remove current and subsequent subtasks from path
+            for (int i = 0; i < deletedTasks.size(); i++) {
+                int i_path = path.indexOf(deletedTasks.get(i));
+                path.remove(i_path);
+                X_path.remove(i_path);
             }
-            combination.setElementAt(temp_bundle.get(i), level);
-            count.setElementAt(count.get(i)-1 ,i);
-            generateCombinations(combination, temp_bundle, possiblePaths, count, level+1);
-            count.setElementAt(count.get(i)+1 ,i);
         }
     }
-
-        /*
-        // PERMUTATION TEST********************** GOES ON THINK FUNCTION
-        Vector<Subtask> b = new Vector<>();
-        Vector<Subtask> combination = new Vector<>();
-        Vector<Integer> count = new Vector<>();
-        Vector<Vector<Subtask>> paths = new Vector<>();
-
-        b.setSize(3);
-        combination.setSize(3);
-        count.setSize(3);
-        for(int i = 0; i < 3; i++){
-            Subtask temp_subtask = new Subtask("IR", 1, j.getParentTask());
-            b.setElementAt(temp_subtask,i);
-            combination.setElementAt(null,i);
-            count.setElementAt(1,i);
-        }
-
-        generateCombinations(combination, b, paths, count, 0);
-
-        System.out.println(paths);
-        // ************************************************
-        */
 
     /**
      * Abstract Agent Settings

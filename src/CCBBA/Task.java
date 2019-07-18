@@ -16,7 +16,7 @@ public class Task {
     protected boolean complete;                 // Status of task
     protected double[][] T;                     // Max allowable time of arrival between tasks j and q
     protected int[][] D;                        // Dependency Matrix
-    protected double S_max = 100.0;             // Maximum score
+    protected double S_max;                     // Maximum score
     protected double gamma = 1.0;               // Proximity parameter
 
     /**
@@ -26,9 +26,10 @@ public class Task {
      * @param task_sensors list of sensors required
      * @param time_constraints time constraint vector
      */
-    public Task(Dimension task_location, double task_cost, Vector<String> task_sensors, Vector<Double> time_constraints){
+    public Task(Double s_max, Dimension task_location, double task_cost, Vector<String> task_sensors, Vector<Double> time_constraints){
         double inf = Double.POSITIVE_INFINITY;
 
+        this.S_max = s_max;
         complete = false;
         location = task_location;
         cost = task_cost;
@@ -130,57 +131,41 @@ public class Task {
      * Getters and Setters
      * @return returns values
      */
-    public Dimension getLocation(){
-        return location;
-    }
-
     public void setLocation(Dimension new_location){
         location = new_location;
     }
-
     public Vector<String> getSensors(){
         return req_sensors;
     }
-
     public void setSensors(Vector<String> new_sensors){
         req_sensors = new_sensors;
     }
-
-    public Vector<Double> getTC(){
-        //TC = {t_start, t_end, d, t_corr, lambda}
-        return TC;
-    }
-
     public void setTC(Vector<Double> new_TC){
         TC = new_TC;
     }
-
     public boolean getStatus(){
         return complete;
     }
-
     public void set_status(boolean status){
         complete = status;
     }
 
+    public Dimension getLocation(){ return location; }
     public int[][] getD(){
         return D;
     }
-
     public double[][] getT(){
         return T;
     }
-
     public Vector<Subtask> getJ(){ return J; }
-
     public double getCost(){ return cost; }
-
     public double getS_max(){ return S_max; }
-
     public double getI(){ return I; }
-
     public double getGamma(){ return gamma; }
-
+    public Vector<Double> getTC(){
+        //TC = {t_start, t_end, d, t_corr, lambda}
+        return TC;
+    }
 
 
     /*

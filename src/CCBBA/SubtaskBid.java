@@ -55,7 +55,7 @@ public class SubtaskBid {
 
     protected double calcPathUtility(Vector<Subtask> path, SimulatedAbstractAgent agent){
         double pathUtility = 0.0;
-        double subtaskUtility = 0.0;
+        double subtaskUtility;
 
         for(int i = 0; i < path.size(); i++){
             Subtask j = path.get(i);
@@ -160,7 +160,7 @@ public class SubtaskBid {
         double delta_x;
         Dimension x_i;
         if(i == 0){
-            x_i = new Dimension(0, 0);
+            x_i = agent.getInitialPosition();
         }
         else{
             x_i = path.get(i-1).getParentTask().getLocation();
