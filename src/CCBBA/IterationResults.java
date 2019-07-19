@@ -16,12 +16,12 @@ public class IterationResults {
     private Vector<Integer> w_solo = new Vector<>();                // permission to bid solo
     private Vector<Integer> w_any = new Vector<>();                 // permission to bid any
     private Vector<Integer> h = new Vector<>();                     // availability checks vector
-    private Vector<Vector<SimulatedAbstractAgent>> omega = new Vector<>();// coalition mates
     // *********************************************
+    //private Vector<Vector<SimulatedAbstractAgent>> omega = new Vector<>();// coalition mates
     //private Vector<Subtask> bundle = new Vector<>();
     //private Vector<Subtask> path = new Vector<>();
 
-    public IterationResults(Vector<Subtask> J, int O_kq){
+    public IterationResults(Vector<Subtask> J, int w_solo_max, int w_any_max){
         int size = J.size();
         this.J = J;
         y.setSize(size);
@@ -44,8 +44,8 @@ public class IterationResults {
             c.setElementAt(0.0, i);
             s.setElementAt(0, i);
             v.setElementAt(0, i);
-            w_solo.setElementAt(O_kq, i);
-            w_any.setElementAt(O_kq, i);
+            w_solo.setElementAt(w_solo_max, i);
+            w_any.setElementAt(w_any_max, i);
             h.setElementAt(1, i);
         }
     }
@@ -82,6 +82,7 @@ public class IterationResults {
         if(y.get(i_max) < maxBid.getC()){
             y.setElementAt(maxBid.getC() ,i_max);
             z.setElementAt(agent, i_max);
+            c.setElementAt(maxBid.getC() ,i_max);
             s.setElementAt(zeta, i_max);
             tz.setElementAt(maxBid.getTStart(), i_max);
         }
@@ -141,13 +142,13 @@ public class IterationResults {
     //public Vector<Subtask> getPath(){ return this.path; }
 
     public void setY(Vector<Double> y_new){ this.y = y_new; }
-    public void setZ(Vector<SimulatedAbstractAgent> y_new){ this.z = y_new; }
-    public void setTz(Vector<Double> y_new){this. tz = y_new; }
-    public void setC(Vector<Double> y_new){ this.c = y_new; }
-    public void setS(Vector<Integer> y_new){ this.s = y_new; }
-    public void setV(Vector<Integer> y_new){ this.v = y_new; }
-    public void setW_solo(Vector<Integer> y_new){ this.w_solo = y_new; }
-    public void setW_any(Vector<Integer> y_new){ this.w_any = y_new; }
+    public void setZ(Vector<SimulatedAbstractAgent> z_new){ this.z = z_new; }
+    public void setTz(Vector<Double> tz_new){this. tz = tz_new; }
+    public void setC(Vector<Double> c_new){ this.c = c_new; }
+    public void setS(Vector<Integer> s_new){ this.s = s_new; }
+    public void setV(Vector<Integer> v_new){ this.v = v_new; }
+    public void setW_solo(Vector<Integer> w_solo_new){ this.w_solo = w_solo_new; }
+    public void setW_any(Vector<Integer> w_any_new){ this.w_any = w_any_new; }
     public void setH(Vector<Integer> y_new){ this.h = y_new; }
 
 }
