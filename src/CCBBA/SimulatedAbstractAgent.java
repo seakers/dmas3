@@ -139,7 +139,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             for(int i = 0; i < bidList.size(); i++){
                 double c = bidList.get(i).getC();
                 int h = localResults.getH().get(i);
-                if( c*h > currentMax ){
+                if( (c*h > currentMax) ){
                     currentMax = c*h;
                     i_max = i;
                     maxBid = bidList.get(i);
@@ -147,11 +147,24 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 }
             }
 
+            // Check if bid already exists for that task in the bundle
+            boolean bidExists = false;
+            for(int i = 0; i < bundle.size(); i ++){
+                if(j_chosen.getParentTask() == bundle.get(i).getParentTask()){
+                    Vector<Integer> h = localResults.getH();
+                    h.setElementAt( 0, i);
+                    localResults.setH( h );
+                    bidExists = true;
+                }
+            }
+
             // Update results
-            this.bundle.add(j_chosen);
-            this.path.add(maxBid.getI_opt(),j_chosen);
-            this.X_path.add(maxBid.getX_aj());
-            localResults.updateResults(maxBid, i_max, this, zeta);
+            if(!bidExists) {
+                this.bundle.add(j_chosen);
+                this.path.add(maxBid.getI_opt(), j_chosen);
+                this.X_path.add(maxBid.getX_aj());
+                localResults.updateResults(maxBid, i_max, this, zeta);
+            }
         }
 
     }
@@ -175,26 +188,25 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         // Rule-Based Check
         // check consistency:
-        boolean consistent = false;
-
-            for(int i = 0; i < receivedResults.size(); i++){ // for every received result
-                // compare local results to each received result
-                for (int i_j = 0; i_j < localResults.getY().size(); i_j++){
-                    if(localResults.getY().get(i_j) != receivedResults.get(i).getY().get(i_j)){
-                        //
-                        getLogger().info("Inconsistencies in plan found !!");
-                        consistent = false;
-                        break;
-                    }
-                }
-                if(!consistent){ break; }
-                else {
-                    // no inconsistancy found
-                    getLogger().info("NO inconsistencies in plan found. Checking convergence...");
+        boolean consistent = true;
+        for(int i = 0; i < receivedResults.size(); i++){ // for every received result
+            // compare local results to each received result
+            for (int i_j = 0; i_j < localResults.getY().size(); i_j++){
+                if(localResults.getY().get(i_j) != receivedResults.get(i).getY().get(i_j)){
+                    //
+                    getLogger().info("Inconsistencies in plan found !!");
+                    consistent = false;
+                    break;
                 }
             }
+            if(!consistent){ break; }
+            else {
+                // no inconsistancy found
+                getLogger().info("NO inconsistencies in plan found. Checking convergence...");
+            }
+        }
 
-            if(consistent == false) { // No consensus reached
+        if(!consistent) { // No consensus reached
             getLogger().info("Fixing inconsistencies...");
 
             // Compare bids with other results
@@ -237,7 +249,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                             localResults.updateResults(receivedResults.get(i), i_j, bundle);
                             removeFromBundle(localResults.getJ(), i_j);
                         }
-                        else if( (myZ != me)&&(myZ != it) ){
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
                             if( (itsS > myS)||(itsY > myY) ){
                                 // update
                                 localResults.updateResults(receivedResults.get(i), i_j, bundle);
@@ -260,7 +272,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                             localResults.resetResults(receivedResults.get(i), i_j, bundle);
                             removeFromBundle(localResults.getJ(), i_j);
                         }
-                        else if( (myZ != me)&&(myZ != it) ){
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
                             if(itsS > myS){
                                 // reset
                                 localResults.resetResults(receivedResults.get(i), i_j, bundle);
@@ -272,7 +284,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                             localResults.leaveResults(receivedResults.get(i), i_j);
                         }
                     }
-                    else if( (itsZ != it)&&( itsZ != me) ){
+                    else if( (itsZ != it)&&( itsZ != me)&&(itsZ != "") ){
                         if( myZ == me ){
                             if( (itsS > myS)&&(itsY > myY) ){
                                 // update
@@ -299,7 +311,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                                 removeFromBundle(localResults.getJ(), i_j);
                             }
                         }
-                        else if( (myZ != me)&&(myZ != it)&&(myZ != itsZ) ){
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != itsZ)&&(myZ != "") ){
                             if( (itsS > myS)&&( itsY > myY ) ){
                                 // update
                                 localResults.updateResults(receivedResults.get(i), i_j, bundle);
@@ -311,104 +323,143 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                             localResults.leaveResults(receivedResults.get(i), i_j);
                         }
                     }
-                    else if( itsZ == ""){
-                        if( myZ == me ){
+                    else if( itsZ == "") {
+                        if (myZ == me) {
                             // leave
                             localResults.leaveResults(receivedResults.get(i), i_j);
-                        }
-                        else if( myZ == it){
+                        } else if (myZ == it) {
                             // update
                             localResults.updateResults(receivedResults.get(i), i_j, bundle);
                             removeFromBundle(localResults.getJ(), i_j);
-                        }
-                        else if( (myZ != me)&&(myZ != it) ){
-                            if(itsS > myS){
+                        } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                            if (itsS > myS) {
                                 // update
                                 localResults.updateResults(receivedResults.get(i), i_j, bundle);
                                 removeFromBundle(localResults.getJ(), i_j);
                             }
-                        }
-                        else if( myZ == "" ){
+                        } else if (myZ == "") {
                             // leave
                             localResults.leaveResults(receivedResults.get(i), i_j);
                         }
                     }
+                }
+            }
 
+            // Check for constraints
+            // -Coalition constraints
+            if(bidStrategy == "PBS"){
+                for(int i = 0; i < bundle.size(); i++){
+                    Vector<Integer> w_solo = localResults.getW_any();
+                    Vector<Integer> w_any  = localResults.getW_solo();
+                    Vector<SimulatedAbstractAgent> z = localResults.getZ();
+                    Subtask j = bundle.get(i);
+                    Task parentTask = j.getParentTask();
+                    int i_task = parentTask.getJ().indexOf(j);
+                    int[][] D = parentTask.getD();
+                    int i_av = localResults.getJ().indexOf(j);
 
+                    // Count number of requirements and number of completed requirements
+                    int N_req = 0;
+                    int n_sat = 0;
+                    for(int k = 0; k < parentTask.getJ().size(); k++){
+                        if(i_task == k){ continue;}
+                        if( D[i_task][k] == 1){ N_req = N_req + 1; }
+                        if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){ n_sat = n_sat + 1; }
+                    }
+
+                    if(N_req != n_sat){ //if not all dependencies are met
+                        //release task
+                        int i_j = localResults.getJ().indexOf(j);
+                        localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                        removeFromBundle(localResults.getJ(), i_j);
+                    }
 
                 }
             }
-            // Check for Coalition constraints
-                if(bidStrategy == "PBS"){
-                    for(int i = 0; i < bundle.size(); i++){
-                        Vector<Integer> w_solo = localResults.getW_any();
-                        Vector<Integer> w_any  = localResults.getW_solo();
-                        Vector<SimulatedAbstractAgent> z = localResults.getZ();
-                        Subtask j = bundle.get(i);
-                        Task parentTask = j.getParentTask();
-                        int i_task = parentTask.getJ().indexOf(j);
-                        int[][] D = parentTask.getD();
-                        int i_av = localResults.getJ().indexOf(j);
+            else if(bidStrategy == "OBS"){
+                for(int i = 0; i < bundle.size(); i++){
+                    Vector<Integer> v = localResults.getV();
+                    Vector<Integer> w_solo = localResults.getW_any();
+                    Vector<Integer> w_any  = localResults.getW_solo();
+                    Vector<SimulatedAbstractAgent> z = localResults.getZ();
+                    Subtask j = bundle.get(i);
+                    Task parentTask = j.getParentTask();
+                    int i_task = parentTask.getJ().indexOf(j);
+                    int i_j = localResults.getJ().indexOf(bundle.get(i));
+                    int[][] D = parentTask.getD();
+                    int i_av = localResults.getJ().indexOf(j);
 
-                        // Count number of requirements and number of completed requirements
-                        int N_req = 0;
-                        int n_sat = 0;
-                        for(int k = 0; k < parentTask.getJ().size(); k++){
-                            if(i_task == k){ continue;}
-                            if( D[i_task][k] == 1){ N_req = N_req + 1; }
-                            if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){ n_sat = n_sat + 1; }
-                        }
+                    // Count number of requirements and number of completed requirements
+                    int N_req = 0;
+                    int n_sat = 0;
+                    for(int k = 0; k < parentTask.getJ().size(); k++){
+                        if(i_task == k){ continue;}
+                        if( D[i_task][k] == 1){ N_req = N_req + 1; }
+                        if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){ n_sat = n_sat + 1; }
+                    }
 
-                        if(N_req != n_sat){ //if not all dependencies are met
-                            //release task
-                            int i_j = localResults.getJ().indexOf(j);
-                            localResults.resetResults(receivedResults.get(i), i_j, bundle);
-                            removeFromBundle(localResults.getJ(), i_j);
-                        }
+                    if(N_req != n_sat){ //if not all dependencies are met, v_i++
+                        v.setElementAt( v.get(i_j)+1 , i_j);
+                        localResults.setV( v );
+                    }
 
+                    if(v.get(i_j) >= O_kq){ // if task has held on to task for too long, release task
+                        localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                        removeFromBundle(localResults.getJ(), i_j);
+                        w_solo.setElementAt( w_solo.get(i_j)-1,i_j);
+                        w_any.setElementAt( w_any.get(i_j)-1,i_j);
                     }
                 }
-                else if(bidStrategy == "OBS"){
-                    for(int i = 0; i < bundle.size(); i++){
-                        Vector<Integer> v = localResults.getV();
-                        Vector<Integer> w_solo = localResults.getW_any();
-                        Vector<Integer> w_any  = localResults.getW_solo();
-                        Vector<SimulatedAbstractAgent> z = localResults.getZ();
-                        Subtask j = bundle.get(i);
-                        Task parentTask = j.getParentTask();
-                        int i_task = parentTask.getJ().indexOf(j);
-                        int i_j = localResults.getJ().indexOf(bundle.get(i));
-                        int[][] D = parentTask.getD();
-                        int i_av = localResults.getJ().indexOf(j);
-
-                        // Count number of requirements and number of completed requirements
-                        int N_req = 0;
-                        int n_sat = 0;
-                        for(int k = 0; k < parentTask.getJ().size(); k++){
-                            if(i_task == k){ continue;}
-                            if( D[i_task][k] == 1){ N_req = N_req + 1; }
-                            if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){ n_sat = n_sat + 1; }
-                        }
-
-                        if(N_req != n_sat){ //if not all dependencies are met, v_i++
-                            v.setElementAt( v.get(i_j)+1 , i_j);
-                            localResults.setV( v );
-                        }
-
-                        if(v.get(i_j) >= O_kq){ // if task has held on to task for too long, release task
-                            // release task
-                            localResults.resetResults(receivedResults.get(i), i_j, bundle);
-                            removeFromBundle(localResults.getJ(), i_j);
-                            w_solo.setElementAt( w_solo.get(i_j)-1,i_j);
-                            w_any.setElementAt( w_any.get(i_j)-1,i_j);
-                        }
-                    }
-                }
+            }
 
             // Check for time constraints
+            for(int i = 0; i < bundle.size(); i++){
+                boolean taskReleased = false;
+                Subtask j = bundle.get(i);
+                Task parenTask = j.getParentTask();
+                int[][] D = parenTask.getD();
 
+                Vector<Integer> tempViolations = tempSat(j , localResults);
+
+                int i_q = localResults.getJ().indexOf(j);
+                int i_o = i_q - parenTask.getJ().indexOf(j);
+                for(int i_v = 0; i_v < tempViolations.size(); i_v++){  // if time constraint violations exist
+                    //compare each time violation
+                    int i_u = tempViolations.get(i_v);
+                    if( (D[parenTask.getJ().indexOf(j)][i_u - i_o] == 1)&&(D[i_u - i_o][parenTask.getJ().indexOf(j)] != 1) ){
+                        //release task
+                        localResults.resetResults(receivedResults.get(i), i_q, bundle);
+                        removeFromBundle(localResults.getJ(), i_q);
+                        taskReleased = true;
+                        break;
+                    }
+                    else if( (D[parenTask.getJ().indexOf(j)][i_u - i_o] == 1)&&(D[i_u - i_o][parenTask.getJ().indexOf(j)] == 1) ){
+                        double tz_q = localResults.getTz().get( localResults.getJ().indexOf(j) );
+                        double tz_u = localResults.getTz().get( i_u );
+                        double t_start = parenTask.getTC().get(0);
+                        if( tz_q - t_start <= tz_u - t_start){
+                            // release task
+                            localResults.resetResults(receivedResults.get(i), i_q, bundle);
+                            removeFromBundle(localResults.getJ(), i_q);
+                            taskReleased = true;
+                            break;
+                        }
+
+                    }
+                }
+
+                if(taskReleased){
+                    if(bidStrategy == "OBS") {
+                        Vector<Integer> w_any = localResults.getW_any();
+                        Vector<Integer> w_solo = localResults.getW_solo();
+                        w_any.setElementAt(w_any.get(i_q) - 1, i_q);
+                        w_solo.setElementAt(w_any.get(i_q) - 1, i_q);
+                        localResults.setW_any(w_any);
+                        localResults.setW_solo(w_solo);
+                    }
+                }
+            }
         }
-
         zeta++;
         results.add(localResults);
     }
@@ -635,6 +686,35 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 X_path.remove(i_path);
             }
         }
+    }
+
+    public Vector<Integer> tempSat(Subtask k_q, IterationResults results){
+        double[][] T = k_q.getParentTask().getT();
+        Vector<Subtask> J_parent = k_q.getParentTask().getJ();
+        Vector<Subtask> J_results = results.getJ();
+        Vector<Double> tz = results.getTz();
+        Vector<SimulatedAbstractAgent> z = results.getZ();
+
+        Vector<Integer> violationIndexes = new Vector<>();
+
+        for(int k = 0; k < J_parent.size(); k++){
+            Subtask k_u = J_parent.get(k);
+            int i_q = J_results.indexOf(k_q);  // index of subtask q
+            int i_u = J_results.indexOf(k_u);  // index of subtask u
+            boolean req1 = true;
+            boolean req2 = true;
+
+            if( ( k != J_parent.indexOf(k_q) )&&( z.get(i_u) != null ) ){ // if not the same subtask and other subtask has a winner
+                req1 = tz.get(i_q) <=  tz.get(i_u) + T[J_parent.indexOf(k_q)][k];
+                req2 = tz.get(i_u) <=  tz.get(i_q) + T[k][J_parent.indexOf(k_q)];
+            }
+
+            if( !(req1 && req2) ){
+                violationIndexes.add( i_u );
+            }
+        }
+
+        return violationIndexes;
     }
 
     /**

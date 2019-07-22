@@ -46,7 +46,7 @@ public class Scenario extends Watcher {
 
         tc_1.add(0.0);
         tc_1.add(inf);
-        tc_1.add(5.0);
+        tc_1.add(1.0);
         tc_1.add(1.0);
 
         Task task1 = new Task( 100.0, x_1, 2.0, e_1, tc_1);
@@ -57,7 +57,7 @@ public class Scenario extends Watcher {
 
         tc_2.add(0.0);
         tc_2.add(inf);
-        tc_2.add(5.0);
+        tc_2.add(1.0);
         tc_2.add(1.0);
 
         Task task2 = new Task( 30.0, x_2, 2.0, e_2, tc_2);

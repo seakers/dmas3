@@ -208,3 +208,51 @@ while(consensus == false) {
             getLogger().info("\n\tReceived message from:" + m.getSender() + "\n");
             getLogger().info("\n\ty_cast: " + m.y_cast +"\n");
         }
+		
+		
+		
+
+    /*
+    protected void generateCombinations(Vector<Integer> combination, Vector<Integer> temp_bundle, Vector<Vector<Integer>> possiblePaths, Vector<Integer> count, int level){
+        if(level == combination.size()){
+            Vector<Integer> addedPath = new Vector<>();
+            for(int i = 0; i < combination.size(); i++){
+                addedPath.add(combination.get(i));
+            }
+
+            possiblePaths.add(addedPath);
+            return;
+        }
+        for(int i = 0; i < temp_bundle.size(); i++){
+            if(count.get(i)==0){
+                continue;
+            }
+            combination.setElementAt(temp_bundle.get(i), level);
+            count.setElementAt(count.get(i)-1 ,i);
+            generateCombinations(combination, temp_bundle, possiblePaths, count, level+1);
+            count.setElementAt(count.get(i)+1 ,i);
+        }
+    }
+
+        /*
+        // PERMUTATION TEST********************** GOES ON THINK FUNCTION
+        Vector<Subtask> b = new Vector<>();
+        Vector<Subtask> combination = new Vector<>();
+        Vector<Integer> count = new Vector<>();
+        Vector<Vector<Subtask>> paths = new Vector<>();
+
+        b.setSize(3);
+        combination.setSize(3);
+        count.setSize(3);
+        for(int i = 0; i < 3; i++){
+            Subtask temp_subtask = new Subtask("IR", 1, j.getParentTask());
+            b.setElementAt(temp_subtask,i);
+            combination.setElementAt(null,i);
+            count.setElementAt(1,i);
+        }
+
+        generateCombinations(combination, b, paths, count, 0);
+
+        System.out.println(paths);
+        // ************************************************
+        */

@@ -36,8 +36,8 @@ public class Task {
         req_sensors = task_sensors;
         TC = time_constraints;
         I = req_sensors.size();
-        J = new Vector<Subtask>();
-        K = new Vector<Integer>();
+        J = new Vector<>();
+        K = new Vector<>();
 
         // Create subtask list from Sensor list
         // WARNING: Method set to only accommodate for I <= 2. Needs generalized function based on I

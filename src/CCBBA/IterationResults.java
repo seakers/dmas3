@@ -91,9 +91,11 @@ public class IterationResults {
     public void updateResults(IterationResults receivedResults, int i, Vector<Subtask> bundle){
         double yReceived = receivedResults.getY().get(i);
         SimulatedAbstractAgent zReceived = receivedResults.getZ().get(i);
+        double tzReceived = receivedResults.getTz().get(i);
 
         this.y.setElementAt(yReceived, i);
         this.z.setElementAt(zReceived, i);
+        this.tz.setElementAt(tzReceived, i);
 
         //if task is in bundle, then reset subsequent scores
         if(bundle.contains(J.get(i))){
@@ -102,6 +104,7 @@ public class IterationResults {
 
                 this.y.setElementAt(0.0, i_j);
                 this.z.setElementAt(null, i_j);
+                this.tz.setElementAt(0.0, i_j);
             }
         }
     }
@@ -109,6 +112,7 @@ public class IterationResults {
     public void resetResults(IterationResults receivedResults, int i, Vector<Subtask> bundle){
         this.y.setElementAt(0.0, i);
         this.z.setElementAt(null, i);
+        this.tz.setElementAt(0.0, i);
 
         //if task is in bundle, then reset subsequent scores
         if(bundle.contains(J.get(i))){
@@ -117,6 +121,7 @@ public class IterationResults {
 
                 this.y.setElementAt(0.0, i_j);
                 this.z.setElementAt(null, i_j);
+                this.tz.setElementAt(0.0, i_j);
             }
         }
     }
