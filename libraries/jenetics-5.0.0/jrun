@@ -1,0 +1,24 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+MODULES=(
+	"${SCRIPT_DIR}/jenetics"
+	"${SCRIPT_DIR}/jenetics.example"
+	"${SCRIPT_DIR}/jenetics.ext"
+	"${SCRIPT_DIR}/jenetics.prog"
+	"${SCRIPT_DIR}/jenetics.tool"
+	"${SCRIPT_DIR}/jenetics.xml"
+)
+
+CLASSPATH="."
+for module in ${MODULES[@]}
+do
+	CLASSPATH="${CLASSPATH}:${module}/build/classes/java/main"
+	CLASSPATH="${CLASSPATH}:${module}/build/resources/main"
+	CLASSPATH="${CLASSPATH}:${module}/build/classes/java/test"
+	CLASSPATH="${CLASSPATH}:${module}/build/resources/test"
+done
+
+CMD="java -cp ${CLASSPATH} $1"
+$CMD "${@:2}"

@@ -1,0 +1,130 @@
+/*
+ * Java Genetic Algorithm Library (@__identifier__@).
+ * Copyright (c) @__year__@ Franz Wilhelmstötter
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author:
+ *    Franz Wilhelmstötter (franz.wilhelmstoetter@gmail.com)
+ */
+
+
+import io.jenetics.gradle.Version
+import io.jenetics.gradle.plugin.SetupPlugin
+
+import java.time.Year
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
+/**
+ * @author <a href="mailto:franz.wilhelmstoetter@gmail.com">Franz Wilhelmstötter</a>
+ * @since 1.2
+ * @version 4.3
+ */
+rootProject.version = Version.parse(property('jenetics.Version'))
+
+apply plugin: 'signing'
+apply plugin: 'packaging'
+
+ext {
+	javaVersion = property('build.JavaVersion')
+
+	now = ZonedDateTime.now()
+	year = Year.now();
+	copyrightYear = "2007-${year}".toString()
+	identifier = "${rootProject.name}-${version}".toString()
+	manualDate = DateTimeFormatter.ofPattern("yyyy/MM/dd").format(now)
+	manualIdentifier = "${version}—${manualDate}".toString()
+	dateformat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+}
+
+allprojects {
+	group = property('jenetics.Group')
+	version = property('jenetics.Version')
+
+	repositories {
+		flatDir(dir: "${rootDir}/buildSrc/lib")
+		mavenCentral()
+	}
+}
+
+subprojects { Project prj ->
+	prj.plugins.apply(SetupPlugin.class)
+
+	// The Javadoc doesn't work for 
+	//     openjdk version "11.0.2" 2018-10-16
+	//     OpenJDK Runtime Environment 18.9 (build 11.0.2+7)
+	//     OpenJDK 64-Bit Server VM 18.9 (build 11.0.2+7, mixed mode
+	if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
+		prj.tasks.withType(Javadoc).all {
+			enabled = false
+		}
+	}
+}
+
+allprojects { Project prj ->
+	repositories {
+		mavenCentral()
+		jcenter()
+	}
+
+	if (prj.plugins.hasPlugin('java')) {
+		sourceCompatibility = javaVersion
+		targetCompatibility = javaVersion
+	}
+	if (prj.plugins.hasPlugin('jacoco')) {
+		prj.jacoco {
+			toolVersion = '0.8.2'
+		}
+	}
+}
+
+task updateGradle(type: Wrapper) {
+	gradleVersion = project.property('build.GradleVersion')
+}
+
+task alljavadoc(type: Javadoc) {
+	options.encoding = 'UTF-8'
+	def jeneticsProjects = subprojects.findAll { project ->
+		project.name.startsWith('jenetics') &&
+		project.name != 'jenetics.doc'
+	}
+	configure(jeneticsProjects) {
+		apply plugin: 'java'
+	}
+
+	source jeneticsProjects.collect { p ->
+		p.sourceSets.main.allJava
+	}
+	destinationDir = file("${buildDir}/alljavadoc")
+
+	// Might need a classpath
+	classpath = files(jeneticsProjects.collect { project ->
+		project.sourceSets.main.compileClasspath
+	})
+}
+
+// Create a zip file from the export directory.
+task zip(type: Zip) {
+	from("build/package/${identifier}") {
+		into identifier
+	}
+
+	baseName = rootProject.name
+	version = project.property('jenetics.Version')
+
+	doLast {
+		def zip = file("${identifier}.zip")
+		zip.renameTo(new File('build/package', zip.getName()))
+	}
+}

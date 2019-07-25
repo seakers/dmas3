@@ -1,0 +1,211 @@
+= Module: `io.jenetics.prog`
+
+image::https://www.javadoc.io/badge/io.jenetics/jenetics.prog.svg[Javadoc, link=http://www.javadoc.io/doc/io.jenetics/jenetics.prog]
+
+Genetic programming (GP) is a technique where a set of genes are modified (evolved) using an evolutionary algorithm. The `io.jenetics.prog` modules contains a `ProgramGene`, together with its corresponding `ProgramChromosome`, which allows to create operation (`Op`) trees.
+
+The `io.jenetics.prog` module contains the classes which are needed for doing _Genetic programming_ with the _Jenetics_ library. It introduces a new `Chromosome`/`Gene` pair, which are the main entry points.
+
+
+```java
+public interface Op<T> {
+    public String name();
+    public int arity();
+    public T apply(T[] args);
+}
+
+```
+
+The generic type of the `Op` enforces data-type constraints for the created program tree and makes the implementation a _strongly typed_ GP algorithm.
+
+
+== Operations
+
+When creating a new program tree, it is not necessary to implement own instance of the `ProgramGene` or `ProgramChromosome` class. The extension point for own programs is the `Op` interface.
+
+```java
+ final Op<Double> myop = Op.of("myop", 3, v -> v[0]*v[1] + v[2]);
+```
+
+In the example above, a new operation with the "myop" and arity 3 is defined. Whenever the operation is evaluated, the function _f(x, y, z) = x*y + z_ is executed.
+
+NOTE: The class `MathOp` in the `io.jenetics.prog.op` package defines a set of mathematical standard operations/functions.
+
+When creating a new `ProgramChromosome` we must distinguish two different kind of operations:
+
+1. _Non-terminal_ operations have an arity greater than zero and form their own sub-tree.
+1. _Terminal_ operations have an arity of zero and form the leaves of a program tree.
+
+There are currently three different types of terminal operations implemented, `Var`, `Const` and the `EphemeralConst` class.
+
+`*Var*`
+
+The `Var` operation defines a variable of a program, which are set from the program arguments.
+
+```java
+final ISeq<Op<Double>> terminals = ISeq.of(
+    Var.of("x", 0), Var.of("y", 1), Var.of("z", 2)
+);
+```
+
+The terminal operation list in the example code above will lead to a program which takes three input parameters, _x_, _y_ and _z_, with the argument indices _0_, _1_ and _2_.
+
+
+`*Const*`
+
+The `Const` operation will always return the same, constant, value when evaluated.
+
+```java
+final Op<Double> one = Const.of(1.0);
+final Op<Double> pi = Const.of("π", Math.PI);
+```
+
+We can create a constant operation in to flavours, with a value only and with a dedicated name. If a constant has a name, the _symbolic_ name is used, instead of the value, when the program tree is printing.
+
+`*EphemeralConst*`
+
+An ephemeral constant is a special constant, which is only constant within an tree. If a new tree is created, a new constant is created, by the `Supplier` function the ephemeral constant is created with.
+
+```java
+final Op<Double> rand1 = EphemeralConst.of(Math::random);
+final Op<Double> rand2 = EphemeralConst.of("R", Math::random);
+```
+
+== Program trees
+
+=== Program creation
+
+The `ProgramChromosome` comes with some factory methods, which lets you easily create program trees with a given depth and a given set of _operations_ and _terminals_.
+
+```java
+final ISeq<Op<Double>> operations = ISeq.of(...);
+final ISeq<Op<Double>> terminals = ISeq.of(...);
+final ProgramChromosome<Double> program =
+    ProgramChromosome.of(depth, operations, terminals);
+```
+
+The code snippet above will create a _perfect_ program tree of depth _5_. All non-leaf nodes will contain operations, randomly selected from the _operations_ set. Whereas all leaf nodes are filled with operations from the _terminals_ set.
+
+NOTE: The created program tree is _perfect_, which means that all leaf nodes have the same depth. If new trees needs to be created during evolution, they will be created with the depth, operations and terminals defined by the _template_ program tree.
+
+
+The _GP_ `Engine` is created in the exact same way as the _GA_ `Engine`.
+
+```java
+final Engine<ProgramGene<Double>, Double> engine = Engine
+    .builder(Main::error, program)
+    .minimizing()
+    .alterers(
+        new SingleNodeCrossover<>(),
+        new Mutator<>())
+    .build();
+```
+
+For a detailed description on the correct `Engine` setup have a look at the _Example_ section.
+
+
+=== Program repair
+
+The specialized `Alterer` classes for the `ProgramChromosome` guarantees that the program tree after the _alter_ operation is still valid. They obey the tree structure of the chromosome, although they are altering the flattened `ProgramGene` sequence. General alterers, not written for `ProgramChromosome`, will most likely destroy the tree property of the altered chromosome. There are essentially two possibility for handling invalid tree chromosomes: 1) marking the chromosome as _invalid_ or 2) try to repair the invalid chromosome. Possibility 1) would be easier, but it would also lead to a possible large number of invalid chromosomes.
+
+NOTE: Jenetics allows the usage of arbitrary `Alterer` implementations. Even alterers not implemented for `ProgramChromosomes`. Chromosomes _destroyed_  by the alterer are repaired.
+
+== Examples
+
+=== Symbolic regression
+
+> Symbolic regression involves finding a mathematical expression, in symbolic form, that provides a good, best, or perfect fit between a given finite sampling of values of the independent variables and the associated values of the dependent variables.–John R. Koza, Genetic Programming I
+
+The following example shows how to solve a GP problem with _Jenetics_. We are trying to find a polynomial (or an arbitrary mathematical function) which approximates a given data set.
+
+.Table Sample points
+|===
+| x | y
+| 0.00 | 0.0000
+| 0.10 | 0.0740
+| 0.20 | 0.1120.
+| 0.30 | 0.1380
+| ... | ...
+|===
+
+The sample points has been created with the function _f(x) = 4*x^3 - 3*x^2 + x_. The knowledge of the creating function makes it easier to compare the quality of the evolved function. For the example we created 21 data points.
+
+NOTE: The function which created the sample points is not needed in the _error_ function we have to define for the GP. It just let us verify the final, evolved result.
+
+
+As first step, we have to define the set of allowed _non-terminal_ and the _terminal_ operations the GP is working with. Selecting the right set of operation has a big influence on the performance of the GP. If the operation set is bigger than necessary, we will expand the potential search space, and the execution time for finding a solution. For our _polynomial_ example we will chose the following _operations_ and _terminals_.
+
+```java
+static final ISeq<Op<Double>> OPERATIONS = ISeq.of(
+    MathOp.ADD,
+    MathOp.SUB,
+    MathOp.MUL
+);
+
+static final ISeq<Op<Double>> TERMINALS = ISeq.of(
+    Var.of("x", 0),
+    EphemeralConst.of(() ->
+        (double)RandomRegistry.getRandom().nextInt(10))
+);
+```
+
+The chosen _non-terminal_ operation set is sufficient to create any polynomial. For the _terminal_ operations, we added a variable "x", with _index_ zero, and an ephemeral _int_ constant. The purpose of the _ephemeral_ constant is to create constant values, which will differ for every tree, but stay constant within a tree.
+
+The `io.jenetics.prog.regression` package contains interfaces and classes, which simplifies the definition of the _error_ function and the implementation of _symbolic regression_ problems.
+
+```java
+private static final Regression<Double> REGRESSION = Regression.of(
+    Regression.codecOf(OPERATIONS, TERMINALS, 5),
+    Error.of(LossFunction::mse),
+    Sample.ofDouble(-1.0, -8.0000),
+    // ...
+    Sample.ofDouble(0.9, 1.3860),
+    Sample.ofDouble(1.0, 2.0000)
+);
+
+public static void main(final String[] args) {
+    final Engine<ProgramGene<Double>, Double> engine = Engine
+        .builder(REGRESSION)
+        .minimizing()
+        .alterers(
+            new SingleNodeCrossover<>(0.1),
+            new Mutator<>())
+        .build();
+
+    final EvolutionResult<ProgramGene<Double>, Double> result = engine
+        .stream()
+        .limit(Limits.byFitnessThreshold(0.01))
+        .collect(EvolutionResult.toBestEvolutionResult());
+
+    final ProgramGene<Double> program = result.getBestPhenotype()
+        .getGenotype()
+        .getGene();
+
+    final TreeNode<Op<Double>> tree = program.toTreeNode();
+    MathExpr.rewrite(tree); // Simplify result program.
+    System.out.println("Generations: " + result.getTotalGenerations());
+    System.out.println("Function:    " + new MathExpr(tree));
+    System.out.println("Error:       " + REGRESSION.error(tree));
+}
+```
+The error function uses the _mean square error_ as _loss_ function. It is also possible to define a more advanced error function, which penalizes big program trees.
+
+```java
+final Error error = Error.of(
+    LossFunction::mse,
+    Complexity.ofMaxNodeCount(50)
+);
+
+```
+The error function above consists of a loss function and a tree complexity function. The definition of the `Codec` is also simplified by the `Regression` class and several factory methods: `Regression.codecOf(OPERATIONS, TERMINALS, 5)`
+
+The GP is capable of finding the polynomial which created the sample data. and we get the following (correct) output program:
+
+
+	Generations: 9494
+	Function:    ((x^2.0*4.0 - (x + 5.0)) + (((6.0 - x) - 2.0*x) + x))*x
+	Error:       1.3621827363801722E-31
+
+This program can be reduced to _4*x^3 - 3*x^2 + x_, which is exactly the polynomial, which created the sample data.
+
+
