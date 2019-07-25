@@ -14,29 +14,32 @@ public class SimulatedAbstractAgent extends AbstractAgent {
      * Agent's Scenario
      */
     protected Scenario environment;
-    double inf = Double.POSITIVE_INFINITY;
 
     /**
      * Properties
      */
+
+
     protected Dimension location = new Dimension();                 // current location
-    protected double speed = 1.0;                                   // displacement speed of agent
+    protected double speed;                                         // displacement speed of agent
     protected Vector<String> sensors = new Vector<>();              // list of all sensors
     protected Vector<Subtask> J = new Vector<>();                   // list of all subtasks
-    protected double miu = 1.0;                                     // Travel cost
+    protected double miu;                                           // Travel cost
     protected int M;                                                // planning horizon
-    protected int O_kq = 10;                                        // max iterations in constraint violations
-    protected int W_solo_max = 10;                                  // max permissions to bid solo
-    protected int W_any_max = 100;                                  // max permissions to bid on any
+    protected int O_kq;                                             // max iterations in constraint violations
+    protected int W_solo_max;                                       // max permissions to bid solo
+    protected int W_any_max;                                        // max permissions to bid on any
     protected Vector<IterationResults> results;                     // list of results
     protected Vector<Subtask> bundle = new Vector<>();              // bundle of chosen subtasks
     protected Vector<Subtask> path = new Vector<>();                // path chosen
     protected Vector<Dimension> X_path = new Vector<>();            // path locations
-    protected String bidStrategy;
+    protected String bidStrategy;                                   // bidding strategy indicator
 
-    List<AgentAddress> list_agents;
-    int zeta = 0;
-    IterationResults localResults;
+    List<AgentAddress> list_agents;                                 // list of agents in planning phase
+    IterationResults localResults;                                  // list of iteration results
+    int zeta = 0;                                                   // iteration counter
+    int convergenceCounter;
+    int convergenceIndicator;
 
     /**
      * initialize my role and fields
@@ -46,24 +49,20 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         // Request Role
         requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
 
-        // Initiate position
         location = getInitialPosition();
-
-        // Initiate Sensor Vector
         sensors = getSensorList();
-
-        // Initiate Planning Horizon
+        speed = setSpeed();
+        miu = setMiu();
         M = getM();
-
-        // Initiate Bundle
-        bundle = new Vector<>();
-
-
-        this.zeta = 0;
+        O_kq = getO_kq();
+        W_solo_max = getW_solo_max();
+        W_any_max = getW_any_max();
         results = new Vector<>();
-
-        // Bidding Strategy
+        bundle = new Vector<>();
         bidStrategy = "OBS";
+        this.zeta = 0;
+        convergenceCounter = 0;
+        convergenceIndicator = getConvergenceIndicator();
     }
 
     /**
@@ -221,6 +220,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 if( myY != itsY ){
                     getLogger().info("Inconsistencies in plan found !!");
                     consistent = false;
+                    convergenceCounter = 0;
                     break;
                 }
             }
@@ -228,6 +228,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             else {
                 // no inconsistancy found
                 getLogger().info("NO inconsistencies in plan found. Checking convergence...");
+                convergenceCounter++;
+                if(convergenceCounter >= convergenceIndicator){
+                    getLogger().info("Plan Converged");
+                    doTasks();
+                }
             }
         }
 
@@ -529,15 +534,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             return false;
         }
 
-        /*
-        // checks if bid for the parent task already exists
-        for(int i = 0; i < bundle.size(); i++){
-            if(j.getParentTask() == bundle.get(i).getParentTask()){
-                return false;
-            }
-        }
-        */
-
         //check if pessimistic or optimistic strategy
         // if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
         Vector<Integer> w_solo = results.getW_any();
@@ -685,33 +681,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         else{ return 0; }
     }
 
-    protected Vector<Vector<SimulatedAbstractAgent>> updateCoalitionMates() {
-        Vector<Vector<SimulatedAbstractAgent>> newCoalitions = new Vector<>();
-
-        return newCoalitions;
-    }
-
-    protected void generateCombinations(Vector<Subtask> combination, Vector<Subtask> temp_bundle, Vector<Vector<Subtask>> possiblePaths, Vector<Integer> count, int level){
-        if(level == combination.size()){
-            Vector<Subtask> addedPath = new Vector<>();
-            for(int i = 0; i < combination.size(); i++){
-                addedPath.add(combination.get(i));
-            }
-
-            possiblePaths.add(addedPath);
-            return;
-        }
-        for(int i = 0; i < temp_bundle.size(); i++){
-            if(count.get(i)==0){
-                continue;
-            }
-            combination.setElementAt(temp_bundle.get(i), level);
-            count.setElementAt(count.get(i)-1 ,i);
-            generateCombinations(combination, temp_bundle, possiblePaths, count, level+1);
-            count.setElementAt(count.get(i)+1 ,i);
-        }
-    }
-
     private void removeFromBundle(Vector<Subtask> J, int i_j){
         //remove current and subsequent subtasks from bundle
         Subtask j = J.get(i_j);
@@ -804,6 +773,16 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     /**
+     * Properties Getters and Setters
+     */
+    public double getMiu(){ return this.miu; }
+    public double getSpeed(){ return this.speed; }
+    public Vector<Subtask> getPath(){ return this.path; }
+    public Vector<Subtask> getBundle(){ return this.bundle; }
+    public IterationResults getLocalResults(){ return this.localResults; }
+    public Vector<Subtask> getJ(){ return this.J; }
+
+    /**
      * Abstract Agent Settings
      */
     protected Vector<String> getSensorList(){
@@ -822,10 +801,34 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return M_agent;
     }
 
-    public double getMiu(){ return this.miu; }
-    public double getSpeed(){ return this.speed; }
-    public Vector<Subtask> getPath(){ return this.path; }
-    public Vector<Subtask> getBundle(){ return this.bundle; }
-    public IterationResults getLocalResults(){ return this.localResults; }
-    public Vector<Subtask> getJ(){ return this.J; }
+    protected double setSpeed(){
+        double speed = 1.0;
+        return speed;
+    }
+
+    protected double setMiu(){
+        double miu = 1.0;
+        return miu;
+    }
+
+    protected int getO_kq(){
+        int O_kq = 10;
+        return O_kq;
+    }
+
+    protected int getW_solo_max(){
+        int w_solo_max = 10;
+        return w_solo_max;
+    }
+
+    protected int getW_any_max(){
+        int w_any_max = 10;
+        return w_any_max;
+    }
+
+    protected int getConvergenceIndicator(){
+        int convergenceIndicator = 5;
+        return convergenceIndicator;
+    }
+
 }

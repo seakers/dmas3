@@ -256,3 +256,24 @@ while(consensus == false) {
         System.out.println(paths);
         // ************************************************
         */
+		
+		    protected void generateCombinations(Vector<Subtask> combination, Vector<Subtask> temp_bundle, Vector<Vector<Subtask>> possiblePaths, Vector<Integer> count, int level){
+        if(level == combination.size()){
+            Vector<Subtask> addedPath = new Vector<>();
+            for(int i = 0; i < combination.size(); i++){
+                addedPath.add(combination.get(i));
+            }
+
+            possiblePaths.add(addedPath);
+            return;
+        }
+        for(int i = 0; i < temp_bundle.size(); i++){
+            if(count.get(i)==0){
+                continue;
+            }
+            combination.setElementAt(temp_bundle.get(i), level);
+            count.setElementAt(count.get(i)-1 ,i);
+            generateCombinations(combination, temp_bundle, possiblePaths, count, level+1);
+            count.setElementAt(count.get(i)+1 ,i);
+        }
+    }
