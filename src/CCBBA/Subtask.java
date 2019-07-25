@@ -30,35 +30,23 @@ public class Subtask {
     public String getMain_task(){
         return main_task;
     }
-
     public void setMain_task(String new_main){
         main_task = new_main;
     }
-
     public Vector<String> getDep_tasks(){
         return dep_tasks;
     }
-
     public void setDep_tasks(Vector<String> newDep_tasks){
         dep_tasks = newDep_tasks;
     }
-
     public Vector<Integer> getDep_nums(){ return dep_nums; }
-
     public void setDep_nums(Vector<Integer> newDep_nums) { dep_nums = newDep_nums; }
-
     public int getMain_num(){ return main_num; }
-
     public void setMain_num(int new_main){ main_num = new_main; }
-
     public String getName(){ return name; }
-
     public void setComplete(boolean status){ complete = complete; }
-
     public boolean getComplete(){ return complete; }
-
     public Task getParentTask(){ return parentTask; }
-
     public int getK(){ return K; }
 
     public void addDep_task(String new_task, int new_num){

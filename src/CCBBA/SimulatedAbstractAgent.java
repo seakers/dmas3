@@ -32,7 +32,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected Vector<Subtask> bundle = new Vector<>();              // bundle of chosen subtasks
     protected Vector<Subtask> path = new Vector<>();                // path chosen
     protected Vector<Dimension> X_path = new Vector<>();            // path locations
-    protected long startTime;
     protected String bidStrategy;
 
     List<AgentAddress> list_agents;
@@ -88,7 +87,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         // -Initialize results
         if(this.zeta == 0){
             // Set results to 0
-            localResults = new IterationResults(J, W_solo_max, W_any_max);
+            localResults = new IterationResults(J, W_solo_max, W_any_max, M);
         }
         else{
             // Import results from previous iteration
@@ -96,13 +95,15 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         // -Generate Bundle
+        bundle = localResults.getBundle();
+        path = localResults.getPath();
         while( (bundle.size() < M)&&(localResults.getH().contains(1)) ){
             Vector<SubtaskBid> bidList = new Vector<>();
             Subtask j_chosen = null;
 
             // Calculate bid for every subtask
-            for(int i = 0; i < J.size(); i++){
-                Subtask j = J.get(i);
+            for(int i = 0; i < this.J.size(); i++){
+                Subtask j = this.J.get(i);
 
                 // Check if subtask can be bid on
                 if(canBid(j, i, localResults)) { // task can be bid on
@@ -147,10 +148,20 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 }
             }
 
-            // Check if bid already exists for that task in the bundle
+            // Check if bid already exists for that subtask in the bundle
             boolean bidExists = false;
+            /*
             for(int i = 0; i < bundle.size(); i ++){
                 if(j_chosen.getParentTask() == bundle.get(i).getParentTask()){
+                    Vector<Integer> h = localResults.getH();
+                    h.setElementAt( 0, i);
+                    localResults.setH( h );
+                    bidExists = true;
+                }
+            }
+            */
+            for(int i = 0; i < bundle.size(); i ++){
+                if(j_chosen == bundle.get(i)){
                     Vector<Integer> h = localResults.getH();
                     h.setElementAt( 0, i);
                     localResults.setH( h );
@@ -192,8 +203,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         for(int i = 0; i < receivedResults.size(); i++){ // for every received result
             // compare local results to each received result
             for (int i_j = 0; i_j < localResults.getY().size(); i_j++){
-                if(localResults.getY().get(i_j) != receivedResults.get(i).getY().get(i_j)){
-                    //
+                double myY = localResults.getY().get(i_j);
+                double itsY = receivedResults.get(i).getY().get(i_j);
+                if( myY != itsY ){
                     getLogger().info("Inconsistencies in plan found !!");
                     consistent = false;
                     break;
@@ -385,9 +397,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     Subtask j = bundle.get(i);
                     Task parentTask = j.getParentTask();
                     int i_task = parentTask.getJ().indexOf(j);
-                    int i_j = localResults.getJ().indexOf(bundle.get(i));
+                    int i_j = this.J.indexOf(bundle.get(i));
                     int[][] D = parentTask.getD();
-                    int i_av = localResults.getJ().indexOf(j);
+                    int i_av = this.J.indexOf(j);
 
                     // Count number of requirements and number of completed requirements
                     int N_req = 0;
@@ -461,6 +473,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
         }
         zeta++;
+        localResults.updateResults(this.bundle, this.path, this.X_path);
         results.add(localResults);
     }
 
@@ -504,13 +517,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             return false;
         }
 
+        /*
         // checks if bid for the parent task already exists
         for(int i = 0; i < bundle.size(); i++){
             if(j.getParentTask() == bundle.get(i).getParentTask()){
                 return false;
             }
         }
-
+        */
 
         //check if pessimistic or optimistic strategy
         // if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
@@ -586,10 +600,12 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         for(int i = 0; i < y.size(); i++){
             // Check if j and q are in the same task
-            if( ( i > (i_subtask-J_parent.indexOf(j) ) )&&( i < ( i_subtask-J_parent.indexOf(j)+J_parent.size() ) ) ){
+            //if( ( i > (i_subtask-J_parent.indexOf(j) ) )&&( i < ( i_subtask-J_parent.indexOf(j)+J_parent.size() ) ) ){
+            if(localResults.getJ().get(i).getParentTask() == parentTask){
                 //Check if bid outmatches coalition bid
                 int j_index = J_parent.indexOf(j);
                 int q_index = i - (i_subtask - J_parent.indexOf(j));
+
                 if ((z.get(i) == z.get(i_subtask)) && ((D[ j_index ][ q_index ] == 0) || (D[ j_index ][ q_index ] == 1))) {
                     coalition_bid = coalition_bid + y.get(i);
                 }
@@ -610,34 +626,50 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         Task parentTask = j.getParentTask();
         Vector<Subtask> J_parent = parentTask.getJ();
         Vector<Double> y = localResults.getY();
-        Vector<SimulatedAbstractAgent> z = localResults.getZ();
         double c = bid.getC();
         int[][] D = j.getParentTask().getD();
 
         double new_bid = 0.0;
-        double max_bid = 0.0;
-
-        for(int i = 0; i < y.size(); i++){
-            // Check if j and q are in the same task
-            if( ( i > (i_subtask-J_parent.indexOf(j) ) )&&( i < ( i_subtask-J_parent.indexOf(j)+J_parent.size() ) ) ){
-                int j_index = J_parent.indexOf(j);
-                int q_index = i - (i_subtask - J_parent.indexOf(j));
-
-                if(D[ j_index ][ q_index ] == 1){
-                    if(i != i_subtask){
-                        new_bid = new_bid + y.get(i);
-                    }
-
-
+        for(int q = 0; q < J_parent.size(); q++) {
+            //if q != j and D(j,q) == 1, then add y_q to new bid
+            if( D[J_parent.indexOf(j)][q] == 1 ) {
+                if(J_parent.get(q) != j){
+                    int i_q = localResults.getJ().indexOf(J_parent.get(q));
+                    new_bid = new_bid + y.get(i_q);
                 }
-
             }
         }
         new_bid = new_bid + c;
 
-        if(new_bid > max_bid){
-            return 1;
+        double max_bid = 0.0;
+        Vector<Vector<Integer>> coalitionMembers = new Vector<>();
+        for(int i_j = 0; i_j < J_parent.size(); i_j++){
+            Vector<Integer> Jv = new Vector<>();
+            for(int i_q = 0; i_q < J_parent.size(); i_q++){
+                if( (D[i_j][i_q] == 0)||(D[i_j][i_q] == 1) ){
+                    Jv.add(i_q);
+                }
+            }
+            coalitionMembers.add(Jv);
         }
+
+
+        Vector<Integer> Jv;
+        for(int i_c = 0; i_c < coalitionMembers.size(); i_c++) {
+            double y_coalition = 0.0;
+            Jv = coalitionMembers.get(i_c);
+
+            for (int i = 0; i < Jv.size(); i++) {
+                int i_v = Jv.get(i) + localResults.getJ().indexOf(j) - J_parent.indexOf(j);
+                y_coalition = y_coalition + y.get(i_v);
+            }
+
+            if (y_coalition > max_bid) {
+                max_bid = y_coalition;
+            }
+        }
+
+        if(new_bid > max_bid){ return 1; }
         else{ return 0; }
     }
 
@@ -691,7 +723,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     public Vector<Integer> tempSat(Subtask k_q, IterationResults results){
         double[][] T = k_q.getParentTask().getT();
         Vector<Subtask> J_parent = k_q.getParentTask().getJ();
-        Vector<Subtask> J_results = results.getJ();
+        Vector<Subtask> J_results = this.J;
         Vector<Double> tz = results.getTz();
         Vector<SimulatedAbstractAgent> z = results.getZ();
 
@@ -740,4 +772,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     public double getSpeed(){ return this.speed; }
     public Vector<Subtask> getPath(){ return this.path; }
     public Vector<Subtask> getBundle(){ return this.bundle; }
+    public IterationResults getLocalResults(){ return this.localResults; }
+    public Vector<Subtask> getJ(){ return this.J; }
 }

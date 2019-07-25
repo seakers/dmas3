@@ -3,6 +3,7 @@ package CCBBA;
 import java.awt.*;
 import java.util.Vector;
 
+import static java.lang.Math.PI;
 import static java.lang.Math.exp;
 import static java.lang.Math.pow;
 import static java.lang.StrictMath.sqrt;
@@ -40,6 +41,9 @@ public class SubtaskBid {
             Vector<Subtask> newPath = possiblePaths.get(i);
             double newUtility = calcPathUtility(newPath, agent);
             double newPathBid = newUtility - oldUtility;
+            if(i != possiblePaths.size()-1){  // if ideal path modifies previously agreed order, deduct points
+                newPathBid = newPathBid - 2.0;
+            }
 
             //get max bid from all new paths
             if(newPathBid > maxPathBid){
@@ -56,13 +60,39 @@ public class SubtaskBid {
     protected double calcPathUtility(Vector<Subtask> path, SimulatedAbstractAgent agent){
         double pathUtility = 0.0;
         double subtaskUtility;
+        IterationResults localResults = agent.getLocalResults();
 
         for(int i = 0; i < path.size(); i++){
             Subtask j = path.get(i);
-            double t_a = calcQuickestArrivalTime(path, j, agent);
 
+            double t_a = 0.0;
+
+            //Calculate time of arrival
+            Vector<Integer> timeConstraints = getTimeConstraints(j, path, agent);
+            if(timeConstraints.size() != 0 ) {
+                Task parentTask = j.getParentTask();
+                double[][] T = parentTask.getT();
+                double maxTz = Double.NEGATIVE_INFINITY;
+                int i_max = 0;
+
+                for (int i_j = 0; i_j < timeConstraints.size(); i_j++) {
+                    double thisTz = localResults.getTz().get( timeConstraints.get(i_j) );
+                    if( thisTz > maxTz ){
+                        maxTz = thisTz;
+                        i_max = timeConstraints.get(i_j);
+                    }
+                }
+
+                t_a = maxTz - T[parentTask.getJ().indexOf(j)][parentTask.getJ().indexOf( localResults.getJ().get(i_max) )];
+            }
+            else{
+                t_a = calcQuickestArrivalTime(path, j, agent);
+            }
+
+            // Calculate subtask utility within path
             subtaskUtility = calcSubtaskUtility(path,j,t_a, agent);
 
+            // Add to path utility
             pathUtility = pathUtility + subtaskUtility;
         }
         return pathUtility;
@@ -81,6 +111,24 @@ public class SubtaskBid {
         }
 
         return newPaths;
+    }
+
+    protected Vector<Integer> getTimeConstraints(Subtask j, Vector<Subtask> path, SimulatedAbstractAgent agent){
+        Vector<Integer> timeConstraints = new Vector<>();
+        Task parentTask = j.getParentTask();
+        int[][] D = parentTask.getD();
+
+        // evaluate each dependent task
+        for(int i = 0; i < parentTask.getJ().size(); i++){
+            int i_j = parentTask.getJ().indexOf(j);
+            int i_u =  agent.getLocalResults().getJ().indexOf(parentTask.getJ().get(i));
+            // if j depends on u and u has a winner, then add relationship to time constraints list
+            if( ( D[i_j][i] == 1)&&(agent.getLocalResults().getZ().get(i_u) != null ) ){
+                timeConstraints.add( agent.getJ().indexOf(j) - parentTask.getJ().indexOf(j) + i );
+            }
+        }
+
+        return timeConstraints;
     }
 
     protected double calcQuickestArrivalTime(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent){
@@ -175,29 +223,58 @@ public class SubtaskBid {
 
     private double calcMergePenalty(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent){
         int i = path.indexOf(j);
-        double C_split = 0.0;
-        double C_merge = 0.0;
+        double C_split = 0.0;   // split cost = 1.0
+        double C_merge = 0.0;   // merge merge = 2.0
 
-        // merge cost = 2.0
-        // split merge = 1.0
-
-        if( i == 0){ // j is at beginning of path, no A(v-1) penalty
-            // if merge at j, then add merge cost
-
+        IterationResults localResults = agent.getLocalResults();
+        Vector<Vector<SimulatedAbstractAgent>> omega = localResults.getOmega();
+        if( i == 0){ // j is at beginning of path, no split penalty
+            if(omega.get(i) != null) { // Is there a coalition at i?
+                C_merge = 2.0;
+            }
+            else{
+                C_merge = 0.0;
+            }
+            C_split = 0.0;
         }
         else {  // j has a previous subtask in the path
-            // was there a coalition at i-1?
-            // if yes, is there a coalition at i?
-            // if yes, is it the same as i-1?
-            // if no, add split cost and merge cost
-            // if yes, add NO cost;
-            //if no, add split cost
-            // if no, is there a coalition at i?
-            // if yes, add merge cost;
-            // if no, add NO cost;
+            if(omega.get(i-1) != null){ // Is there was a coalition at i - 1?
+                if(omega.get(i) != null){ // Is there a coalition at i?
+                    boolean sameCoalition = true;
+
+                    //check if coalition is the same at i-1 and i
+                    if(omega.get(i).size() == omega.get(i-1).size()){
+                        for(int i_j = 0; i_j < omega.get(i).size(); i_j++){
+                            if(!omega.get(i-1).contains( omega.get(i).get(i_j) )){
+                                sameCoalition = false;
+                                break;
+                            }
+                        }
+                    }
+                    else{
+                        sameCoalition = false;
+                    }
+
+                    if(!sameCoalition){
+                        C_split = 1.0;
+                        C_merge = 2.0;
+                    }
+                    else{
+                        C_split = 0.0;
+                        C_merge = 0.0;
+                    }
+                }
+            }
+            else{ // There was NO coalition at i-1
+                if(omega.get(i) != null) { // Is there a coalition at i?
+                    C_merge = 2.0;
+                }
+                else{
+                    C_split = 0.0;
+                    C_merge = 0.0;
+                }
+            }
         }
-
-
         return C_split + C_merge;
     }
 
