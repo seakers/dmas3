@@ -54,7 +54,7 @@ public class IterationResults {
         }
     }
 
-    public IterationResults(IterationResults prevResults){
+    public IterationResults(IterationResults prevResults, boolean omega_toggle){
         // Copies results from previous iteration
         this.J = new Vector<>();
         this.y = new Vector<>();
@@ -91,17 +91,28 @@ public class IterationResults {
             this.path.add( prevResults.getPath().get(i) );
         }
 
-        for(int i = 0; i < this.M; i++) {
-            Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
-            if(this.bundle.size() >= M){
-                for (int i_j = 0; i_j < this.J.size(); i_j++) {
-                    int i_bundle = this.J.indexOf(this.bundle.get(i));
-                    if ((this.z.get(i_j) != this.z.get(i_bundle)) && (this.z.get(i_j) != null) && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
-                        tempCoal.add(this.z.get(i_j));
+        if(omega_toggle) {
+            for (int i = 0; i < this.M; i++) {
+                Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
+                if ((this.bundle.size() >= i + 1) && (this.bundle.size() > 0)) {
+                    for (int i_j = 0; i_j < this.J.size(); i_j++) {
+                        int i_bundle = this.J.indexOf(this.bundle.get(i));
+                        if ((this.z.get(i_j) != this.z.get(i_bundle)) && (this.z.get(i_j) != null) && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
+                            tempCoal.add(this.z.get(i_j));
+                        }
                     }
                 }
+                this.omega.add(tempCoal);
             }
-            this.omega.add(tempCoal);
+        }
+        else{
+            for (int i = 0; i < this.M; i++) {
+                Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
+                for (int i_j = 0; i_j < prevResults.getOmega().get(i).size(); i_j++) {
+                    tempCoal.add(prevResults.getOmega().get(i).get(i_j));
+                }
+                this.omega.add(tempCoal);
+            }
         }
     }
 
@@ -121,10 +132,11 @@ public class IterationResults {
             }
         }
 
+
         Vector<Vector<SimulatedAbstractAgent>> newOmega = new Vector<>();
         for(int i = 0; i < this.M; i++) {
             Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
-            if(this.bundle.size() >= M) {
+            if((this.bundle.size() >= i+1)&&(this.bundle.size() > 0)) {
                 for (int i_j = 0; i_j < this.J.size(); i_j++) {
                     if ((this.z.get(i_j) != agent) && (this.z.get(i_j) != null) && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
                         tempCoal.add(this.z.get(i_j));
@@ -135,6 +147,7 @@ public class IterationResults {
         }
 
         this.omega = newOmega;
+
     }
 
     public void updateResults(IterationResults receivedResults, int i, Vector<Subtask> bundle){

@@ -77,7 +77,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.list_agents = getAgentsWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, false);
 
         // Phase 1 - Create bid for individual spacecraft
-        getLogger().info("Planning Tasks...");
         getLogger().info("Phase one...");
 
         // Get incomplete subtasks
@@ -91,7 +90,22 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
         else{
             // Import results from previous iteration
-            localResults = new IterationResults(results.get(zeta - 1));
+            localResults = new IterationResults(results.get(zeta - 1), true);
+
+            // Checks for new coalitions
+            Vector<Vector<SimulatedAbstractAgent>> oldCoalition;
+            Vector<Vector<SimulatedAbstractAgent>> newCoalition;
+            oldCoalition = results.get(zeta-1).getOmega();
+            newCoalition = localResults.getOmega();
+
+            int i_j = isEqual(oldCoalition, newCoalition);
+            if( (i_j > -1)&&(!bundle.isEmpty()) ){ // if not equal, release task from bundle
+                int i_remove = localResults.getJ().indexOf( this.bundle.get(i_j) );
+                localResults.resetResults(localResults, i_remove, bundle);
+                removeFromBundle(i_j);
+                localResults.updateResults(this.bundle, this.path, this.X_path);
+            }
+
         }
 
         // -Generate Bundle
@@ -178,16 +192,15 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
         }
 
+        //Broadcast results
+        myMessage myResults = new myMessage(localResults, this.getName());
+        for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
     }
 
     @SuppressWarnings("unused")
     public void phaseTwo() {
         //Phase 2 - Consensus
         getLogger().info("Phase two...");
-
-        //Broadcast results
-        myMessage myResults = new myMessage(localResults, this.getName());
-        for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
 
         //Receive results
         List<Message> receivedMessages = nextMessages(null);
@@ -472,9 +485,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 }
             }
         }
-        zeta++;
+
         localResults.updateResults(this.bundle, this.path, this.X_path);
-        results.add(localResults);
+        updateResultsList(localResults);
+        zeta++;
     }
 
     @SuppressWarnings("unused")
@@ -486,8 +500,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         //popTask();
         requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
     }
-
-
 
     /**
      * Misc tools and functions
@@ -720,6 +732,26 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
     }
 
+    private void removeFromBundle(int i_j){
+        //remove current and subsequent subtasks from bundle
+        Subtask j = this.bundle.get(i_j);
+
+        if(this.bundle.contains(j)) { // if bundle contains updated or reseted subtask
+            Vector<Subtask> deletedTasks = new Vector<>();
+            for (int i_bundle = bundle.indexOf(j); i_bundle < bundle.size(); ) {
+                deletedTasks.add(bundle.get(i_bundle));
+                bundle.remove(i_bundle);
+            }
+
+            //remove current and subsequent subtasks from path
+            for (int i = 0; i < deletedTasks.size(); i++) {
+                int i_path = path.indexOf(deletedTasks.get(i));
+                path.remove(i_path);
+                X_path.remove(i_path);
+            }
+        }
+    }
+
     public Vector<Integer> tempSat(Subtask k_q, IterationResults results){
         double[][] T = k_q.getParentTask().getT();
         Vector<Subtask> J_parent = k_q.getParentTask().getJ();
@@ -747,6 +779,28 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         return violationIndexes;
+    }
+
+    private void updateResultsList(IterationResults newResults){
+        IterationResults updatedResults = new IterationResults(newResults, false);
+        results.add(updatedResults);
+    }
+
+    private int isEqual(Vector<Vector<SimulatedAbstractAgent>> oldCoalition, Vector<Vector<SimulatedAbstractAgent>> newCoalition){
+        for(int i = 0; i < this.M; i++){
+            if(oldCoalition.get(i).size() != newCoalition.get(i).size()){ //if different sizes, they are not equal
+                return i;
+            }
+            else{ // if equal sizes, then compare element by element
+                for(int j = 0; j < oldCoalition.get(i).size(); j++){
+                    if( !newCoalition.get(i).contains( oldCoalition.get(i).get(j) )){ // if new does not contain element from old, then they are not equal
+                        return i;
+                    }
+                }
+            }
+        }
+        return -1;
+        // -1 if equal, positive integer for index of bundle where error was
     }
 
     /**

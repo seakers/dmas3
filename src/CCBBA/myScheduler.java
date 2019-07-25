@@ -18,8 +18,6 @@ public class myScheduler extends Scheduler {
 
         // 3 : initialize the activators
         // by default, they are activated once each in the order they have been added
-        //agents = new GenericBehaviorActivator<>(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, "doSim");
-
         agents = new GenericBehaviorActivator<>(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, "phaseOne");
         addActivator(agents);
         agents = new GenericBehaviorActivator<>(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, "phaseTwo");

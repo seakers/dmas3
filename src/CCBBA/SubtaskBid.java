@@ -42,7 +42,7 @@ public class SubtaskBid {
             double newUtility = calcPathUtility(newPath, agent);
             double newPathBid = newUtility - oldUtility;
             if(i != possiblePaths.size()-1){  // if ideal path modifies previously agreed order, deduct points
-                newPathBid = newPathBid - 2.0;
+                newPathBid = newPathBid - 1.0;
             }
 
             //get max bid from all new paths
