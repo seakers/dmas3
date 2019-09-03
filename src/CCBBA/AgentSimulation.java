@@ -30,7 +30,7 @@ public class AgentSimulation extends AbstractAgent {
 
         // 4 : create the scheduler
         myScheduler scheduler = new myScheduler();
-        launchAgent(scheduler, true);
+        launchAgent(scheduler, false);
 
         /*
         // 5 : create the viewer

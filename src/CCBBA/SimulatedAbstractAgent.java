@@ -65,6 +65,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         convergenceIndicator = getConvergenceIndicator();
     }
 
+    protected void live() {
+        while(!(convergenceCounter >= convergenceIndicator)){
+            phaseOne();
+            phaseTwo();
+        }
+        doTasks();
+    }
+
     /**
      * Main Sim functions
      */
@@ -231,7 +239,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 convergenceCounter++;
                 if(convergenceCounter >= convergenceIndicator){
                     getLogger().info("Plan Converged");
-                    doTasks();
+                    //doTasks(); // <- UNCOMMENT IN CASE OF REVERTING CODE
+                    requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_DO);
+                    break;
                 }
             }
         }
@@ -499,7 +509,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     private void doTasks(){
         getLogger().info("Doing Tasks...");
-        requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_DO);
         // set task from environment to COMPLETE
         // pop task from bundle list
         //popTask();
