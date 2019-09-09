@@ -161,6 +161,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             for(int i = 0; i < bidList.size(); i++){
                 double c = bidList.get(i).getC();
                 int h = localResults.getH().get(i);
+
                 if( (c*h > currentMax) ){
                     currentMax = c*h;
                     i_max = i;
@@ -199,9 +200,12 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
         }
 
+
         //Broadcast results
         myMessage myResults = new myMessage(localResults, this.getName());
+        /*
         for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
+        */
     }
 
     @SuppressWarnings("unused")
@@ -504,6 +508,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         localResults.updateResults(this.bundle, this.path, this.X_path);
         updateResultsList(localResults);
         zeta++;
+
+        //Broadcast results
+        myMessage myResults = new myMessage(localResults, this.getName());
+        for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
     }
 
     @SuppressWarnings("unused")

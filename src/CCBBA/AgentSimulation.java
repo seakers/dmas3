@@ -19,7 +19,7 @@ public class AgentSimulation extends AbstractAgent {
         createGroup(MY_COMMUNITY, SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new Scenario("random", 3);
+        Scenario environment = new Scenario("appendix b", 3);
         //Scenario environment = new Scenario("appendix b", 5);
         launchAgent(environment);
 
