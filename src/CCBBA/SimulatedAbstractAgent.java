@@ -1,14 +1,22 @@
 package CCBBA;
 
+import madkit.action.SchedulingAction;
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.Agent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
+import madkit.message.SchedulingMessage;
 
 import java.awt.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Vector;
 import java.util.List;
 
 public class SimulatedAbstractAgent extends AbstractAgent {
+
 
     /**
      * Agent's Scenario
@@ -18,8 +26,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     /**
      * Properties
      */
-
-
     protected Dimension location = new Dimension();                 // current location
     protected double speed;                                         // displacement speed of agent
     protected Vector<String> sensors = new Vector<>();              // list of all sensors
@@ -35,11 +41,13 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected Vector<Dimension> X_path = new Vector<>();            // path locations
     protected String bidStrategy;                                   // bidding strategy indicator
 
-    List<AgentAddress> list_agents;                                 // list of agents in planning phase
-    IterationResults localResults;                                  // list of iteration results
-    int zeta = 0;                                                   // iteration counter
-    int convergenceCounter;
-    int convergenceIndicator;
+    private List<AgentAddress> list_agents;                         // list of agents in planning phase
+    private IterationResults localResults;                          // list of iteration results
+    private int zeta = 0;                                           // iteration counter
+    private int convergenceCounter;
+    private int convergenceIndicator;
+    protected double C_merge;
+    protected double C_split;
 
     /**
      * initialize my role and fields
@@ -49,20 +57,22 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         // Request Role
         requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
 
-        location = getInitialPosition();
-        sensors = getSensorList();
-        speed = setSpeed();
-        miu = setMiu();
-        M = getM();
-        O_kq = getO_kq();
-        W_solo_max = getW_solo_max();
-        W_any_max = getW_any_max();
-        results = new Vector<>();
-        bundle = new Vector<>();
-        bidStrategy = "OBS";
+        this.location = getInitialPosition();
+        this.sensors = getSensorList();
+        this.speed = setSpeed();
+        this.miu = setMiu();
+        this.M = getM();
+        this.O_kq = getO_kq();
+        this.W_solo_max = getW_solo_max();
+        this.W_any_max = getW_any_max();
+        this.results = new Vector<>();
+        this.bundle = new Vector<>();
+        this.bidStrategy = "OBS";
         this.zeta = 0;
-        convergenceCounter = 0;
-        convergenceIndicator = getConvergenceIndicator();
+        this.convergenceCounter = 0;
+        this.convergenceIndicator = getConvergenceIndicator();
+        this.C_merge = getC_merge();
+        this.C_split = getC_split();
     }
 
     protected void live() {
@@ -70,7 +80,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             phaseOne();
             phaseTwo();
         }
-        doTasks();
+        try {
+            doTasks();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -79,7 +93,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     public void phaseOne(){
         // Request role and obtain list of planning agents
-        requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
+        //requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
 
         this.list_agents = getAgentsWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, false);
 
@@ -93,7 +107,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         // -Initialize results
         if(this.zeta == 0){
             // Set results to 0
-            localResults = new IterationResults(J, W_solo_max, W_any_max, M);
+            localResults = new IterationResults(this.J, this.W_solo_max, this.W_any_max, this.M, this.C_merge, this.C_split);
         }
         else{
             // Import results from previous iteration
@@ -251,7 +265,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         if(!consistent) { // No consensus reached
-            getLogger().info("Fixing inconsistencies...");
+            // getLogger().info("Fixing inconsistencies...");
 
             // Compare bids with other results
             for (int i = 0; i < receivedResults.size(); i++) { //for each received result
@@ -514,13 +528,22 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
     }
 
-    @SuppressWarnings("unused")
-    private void doTasks(){
+    private void doTasks() throws IOException {
         getLogger().info("Doing Tasks...");
         // set task from environment to COMPLETE
         // pop task from bundle list
         //popTask();
-        requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
+
+        requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_DIE);
+    }
+
+    @Override
+    protected void end(){
+        getLogger().info("Tasks completed. Killing agent, goodbye!");
+
+        AgentAddress resultsAddress = getAgentWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.RESULTS_ROLE);
+        myMessage myDeath = new myMessage(localResults, this.getName());
+        sendMessage(resultsAddress, myDeath);
     }
 
     /**
@@ -818,34 +841,41 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return M_agent;
     }
 
-    protected double setSpeed(){
+    private double setSpeed(){
         double speed = 1.0;
         return speed;
     }
 
-    protected double setMiu(){
+    private double setMiu(){
         double miu = 1.0;
         return miu;
     }
 
-    protected int getO_kq(){
+    private int getO_kq(){
         int O_kq = 10;
         return O_kq;
     }
 
-    protected int getW_solo_max(){
+    private int getW_solo_max(){
         int w_solo_max = 10;
         return w_solo_max;
     }
 
-    protected int getW_any_max(){
+    private int getW_any_max(){
         int w_any_max = 10;
         return w_any_max;
     }
 
-    protected int getConvergenceIndicator(){
+    private int getConvergenceIndicator(){
         int convergenceIndicator = 5;
         return convergenceIndicator;
     }
 
+    protected double getC_merge(){
+        return 0;
+    }
+
+    protected double getC_split(){
+        return 0;
+    }
 }

@@ -16,10 +16,10 @@ public class SubtaskBid {
 
     public SubtaskBid(){
         Integer inf = Integer.MIN_VALUE;
-        c_aj = 0.0;
-        t_aj = 0.0;
-        x_aj = new Dimension(inf,inf);
-        i_opt = 0;
+        this.c_aj = 0.0;
+        this.t_aj = 0.0;
+        this.x_aj = new Dimension(inf,inf);
+        this.i_opt = 0;
     }
 
     public void calcBidForSubtask(Subtask j, SimulatedAbstractAgent agent){
@@ -244,14 +244,14 @@ public class SubtaskBid {
 
     private double calcMergePenalty(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent){
         int i = path.indexOf(j);
-        double C_split = 0.0;   // split cost = 1.0
-        double C_merge = 0.0;   // merge merge = 2.0
+        double C_split = 0.0;
+        double C_merge = 0.0;
 
         IterationResults localResults = agent.getLocalResults();
         Vector<Vector<SimulatedAbstractAgent>> omega = localResults.getOmega();
         if( i == 0){ // j is at beginning of path, no split penalty
             if(omega.get(i) != null) { // Is there a coalition at i?
-                C_merge = 2.0;
+                C_merge = agent.getC_merge();
             }
             else{
                 C_merge = 0.0;
@@ -277,8 +277,8 @@ public class SubtaskBid {
                     }
 
                     if(!sameCoalition){
-                        C_split = 1.0;
-                        C_merge = 2.0;
+                        C_split = agent.getC_split();
+                        C_merge = agent.getC_merge();
                     }
                     else{
                         C_split = 0.0;
@@ -288,7 +288,7 @@ public class SubtaskBid {
             }
             else{ // There was NO coalition at i-1
                 if(omega.get(i) != null) { // Is there a coalition at i?
-                    C_merge = 2.0;
+                    C_merge = agent.getC_merge();
                 }
                 else{
                     C_split = 0.0;

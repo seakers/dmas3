@@ -126,6 +126,7 @@ public class Scenario extends Watcher {
 
         // 2 : this probe is used to initialize the agents' environment field
         addProbe(new AgentsProbe(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, "environment"));
+        addProbe(new AgentsProbe(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.RESULTS_ROLE, "environment"));
 
     }
 

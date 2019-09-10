@@ -2,9 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5ed5f4b0-5cd6-4ed4-b23a-eac4fc17b05b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/ResultsCompiler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/AgentSimulation.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/AgentSimulation.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/SimulatedAbstractAgent.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/SimulatedAbstractAgent.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/SubtaskBid.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/SubtaskBid.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/myScheduler.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/myScheduler.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/AgentSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/AgentSimulation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/IterationResults.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/IterationResults.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/Scenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/Scenario.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/SimulatedAgent01.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/SimulatedAgent01.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/SimulatedAgent02.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/SimulatedAgent02.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/SubtaskBid.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/SubtaskBid.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/myScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/myScheduler.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/libraries/orekit-10.0/target/" />
@@ -14,13 +25,21 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/ABSP_EOSS$CCBBA.ic" NAME="CCBBA Coverage Results" MODIFIED="1568067309608" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/CCBBA/AgentSimulation.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="232">
-              <caret line="21" column="55" selection-start-line="21" selection-start-column="55" selection-end-line="21" selection-end-column="55" />
+            <state relative-caret-position="538">
+              <caret line="41" column="45" selection-start-line="41" selection-start-column="45" selection-end-line="41" selection-end-column="45" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#1452#1453#0" expanded="true" />
+                <element signature="e#1511#1512#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -28,8 +47,24 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="208">
-              <caret line="89" selection-start-line="89" selection-end-line="89" />
+            <state relative-caret-position="14008">
+              <caret line="878" column="17" lean-forward="true" selection-start-line="878" selection-start-column="17" selection-end-line="878" selection-end-column="17" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#36248#36249#0" expanded="true" />
+                <element signature="e#36271#36272#0" expanded="true" />
+                <element signature="e#36310#36311#0" expanded="true" />
+                <element signature="e#36334#36335#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/CCBBA/SubtaskBid.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-564">
+              <caret line="247" column="28" selection-start-line="247" selection-start-column="28" selection-end-line="247" selection-end-column="28" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -38,10 +73,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/CCBBA/Scenario.java">
+        <entry file="file://$PROJECT_DIR$/src/CCBBA/IterationResults.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret line="51" column="53" lean-forward="true" selection-start-line="51" selection-start-column="53" selection-end-line="51" selection-end-column="53" />
+            <state relative-caret-position="2207">
+              <caret line="237" column="54" lean-forward="true" selection-start-line="237" selection-start-column="54" selection-end-line="237" selection-end-column="54" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -50,15 +85,24 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/CCBBA/SubtaskBid.java">
+        <entry file="file://$PROJECT_DIR$/src/CCBBA/ResultsCompiler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="259">
-              <caret line="93" column="67" selection-start-line="93" selection-start-column="67" selection-end-line="93" selection-end-column="67" />
+            <state relative-caret-position="181">
+              <caret line="86" column="28" selection-start-line="86" selection-start-column="28" selection-end-line="86" selection-end-column="28" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#10644#10645#0" expanded="true" />
-                <element signature="e#10694#10695#0" expanded="true" />
+                <element signature="e#148#149#0" expanded="true" />
+                <element signature="e#189#190#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files/Java/jdk-11.0.1/lib/src.zip!/java.base/java/util/Vector.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="226">
+              <caret line="779" selection-start-line="779" selection-end-line="779" />
             </state>
           </provider>
         </entry>
@@ -74,23 +118,15 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>main</find>
-      <find>getAv</find>
-      <find>getName</find>
-      <find>list_agents</find>
-      <find>bundle</find>
-      <find>reset</find>
       <find>tempSat</find>
       <find>new IterationResults</find>
       <find>mutex</find>
       <find>updateResults</find>
       <find>activa</find>
-      <find>end</find>
       <find>isAli</find>
       <find>alive</find>
       <find>isAlive</find>
       <find>doTasks</find>
-      <find>live</find>
       <find>if(convergenceCounter &gt;= convergenceIndicator){</find>
       <find>Scheduler()</find>
       <find>Scheduler(</find>
@@ -98,7 +134,20 @@
       <find>lambda</find>
       <find>tasks</find>
       <find>calcQuickestArrivalTime</find>
+      <find>omega</find>
       <find>plan conver</find>
+      <find>live</find>
+      <find>GVT</find>
+      <find>doTask</find>
+      <find>logger</find>
+      <find>end(</find>
+      <find>end</find>
+      <find>end()</find>
+      <find>getNAme</find>
+      <find>killAgent(</find>
+      <find>this.m</find>
+      <find>environment</find>
+      <find>split</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -111,8 +160,6 @@
         <option value="$PROJECT_DIR$/src/orekit-src/tutorials/java/fr/cs/examples/estimation/DSSTOrbitDetermination.java" />
         <option value="$PROJECT_DIR$/src/orekit-src/tutorials/java/fr/cs/examples/attitude/EarthObservation.java" />
         <option value="$PROJECT_DIR$/libraries/orekit-10.0/src/test/java/org/orekit/examples/CompoundAnalysisExample.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/SimulatedAgent02.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/SimulatedAgent01.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/myMessage.java" />
         <option value="$PROJECT_DIR$/src/gen_deltaV/Example1.java" />
         <option value="$PROJECT_DIR$/src/gen_deltaV/Example2.java" />
@@ -123,12 +170,16 @@
         <option value="$PROJECT_DIR$/src/gen_deltaV/Examples.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/Task.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/Subtask.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/IterationResults.java" />
+        <option value="$PROJECT_DIR$/results.out" />
+        <option value="$PROJECT_DIR$/src/CCBBA/AgentSimulation.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/myScheduler.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/Scenario.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/AgentSimulation.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/IterationResults.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/SimulatedAgent02.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/SimulatedAgent01.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/SubtaskBid.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/ResultsCompiler.java" />
       </list>
     </option>
   </component>
@@ -139,9 +190,10 @@
     </treeState>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-9" />
+    <option name="x" value="951" />
+    <option name="y" value="-9" />
     <option name="width" value="978" />
-    <option name="height" value="1039" />
+    <option name="height" value="1048" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -186,7 +238,7 @@
     <property name="Repository.Attach.Sources" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1568056164682" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1568157463607" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/src/fr/cs/examples" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/libraries/orekit-10.0/pom.xml" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
@@ -263,7 +315,7 @@
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.13087249" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13087249" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -280,7 +332,7 @@
       <window_info anchor="bottom" id="Version Control" order="6" weight="0.32969603" />
       <window_info anchor="bottom" id="Database Changes" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.32907802" />
-      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" weight="0.32969603" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" weight="0.32907802" />
       <window_info anchor="right" id="Maven Projects" order="0" weight="0.32995737" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="1" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="2" weight="0.25" />
@@ -291,9 +343,9 @@
       <window_info anchor="right" id="Maven" order="7" weight="0.2853736" />
       <window_info anchor="right" id="Capture Analysis" order="8" />
       <window_info anchor="right" id="Palette&#9;" order="9" />
-      <window_info anchor="right" id="Debug" order="10" visible="true" weight="0.26979867" />
-      <window_info anchor="right" id="Messages" order="11" weight="0.3283582" />
-      <window_info anchor="right" id="Run" order="12" weight="0.3395973" />
+      <window_info anchor="right" id="Debug" order="10" weight="0.3489933" />
+      <window_info anchor="right" id="Messages" order="11" weight="0.3281879" />
+      <window_info active="true" anchor="right" id="Run" order="12" visible="true" weight="0.3395973" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -317,42 +369,6 @@
           <properties />
           <option name="timeStamp" value="48" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java</url>
-          <line>72</line>
-          <properties />
-          <option name="timeStamp" value="106" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java</url>
-          <line>246</line>
-          <properties />
-          <option name="timeStamp" value="133" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java</url>
-          <line>204</line>
-          <properties />
-          <option name="timeStamp" value="136" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java</url>
-          <line>509</line>
-          <properties />
-          <option name="timeStamp" value="137" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java</url>
-          <line>216</line>
-          <properties />
-          <option name="timeStamp" value="138" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java</url>
-          <line>89</line>
-          <properties />
-          <option name="timeStamp" value="140" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -362,16 +378,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/orekit/utils/AbsolutePVCoordinates.java" />
-    <entry file="file://$PROJECT_DIR$/src/orekit-src/test/java/org/orekit/propagation/semianalytical/dsst/utilities/NewcombOperatorTest.java" />
-    <entry file="file://$PROJECT_DIR$/src/fr/cs/examples/propagation/DSSTPropagation.java" />
-    <entry file="file://$PROJECT_DIR$/src/org/orekit/attitudes/AttitudeTest.java" />
-    <entry file="file://$PROJECT_DIR$/src/org/orekit/errors/OrekitExceptionTest.java" />
-    <entry file="file://$PROJECT_DIR$/src/org/orekit/propagation/analytical/FieldKeplerianPropagatorTest.java" />
-    <entry file="file://$PROJECT_DIR$/src/org/orekit/utils/SecularAndHarmonic.java" />
-    <entry file="file://$PROJECT_DIR$/src/fr/cs/examples/estimation/DSSTOrbitDetermination.java" />
-    <entry file="file://$PROJECT_DIR$/src/orekit-src/tutorials/java/fr/cs/examples/attitude/EarthObservation.java" />
-    <entry file="file://$PROJECT_DIR$/src/orekit-src/test/java/org/orekit/orbits/CircularOrbitTest.java" />
     <entry file="file://$PROJECT_DIR$/libraries/orekit-10.0/src/test/java/org/orekit/propagation/events/GroundFieldOfViewDetectorTest.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
@@ -436,30 +442,6 @@
     <entry file="file://$PROJECT_DIR$/src/CCBBA/scratch.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/Message.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="30" column="11" selection-start-line="30" selection-start-column="11" selection-end-line="30" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/SimulatedAgent02.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="5" selection-start-line="17" selection-start-column="5" selection-end-line="17" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/myMessage.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="11" column="66" selection-start-line="11" selection-start-column="66" selection-end-line="11" selection-end-column="66" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/gen_deltaV/Example1.java">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -506,62 +488,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/Activator.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="20" column="16" selection-start-line="20" selection-start-column="16" selection-end-line="20" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/Subtask.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="334">
           <caret line="50" column="4" selection-start-line="50" selection-start-column="4" selection-end-line="50" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/Agent.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="65" column="18" selection-start-line="65" selection-start-column="18" selection-end-line="65" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/AgentExecutor.class">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/SimulatedAgent01.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" selection-start-line="16" selection-end-line="16" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/AbstractAgent.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="454">
-          <caret line="253" column="41" selection-start-line="253" selection-start-column="36" selection-end-line="253" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/simulation/activator/GenericBehaviorActivator.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="21" column="11" selection-start-line="21" selection-start-column="11" selection-end-line="21" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/Scheduler.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="199">
-          <caret line="67" column="4" lean-forward="true" selection-start-line="67" selection-start-column="4" selection-end-line="84" selection-end-column="5" />
-          <folding>
-            <element signature="e#1964#1965#0" expanded="true" />
-            <element signature="e#2009#2010#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -579,47 +509,142 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/myScheduler.java">
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/results.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk-11.0.1/lib/src.zip!/java.base/java/io/FileWriter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" column="39" lean-forward="true" selection-start-line="11" selection-start-column="39" selection-end-line="11" selection-end-column="39" />
+        <state relative-caret-position="226">
+          <caret line="64" column="11" selection-start-line="64" selection-start-column="11" selection-end-line="64" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/Task.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="235">
+          <caret line="161" column="28" lean-forward="true" selection-start-line="161" selection-start-column="18" selection-end-line="161" selection-end-column="28" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/myMessage.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="11" column="11" selection-start-line="11" selection-start-column="11" selection-end-line="11" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/Message.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="15" column="11" selection-start-line="15" selection-start-column="11" selection-end-line="15" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/MadkitKernel.class">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/action/SchedulingAction.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="52">
+          <caret line="14" column="12" selection-start-line="14" selection-start-column="12" selection-end-line="14" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/message/SchedulingMessage.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="12" column="69" selection-start-line="12" selection-start-column="63" selection-end-line="12" selection-end-column="69" />
+          <folding>
+            <element signature="e#394#395#0" expanded="true" />
+            <element signature="e#438#439#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/Scheduler.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="169" column="27" lean-forward="true" selection-start-line="169" selection-start-column="27" selection-end-line="169" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/Activator.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="20" column="16" selection-start-line="20" selection-start-column="16" selection-end-line="20" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/results.out">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/AbstractAgent.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="529" column="40" selection-start-line="529" selection-start-column="24" selection-end-line="529" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/simulation/activator/GenericBehaviorActivator.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="30" column="16" selection-start-line="30" selection-start-column="16" selection-end-line="30" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/AgentExecutor.class">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/libraries/MaDKit-5.2/madkit-5.2.jar!/madkit/kernel/Agent.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="65" column="18" selection-start-line="65" selection-start-column="18" selection-end-line="65" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk-11.0.1/lib/src.zip!/java.base/java/time/format/DateTimeFormatter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="219">
+          <caret line="1814" column="18" selection-start-line="1814" selection-start-column="18" selection-end-line="1814" selection-end-column="18" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/AgentSimulation.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="232">
-          <caret line="21" column="55" selection-start-line="21" selection-start-column="55" selection-end-line="21" selection-end-column="55" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/IterationResults.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2108">
-          <caret line="124" column="49" selection-start-line="124" selection-start-column="40" selection-end-line="124" selection-end-column="49" />
+        <state relative-caret-position="538">
+          <caret line="41" column="45" selection-start-line="41" selection-start-column="45" selection-end-line="41" selection-end-column="45" />
           <folding>
             <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/Task.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="769">
-          <caret line="165" column="49" selection-start-line="165" selection-start-column="43" selection-end-line="165" selection-end-column="49" />
-          <folding>
-            <element signature="imports" expanded="true" />
+            <element signature="e#1452#1453#0" expanded="true" />
+            <element signature="e#1511#1512#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/Scenario.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret line="51" column="53" lean-forward="true" selection-start-line="51" selection-start-column="53" selection-end-line="51" selection-end-column="53" />
+        <state relative-caret-position="283">
+          <caret line="128" column="119" selection-start-line="128" selection-start-column="119" selection-end-line="128" selection-end-column="119" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/myScheduler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="232">
+          <caret line="19" column="64" selection-start-line="19" selection-start-column="64" selection-end-line="19" selection-end-column="64" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -628,22 +653,81 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/SimulatedAbstractAgent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="208">
-          <caret line="89" selection-start-line="89" selection-end-line="89" />
+        <state relative-caret-position="14008">
+          <caret line="878" column="17" lean-forward="true" selection-start-line="878" selection-start-column="17" selection-end-line="878" selection-end-column="17" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#36248#36249#0" expanded="true" />
+            <element signature="e#36271#36272#0" expanded="true" />
+            <element signature="e#36310#36311#0" expanded="true" />
+            <element signature="e#36334#36335#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/SimulatedAgent01.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="14" lean-forward="true" selection-start-column="14" selection-end-column="14" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#493#494#0" expanded="true" />
+            <element signature="e#517#518#0" expanded="true" />
+            <element signature="e#573#574#0" expanded="true" />
+            <element signature="e#597#598#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/SimulatedAgent02.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="14" lean-forward="true" selection-start-column="14" selection-end-column="14" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#495#496#0" expanded="true" />
+            <element signature="e#519#520#0" expanded="true" />
+            <element signature="e#569#570#0" expanded="true" />
+            <element signature="e#593#594#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/SubtaskBid.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="259">
-          <caret line="93" column="67" selection-start-line="93" selection-start-column="67" selection-end-line="93" selection-end-column="67" />
+        <state relative-caret-position="-564">
+          <caret line="247" column="28" selection-start-line="247" selection-start-column="28" selection-end-line="247" selection-end-column="28" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#10644#10645#0" expanded="true" />
-            <element signature="e#10694#10695#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/IterationResults.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2207">
+          <caret line="237" column="54" lean-forward="true" selection-start-line="237" selection-start-column="54" selection-end-line="237" selection-end-column="54" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk-11.0.1/lib/src.zip!/java.base/java/util/Vector.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="226">
+          <caret line="779" selection-start-line="779" selection-end-line="779" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/ResultsCompiler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="181">
+          <caret line="86" column="28" selection-start-line="86" selection-start-column="28" selection-end-line="86" selection-end-column="28" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#148#149#0" expanded="true" />
+            <element signature="e#189#190#0" expanded="true" />
           </folding>
         </state>
       </provider>

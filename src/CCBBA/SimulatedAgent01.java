@@ -17,4 +17,14 @@ public class SimulatedAgent01 extends SimulatedAbstractAgent {
         return position;
     }
 
+    @Override
+    protected double getC_merge(){
+        return 2.0;
+    }
+
+    @Override
+    protected double getC_split(){
+        return 1.0;
+    }
+
 }

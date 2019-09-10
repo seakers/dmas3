@@ -17,14 +17,19 @@ public class IterationResults {
     private Vector<Integer> w_solo = new Vector<>();                // permission to bid solo
     private Vector<Integer> w_any = new Vector<>();                 // permission to bid any
     private Vector<Integer> h = new Vector<>();                     // availability checks vector
-    // *********************************************
     private Vector<Vector<SimulatedAbstractAgent>> omega = new Vector<>();// coalition mates
-    private Vector<Subtask> bundle = new Vector<>();
-    private Vector<Subtask> path = new Vector<>();
-    private Vector<Dimension> xpath = new Vector<>();
-    private int M = 0;
+    private Vector<Subtask> bundle = new Vector<>();                // current bundle
+    private Vector<Subtask> path = new Vector<>();                  // current path order
+    private Vector<Dimension> xpath = new Vector<>();               // current path coordinates
+    private Vector<Double> cost = new Vector<>();                   // cost vector
+    // Fixed quantities ****************************
+    private int M;                                                  // planning horizon
+    private double C_merge;                                         // merge cost
+    private double C_split;                                         // split cost
 
-    public IterationResults(Vector<Subtask> J, int w_solo_max, int w_any_max, int M){
+
+
+    public IterationResults(Vector<Subtask> J, int w_solo_max, int w_any_max, int M, double C_merge, double C_split){
         int size = J.size();
         this.J = J;
         y.setSize(size);
@@ -39,6 +44,8 @@ public class IterationResults {
         h.setSize(size);
         omega.setSize(M);
         this.M = M;
+        this.C_merge = C_merge;
+        this.C_split = C_split;
 
         for(int i = 0; i < size; i ++){
             y.setElementAt(0.0, i);
@@ -85,6 +92,8 @@ public class IterationResults {
         }
 
         this.M = prevResults.getM();
+        this.C_merge = prevResults.getC_merge();
+        this.C_split = prevResults.getC_split();
 
         for(int i = 0; i < prevResults.getBundle().size(); i++){
             this.bundle.add( prevResults.getBundle().get(i) );
@@ -225,6 +234,8 @@ public class IterationResults {
     public Vector<Subtask> getBundle(){ return this.bundle; }
     public Vector<Subtask> getPath(){ return this.path; }
     public Integer getM(){ return this.M; }
+    public Double getC_merge(){ return this.C_merge; }
+    public Double getC_split(){ return this.C_split; }
 
     public void setY(Vector<Double> y_new){ this.y = y_new; }
     public void setZ(Vector<SimulatedAbstractAgent> z_new){ this.z = z_new; }

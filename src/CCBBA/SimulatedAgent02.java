@@ -16,5 +16,15 @@ public class SimulatedAgent02 extends SimulatedAbstractAgent {
         Dimension position = new Dimension(4,0);
         return position;
     }
+
+    @Override
+    protected double getC_merge(){
+        return 2.0;
+    }
+
+    @Override
+    protected double getC_split(){
+        return 1.0;
+    }
 }
 

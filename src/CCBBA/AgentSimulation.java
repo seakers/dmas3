@@ -2,6 +2,10 @@ package CCBBA;
 
 import madkit.kernel.AbstractAgent;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 public class AgentSimulation extends AbstractAgent {
 
     // Organizational constants
@@ -9,9 +13,10 @@ public class AgentSimulation extends AbstractAgent {
     public static final String SIMU_GROUP = "simu";
     public static final String AGENT_THINK = "agent_planner";
     public static final String AGENT_DO = "agent_execute";
+    public static final String AGENT_DIE = "agent_die";
     public static final String ENV_ROLE = "environment";
     public static final String SCH_ROLE = "scheduler";
-    public static final String VIEWER_ROLE = "viewer";
+    public static final String RESULTS_ROLE = "results";
 
     @Override
     protected void activate() {
@@ -33,11 +38,8 @@ public class AgentSimulation extends AbstractAgent {
         myScheduler scheduler = new myScheduler();
         launchAgent(scheduler, false);
 
-        /*
-        // 5 : create the viewer
-        Viewer viewer = new Viewer();
-        launchAgent(viewer, true);
-        */
+        // 5 : launch results compiler
+        launchAgent( new ResultsCompiler(2));
     }
 
     public static void main(String[] args) {
