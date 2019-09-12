@@ -41,8 +41,8 @@ public class Scenario extends Watcher {
     @Override
     protected void activate() {
         // Describe initial conditions for environment and tasks
-        int x_max = 400;
-        int y_max = 400;
+        int x_max = 20;
+        int y_max = 20;
         dimension = new Dimension(x_max, y_max);
         double inf = Double.POSITIVE_INFINITY;
 
@@ -78,7 +78,7 @@ public class Scenario extends Watcher {
                 tc.add(1.2);
 
                 // determine task costs and max score
-                double S_max = 100.0;
+                double S_max = 100.0 * Math.random();
                 double task_cost = 0.0;
 
                 // add task to scenario vector

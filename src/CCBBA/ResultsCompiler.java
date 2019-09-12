@@ -48,7 +48,7 @@ public class ResultsCompiler extends AbstractAgent {
     }
 
     protected void printResults( Vector<IterationResults> receivedResults ) throws IOException {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-hhmmss");
         LocalDateTime now = LocalDateTime.now();
 
         // CoalitionsFormed CoalitionsAvailable ScoreAchieved ScoreAvailable TotalCost ResourcePerAgent MergeCost SplitCost NumberofTasksDone PlanHorizon
@@ -56,8 +56,7 @@ public class ResultsCompiler extends AbstractAgent {
         int coalitionsAvailable = 0;
         double scoreAchieved = calcScoreAchieved(receivedResults);
         double scoreAvaiable = calcScoreAvailale(receivedResults);
-        double totalCost = 0;
-        double resourcesPerAgent = 0;
+        double resourcesPerCostPerAgent = calcAvgResourcesPerCost(receivedResults);
         double mergeCost = receivedResults.get(0).getC_merge();
         double splitCost = receivedResults.get(0).getC_split();
         double numberOfTasksDone = countTasksDone(receivedResults);
@@ -75,8 +74,8 @@ public class ResultsCompiler extends AbstractAgent {
             e.printStackTrace();
         }
         printWriter = new PrintWriter(fileWriter);
-        printWriter.printf("CoalitionsFormed\tCoalitionsAvailable\tScoreAchieved\tScoreAvailable\tTotalCost\tResourcesPerAgent\tMergeCost\tSplitCost\tNumberOfTasksDone\tPlanHorizon\n");
-        printWriter.printf("%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",coalitionsFormed, coalitionsAvailable, scoreAchieved, scoreAvaiable, totalCost, resourcesPerAgent, mergeCost, splitCost, numberOfTasksDone, planHorizon);
+        printWriter.printf("CoalitionsFormed\tCoalitionsAvailable\tScoreAchieved\tScoreAvailable\tResourcesPerCostPerAgent\tMergeCost\tSplitCost\tNumberOfTasksDone\tPlanHorizon\n");
+        printWriter.printf("%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",coalitionsFormed, coalitionsAvailable, scoreAchieved, scoreAvaiable, resourcesPerCostPerAgent, mergeCost, splitCost, numberOfTasksDone, planHorizon);
         printWriter.close();
     }
 
@@ -126,5 +125,36 @@ public class ResultsCompiler extends AbstractAgent {
             }
         }
         return count;
+    }
+
+    private double calcAvgResourcesPerCost( Vector<IterationResults> receivedResults){
+        Vector<SimulatedAbstractAgent> agentList = new Vector<>();
+        Vector<SimulatedAbstractAgent> localZ = receivedResults.get(0).getZ();
+        Vector<Double> cost = receivedResults.get(0).getCost();
+        double avg = 0;
+        double resources;
+        double localCost;
+
+        //return 0.0;
+
+
+        for(int i = 0; i < localZ.size(); i++){
+            if(( localZ.get(i) != null ) && (!agentList.contains(localZ.get(i))) ){
+                agentList.add( localZ.get(i) );
+                resources = receivedResults.get(i).getResources();
+                localCost = 0;
+
+                for(int j = i; j < localZ.size(); j++){
+                    if(localZ.get(j) == localZ.get(i)){
+                        localCost = localCost + cost.get(j);
+                    }
+                }
+                avg = avg + resources/localCost;
+            }
+        }
+        avg = avg / receivedResults.size();
+
+        return avg;
+
     }
 }

@@ -48,6 +48,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     private int convergenceIndicator;
     protected double C_merge;
     protected double C_split;
+    protected double resources;
 
     /**
      * initialize my role and fields
@@ -73,6 +74,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.convergenceIndicator = getConvergenceIndicator();
         this.C_merge = getC_merge();
         this.C_split = getC_split();
+        this.resources = getResources();
     }
 
     protected void live() {
@@ -107,7 +109,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         // -Initialize results
         if(this.zeta == 0){
             // Set results to 0
-            localResults = new IterationResults(this.J, this.W_solo_max, this.W_any_max, this.M, this.C_merge, this.C_split);
+            localResults = new IterationResults(this.J, this.W_solo_max, this.W_any_max, this.M, this.C_merge, this.C_split, this.resources);
         }
         else{
             // Import results from previous iteration
@@ -876,6 +878,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     protected double getC_split(){
+        return 0;
+    }
+
+    protected double getResources(){
         return 0;
     }
 }

@@ -27,4 +27,7 @@ public class SimulatedAgent01 extends SimulatedAbstractAgent {
         return 1.0;
     }
 
+    @Override
+    protected double getResources(){ return 100*Math.random(); }
+
 }

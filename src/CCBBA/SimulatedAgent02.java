@@ -26,5 +26,9 @@ public class SimulatedAgent02 extends SimulatedAbstractAgent {
     protected double getC_split(){
         return 1.0;
     }
+
+    @Override
+    protected double getResources(){ return 100*Math.random(); }
+
 }
 

@@ -26,10 +26,9 @@ public class IterationResults {
     private int M;                                                  // planning horizon
     private double C_merge;                                         // merge cost
     private double C_split;                                         // split cost
+    private double resources;
 
-
-
-    public IterationResults(Vector<Subtask> J, int w_solo_max, int w_any_max, int M, double C_merge, double C_split){
+    public IterationResults(Vector<Subtask> J, int w_solo_max, int w_any_max, int M, double C_merge, double C_split, double resources){
         int size = J.size();
         this.J = J;
         y.setSize(size);
@@ -43,9 +42,12 @@ public class IterationResults {
         w_any.setSize(size);
         h.setSize(size);
         omega.setSize(M);
+        this.cost.setSize(size);
+
         this.M = M;
         this.C_merge = C_merge;
         this.C_split = C_split;
+        this.resources = resources;
 
         for(int i = 0; i < size; i ++){
             y.setElementAt(0.0, i);
@@ -58,6 +60,7 @@ public class IterationResults {
             w_solo.setElementAt(w_solo_max, i);
             w_any.setElementAt(w_any_max, i);
             h.setElementAt(1, i);
+            this.cost.setElementAt(0.0, i);
         }
     }
 
@@ -75,6 +78,7 @@ public class IterationResults {
         this.omega = new Vector<>();
         this.bundle = new Vector<>();
         this.path = new Vector<>();
+        this.cost = new Vector<>();
 
         for(int i = 0; i < prevResults.getY().size(); i++){
             this.J.add(prevResults.getJ().get(i));
@@ -87,13 +91,13 @@ public class IterationResults {
             this.w_solo.add(prevResults.getW_solo().get(i));
             this.w_any.add(prevResults.getW_any().get(i));
             this.h.add(1);
-            //bundle.setElementAt(prevResults.getBundle().get(i), i);
-            //path.setElementAt(prevResults.getPath().get(i), i);
+            this.cost.add(prevResults.getCost().get(i));
         }
 
         this.M = prevResults.getM();
         this.C_merge = prevResults.getC_merge();
         this.C_split = prevResults.getC_split();
+        this.resources = prevResults.getResources();
 
         for(int i = 0; i < prevResults.getBundle().size(); i++){
             this.bundle.add( prevResults.getBundle().get(i) );
@@ -132,6 +136,7 @@ public class IterationResults {
             this.c.setElementAt(maxBid.getC() ,i_max);
             this.s.setElementAt(zeta, i_max);
             this.tz.setElementAt(maxBid.getTStart(), i_max);
+            this.cost.setElementAt(maxBid.getCost_aj(), i_max);
 
             this.bundle = new Vector<>();
             this.path = new Vector<>();
@@ -163,10 +168,12 @@ public class IterationResults {
         double yReceived = receivedResults.getY().get(i);
         SimulatedAbstractAgent zReceived = receivedResults.getZ().get(i);
         double tzReceived = receivedResults.getTz().get(i);
+        double costReceived = receivedResults.getCost().get(i);
 
         this.y.setElementAt(yReceived, i);
         this.z.setElementAt(zReceived, i);
         this.tz.setElementAt(tzReceived, i);
+        this.cost.setElementAt(costReceived, i);
 
         //if task is in bundle, then reset subsequent scores
         if(bundle.contains(J.get(i))){
@@ -176,6 +183,7 @@ public class IterationResults {
                 this.y.setElementAt(0.0, i_j);
                 this.z.setElementAt(null, i_j);
                 this.tz.setElementAt(0.0, i_j);
+                this.cost.setElementAt(0.0, i_j);
             }
         }
     }
@@ -196,6 +204,7 @@ public class IterationResults {
         this.y.setElementAt(0.0, i);
         this.z.setElementAt(null, i);
         this.tz.setElementAt(0.0, i);
+        this.cost.setElementAt(0.0, i);
 
         //if task is in bundle, then reset subsequent scores
         if(bundle.contains(J.get(i))){
@@ -205,15 +214,12 @@ public class IterationResults {
                 this.y.setElementAt(0.0, i_j);
                 this.z.setElementAt(null, i_j);
                 this.tz.setElementAt(0.0, i_j);
+                this.cost.setElementAt(0.0, i_j);
             }
         }
     }
 
     public void leaveResults(IterationResults receivedResults, int i){
-
-    }
-
-    public void updateOmega(){
 
     }
 
@@ -236,6 +242,8 @@ public class IterationResults {
     public Integer getM(){ return this.M; }
     public Double getC_merge(){ return this.C_merge; }
     public Double getC_split(){ return this.C_split; }
+    public double getResources(){ return this.resources; }
+    public Vector<Double> getCost(){ return this.cost; }
 
     public void setY(Vector<Double> y_new){ this.y = y_new; }
     public void setZ(Vector<SimulatedAbstractAgent> z_new){ this.z = z_new; }
