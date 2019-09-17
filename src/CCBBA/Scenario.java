@@ -35,7 +35,7 @@ public class Scenario extends Watcher {
 
         this.instrumentList.add("IR");
         this.instrumentList.add("MW");
-        this.instrumentList.add("VIS");
+        //this.instrumentList.add("VIS");
     }
 
     @Override
@@ -55,7 +55,7 @@ public class Scenario extends Watcher {
 
                 // determine instrument requirements
                 Vector<String> instruments = new Vector<>();
-                int numInstruments = (int) (this.instrumentList.size() * Math.random());
+                int numInstruments = (int) (this.instrumentList.size() * (Math.random()) + 1 );
 
                 while(instruments.size() < numInstruments){
                     // guess an instrument
@@ -79,7 +79,7 @@ public class Scenario extends Watcher {
 
                 // determine task costs and max score
                 double S_max = 100.0 * Math.random();
-                double task_cost = 0.0;
+                double task_cost = Math.random();
 
                 // add task to scenario vector
                 Task tempTask = new Task(S_max, x_task, task_cost, instruments, tc);
@@ -115,7 +115,7 @@ public class Scenario extends Watcher {
             tc_2.add(inf);
             tc_2.add(1.0);
             tc_2.add(1.0);
-            tc_1.add(1.0);
+            tc_2.add(1.0);
 
             Task task2 = new Task(30.0, x_2, 2.0, e_2, tc_2);
             scenarioTasks.add(task2);

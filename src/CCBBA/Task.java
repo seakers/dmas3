@@ -67,21 +67,6 @@ public class Task {
         // *******
         N_sub = J.size();
 
-        // Test outputs <- DELETE WHEN DONE
-        System.out.println(" ");
-        System.out.println("Sensor List:");
-        System.out.println(req_sensors);
-        System.out.println("Subtask List:");
-        for (int i = 0; i < J.size(); i++) {
-            System.out.println(J.get(i).getName());
-        }
-        System.out.println("Dependancies:");
-        for (int i = 0; i < J.size(); i++) {
-            System.out.println(J.get(i).getMain_num() + ": " + J.get(i).getDep_nums());
-        }
-        // ---------------------------------
-
-
         // Create T and D matrices
         D = new int[N_sub][N_sub];
         T = new double[N_sub][N_sub];
@@ -118,12 +103,7 @@ public class Task {
             }
         }
 
-        // Test outputs <- DELETE WHEN DONE
-        System.out.println("D:");
-        System.out.println(Arrays.deepToString(D));
-        System.out.println("T:");
-        System.out.println(Arrays.deepToString(T));
-        // ---------------------------------
+
     }
 
 
@@ -131,42 +111,25 @@ public class Task {
      * Getters and Setters
      * @return returns values
      */
-    public void setLocation(Dimension new_location){
-        location = new_location;
-    }
-    public Vector<String> getSensors(){
-        return req_sensors;
-    }
-    public void setSensors(Vector<String> new_sensors){
-        req_sensors = new_sensors;
-    }
-    public void setTC(Vector<Double> new_TC){
-        TC = new_TC;
-    }
-    public boolean getStatus(){
-        return complete;
-    }
-    public void set_status(boolean status){
-        complete = status;
-    }
+    public void setLocation(Dimension new_location){ location = new_location; }
+    public Vector<String> getSensors(){return req_sensors; }
+    public void setSensors(Vector<String> new_sensors){ req_sensors = new_sensors; }
+    public void setTC(Vector<Double> new_TC){ TC = new_TC; }
+    public void set_status(boolean status){ complete = status; }
 
-    public Dimension getLocation(){ return location; }
-    public int[][] getD(){
-        return D;
-    }
-    public double[][] getT(){
-        return T;
-    }
+    public boolean getStatus(){ return complete; }
+    public int[][] getD(){ return D; }
+    public double[][] getT(){ return T; }
     public Vector<Subtask> getJ(){ return J; }
     public double getCost(){ return cost; }
     public double getS_max(){ return S_max; }
     public double getI(){ return I; }
     public double getGamma(){ return gamma; }
+    public Dimension getLocation(){ return this.location; }
     public Vector<Double> getTC(){
         //TC = {t_start, t_end, d, t_corr, lambda}
         return TC;
     }
-
 
     /*
     public static void main(String[] args){

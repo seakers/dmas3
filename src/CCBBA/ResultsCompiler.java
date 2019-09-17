@@ -12,10 +12,13 @@ import java.util.List;
 import java.util.Vector;
 
 public class ResultsCompiler extends AbstractAgent {
+    private String directoryAddress;
     private int numAgents;
     protected Scenario environment;
+    private Vector<IterationResults> receivedResults;
 
-    public ResultsCompiler(int numAgents){
+    public ResultsCompiler(int numAgents, String directoryAddress){
+        this.directoryAddress = directoryAddress;
         this.numAgents = numAgents;
     }
 
@@ -48,34 +51,315 @@ public class ResultsCompiler extends AbstractAgent {
     }
 
     protected void printResults( Vector<IterationResults> receivedResults ) throws IOException {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-hhmmss");
-        LocalDateTime now = LocalDateTime.now();
+        this.receivedResults = receivedResults;
+        printWinningVectors();
+        printMetrics();
+        printTaskList();
+        printAgentList();
+        printReport();
 
+        /*
         // CoalitionsFormed CoalitionsAvailable ScoreAchieved ScoreAvailable TotalCost ResourcePerAgent MergeCost SplitCost NumberofTasksDone PlanHorizon
-        int coalitionsFormed = calcCoalitionsFormed(receivedResults);
-        int coalitionsAvailable = 0;
-        double scoreAchieved = calcScoreAchieved(receivedResults);
-        double scoreAvaiable = calcScoreAvailale(receivedResults);
-        double resourcesPerCostPerAgent = calcAvgResourcesPerCost(receivedResults);
-        double mergeCost = receivedResults.get(0).getC_merge();
-        double splitCost = receivedResults.get(0).getC_split();
-        double numberOfTasksDone = countTasksDone(receivedResults);
-        int planHorizon = receivedResults.get(0).getM();
+
 
         // Create a new file with
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-hhmm");
+        LocalDateTime now = LocalDateTime.now();
         FileWriter fileWriter = null;
         PrintWriter printWriter;
         String address = "src/CCBBA/Results/results-"+ dtf.format(now) + ".out";
 
         fileWriter = null;
         try {
-            fileWriter = new FileWriter( address );
+            fileWriter = new FileWriter( address, true );
         } catch (IOException e) {
             e.printStackTrace();
         }
         printWriter = new PrintWriter(fileWriter);
-        printWriter.printf("CoalitionsFormed\tCoalitionsAvailable\tScoreAchieved\tScoreAvailable\tResourcesPerCostPerAgent\tMergeCost\tSplitCost\tNumberOfTasksDone\tPlanHorizon\n");
+
+        //printWriter.printf("CoalitionsFormed\tCoalitionsAvailable\tScoreAchieved\tScoreAvailable\tResourcesPerCostPerAgent\tMergeCost\tSplitCost\tNumberOfTasksDone\tPlanHorizon\n");
         printWriter.printf("%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",coalitionsFormed, coalitionsAvailable, scoreAchieved, scoreAvaiable, resourcesPerCostPerAgent, mergeCost, splitCost, numberOfTasksDone, planHorizon);
+
+        printWriter.close();
+        */
+    }
+
+    private void printWinningVectors(){
+        //create new file in directory
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = this.directoryAddress + "/winning_vectors.out";
+        fileWriter = null;
+        try {
+            fileWriter = new FileWriter( outAddress, false );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        //obtain values
+        Vector<Vector> resultsToPrint = new Vector();
+
+        Vector localY = this.receivedResults.get(0).getY();
+        Vector localTz = this.receivedResults.get(0).getTz();
+        Vector localZ = this.receivedResults.get(0).getZ();
+
+        resultsToPrint.add(localY);
+        resultsToPrint.add(localTz);
+        resultsToPrint.add(localZ);
+
+        //print values
+        for(int i = 0; i < resultsToPrint.size(); i++){
+            for(int j = 0; j < resultsToPrint.get(i).size(); j++){
+                printWriter.print(resultsToPrint.get(i).get(j));
+                printWriter.print("\t");
+            }
+            printWriter.print("\n");
+        }
+
+        //close file
+        printWriter.close();
+    }
+
+    private void printMetrics(){
+        //create new file in directory
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = this.directoryAddress + "/performance_metrics.out";
+        fileWriter = null;
+        try {
+            fileWriter = new FileWriter( outAddress, false );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        //obtain values
+        Vector resultsToPrint = new Vector();
+
+        int coalitionsFormed = calcCoalitionsFormed(this.receivedResults);
+        int coalitionsAvailable = 0;
+        double scoreAchieved = calcScoreAchieved(this.receivedResults);
+        double scoreAvaiable = calcScoreAvailale(this.receivedResults);
+        double resourcesPerCostPerAgent = calcAvgResourcesPerCost(this.receivedResults);
+        double mergeCost = this.receivedResults.get(0).getC_merge();
+        double splitCost = this.receivedResults.get(0).getC_split();
+        double numberOfTasksDone = countTasksDone(this.receivedResults);
+        int planHorizon = this.receivedResults.get(0).getM();
+
+        resultsToPrint.add(coalitionsFormed);
+        resultsToPrint.add(coalitionsAvailable);
+        resultsToPrint.add(scoreAchieved);
+        resultsToPrint.add(scoreAvaiable);
+        resultsToPrint.add(resourcesPerCostPerAgent);
+        resultsToPrint.add(mergeCost);
+        resultsToPrint.add(splitCost);
+        resultsToPrint.add(numberOfTasksDone);
+        resultsToPrint.add(planHorizon);
+
+        //print values
+        for(int i = 0; i < resultsToPrint.size(); i++){
+            printWriter.print(resultsToPrint.get(i));
+            printWriter.print("\t");
+        }
+        printWriter.print("\n");
+
+        //close file
+        printWriter.close();
+    }
+
+    private void printTaskList(){
+        //create new file in directory
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = this.directoryAddress + "/task_list.out";
+        fileWriter = null;
+        try {
+            fileWriter = new FileWriter( outAddress, false );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        //obtain values
+        Vector<Task> resultsToPrint = this.environment.getTasks();
+        double x = 0.0;   double y = 0.0;   double z = 0.0;
+
+        //print values
+        for(int i = 0; i < resultsToPrint.size(); i++){
+            Task localTask = resultsToPrint.get(i);
+            x = localTask.getLocation().getHeight();
+            y = localTask.getLocation().getWidth();
+
+            // print basic info
+            printWriter.printf("Task Number:\t\t%d\n",i);
+            printWriter.printf("Maximum Score:\t\t%f\n",localTask.getS_max());
+            printWriter.printf("Subtask Cost:\t\t%f\n", localTask.getCost());
+            printWriter.printf("Number of Sensors:\t%f\n",localTask.getI());
+            printWriter.printf("Number of Subtasks:\t%d\n\n",localTask.getJ().size());
+
+            // print component lists
+            printWriter.printf("Location:\t\t\t[%f, %f, %f]\n", x, y, z);
+            printWriter.printf("Sensor List:\t\t%s\n", localTask.getSensors());
+            printWriter.printf("Subtask List:\t\t[");
+            for(int j = 0; j < localTask.getJ().size(); j++){
+                printWriter.printf("%s_{", localTask.getJ().get(j).getMain_task());
+                for(int k = 0; k < localTask.getJ().get(j).getDep_tasks().size(); k++){
+                    printWriter.printf("%s", localTask.getJ().get(j).getDep_tasks().get(k));
+                    if(k != (localTask.getJ().get(j).getDep_tasks().size() - 1) ) {
+                        printWriter.printf(", ");
+                    }
+                }
+                if(j == (localTask.getJ().size() - 1) ) { printWriter.printf("}"); }
+                else{ printWriter.printf("}, "); }
+            }
+            printWriter.printf("]\n\n");
+
+            // print time constraints
+            printWriter.printf("Time Constraints:\n");
+            printWriter.printf("Start Time:\t\t%f\n",localTask.getTC().get(0));
+            printWriter.printf("End Time:\t\t%f\n",localTask.getTC().get(1));
+            printWriter.printf("Task Duration:\t%f\n",localTask.getTC().get(2));
+            printWriter.printf("Corr Time:\t\t%f\n",localTask.getTC().get(3));
+            printWriter.printf("Lambda:\t\t\t%f\n",localTask.getTC().get(4));
+
+            // print dependency matrix
+            printWriter.printf("Dependency Matrix:\n");
+            int[][] D = localTask.getD();
+            for(int j = 0; j < localTask.getJ().size(); j++){
+                if(j == 0){ printWriter.printf("   [");}
+                else{ printWriter.printf("\t");}
+
+                for(int k = 0; k < localTask.getJ().size(); k++){
+                    printWriter.printf("%d", D[j][k]);
+                    if(k != (localTask.getJ().size() - 1)) { printWriter.printf("\t"); }
+                }
+
+                if(j != (localTask.getJ().size() - 1) ) { printWriter.printf("\n"); }
+                else{printWriter.printf("]\n\n");}
+            }
+
+
+            // print time correlation matrix
+            printWriter.printf("Time Constraint Matrix:\n");
+            double[][] T = localTask.getT();
+            for(int j = 0; j < localTask.getJ().size(); j++){
+                if(j == 0){ printWriter.printf("   [");}
+                else{ printWriter.printf("\t");}
+
+                for(int k = 0; k < localTask.getJ().size(); k++){
+                    printWriter.printf("%f", T[j][k]);
+                    if(k != (localTask.getJ().size() - 1)) { printWriter.printf("\t"); }
+                }
+
+                if(j != (localTask.getJ().size() - 1) ) { printWriter.printf("\n"); }
+                else{printWriter.printf("]\n\n");}
+            }
+
+            // prepare for next task to print
+            printWriter.print("\n");
+            printWriter.print("**********************************");
+            printWriter.print("\n");
+        }
+
+
+        //close file
+        printWriter.close();
+    }
+
+    private void printAgentList(){
+        //create new file in directory
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = this.directoryAddress + "/agent_list.out";
+        fileWriter = null;
+        try {
+            fileWriter = new FileWriter( outAddress, false );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        //obtain values
+        Vector<IterationResults> resultsToPrint = this.receivedResults;
+        double x = 0.0;   double y = 0.0;   double z = 0.0;
+
+        //print values
+        for(int i = 0; i < resultsToPrint.size(); i++){
+            IterationResults localResult = resultsToPrint.get(i);
+            SimulatedAbstractAgent localAgent = localResult.getParentAgent();
+            x = localAgent.getInitialPosition().getHeight();
+            y = localAgent.getInitialPosition().getWidth();
+
+            // print basic info
+            printWriter.printf("Agent Number:\t\t\t%d\n",i);
+            printWriter.printf("Planning Horizon:\t\t%d\n",localAgent.getM());
+            printWriter.printf("Max Const Iteration:\t%d\n", localAgent.getO_kq());
+            printWriter.printf("Max Solo Bids:\t\t\t%d\n",localAgent.getW_solo_max());
+            printWriter.printf("Max Any Bids:\t\t\t%d\n",localAgent.getW_any_max());
+            printWriter.printf("Iteration Counter:\t\t%d\n",localAgent.getZeta());
+            printWriter.printf("Resources:\t\t\t\t%d\n\n",localAgent.getJ().size());
+
+
+
+            // print component lists
+            printWriter.printf("Location:\t\t\t\t[%f, %f, %f]\n", x, y, z);
+            printWriter.printf("Sensor List:\t\t\t%s\n", localAgent.getSensors());
+            printWriter.printf("Bundle:\t\t\t\t\t[");
+            for(int j = 0; j < localAgent.getBundle().size(); j++){
+                Subtask bundleTask = localAgent.getBundle().get(j);
+                printWriter.printf("%s_{", bundleTask.getMain_task());
+                for(int k = 0; k < bundleTask.getDep_tasks().size(); k++){
+                    printWriter.printf("%s", bundleTask.getDep_tasks().get(k));
+                    if(k != (bundleTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
+                }
+                if(j == (localAgent.getBundle().size() - 1) ) { printWriter.printf("}"); }
+                else{ printWriter.printf("}, "); }
+            }
+            printWriter.printf("]\n");
+            printWriter.printf("Path:\t\t\t\t\t[");
+            for(int j = 0; j < localAgent.getPath().size(); j++){
+                Subtask pathTask = localAgent.getPath().get(j);
+                printWriter.printf("%s_{", pathTask.getMain_task());
+                for(int k = 0; k < pathTask.getDep_tasks().size(); k++){
+                    printWriter.printf("%s", pathTask.getDep_tasks().get(k));
+                    if(k != (pathTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
+                }
+                if(j == (localAgent.getPath().size() - 1) ) { printWriter.printf("}"); }
+                else{ printWriter.printf("}, "); }
+            }
+            printWriter.printf("]\n\n");
+
+
+            // prepare for next task to print
+            printWriter.print("\n");
+            printWriter.print("**********************************");
+            printWriter.print("\n");
+        }
+
+
+        //close file
+        printWriter.close();
+    }
+
+    private void printReport(){
+        //create new file in directory
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = this.directoryAddress + "/REPORT.out";
+        fileWriter = null;
+        try {
+            fileWriter = new FileWriter( outAddress, false );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        //obtain values
+
+        //print values
+
+        //close file
         printWriter.close();
     }
 

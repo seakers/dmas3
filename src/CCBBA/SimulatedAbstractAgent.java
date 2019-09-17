@@ -77,30 +77,19 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.resources = getResources();
     }
 
-    protected void live() {
-        while(!(convergenceCounter >= convergenceIndicator)){
-            phaseOne();
-            phaseTwo();
-        }
-        try {
-            doTasks();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Main Sim functions
      */
     @SuppressWarnings("unused")
     public void phaseOne(){
-        // Request role and obtain list of planning agents
-        //requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
-
+        //Obtain list of planning agents
         this.list_agents = getAgentsWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, false);
 
         // Phase 1 - Create bid for individual spacecraft
-        getLogger().info("Phase one...");
+        if(this.zeta == 0) {
+            getLogger().info("Creating plan...");
+        }
+        //getLogger().info("Phase 1...");
 
         // Get incomplete subtasks
         J = getIncompleteSubtasks();
@@ -109,11 +98,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         // -Initialize results
         if(this.zeta == 0){
             // Set results to 0
-            localResults = new IterationResults(this.J, this.W_solo_max, this.W_any_max, this.M, this.C_merge, this.C_split, this.resources);
+            localResults = new IterationResults(this.J, this.W_solo_max, this.W_any_max, this.M, this.C_merge, this.C_split, this.resources, this);
         }
         else{
             // Import results from previous iteration
-            localResults = new IterationResults(results.get(zeta - 1), true);
+            localResults = new IterationResults(results.get(zeta - 1), true, this);
 
             // Checks for new coalitions
             Vector<Vector<SimulatedAbstractAgent>> oldCoalition;
@@ -188,16 +177,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
             // Check if bid already exists for that subtask in the bundle
             boolean bidExists = false;
-            /*
-            for(int i = 0; i < bundle.size(); i ++){
-                if(j_chosen.getParentTask() == bundle.get(i).getParentTask()){
-                    Vector<Integer> h = localResults.getH();
-                    h.setElementAt( 0, i);
-                    localResults.setH( h );
-                    bidExists = true;
-                }
-            }
-            */
             for(int i = 0; i < bundle.size(); i ++){
                 if(j_chosen == bundle.get(i)){
                     Vector<Integer> h = localResults.getH();
@@ -217,17 +196,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
 
-        //Broadcast results
+        //prepare results for broadcast
         myMessage myResults = new myMessage(localResults, this.getName());
-        /*
-        for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
-        */
     }
 
     @SuppressWarnings("unused")
     public void phaseTwo() {
         //Phase 2 - Consensus
-        getLogger().info("Phase two...");
+        //getLogger().info("Phase two...");
 
         //Receive results
         List<Message> receivedMessages = nextMessages(null);
@@ -246,7 +222,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 double myY = localResults.getY().get(i_j);
                 double itsY = receivedResults.get(i).getY().get(i_j);
                 if( myY != itsY ){
-                    getLogger().info("Inconsistencies in plan found !!");
+                    //getLogger().info("Inconsistencies in plan found !!");
                     consistent = false;
                     convergenceCounter = 0;
                     break;
@@ -255,11 +231,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             if(!consistent){ break; }
             else {
                 // no inconsistancy found
-                getLogger().info("NO inconsistencies in plan found. Checking convergence...");
+                //getLogger().info("NO inconsistencies in plan found. Checking convergence...");
                 convergenceCounter++;
                 if(convergenceCounter >= convergenceIndicator){
                     getLogger().info("Plan Converged");
-                    //doTasks(); // <- UNCOMMENT IN CASE OF REVERTING CODE
                     requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_DO);
                     break;
                 }
@@ -526,15 +501,13 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         zeta++;
 
         //Broadcast results
-        myMessage myResults = new myMessage(localResults, this.getName());
+        myMessage myResults = new myMessage(this.localResults, this.getName());
         for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
     }
 
+    @SuppressWarnings("unused")
     private void doTasks() throws IOException {
         getLogger().info("Doing Tasks...");
-        // set task from environment to COMPLETE
-        // pop task from bundle list
-        //popTask();
 
         requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_DIE);
     }
@@ -544,7 +517,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         getLogger().info("Tasks completed. Killing agent, goodbye!");
 
         AgentAddress resultsAddress = getAgentWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.RESULTS_ROLE);
-        myMessage myDeath = new myMessage(localResults, this.getName());
+        myMessage myDeath = new myMessage(this.localResults, this.getName());
         sendMessage(resultsAddress, myDeath);
     }
 
@@ -793,8 +766,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     private void updateResultsList(IterationResults newResults){
-        IterationResults updatedResults = new IterationResults(newResults, false);
-        results.add(updatedResults);
+        IterationResults updatedResults = new IterationResults(newResults, false, this);
+        this.results.add(updatedResults);
     }
 
     private int isEqual(Vector<Vector<SimulatedAbstractAgent>> oldCoalition, Vector<Vector<SimulatedAbstractAgent>> newCoalition){
@@ -823,6 +796,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     public Vector<Subtask> getBundle(){ return this.bundle; }
     public IterationResults getLocalResults(){ return this.localResults; }
     public Vector<Subtask> getJ(){ return this.J; }
+    public int getZeta(){ return this.zeta; }
+    public Vector<String> getSensors(){ return this.sensors; }
 
     /**
      * Abstract Agent Settings
@@ -853,17 +828,17 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return miu;
     }
 
-    private int getO_kq(){
+    public int getO_kq(){
         int O_kq = 10;
         return O_kq;
     }
 
-    private int getW_solo_max(){
+    public int getW_solo_max(){
         int w_solo_max = 10;
         return w_solo_max;
     }
 
-    private int getW_any_max(){
+    public int getW_any_max(){
         int w_any_max = 10;
         return w_any_max;
     }
@@ -876,11 +851,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected double getC_merge(){
         return 0;
     }
-
     protected double getC_split(){
         return 0;
     }
-
     protected double getResources(){
         return 0;
     }

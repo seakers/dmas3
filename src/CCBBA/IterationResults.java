@@ -11,6 +11,7 @@ public class IterationResults {
     private Vector<Double> tz = new Vector<>();                     // arrival time list
     // *********************************************
     // Info used with self**************************
+    private SimulatedAbstractAgent parentAgent;                     //
     private Vector<Double> c = new Vector<>();                      // self bid list
     private Vector<Integer> s = new Vector<>();                     // iteration stamp list
     private Vector<Integer> v = new Vector<>();                     // number of iterations in constraint violation
@@ -28,7 +29,9 @@ public class IterationResults {
     private double C_split;                                         // split cost
     private double resources;
 
-    public IterationResults(Vector<Subtask> J, int w_solo_max, int w_any_max, int M, double C_merge, double C_split, double resources){
+
+    public IterationResults(Vector<Subtask> J, int w_solo_max, int w_any_max, int M, double C_merge, double C_split, double resources, SimulatedAbstractAgent parentAgent){
+        this.parentAgent = parentAgent;
         int size = J.size();
         this.J = J;
         y.setSize(size);
@@ -64,8 +67,9 @@ public class IterationResults {
         }
     }
 
-    public IterationResults(IterationResults prevResults, boolean omega_toggle){
+    public IterationResults(IterationResults prevResults, boolean omega_toggle, SimulatedAbstractAgent parentAgent){
         // Copies results from previous iteration
+        this.parentAgent = parentAgent;
         this.J = new Vector<>();
         this.y = new Vector<>();
         this.z = new Vector<>();
@@ -244,6 +248,7 @@ public class IterationResults {
     public Double getC_split(){ return this.C_split; }
     public double getResources(){ return this.resources; }
     public Vector<Double> getCost(){ return this.cost; }
+    public SimulatedAbstractAgent getParentAgent(){ return this.parentAgent; }
 
     public void setY(Vector<Double> y_new){ this.y = y_new; }
     public void setZ(Vector<SimulatedAbstractAgent> z_new){ this.z = z_new; }
