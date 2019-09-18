@@ -53,7 +53,7 @@ public class ResultsCompiler extends AbstractAgent {
     protected void printResults( Vector<IterationResults> receivedResults ) throws IOException {
         this.receivedResults = receivedResults;
         printWinningVectors();
-        printMetrics();
+        //printMetrics();
         printTaskList();
         printAgentList();
         printReport();

@@ -27,28 +27,6 @@ public class Subtask {
         K = k;
     }
 
-    public String getMain_task(){
-        return main_task;
-    }
-    public void setMain_task(String new_main){
-        main_task = new_main;
-    }
-    public Vector<String> getDep_tasks(){
-        return dep_tasks;
-    }
-    public void setDep_tasks(Vector<String> newDep_tasks){
-        dep_tasks = newDep_tasks;
-    }
-    public Vector<Integer> getDep_nums(){ return dep_nums; }
-    public void setDep_nums(Vector<Integer> newDep_nums) { dep_nums = newDep_nums; }
-    public int getMain_num(){ return main_num; }
-    public void setMain_num(int new_main){ main_num = new_main; }
-    public String getName(){ return name; }
-    public void setComplete(boolean status){ complete = complete; }
-    public boolean getComplete(){ return complete; }
-    public Task getParentTask(){ return parentTask; }
-    public int getK(){ return K; }
-
     public void addDep_task(String new_task, int new_num){
         dep_tasks.add(new_task);
         dep_nums.add(new_num);
@@ -70,4 +48,33 @@ public class Subtask {
     }
 
     public void addDep_num(int new_num) { dep_nums.add(new_num); }
+
+    /**
+     * Geters and Setters
+     */
+    public String getName(){ return name; }
+    public void setComplete(boolean status){ complete = complete; }
+    public boolean getComplete(){ return complete; }
+    public Task getParentTask(){ return parentTask; }
+    public int getK(){ return K; }
+    public int getMain_num(){ return main_num; }
+    public String getMain_task(){
+        return main_task;
+    }
+    public Vector<Integer> getDep_nums(){ return dep_nums; }
+    public Vector<String> getDep_tasks(){
+        return dep_tasks;
+    }
+
+    public void setMain_task(String new_main){
+        main_task = new_main;
+    }
+    public void setDep_tasks(Vector<String> newDep_tasks){
+        dep_tasks = newDep_tasks;
+    }
+    public void setMain_num(int new_main){ main_num = new_main; }
+    public void setDep_nums(Vector<Integer> newDep_nums) { dep_nums = newDep_nums; }
+
+
+
 }

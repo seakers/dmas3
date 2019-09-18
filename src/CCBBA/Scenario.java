@@ -35,7 +35,7 @@ public class Scenario extends Watcher {
 
         this.instrumentList.add("IR");
         this.instrumentList.add("MW");
-        //this.instrumentList.add("VIS");
+        this.instrumentList.add("VIS");
     }
 
     @Override
@@ -86,7 +86,7 @@ public class Scenario extends Watcher {
                 scenarioTasks.add(tempTask);
             }
         }
-        else if(this.type == "appendix b") {
+        else if(this.type == "APPENDIX_B") {
             Dimension x_1 = new Dimension(0, 3);
             Dimension x_2 = new Dimension(4, 3);
             Vector<String> e_1 = new Vector<>();
@@ -119,6 +119,25 @@ public class Scenario extends Watcher {
 
             Task task2 = new Task(30.0, x_2, 2.0, e_2, tc_2);
             scenarioTasks.add(task2);
+        }
+        else if(this.type == "DEBUG_TASK"){
+            Dimension x_1 = new Dimension(0, 3);
+            Vector<String> e_1 = new Vector<>();
+            Vector<Double> tc_1 = new Vector<>();
+
+            // Define task 1
+            e_1.add("IR");
+            e_1.add("MW");
+            e_1.add("VIS");
+
+            tc_1.add(0.0);
+            tc_1.add(inf);
+            tc_1.add(1.0);
+            tc_1.add(1.0);
+            tc_1.add(1.0);
+
+            Task task1 = new Task(100.0, x_1, 2.0, e_1, tc_1);
+            scenarioTasks.add(task1);
         }
 
         // 1 : request my role so that the viewer can probe me

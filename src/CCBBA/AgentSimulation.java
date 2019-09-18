@@ -32,7 +32,7 @@ public class AgentSimulation extends AbstractAgent {
 
         // 2 : create the environment
         //Scenario environment = new Scenario("random", 2);
-        Scenario environment = new Scenario("appendix b", 0);
+        Scenario environment = new Scenario("APPENDIX_B", 0);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
@@ -45,11 +45,10 @@ public class AgentSimulation extends AbstractAgent {
         }
 
         // 4 : create the scheduler
-        myScheduler scheduler = new myScheduler();
-        launchAgent(scheduler, false);
+        launchAgent(new myScheduler("DEBUG_TASK"), false);
 
         // 5 : launch results compiler
-        launchAgent( new ResultsCompiler(2, this.directoryAddress) );
+        launchAgent( new ResultsCompiler(2, this.directoryAddress), false );
     }
 
     public void createFile(){
