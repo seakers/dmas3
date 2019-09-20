@@ -28,7 +28,9 @@ public class ResultsCompiler extends AbstractAgent {
     }
 
     private void checkResults() throws IOException {
-        // check for messages
+        // Wait and check for messages
+
+
         //Receive results
         List<Message> receivedMessages = nextMessages(null);
         Vector<IterationResults> receivedResults = new Vector<>();

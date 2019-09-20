@@ -11,7 +11,7 @@ public class SimulatedAgentRandom extends SimulatedAbstractAgent {
         // determine instrument list
         this.instrumentList.add("IR");
         this.instrumentList.add("MW");
-        //this.instrumentList.add("VIS");
+        this.instrumentList.add("VIS");
 
         Vector<String> instruments = new Vector<>();
         int numInstruments = (int) (this.instrumentList.size() * (Math.random()) + 1 );

@@ -32,20 +32,20 @@ public class AgentSimulation extends AbstractAgent {
 
         // 2 : create the environment
         //Scenario environment = new Scenario("random", 2);
-        Scenario environment = new Scenario("APPENDIX_B", 0);
+        Scenario environment = new Scenario("RANDOM", 3);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        for (int i = 0; i < 1; i++) {
-            launchAgent(new SimulatedAgent02());
-            launchAgent(new SimulatedAgent01());
+        for (int i = 0; i < 2; i++) {
+            //launchAgent(new SimulatedAgent02());
+            //launchAgent(new SimulatedAgent01());
 
             //random agents
-            //launchAgent(new SimulatedAgentRandom());
+            launchAgent(new SimulatedAgentRandom());
         }
 
         // 4 : create the scheduler
-        launchAgent(new myScheduler("DEBUG_TASK"), false);
+        launchAgent(new myScheduler("CCBBA"), false);
 
         // 5 : launch results compiler
         launchAgent( new ResultsCompiler(2, this.directoryAddress), false );

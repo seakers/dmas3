@@ -89,7 +89,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         if(this.zeta == 0) {
             getLogger().info("Creating plan...");
         }
-        //getLogger().info("Phase 1...");
+        getLogger().info("Phase 1...");
 
         // Get incomplete subtasks
         J = getIncompleteSubtasks();
@@ -111,7 +111,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             newCoalition = localResults.getOmega();
 
             int i_j = isEqual(oldCoalition, newCoalition);
-            if( (i_j > -1)&&(!bundle.isEmpty()) ){ // if not equal, release task from bundle
+            if( (i_j > -1)&&(!bundle.isEmpty())&&(i_j < bundle.size()) ){ // if not equal, release task from bundle
                 int i_remove = localResults.getJ().indexOf( this.bundle.get(i_j) );
                 localResults.resetResults(localResults, i_remove, bundle);
                 removeFromBundle(i_j);
@@ -159,7 +159,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
 
             // Choose max bid
-            double currentMax = Double.NEGATIVE_INFINITY;
+            double currentMax = 0.0;
             int i_max = 0;
             SubtaskBid maxBid = new SubtaskBid();
 
@@ -187,10 +187,12 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
 
             // Update results
-            if(!bidExists) {
-                this.bundle.add(j_chosen);
-                this.path.add(maxBid.getI_opt(), j_chosen);
-                this.X_path.add(maxBid.getX_aj());
+            if(!bidExists){
+                if(localResults.getY().get(i_max) < maxBid.getC()) {
+                    this.bundle.add(j_chosen);
+                    this.path.add(maxBid.getI_opt(), j_chosen);
+                    this.X_path.add(maxBid.getX_aj());
+                }
                 localResults.updateResults(maxBid, i_max, this, zeta);
             }
         }
@@ -203,7 +205,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     public void phaseTwo() {
         //Phase 2 - Consensus
-        //getLogger().info("Phase two...");
+        getLogger().info("Phase 2...");
 
         //Receive results
         List<Message> receivedMessages = nextMessages(null);
@@ -304,13 +306,13 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                         }
                         else if( myZ == it){
                             // reset
-                            localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                            localResults.resetResults(receivedResults.get(0), i_j, bundle);
                             removeFromBundle(localResults.getJ(), i_j);
                         }
                         else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
                             if(itsS > myS){
                                 // reset
-                                localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                                localResults.resetResults(receivedResults.get(0), i_j, bundle);
                                 removeFromBundle(localResults.getJ(), i_j);
                             }
                         }
@@ -335,7 +337,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                             }
                             else{
                                 // reset
-                                localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                                localResults.resetResults(receivedResults.get(0), i_j, bundle);
                                 removeFromBundle(localResults.getJ(), i_j);
                             }
                         }
@@ -405,7 +407,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     if(N_req != n_sat){ //if not all dependencies are met
                         //release task
                         int i_j = localResults.getJ().indexOf(j);
-                        localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                        localResults.resetResults(receivedResults.get(0), i_j, bundle);
                         removeFromBundle(localResults.getJ(), i_j);
                     }
 
@@ -439,7 +441,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     }
 
                     if(v.get(i_j) >= O_kq){ // if task has held on to task for too long, release task
-                        localResults.resetResults(receivedResults.get(i), i_j, bundle);
+                        localResults.resetResults(receivedResults.get(0), i_j, bundle);
                         removeFromBundle(localResults.getJ(), i_j);
                         w_solo.setElementAt( w_solo.get(i_j)-1,i_j);
                         w_any.setElementAt( w_any.get(i_j)-1,i_j);
@@ -463,7 +465,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     int i_u = tempViolations.get(i_v);
                     if( (D[parenTask.getJ().indexOf(j)][i_u - i_o] == 1)&&(D[i_u - i_o][parenTask.getJ().indexOf(j)] != 1) ){
                         //release task
-                        localResults.resetResults(receivedResults.get(i), i_q, bundle);
+                        localResults.resetResults(receivedResults.get(0), i_q, bundle);
                         removeFromBundle(localResults.getJ(), i_q);
                         taskReleased = true;
                         break;
@@ -474,7 +476,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                         double t_start = parenTask.getTC().get(0);
                         if( tz_q - t_start <= tz_u - t_start){
                             // release task
-                            localResults.resetResults(receivedResults.get(i), i_q, bundle);
+                            localResults.resetResults(receivedResults.get(0), i_q, bundle);
                             removeFromBundle(localResults.getJ(), i_q);
                             taskReleased = true;
                             break;

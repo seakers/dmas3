@@ -1,0 +1,116 @@
+Task Number:		0
+Maximum Score:		82.262373
+Subtask Cost:		0.661577
+Number of Sensors:	3.000000
+Number of Subtasks:	12
+
+Location:			[13.000000, 4.000000, 0.000000]
+Sensor List:		[IR, VIS, MW]
+Subtask List:		[IR_{}, IR_{MW}, IR_{VIS}, IR_{VIS, MW}, VIS_{}, VIS_{MW}, VIS_{IR}, VIS_{IR, MW}, MW_{}, MW_{VIS}, MW_{IR}, MW_{IR, VIS}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.723534
+Corr Time:		1.000000
+Lambda:			1.200000
+Dependency Matrix:
+   [0	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	0	0	0	-1	1	1	1	-1	1	1	1
+	-1	-1	-1	-1	0	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	1	1	1
+	-1	-1	-1	-1	-1	-1	-1	-1	0	-1	-1	-1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	1	1	1	-1	0	0	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.723534	0.723534	0.723534
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.723534	0.723534	0.723534	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.723534	0.723534	0.723534
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.723534	0.723534	0.723534
+	Infinity	0.723534	0.723534	0.723534	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.723534	0.723534	0.723534
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.723534	0.723534	0.723534	Infinity	Infinity	Infinity	Infinity
+	Infinity	0.723534	0.723534	0.723534	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.723534	0.723534	0.723534	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************
+Task Number:		1
+Maximum Score:		14.548187
+Subtask Cost:		0.579399
+Number of Sensors:	3.000000
+Number of Subtasks:	12
+
+Location:			[17.000000, 11.000000, 0.000000]
+Sensor List:		[MW, VIS, IR]
+Subtask List:		[MW_{}, MW_{IR}, MW_{VIS}, MW_{VIS, IR}, VIS_{}, VIS_{IR}, VIS_{MW}, VIS_{MW, IR}, IR_{}, IR_{VIS}, IR_{MW}, IR_{MW, VIS}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.940330
+Corr Time:		1.000000
+Lambda:			1.200000
+Dependency Matrix:
+   [0	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	0	0	0	-1	1	1	1	-1	1	1	1
+	-1	-1	-1	-1	0	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	1	1	1
+	-1	-1	-1	-1	-1	-1	-1	-1	0	-1	-1	-1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	1	1	1	-1	0	0	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.940330	0.940330	0.940330
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.940330	0.940330	0.940330	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.940330	0.940330	0.940330
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.940330	0.940330	0.940330
+	Infinity	0.940330	0.940330	0.940330	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.940330	0.940330	0.940330
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.940330	0.940330	0.940330	Infinity	Infinity	Infinity	Infinity
+	Infinity	0.940330	0.940330	0.940330	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.940330	0.940330	0.940330	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************
+Task Number:		2
+Maximum Score:		44.026589
+Subtask Cost:		0.006524
+Number of Sensors:	1.000000
+Number of Subtasks:	1
+
+Location:			[13.000000, 17.000000, 0.000000]
+Sensor List:		[MW]
+Subtask List:		[MW_{}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.886214
+Corr Time:		1.000000
+Lambda:			1.200000
+Dependency Matrix:
+   [0]
+
+Time Constraint Matrix:
+   [Infinity]
+
+
+**********************************

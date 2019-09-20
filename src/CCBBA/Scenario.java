@@ -46,7 +46,7 @@ public class Scenario extends Watcher {
         dimension = new Dimension(x_max, y_max);
         double inf = Double.POSITIVE_INFINITY;
 
-        if(this.type == "random"){
+        if(this.type == "RANDOM"){
             for(int i = 0; i < this.numTasks; i++){ //for every task
                 // determine location
                 int x = (int)(x_max * Math.random());

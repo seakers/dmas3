@@ -134,6 +134,7 @@ public class IterationResults {
     }
 
     public void updateResults(SubtaskBid maxBid, int i_max, SimulatedAbstractAgent agent, int zeta){
+
         if(y.get(i_max) < maxBid.getC()){
             this.y.setElementAt(maxBid.getC() ,i_max);
             this.z.setElementAt(agent, i_max);

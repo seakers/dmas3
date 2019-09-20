@@ -41,8 +41,8 @@ public class Task {
 
         // Create subtask list from Sensor list
         for(int i = 0; i < this.req_sensors.size(); i++) {
-            String mainSensor = this.req_sensors.get(i);
             Vector<String> remainingSensors = new Vector<>();
+            String mainSensor = this.req_sensors.get(i);
 
             // create vector of dependent sensors
             for(int j = 0; j < this.req_sensors.size(); j++){
@@ -51,13 +51,17 @@ public class Task {
 
             // create combinations of dependencies
             Vector<Vector<String>> combinations = getCombinations( remainingSensors );
+
             for(int j = 0; j < combinations.size(); j++){
                 Vector<String> depTasks = combinations.get(j);
-                Subtask mainSubtask = new Subtask(mainSensor,i, this, (depTasks.size()+1) );
+                Subtask mainSubtask = new Subtask(mainSensor, i+1, this, (depTasks.size()+1) );
                 for(int k = 0; k < depTasks.size(); k++){
-                    mainSubtask.addDep_task(depTasks.get(k),this.req_sensors.indexOf(depTasks.get(k)));
+                    if(depTasks.get(k).length() > 0) {
+                        mainSubtask.addDep_task(depTasks.get(k), this.req_sensors.indexOf(depTasks.get(k)) + 1);
+                    }
                 }
                 this.J.add(mainSubtask);
+                this.K.add( (depTasks.size()+1) );
             }
         }
         N_sub = J.size();
