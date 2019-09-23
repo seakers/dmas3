@@ -1,0 +1,100 @@
+Task Number:		0
+Maximum Score:		96.975216
+Subtask Cost:		0.901260
+Number of Sensors:	2.000000
+Number of Subtasks:	4
+
+Location:			[6.000000, 2.000000, 0.000000]
+Sensor List:		[VIS, MW]
+Subtask List:		[VIS_{}, VIS_{MW}, MW_{}, MW_{VIS}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.535187
+Corr Time:		1.000000
+Lambda:			1.200000
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	0.535187
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	0.535187	Infinity	Infinity]
+
+
+**********************************
+Task Number:		1
+Maximum Score:		70.367752
+Subtask Cost:		0.572885
+Number of Sensors:	1.000000
+Number of Subtasks:	1
+
+Location:			[18.000000, 8.000000, 0.000000]
+Sensor List:		[VIS]
+Subtask List:		[VIS_{}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.142078
+Corr Time:		1.000000
+Lambda:			1.200000
+Dependency Matrix:
+   [0]
+
+Time Constraint Matrix:
+   [Infinity]
+
+
+**********************************
+Task Number:		2
+Maximum Score:		4.281039
+Subtask Cost:		0.272320
+Number of Sensors:	3.000000
+Number of Subtasks:	12
+
+Location:			[17.000000, 10.000000, 0.000000]
+Sensor List:		[IR, MW, VIS]
+Subtask List:		[IR_{}, IR_{VIS}, IR_{MW}, IR_{MW, VIS}, MW_{}, MW_{VIS}, MW_{IR}, MW_{IR, VIS}, VIS_{}, VIS_{MW}, VIS_{IR}, VIS_{IR, MW}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.342436
+Corr Time:		1.000000
+Lambda:			1.200000
+Dependency Matrix:
+   [0	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	0	0	0	-1	1	1	1	-1	1	1	1
+	-1	-1	-1	-1	0	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	1	1	1
+	-1	-1	-1	-1	-1	-1	-1	-1	0	-1	-1	-1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	1	1	1	-1	0	0	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.342436	0.342436	0.342436
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.342436	0.342436	0.342436	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.342436	0.342436	0.342436
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.342436	0.342436	0.342436
+	Infinity	0.342436	0.342436	0.342436	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.342436	0.342436	0.342436
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.342436	0.342436	0.342436	Infinity	Infinity	Infinity	Infinity
+	Infinity	0.342436	0.342436	0.342436	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.342436	0.342436	0.342436	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************

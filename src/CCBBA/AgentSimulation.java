@@ -36,13 +36,7 @@ public class AgentSimulation extends AbstractAgent {
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        for (int i = 0; i < 2; i++) {
-            //launchAgent(new SimulatedAgent02());
-            //launchAgent(new SimulatedAgent01());
-
-            //random agents
-            launchAgent(new SimulatedAgentRandom());
-        }
+        setupAgent("RANDOM", 2);
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);
@@ -56,6 +50,19 @@ public class AgentSimulation extends AbstractAgent {
         LocalDateTime now = LocalDateTime.now();
         this.directoryAddress = "src/CCBBA/Results/results-"+ dtf.format(now);
         new File( this.directoryAddress ).mkdir();
+    }
+
+    public void setupAgent(String agentType, int numAgents){
+        if(agentType == "RANDOM"){
+            for (int i = 0; i < numAgents; i++) {
+                //random agents
+                launchAgent(new SimulatedAgentRandom());
+            }
+        }
+        else if(agentType == "APPENDIX_B"){
+            launchAgent(new SimulatedAgent02());
+            launchAgent(new SimulatedAgent01());
+        }
     }
 
     public static void main(String[] args) {

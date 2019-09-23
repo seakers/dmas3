@@ -40,8 +40,8 @@ public class ResultsCompiler extends AbstractAgent {
         }
 
         if(receivedResults.size() >= this.numAgents){ // checks if every agent has sent finished its tasks.
-            getLogger().info("Terminating Sim. Saving Results.");
             // Every agent has finished its tasks
+            getLogger().info("Terminating Sim. Saving Results.");
 
             // print results
             printResults(receivedResults);
@@ -55,35 +55,10 @@ public class ResultsCompiler extends AbstractAgent {
     protected void printResults( Vector<IterationResults> receivedResults ) throws IOException {
         this.receivedResults = receivedResults;
         printWinningVectors();
-        //printMetrics();
         printTaskList();
         printAgentList();
+        printMetrics();
         printReport();
-
-        /*
-        // CoalitionsFormed CoalitionsAvailable ScoreAchieved ScoreAvailable TotalCost ResourcePerAgent MergeCost SplitCost NumberofTasksDone PlanHorizon
-
-
-        // Create a new file with
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd-hhmm");
-        LocalDateTime now = LocalDateTime.now();
-        FileWriter fileWriter = null;
-        PrintWriter printWriter;
-        String address = "src/CCBBA/Results/results-"+ dtf.format(now) + ".out";
-
-        fileWriter = null;
-        try {
-            fileWriter = new FileWriter( address, true );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        printWriter = new PrintWriter(fileWriter);
-
-        //printWriter.printf("CoalitionsFormed\tCoalitionsAvailable\tScoreAchieved\tScoreAvailable\tResourcesPerCostPerAgent\tMergeCost\tSplitCost\tNumberOfTasksDone\tPlanHorizon\n");
-        printWriter.printf("%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",coalitionsFormed, coalitionsAvailable, scoreAchieved, scoreAvaiable, resourcesPerCostPerAgent, mergeCost, splitCost, numberOfTasksDone, planHorizon);
-
-        printWriter.close();
-        */
     }
 
     private void printWinningVectors(){
@@ -421,26 +396,22 @@ public class ResultsCompiler extends AbstractAgent {
         double resources;
         double localCost;
 
-        //return 0.0;
-
-
-        for(int i = 0; i < localZ.size(); i++){
-            if(( localZ.get(i) != null ) && (!agentList.contains(localZ.get(i))) ){
-                agentList.add( localZ.get(i) );
-                resources = receivedResults.get(i).getResources();
+        for (int i = 0; i < localZ.size(); i++) {
+            if ((localZ.get(i) != null) && (!agentList.contains(localZ.get(i)))) {
+                agentList.add(localZ.get(i));
+                resources = localZ.get(i).getResources();
                 localCost = 0;
 
-                for(int j = i; j < localZ.size(); j++){
-                    if(localZ.get(j) == localZ.get(i)){
+                for (int j = i; j < localZ.size(); j++) {
+                    if (localZ.get(j) == localZ.get(i)) {
                         localCost = localCost + cost.get(j);
                     }
                 }
-                avg = avg + resources/localCost;
+                avg = avg + resources / localCost;
             }
         }
-        avg = avg / receivedResults.size();
 
-        return avg;
+        return avg / receivedResults.size();
 
     }
 }

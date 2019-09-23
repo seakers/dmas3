@@ -1,0 +1,116 @@
+Task Number:		0
+Maximum Score:		70.020820
+Subtask Cost:		0.759934
+Number of Sensors:	3.000000
+Number of Subtasks:	12
+
+Location:			[15.000000, 5.000000, 0.000000]
+Sensor List:		[MW, VIS, IR]
+Subtask List:		[MW_{}, MW_{IR}, MW_{VIS}, MW_{VIS, IR}, VIS_{}, VIS_{IR}, VIS_{MW}, VIS_{MW, IR}, IR_{}, IR_{VIS}, IR_{MW}, IR_{MW, VIS}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.502925
+Corr Time:		1.000000
+Lambda:			1.200000
+Dependency Matrix:
+   [0	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	0	0	0	-1	1	1	1	-1	1	1	1
+	-1	-1	-1	-1	0	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	1	1	1
+	-1	-1	-1	-1	-1	-1	-1	-1	0	-1	-1	-1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	1	1	1	-1	0	0	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.502925	0.502925	0.502925
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.502925	0.502925	0.502925	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.502925	0.502925	0.502925
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.502925	0.502925	0.502925
+	Infinity	0.502925	0.502925	0.502925	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.502925	0.502925	0.502925
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.502925	0.502925	0.502925	Infinity	Infinity	Infinity	Infinity
+	Infinity	0.502925	0.502925	0.502925	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.502925	0.502925	0.502925	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************
+Task Number:		1
+Maximum Score:		88.116097
+Subtask Cost:		0.013791
+Number of Sensors:	1.000000
+Number of Subtasks:	1
+
+Location:			[16.000000, 18.000000, 0.000000]
+Sensor List:		[VIS]
+Subtask List:		[VIS_{}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.252680
+Corr Time:		1.000000
+Lambda:			1.200000
+Dependency Matrix:
+   [0]
+
+Time Constraint Matrix:
+   [Infinity]
+
+
+**********************************
+Task Number:		2
+Maximum Score:		46.913088
+Subtask Cost:		0.511206
+Number of Sensors:	3.000000
+Number of Subtasks:	12
+
+Location:			[10.000000, 1.000000, 0.000000]
+Sensor List:		[IR, MW, VIS]
+Subtask List:		[IR_{}, IR_{VIS}, IR_{MW}, IR_{MW, VIS}, MW_{}, MW_{VIS}, MW_{IR}, MW_{IR, VIS}, VIS_{}, VIS_{MW}, VIS_{IR}, VIS_{IR, MW}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.836163
+Corr Time:		1.000000
+Lambda:			1.200000
+Dependency Matrix:
+   [0	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	0	0	0	-1	1	1	1	-1	1	1	1
+	-1	-1	-1	-1	0	-1	-1	-1	-1	-1	-1	-1
+	-1	0	0	0	-1	0	0	0	-1	1	1	1
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	1	1	1
+	-1	-1	-1	-1	-1	-1	-1	-1	0	-1	-1	-1
+	-1	0	0	0	-1	1	1	1	-1	0	0	0
+	-1	1	1	1	-1	0	0	0	-1	0	0	0
+	-1	1	1	1	-1	1	1	1	-1	0	0	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.836163	0.836163	0.836163
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.836163	0.836163	0.836163	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.836163	0.836163	0.836163
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.836163	0.836163	0.836163
+	Infinity	0.836163	0.836163	0.836163	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	0.836163	0.836163	0.836163
+	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.836163	0.836163	0.836163	Infinity	Infinity	Infinity	Infinity
+	Infinity	0.836163	0.836163	0.836163	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity	Infinity	0.836163	0.836163	0.836163	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************

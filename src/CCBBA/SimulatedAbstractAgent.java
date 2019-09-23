@@ -89,7 +89,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         if(this.zeta == 0) {
             getLogger().info("Creating plan...");
         }
-        getLogger().info("Phase 1...");
+        //getLogger().info("Phase 1...");
 
         // Get incomplete subtasks
         J = getIncompleteSubtasks();
@@ -205,7 +205,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     public void phaseTwo() {
         //Phase 2 - Consensus
-        getLogger().info("Phase 2...");
+        //getLogger().info("Phase 2...");
 
         //Receive results
         List<Message> receivedMessages = nextMessages(null);
