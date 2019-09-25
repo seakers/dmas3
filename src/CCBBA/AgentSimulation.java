@@ -31,12 +31,11 @@ public class AgentSimulation extends AbstractAgent {
         createGroup(MY_COMMUNITY, SIMU_GROUP);
 
         // 2 : create the environment
-        //Scenario environment = new Scenario("random", 2);
-        Scenario environment = new Scenario("RANDOM", 3);
+        Scenario environment = new Scenario("2D_VALIDATION", 30);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent("RANDOM", 2);
+        setupAgent("2D_VALIDATION_MOD");
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);
@@ -45,28 +44,43 @@ public class AgentSimulation extends AbstractAgent {
         launchAgent( new ResultsCompiler(2, this.directoryAddress), false );
     }
 
-    public void createFile(){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd-hh_mm_ss");
-        LocalDateTime now = LocalDateTime.now();
-        this.directoryAddress = "src/CCBBA/Results/results-"+ dtf.format(now);
-        new File( this.directoryAddress ).mkdir();
+    private void setupAgent(String agentType){
+        if(agentType == "APPENDIX_B"){
+            launchAgent(new SimulatedAgent02());
+            launchAgent(new SimulatedAgent01());
+        }
+        else if(agentType == "2D_VALIDATION_INT"){
+            launchAgent(new ValidationAgentInt());
+            launchAgent(new ValidationAgentInt());
+        }
+        else if(agentType == "2D_VALIDATION_MOD"){
+            // e = {IR}
+            launchAgent(new ValidationAgentMod01());
+            launchAgent(new ValidationAgentMod01());
+            // e = {MW}
+            launchAgent(new ValidationAgentMod02());
+            launchAgent(new ValidationAgentMod02());
+        }
     }
 
-    public void setupAgent(String agentType, int numAgents){
-        if(agentType == "RANDOM"){
+    private void setupAgent(String agentType, int numAgents) {
+        if (agentType == "RANDOM") {
             for (int i = 0; i < numAgents; i++) {
                 //random agents
                 launchAgent(new SimulatedAgentRandom());
             }
         }
-        else if(agentType == "APPENDIX_B"){
-            launchAgent(new SimulatedAgent02());
-            launchAgent(new SimulatedAgent01());
-        }
+    }
+
+    private void createFile(){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd-hh_mm_ss_SSS");
+        LocalDateTime now = LocalDateTime.now();
+        this.directoryAddress = "src/CCBBA/results/results-"+ dtf.format(now);
+        new File( this.directoryAddress ).mkdir();
     }
 
     public static void main(String[] args) {
-        for(int i = 0; i < 1; i++) {
+        for(int i = 0; i < 10; i++) {
             executeThisAgent(1, false);
         }
     }

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Vector;
 
 public class Task {
+    double inf = Double.POSITIVE_INFINITY;
     protected Dimension location;               // (x,y) Location of task
     protected double cost;                      // cost of executing task
     protected Vector<Subtask> J;                // List of Subtasks
@@ -17,7 +18,7 @@ public class Task {
     protected double[][] T;                     // Max allowable time of arrival between tasks j and q
     protected int[][] D;                        // Dependency Matrix
     protected double S_max;                     // Maximum score
-    protected double gamma = 1.0;               // Proximity parameter
+    protected double gamma = Double.NEGATIVE_INFINITY;  // Proximity parameter
 
     /**
      * Task constructor
@@ -27,9 +28,7 @@ public class Task {
      * @param time_constraints time constraint vector
      */
     public Task(Double s_max, Dimension task_location, double task_cost, Vector<String> task_sensors, Vector<Double> time_constraints){
-        double inf = Double.POSITIVE_INFINITY;
-
-        this.S_max = s_max;
+                this.S_max = s_max;
         this.complete = false;
         this.location = task_location;
         this.cost = task_cost;

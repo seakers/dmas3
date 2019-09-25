@@ -60,6 +60,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         this.location = getInitialPosition();
         this.sensors = getSensorList();
+        this.resources = getResources();
         this.speed = setSpeed();
         this.miu = setMiu();
         this.M = getM();
@@ -74,7 +75,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.convergenceIndicator = getConvergenceIndicator();
         this.C_merge = getC_merge();
         this.C_split = getC_split();
-        this.resources = getResources();
     }
 
     /**
@@ -800,6 +800,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     public Vector<Subtask> getJ(){ return this.J; }
     public int getZeta(){ return this.zeta; }
     public Vector<String> getSensors(){ return this.sensors; }
+    protected double readResources(){ return this.resources; }
 
     /**
      * Abstract Agent Settings
@@ -825,7 +826,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return speed;
     }
 
-    private double setMiu(){
+    protected double setMiu(){
         double miu = 1.0;
         return miu;
     }

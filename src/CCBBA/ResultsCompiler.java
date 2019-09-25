@@ -29,7 +29,7 @@ public class ResultsCompiler extends AbstractAgent {
 
     private void checkResults() throws IOException {
         // Wait and check for messages
-
+        // TBA
 
         //Receive results
         List<Message> receivedMessages = nextMessages(null);
@@ -114,10 +114,10 @@ public class ResultsCompiler extends AbstractAgent {
         //obtain values
         Vector resultsToPrint = new Vector();
 
-        int coalitionsFormed = calcCoalitionsFormed(this.receivedResults);
-        int coalitionsAvailable = 0;
+        double coalitionsFormed = calcCoalitionsFormed(this.receivedResults);
+        double coalitionsAvailable = countTasksAvailable();
         double scoreAchieved = calcScoreAchieved(this.receivedResults);
-        double scoreAvaiable = calcScoreAvailale(this.receivedResults);
+        double scoreAvailable = calcScoreAvailale(this.receivedResults);
         double resourcesPerCostPerAgent = calcAvgResourcesPerCost(this.receivedResults);
         double mergeCost = this.receivedResults.get(0).getC_merge();
         double splitCost = this.receivedResults.get(0).getC_split();
@@ -127,7 +127,7 @@ public class ResultsCompiler extends AbstractAgent {
         resultsToPrint.add(coalitionsFormed);
         resultsToPrint.add(coalitionsAvailable);
         resultsToPrint.add(scoreAchieved);
-        resultsToPrint.add(scoreAvaiable);
+        resultsToPrint.add(scoreAvailable);
         resultsToPrint.add(resourcesPerCostPerAgent);
         resultsToPrint.add(mergeCost);
         resultsToPrint.add(splitCost);
@@ -413,5 +413,10 @@ public class ResultsCompiler extends AbstractAgent {
 
         return avg / receivedResults.size();
 
+    }
+
+    private double countTasksAvailable(){
+        Vector<Task> taskList = this.environment.getTasks();
+        return taskList.size();
     }
 }
