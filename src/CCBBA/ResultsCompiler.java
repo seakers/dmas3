@@ -371,16 +371,17 @@ public class ResultsCompiler extends AbstractAgent {
 
     private int calcCoalitionsFormed(Vector<IterationResults> receivedResults){
         int count = 0;
+        Vector<Task> coalitionList = new Vector<>();
+
         for(int i = 0; i < receivedResults.size(); i++){
             Vector<Subtask> tempBundle = receivedResults.get(i).getBundle();
             Vector<Vector<SimulatedAbstractAgent>> tempOmega = receivedResults.get(i).getOmega();
-            Vector<Subtask> coalitionList = new Vector<>();
 
             for(int j = 0; j < tempBundle.size(); j++){
-                if(tempOmega.get(j).size() > 0){ // if the task in the bundle has a coalition partner
-                    if(!coalitionList.contains(tempBundle.get(j))){ // check if task related to that coalition has been counted
-                        coalitionList.add(tempBundle.get(j)); // if not, add coalition to list
-                        count++; // increase coalition count
+                if(tempOmega.get(j).size() > 0){                        // if the task in the bundle has a coalition partner
+                    if(!coalitionList.contains(tempBundle.get(j).getParentTask())){     // check if task related to that coalition has been counted
+                        coalitionList.add(tempBundle.get(j).getParentTask());           // if not, add coalition to list
+                        count++;                                        // increase coalition count
                     }
                 }
             }
@@ -416,7 +417,7 @@ public class ResultsCompiler extends AbstractAgent {
     }
 
     private double countTasksAvailable(){
-        Vector<Task> taskList = this.environment.getTasks();
-        return taskList.size();
+        Vector<Task> taskList = this.environment.getTasks(); // <- TEMPORARY SOLUTION. ONLY VALID FOR VALIDATION SCENARIOS
+        return taskList.size()/2.0;
     }
 }

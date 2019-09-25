@@ -31,11 +31,11 @@ public class AgentSimulation extends AbstractAgent {
         createGroup(MY_COMMUNITY, SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new Scenario("2D_VALIDATION", 30);
+        Scenario environment = new Scenario("APPENDIX_B", 30);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent("2D_VALIDATION_INT");
+        setupAgent("APPENDIX_B");
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);
@@ -80,7 +80,7 @@ public class AgentSimulation extends AbstractAgent {
     }
 
     public static void main(String[] args) {
-        for(int i = 0; i < 10; i++) {
+        for(int i = 0; i < 1; i++) {
             executeThisAgent(1, false);
         }
     }
