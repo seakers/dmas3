@@ -35,7 +35,7 @@ public class AgentSimulation extends AbstractAgent {
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent("2D_VALIDATION_MOD");
+        setupAgent("2D_VALIDATION_INT");
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);
