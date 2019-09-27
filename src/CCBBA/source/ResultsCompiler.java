@@ -1,9 +1,10 @@
-package CCBBA;
+package CCBBA.source;
 
 import madkit.action.SchedulingAction;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Message;
 import madkit.message.SchedulingMessage;
+import CCBBA.CCBBASimulation;
 
 import java.io.*;
 import java.util.List;

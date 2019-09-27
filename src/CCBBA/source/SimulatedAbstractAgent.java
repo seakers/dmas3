@@ -1,17 +1,12 @@
-package CCBBA;
+package CCBBA.source;
 
-import madkit.action.SchedulingAction;
 import madkit.kernel.AbstractAgent;
-import madkit.kernel.Agent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
-import madkit.message.SchedulingMessage;
+import CCBBA.CCBBASimulation;
 
 import java.awt.*;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Vector;
 import java.util.List;
 

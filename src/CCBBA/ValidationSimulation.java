@@ -5,6 +5,8 @@ import madkit.kernel.AbstractAgent;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import CCBBA.source.*;
+import CCBBA.scenarios.validation.*;
 
 public class ValidationSimulation extends AbstractAgent {
 
@@ -31,17 +33,17 @@ public class ValidationSimulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        CCBBA.Scenario environment = new CCBBA.Scenario("2D_VALIDATION", 30);
+        Scenario environment = new Scenario("2D_VALIDATION", 30);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
         setupAgent("2D_VALIDATION_MOD");
 
         // 4 : create the scheduler
-        launchAgent(new CCBBA.myScheduler("CCBBA"), false);
+        launchAgent(new myScheduler("CCBBA"), false);
 
         // 5 : launch results compiler
-        launchAgent( new CCBBA.ResultsCompiler(this.numAgents, this.directoryAddress), false );
+        launchAgent( new ResultsCompiler(this.numAgents, this.directoryAddress), false );
     }
 
     /**
@@ -50,17 +52,17 @@ public class ValidationSimulation extends AbstractAgent {
 
     private void setupAgent(String agentType){
         if(agentType == "2D_VALIDATION_INT"){
-            launchAgent(new CCBBA.ValidationAgentInt());
-            launchAgent(new CCBBA.ValidationAgentInt());
+            launchAgent(new ValidationAgentInt());
+            launchAgent(new ValidationAgentInt());
             this.numAgents = 2;
         }
         else if(agentType == "2D_VALIDATION_MOD"){
             // e = {IR}
-            launchAgent(new CCBBA.ValidationAgentMod01());
-            launchAgent(new CCBBA.ValidationAgentMod01());
+            launchAgent(new ValidationAgentMod01());
+            launchAgent(new ValidationAgentMod01());
             // e = {MW}
-            launchAgent(new CCBBA.ValidationAgentMod02());
-            launchAgent(new CCBBA.ValidationAgentMod02());
+            launchAgent(new ValidationAgentMod02());
+            launchAgent(new ValidationAgentMod02());
             this.numAgents = 4;
         }
     }

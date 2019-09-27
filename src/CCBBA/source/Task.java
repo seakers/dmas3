@@ -1,7 +1,6 @@
-package CCBBA;
+package CCBBA.source;
 
 import java.awt.*;
-import java.util.Arrays;
 import java.util.Vector;
 
 public class Task {

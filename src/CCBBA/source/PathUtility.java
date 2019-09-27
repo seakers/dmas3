@@ -1,4 +1,4 @@
-package CCBBA;
+package CCBBA.source;
 
 public class PathUtility{
     private double utility;

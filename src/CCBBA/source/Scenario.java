@@ -1,8 +1,9 @@
-package CCBBA;
+package CCBBA.source;
 
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
+import CCBBA.CCBBASimulation;
 
 import java.awt.*;
 import java.util.Vector;

@@ -1,7 +1,8 @@
-package CCBBA;
+package CCBBA.scenarios.validation;
 
 import java.awt.*;
 import java.util.Vector;
+import CCBBA.source.*;
 
 public class ValidationAgentMod02 extends SimulatedAbstractAgent {
     @Override

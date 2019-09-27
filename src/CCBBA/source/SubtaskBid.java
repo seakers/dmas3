@@ -1,10 +1,8 @@
-package CCBBA;
+package CCBBA.source;
 
 import java.awt.*;
-import java.nio.file.Path;
 import java.util.Vector;
 
-import static java.lang.Math.PI;
 import static java.lang.Math.exp;
 import static java.lang.Math.pow;
 import static java.lang.StrictMath.sqrt;

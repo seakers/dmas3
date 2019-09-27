@@ -1,4 +1,4 @@
-package CCBBA;
+package CCBBA.source;
 
 import madkit.kernel.Message;
 

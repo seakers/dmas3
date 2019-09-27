@@ -1,13 +1,15 @@
-package CCBBA;
+package CCBBA.scenarios.validation;
 
 import java.awt.*;
 import java.util.Vector;
+import CCBBA.source.*;
 
-public class ValidationAgentMod01 extends SimulatedAbstractAgent {
+public class ValidationAgentInt extends SimulatedAbstractAgent {
     @Override
     protected Vector<String> getSensorList() {
         Vector<String> sensor_list = new Vector<>();
         sensor_list.add("IR");
+        sensor_list.add("MW");
         return sensor_list;
     }
 
@@ -35,7 +37,9 @@ public class ValidationAgentMod01 extends SimulatedAbstractAgent {
     }
 
     @Override
-    protected double getResources() { return 15 * Math.random() + 35; }
+    protected double getResources() {
+        return 30 * Math.random() + 70.0;
+    }
 
     @Override
     protected double setMiu(){

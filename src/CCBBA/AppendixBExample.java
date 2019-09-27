@@ -1,7 +1,8 @@
 package CCBBA;
 
 import CCBBA.CCBBASimulation;
-import CCBBA.Scenario;
+import CCBBA.scenarios.appendix_b.*;
+import CCBBA.source.*;
 import madkit.kernel.AbstractAgent;
 
 import java.io.File;
@@ -40,10 +41,10 @@ public class AppendixBExample extends AbstractAgent {
         setupAgent();
 
         // 4 : create the scheduler
-        launchAgent(new CCBBA.myScheduler("CCBBA"), false);
+        launchAgent(new myScheduler("CCBBA"), false);
 
         // 5 : launch results compiler
-        launchAgent( new CCBBA.ResultsCompiler(this.numAgents, this.directoryAddress), false );
+        launchAgent( new ResultsCompiler(this.numAgents, this.directoryAddress), false );
     }
 
     /**
@@ -51,8 +52,8 @@ public class AppendixBExample extends AbstractAgent {
      */
 
     private void setupAgent(){
-        launchAgent(new CCBBA.SimulatedAgent02());
-        launchAgent(new CCBBA.SimulatedAgent01());
+        launchAgent(new SimulatedAgent02());
+        launchAgent(new SimulatedAgent01());
     }
 
     private void createFile(){

@@ -1,7 +1,8 @@
-package CCBBA;
+package CCBBA.scenarios.appendix_b;
 
 import java.awt.*;
 import java.util.Vector;
+import CCBBA.source.*;
 
 public class SimulatedAgent02 extends SimulatedAbstractAgent {
     @Override

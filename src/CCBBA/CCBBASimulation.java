@@ -9,7 +9,8 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import CCBBA.CCBBASimulation;
-import CCBBA.Scenario;
+import CCBBA.scenarios.random.*;
+import CCBBA.source.*;
 
 public class CCBBASimulation extends AbstractAgent {
 
@@ -51,10 +52,10 @@ public class CCBBASimulation extends AbstractAgent {
         setupAgent();
 
         // 4 : create the scheduler
-        launchAgent(new CCBBA.myScheduler("CCBBA"), false);
+        launchAgent(new myScheduler("CCBBA"), false);
 
         // 5 : launch results compiler
-        launchAgent( new CCBBA.ResultsCompiler(this.numAgents, this.directoryAddress), false );
+        launchAgent( new ResultsCompiler(this.numAgents, this.directoryAddress), false );
     }
 
     /**
@@ -63,7 +64,7 @@ public class CCBBASimulation extends AbstractAgent {
     private void setupAgent() {
         for (int i = 0; i < this.numAgents; i++) {
             //random agents
-            launchAgent(new CCBBA.SimulatedAgentRandom());
+            launchAgent(new SimulatedAgentRandom());
         }
     }
 

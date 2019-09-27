@@ -1,10 +1,12 @@
-package CCBBA;
+package CCBBA.source;
 
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Message;
 import madkit.kernel.Scheduler;
 import madkit.simulation.activator.GenericBehaviorActivator;
 import java.util.List;
+import CCBBA.source.*;
+import CCBBA.CCBBASimulation;
 
 public class myScheduler extends Scheduler {
     protected GenericBehaviorActivator<AbstractAgent> agents;
