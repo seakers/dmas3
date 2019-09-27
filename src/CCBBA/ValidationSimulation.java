@@ -1,0 +1,74 @@
+package CCBBA;
+
+import madkit.kernel.AbstractAgent;
+
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+public class ValidationSimulation extends AbstractAgent {
+
+    // Organizational constants
+    private String directoryAddress;
+    private int numAgents = 0;
+
+    /**
+     * Sim Setup
+     * @param args
+     */
+    public static void main(String[] args) {
+        for(int i = 0; i < 1; i++) {
+            executeThisAgent(1, false);
+        }
+    }
+
+    @Override
+    protected void activate() {
+        // 0 : create results directory
+        createFile();
+
+        // 1 : create the simulation group
+        createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
+
+        // 2 : create the environment
+        CCBBA.Scenario environment = new CCBBA.Scenario("2D_VALIDATION", 30);
+        launchAgent(environment);
+
+        // 3 : launch some simulated agents
+        setupAgent("2D_VALIDATION_MOD");
+
+        // 4 : create the scheduler
+        launchAgent(new CCBBA.myScheduler("CCBBA"), false);
+
+        // 5 : launch results compiler
+        launchAgent( new CCBBA.ResultsCompiler(this.numAgents, this.directoryAddress), false );
+    }
+
+    /**
+     * Helping functions
+     */
+
+    private void setupAgent(String agentType){
+        if(agentType == "2D_VALIDATION_INT"){
+            launchAgent(new CCBBA.ValidationAgentInt());
+            launchAgent(new CCBBA.ValidationAgentInt());
+            this.numAgents = 2;
+        }
+        else if(agentType == "2D_VALIDATION_MOD"){
+            // e = {IR}
+            launchAgent(new CCBBA.ValidationAgentMod01());
+            launchAgent(new CCBBA.ValidationAgentMod01());
+            // e = {MW}
+            launchAgent(new CCBBA.ValidationAgentMod02());
+            launchAgent(new CCBBA.ValidationAgentMod02());
+            this.numAgents = 4;
+        }
+    }
+
+    private void createFile(){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd-hh_mm_ss_SSS");
+        LocalDateTime now = LocalDateTime.now();
+        this.directoryAddress = "src/CCBBA/results/results-validation-"+ dtf.format(now);
+        new File( this.directoryAddress ).mkdir();
+    }
+}

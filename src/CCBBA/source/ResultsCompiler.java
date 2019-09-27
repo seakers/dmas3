@@ -6,8 +6,6 @@ import madkit.kernel.Message;
 import madkit.message.SchedulingMessage;
 
 import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Vector;
 
@@ -24,7 +22,7 @@ public class ResultsCompiler extends AbstractAgent {
 
     @Override
     protected void activate(){
-        requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.RESULTS_ROLE);
+        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
     }
 
     private void checkResults() throws IOException {
@@ -48,7 +46,7 @@ public class ResultsCompiler extends AbstractAgent {
 
             // terminate sim
             SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
-            sendMessage(getAgentWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.SCH_ROLE), terminate);
+            sendMessage(getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.SCH_ROLE), terminate);
         }
     }
 

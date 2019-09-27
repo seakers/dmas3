@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import CCBBA.CCBBASimulation;
+import CCBBA.Scenario;
 
-public class AgentSimulation extends AbstractAgent {
+public class CCBBASimulation extends AbstractAgent {
 
     // Organizational constants
     public static final String MY_COMMUNITY = "simu";
@@ -21,6 +23,17 @@ public class AgentSimulation extends AbstractAgent {
     public static final String SCH_ROLE = "scheduler";
     public static final String RESULTS_ROLE = "results";
     private String directoryAddress;
+    private int numAgents = 4;
+
+    /**
+     * Sim Setup
+     *
+     */
+    public static void main(String[] args) {
+        for(int i = 0; i < 1; i++) {
+            executeThisAgent(1, false);
+        }
+    }
 
     @Override
     protected void activate() {
@@ -31,44 +44,26 @@ public class AgentSimulation extends AbstractAgent {
         createGroup(MY_COMMUNITY, SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new Scenario("APPENDIX_B", 30);
+        Scenario environment = new Scenario("RANDOM", 30);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent("APPENDIX_B");
+        setupAgent();
 
         // 4 : create the scheduler
-        launchAgent(new myScheduler("CCBBA"), false);
+        launchAgent(new CCBBA.myScheduler("CCBBA"), false);
 
         // 5 : launch results compiler
-        launchAgent( new ResultsCompiler(2, this.directoryAddress), false );
+        launchAgent( new CCBBA.ResultsCompiler(this.numAgents, this.directoryAddress), false );
     }
 
-    private void setupAgent(String agentType){
-        if(agentType == "APPENDIX_B"){
-            launchAgent(new SimulatedAgent02());
-            launchAgent(new SimulatedAgent01());
-        }
-        else if(agentType == "2D_VALIDATION_INT"){
-            launchAgent(new ValidationAgentInt());
-            launchAgent(new ValidationAgentInt());
-        }
-        else if(agentType == "2D_VALIDATION_MOD"){
-            // e = {IR}
-            launchAgent(new ValidationAgentMod01());
-            launchAgent(new ValidationAgentMod01());
-            // e = {MW}
-            launchAgent(new ValidationAgentMod02());
-            launchAgent(new ValidationAgentMod02());
-        }
-    }
-
-    private void setupAgent(String agentType, int numAgents) {
-        if (agentType == "RANDOM") {
-            for (int i = 0; i < numAgents; i++) {
-                //random agents
-                launchAgent(new SimulatedAgentRandom());
-            }
+    /**
+     * Helping functions
+     */
+    private void setupAgent() {
+        for (int i = 0; i < this.numAgents; i++) {
+            //random agents
+            launchAgent(new CCBBA.SimulatedAgentRandom());
         }
     }
 
@@ -77,11 +72,5 @@ public class AgentSimulation extends AbstractAgent {
         LocalDateTime now = LocalDateTime.now();
         this.directoryAddress = "src/CCBBA/results/results-"+ dtf.format(now);
         new File( this.directoryAddress ).mkdir();
-    }
-
-    public static void main(String[] args) {
-        for(int i = 0; i < 1; i++) {
-            executeThisAgent(1, false);
-        }
     }
 }

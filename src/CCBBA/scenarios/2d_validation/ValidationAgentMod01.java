@@ -3,11 +3,11 @@ package CCBBA;
 import java.awt.*;
 import java.util.Vector;
 
-public class ValidationAgentMod02 extends SimulatedAbstractAgent {
+public class ValidationAgentMod01 extends SimulatedAbstractAgent {
     @Override
     protected Vector<String> getSensorList() {
         Vector<String> sensor_list = new Vector<>();
-        sensor_list.add("MW");
+        sensor_list.add("IR");
         return sensor_list;
     }
 
@@ -35,13 +35,17 @@ public class ValidationAgentMod02 extends SimulatedAbstractAgent {
     }
 
     @Override
-    protected double getResources() {
-        return 50 * Math.random();
-    }
+    protected double getResources() { return 15 * Math.random() + 35; }
 
     @Override
     protected double setMiu(){
         double miu = readResources() * 0.57/100;
         return miu;
+    }
+
+    @Override
+    protected int getM(){
+        int M_agent = 30;
+        return M_agent;
     }
 }

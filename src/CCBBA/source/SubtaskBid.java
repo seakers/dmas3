@@ -183,8 +183,8 @@ public class SubtaskBid {
         double S = calcSubtaskScore(path, j, t_a, agent);
         double g = calcTravelCost(path, j, agent);
         double p = calcMergePenalty(path, j, agent);
-        double c_v = calcSubtaskCost(j); //<- UNCOMMENT WHEN VALIDATION IS DONE
-//        double c_v = calcSubtaskCost(agent); // <- DELETE WHEN VALIDATION IS DONE
+//        double c_v = calcSubtaskCost(j); //<- UNCOMMENT WHEN VALIDATION IS DONE
+        double c_v = calcSubtaskCost(agent); // <- DELETE WHEN VALIDATION IS DONE
 
         pathUtility.setUtility(S - g - p - c_v);
         pathUtility.setCost(g + p + c_v);

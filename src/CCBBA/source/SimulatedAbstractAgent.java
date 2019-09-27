@@ -56,7 +56,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     @Override
     protected void activate() {
         // Request Role
-        requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK);
+        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK);
 
         this.location = getInitialPosition();
         this.sensors = getSensorList();
@@ -83,7 +83,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     public void phaseOne(){
         //Obtain list of planning agents
-        this.list_agents = getAgentsWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_THINK, false);
+        this.list_agents = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, false);
 
         // Phase 1 - Create bid for individual spacecraft
         if(this.zeta == 0) {
@@ -132,7 +132,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 Subtask j = this.J.get(i);
 
                 // Check if subtask can be bid on
-                if(canBid(j, i, localResults)) { // task can be bid on
+                if(canBid(j, i, localResults) && (localResults.getH().get(i) == 1)) { // task can be bid on
                     // Calculate bid for subtask
                     SubtaskBid localBid = new SubtaskBid();
                     localBid.calcBidForSubtask(j, this);
@@ -237,7 +237,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 convergenceCounter++;
                 if(convergenceCounter >= convergenceIndicator){
                     getLogger().info("Plan Converged");
-                    requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_DO);
+                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
                     break;
                 }
             }
@@ -511,14 +511,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     private void doTasks() throws IOException {
         getLogger().info("Doing Tasks...");
 
-        requestRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.AGENT_DIE);
+        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
     }
 
     @Override
     protected void end(){
         getLogger().info("Tasks completed. Killing agent, goodbye!");
 
-        AgentAddress resultsAddress = getAgentWithRole(AgentSimulation.MY_COMMUNITY, AgentSimulation.SIMU_GROUP, AgentSimulation.RESULTS_ROLE);
+        AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
         myMessage myDeath = new myMessage(this.localResults, this.getName());
         sendMessage(resultsAddress, myDeath);
     }
@@ -531,7 +531,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         //Looks for tasks from environment and checks for completion
         Vector<Task> V = environment.getTasks();
         Vector<Subtask> J_available = new Vector<>();
-        boolean req2;   // Is subtask complete?
 
         for(int i = 0; i < V.size(); i++){
             Vector<Subtask> J_i = V.get(i).getJ();
@@ -617,7 +616,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         Vector<Subtask> J_parent = parentTask.getJ();
         Vector<Double> y = localResults.getY();
         Vector<SimulatedAbstractAgent> z = localResults.getZ();
-        double c = bid.getC();
         int[][] D = j.getParentTask().getD();
 
         double new_bid = 0.0;
@@ -625,8 +623,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         for(int i = 0; i < y.size(); i++){
             // Check if j and q are in the same task
-            //if( ( i > (i_subtask-J_parent.indexOf(j) ) )&&( i < ( i_subtask-J_parent.indexOf(j)+J_parent.size() ) ) ){
-            if(localResults.getJ().get(i).getParentTask() == parentTask){
+            if((localResults.getJ().get(i).getParentTask() == parentTask) && (i != i_subtask)){
                 //Check if bid outmatches coalition bid
                 int j_index = J_parent.indexOf(j);
                 int q_index = i - (i_subtask - J_parent.indexOf(j));
@@ -639,7 +636,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 }
             }
         }
-        new_bid = new_bid + c;
+        new_bid = new_bid + bid.getC();;
 
         if(new_bid > coalition_bid){
             return 1;
@@ -651,6 +648,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         Task parentTask = j.getParentTask();
         Vector<Subtask> J_parent = parentTask.getJ();
         Vector<Double> y = localResults.getY();
+        Vector<SimulatedAbstractAgent> z = localResults.getZ();
         double c = bid.getC();
         int[][] D = j.getParentTask().getD();
 
@@ -666,19 +664,20 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
         new_bid = new_bid + c;
 
-        double max_bid = 0.0;
         Vector<Vector<Integer>> coalitionMembers = new Vector<>();
         for(int i_j = 0; i_j < J_parent.size(); i_j++){
             Vector<Integer> Jv = new Vector<>();
             for(int i_q = 0; i_q < J_parent.size(); i_q++){
-                if( (D[i_j][i_q] == 0)||(D[i_j][i_q] == 1) ){
+                if( (D[i_j][i_q] == 1) ){
                     Jv.add(i_q);
                 }
             }
+            Jv.add(J_parent.indexOf(j));
+
             coalitionMembers.add(Jv);
         }
 
-
+        double max_bid = 0.0;
         Vector<Integer> Jv;
         for(int i_c = 0; i_c < coalitionMembers.size(); i_c++) {
             double y_coalition = 0.0;
