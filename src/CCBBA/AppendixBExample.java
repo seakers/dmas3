@@ -20,9 +20,7 @@ public class AppendixBExample extends AbstractAgent {
      *
      */
     public static void main(String[] args) {
-        for(int i = 0; i < 1; i++) {
-            executeThisAgent(1, false);
-        }
+        executeThisAgent(1, false);
     }
 
     @Override
