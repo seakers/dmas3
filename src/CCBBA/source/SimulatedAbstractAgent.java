@@ -650,11 +650,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         double new_bid = 0.0;
         for(int q = 0; q < J_parent.size(); q++) {
             //if q != j and D(j,q) == 1, then add y_q to new bid
-            if( D[J_parent.indexOf(j)][q] == 1 ) {
-                if(J_parent.get(q) != j){
-                    int i_q = localResults.getJ().indexOf(J_parent.get(q));
-                    new_bid = new_bid + y.get(i_q);
-                }
+            if( (J_parent.get(q) != j) && (D[J_parent.indexOf(j)][q] == 1) ){
+                int i_q = localResults.getJ().indexOf(J_parent.get(q));
+                new_bid = new_bid + y.get(i_q);
             }
         }
         new_bid = new_bid + c;
@@ -673,15 +671,18 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         double max_bid = 0.0;
+        double y_coalition;
         Vector<Integer> Jv;
         for(int i_c = 0; i_c < coalitionMembers.size(); i_c++) {
-            double y_coalition = 0.0;
+            y_coalition = 0.0;
             Jv = coalitionMembers.get(i_c);
 
             for (int i = 0; i < Jv.size(); i++) {
                 int i_v = Jv.get(i) + localResults.getJ().indexOf(j) - J_parent.indexOf(j);
                 y_coalition = y_coalition + y.get(i_v);
             }
+            int i_v = i_c + localResults.getJ().indexOf(j) - J_parent.indexOf(j);
+            y_coalition = y_coalition + y.get(i_v);
 
             if (y_coalition > max_bid) {
                 max_bid = y_coalition;
@@ -811,7 +812,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     protected int getM(){
-        int M_agent = 2;
+        int M_agent = 1;
         return M_agent;
     }
 

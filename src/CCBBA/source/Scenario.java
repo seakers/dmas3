@@ -123,6 +123,22 @@ public class Scenario extends Watcher {
 
             Task task2 = new Task(30.0, x_2, 2.0, e_2, tc_2);
             scenarioTasks.add(task2);
+
+//            //Define task 3
+//            Dimension x_3 = new Dimension(4, 4);
+//            Vector<String> e_3 = new Vector<>();
+//            Vector<Double> tc_3 = new Vector<>();
+//
+//            e_3.add("IR");
+//
+//            tc_3.add(0.0);
+//            tc_3.add(inf);
+//            tc_3.add(1.0);
+//            tc_3.add(1.0);
+//            tc_3.add(1.0);
+//
+//            Task task3 = new Task(30.0, x_3, 2.0, e_3, tc_3);
+//            scenarioTasks.add(task3);
         }
         else if(this.type == "DEBUG_TASK"){
             this.instrumentList.add("IR");
