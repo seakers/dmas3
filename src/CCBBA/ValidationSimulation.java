@@ -10,13 +10,14 @@ import CCBBA.scenarios.validation.*;
 
 public class ValidationSimulation extends AbstractAgent {
 
-    // Organizational constants
+    /**
+     * Organizational constants
+     */
     private String directoryAddress;
     private int numAgents = 0;
 
     /**
      * Sim Setup
-     * @param args
      */
     public static void main(String[] args) {
         for(int i = 0; i < 1; i++) {
@@ -33,7 +34,7 @@ public class ValidationSimulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new ValidationScenario(30);
+        Scenario environment = new ValidationScenario(5);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
@@ -49,14 +50,13 @@ public class ValidationSimulation extends AbstractAgent {
     /**
      * Helping functions
      */
-
     private void setupAgent(String agentType){
-        if(agentType == "2D_VALIDATION_INT"){
+        if(agentType.equals("2D_VALIDATION_INT")){
             launchAgent(new ValidationAgentInt());
             launchAgent(new ValidationAgentInt());
             this.numAgents = 2;
         }
-        else if(agentType == "2D_VALIDATION_MOD"){
+        else if(agentType.equals("2D_VALIDATION_MOD")){
             // e = {IR}
             launchAgent(new ValidationAgentMod01());
             launchAgent(new ValidationAgentMod01());

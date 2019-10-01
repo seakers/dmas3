@@ -14,7 +14,9 @@ import CCBBA.source.*;
 
 public class CCBBASimulation extends AbstractAgent {
 
-    // Organizational constants
+    /**
+     * Organizational constants
+     */
     public static final String MY_COMMUNITY = "simu";
     public static final String SIMU_GROUP = "simu";
     public static final String AGENT_THINK = "agent_planner";
@@ -28,7 +30,6 @@ public class CCBBASimulation extends AbstractAgent {
 
     /**
      * Sim Setup
-     *
      */
     public static void main(String[] args) {
         for(int i = 0; i < 1; i++) {

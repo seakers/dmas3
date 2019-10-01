@@ -6,7 +6,8 @@ import java.util.Vector;
 public class Task {
     double inf = Double.POSITIVE_INFINITY;
     protected Dimension location;               // (x,y) Location of task
-    protected double cost;                      // cost of executing task
+    protected double cost_constant;             // constant cost of executing task
+    protected double cost_proportion;           // cost of executing task proportional to agent resources
     protected Vector<Subtask> J;                // List of Subtasks
     protected Vector<Integer> K;                // Level of partiality
     protected Vector<Double> TC;                // Time constraints
@@ -26,16 +27,28 @@ public class Task {
      * @param task_sensors list of sensors required
      * @param time_constraints time constraint vector
      */
-    public Task(Double s_max, Dimension task_location, double task_cost, Vector<String> task_sensors, Vector<Double> time_constraints){
-                this.S_max = s_max;
+    public Task(Double s_max, Dimension task_location,String cost_type, double task_cost, Vector<String> task_sensors, Vector<Double> time_constraints){
+        this.S_max = s_max;
         this.complete = false;
         this.location = task_location;
-        this.cost = task_cost;
         this.req_sensors = task_sensors;
         this.TC = time_constraints;
         this.I = req_sensors.size();
         this.J = new Vector<>();
         this.K = new Vector<>();
+
+        if(cost_type.equals("CONSTANT")){
+            this.cost_constant = task_cost;
+            this.cost_proportion = 0.0;
+        }
+        else if(cost_type.equals("PROPORTIONAL")){
+            this.cost_constant = 0.0;
+            this.cost_proportion = task_cost;
+        }
+        else{
+            this.cost_constant = task_cost;
+            this.cost_proportion = 0.0;
+        }
 
         // Create subtask list from Sensor list
         for(int i = 0; i < this.req_sensors.size(); i++) {
@@ -140,7 +153,8 @@ public class Task {
     public Vector<Subtask> getJ(){ return J; }
     public double[][] getT(){ return T; }
     public int[][] getD(){ return D; }
-    public double getCost(){ return cost; }
+    public double getCostConst(){ return this.cost_constant; }
+    public double getCostProp(){ return this.cost_proportion; }
     public double getS_max(){ return S_max; }
     public double getI(){ return I; }
     public double getGamma(){ return gamma; }

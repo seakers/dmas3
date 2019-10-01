@@ -46,7 +46,7 @@ public class ValidationAgentMod02 extends SimulatedAbstractAgent {
 
     @Override
     protected int getM(){
-        int M_agent = 30;
+        int M_agent = 2;
         return M_agent;
     }
 }

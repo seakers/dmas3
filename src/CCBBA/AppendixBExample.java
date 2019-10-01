@@ -10,14 +10,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class AppendixBExample extends AbstractAgent {
-
-    // Organizational constants
+    /**
+     * Organizational constants
+     */
     private String directoryAddress;
     private int numAgents = 2;
 
     /**
      * Sim Setup
-     *
      */
     public static void main(String[] args) {
         executeThisAgent(1, false);
@@ -48,7 +48,6 @@ public class AppendixBExample extends AbstractAgent {
     /**
      * Helping functions
      */
-
     private void setupAgent(){
         launchAgent(new SimulatedAgent02());
         launchAgent(new SimulatedAgent01());

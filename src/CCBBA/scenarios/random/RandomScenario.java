@@ -63,7 +63,7 @@ public class RandomScenario extends Scenario {
             double task_cost = Math.random();
 
             // add task to scenario vector
-            Task tempTask = new Task(S_max, x_task, task_cost, instruments, tc);
+            Task tempTask = new Task(S_max, x_task, "CONSTANT", task_cost, instruments, tc);
             scenarioTasks.add(tempTask);
         }
 

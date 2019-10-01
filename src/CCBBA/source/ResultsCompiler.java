@@ -167,10 +167,20 @@ public class ResultsCompiler extends AbstractAgent {
             x = localTask.getLocation().getHeight();
             y = localTask.getLocation().getWidth();
 
+            double cost;
+            double cost_const = localTask.getCostConst();
+            double cost_prop = localTask.getCostProp();
+            if( (cost_prop > 0.0)&&(cost_const <= 0.0) ){
+                cost = cost_prop * 100; //<- FIX PROP
+            }
+            else{
+                cost = cost_const;
+            }
+
             // print basic info
             printWriter.printf("Task Number:\t\t%d\n",i);
             printWriter.printf("Maximum Score:\t\t%f\n",localTask.getS_max());
-            printWriter.printf("Subtask Cost:\t\t%f\n", localTask.getCost());
+            printWriter.printf("Subtask Cost:\t\t%f\n", cost);
             printWriter.printf("Number of Sensors:\t%f\n",localTask.getI());
             printWriter.printf("Number of Subtasks:\t%d\n\n",localTask.getJ().size());
 
@@ -445,10 +455,20 @@ public class ResultsCompiler extends AbstractAgent {
             x = localTask.getLocation().getHeight();
             y = localTask.getLocation().getWidth();
 
+            double cost;
+            double cost_const = localTask.getCostConst();
+            double cost_prop = localTask.getCostProp();
+            if( (cost_prop > 0.0)&&(cost_const <= 0.0) ){
+                cost = cost_prop * 100; //<- FIX PROP
+            }
+            else{
+                cost = cost_const;
+            }
+
             // print basic info
             printWriter.printf("Task Number:\t\t%d\n",i);
             printWriter.printf("Maximum Score:\t\t%f\n",localTask.getS_max());
-            printWriter.printf("Subtask Cost:\t\t%f\n", localTask.getCost());
+            printWriter.printf("Subtask Cost:\t\t%f\n", cost);
             printWriter.printf("Number of Sensors:\t%f\n",localTask.getI());
             printWriter.printf("Number of Subtasks:\t%d\n\n",localTask.getJ().size());
 

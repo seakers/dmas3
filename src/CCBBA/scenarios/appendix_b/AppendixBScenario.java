@@ -40,7 +40,7 @@ public class AppendixBScenario extends Scenario {
         tc_1.add(1.0);
         tc_1.add(1.0);
 
-        Task task1 = new Task(100.0, x_1, 2.0, e_1, tc_1);
+        Task task1 = new Task(100.0, x_1, "CONSTANT", 2.0, e_1, tc_1);
         scenarioTasks.add(task1);
 
         //Define task 2
@@ -52,7 +52,7 @@ public class AppendixBScenario extends Scenario {
         tc_2.add(1.0);
         tc_2.add(1.0);
 
-        Task task2 = new Task(30.0, x_2, 2.0, e_2, tc_2);
+        Task task2 = new Task(30.0, x_2, "CONSTANT", 2.0, e_2, tc_2);
         scenarioTasks.add(task2);
 
 //            //Define task 3

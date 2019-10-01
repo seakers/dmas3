@@ -57,10 +57,10 @@ public class ValidationScenario extends Scenario {
 
             // determine task costs and max score
             double S_max = 100.0 * Math.random();
-            double task_cost = Math.random();
+            double task_cost = 1.14/100;
 
             // add task to scenario vector
-            Task tempTask = new Task(S_max, x_task, task_cost, instruments, tc);
+            Task tempTask = new Task(S_max, x_task, "PROPORTIONAL", task_cost, instruments, tc);
             scenarioTasks.add(tempTask);
         }
 

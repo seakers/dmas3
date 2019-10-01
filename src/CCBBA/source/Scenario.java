@@ -64,7 +64,7 @@ public class Scenario extends Watcher {
         tc_1.add(1.0);
         tc_1.add(1.0);
 
-        Task task1 = new Task(100.0, x_1, 2.0, e_1, tc_1);
+        Task task1 = new Task(100.0, x_1, "CONSTANT", 2.0, e_1, tc_1);
         scenarioTasks.add(task1);
 
         // 1 : request my role so that the viewer can probe me

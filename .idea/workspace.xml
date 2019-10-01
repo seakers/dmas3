@@ -2,22 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5ed5f4b0-5cd6-4ed4-b23a-eac4fc17b05b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/random/RandomScenario.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationScenario.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/AppendixBExample.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/AppendixBExample.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/CCBBASimulation.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/ValidationSimulation.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/ResultsCompiler.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/ResultsCompiler.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/Scenario$AgentsProbe.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/Scenario$AgentsProbe.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/Scenario.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/Scenario.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/SimulatedAbstractAgent.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/SimulatedAbstractAgent.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/AppendixBExample.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/AppendixBExample.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/CCBBASimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/CCBBASimulation.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/ValidationSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/ValidationSimulation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/random/RandomScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/random/RandomScenario.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod01.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod01.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod02.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod02.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationScenario.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/source/Scenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/Scenario.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/source/SimulatedAbstractAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/SimulatedAbstractAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/SubtaskBid.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/SubtaskBid.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/Task.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/libraries/orekit-10.0/target/" />
@@ -35,8 +32,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/CCBBA/AppendixBExample.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="364">
-              <caret line="39" lean-forward="true" selection-start-line="39" selection-end-line="39" />
+            <state relative-caret-position="204">
+              <caret line="12" selection-start-line="12" selection-end-line="14" selection-end-column="7" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#479#480#0" expanded="true" />
@@ -47,52 +44,22 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/CCBBA/source/Scenario.java">
+        <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="143">
-              <caret line="54" selection-start-line="54" selection-end-line="54" />
+            <state relative-caret-position="687">
+              <caret line="53" selection-start-line="53" selection-end-line="53" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#799#800#0" expanded="true" />
-                <element signature="e#839#840#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationScenario.java">
+        <entry file="file://$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="493">
-              <caret line="29" column="64" selection-start-line="29" selection-start-column="64" selection-end-line="29" selection-end-column="64" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#394#395#0" expanded="true" />
-                <element signature="e#434#435#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/random/RandomScenario.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1258">
-              <caret line="74" column="35" selection-start-line="74" selection-start-column="35" selection-end-line="74" selection-end-column="35" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#389#390#0" expanded="true" />
-                <element signature="e#429#430#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/CCBBA/CCBBASimulation.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="438">
-              <caret line="47" column="50" lean-forward="true" selection-start-line="47" selection-start-column="50" selection-end-line="47" selection-end-column="50" />
+            <state relative-caret-position="-1574">
+              <caret line="427" column="69" selection-start-line="427" selection-start-column="69" selection-end-line="427" selection-end-column="69" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -101,22 +68,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java">
+        <entry file="file://$PROJECT_DIR$/src/CCBBA/source/Task.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
-              <caret line="11" column="49" selection-start-line="11" selection-start-column="49" selection-end-line="11" selection-end-column="49" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/CCBBA/ValidationSimulation.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="493">
-              <caret line="35" column="54" lean-forward="true" selection-start-line="35" selection-start-column="54" selection-end-line="35" selection-end-column="54" />
+            <state relative-caret-position="255">
+              <caret line="30" column="8" selection-start-line="30" selection-start-column="8" selection-end-line="30" selection-end-column="8" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -204,26 +159,26 @@
         <option value="$PROJECT_DIR$/src/CCBBA/source/myMessage.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/source/IterationResults.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/source/myScheduler.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/source/Task.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/scenarios/2d_validation/ValidationAgentMod02.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/scenarios/2d_validation/ValidationAgentMod01.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/scenarios/random/SimulatedAgentRandom.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentInt.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod01.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod02.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/source/SubtaskBid.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/SimulatedAgent02.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/SimulatedAgent01.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/source/SimulatedAbstractAgent.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/source/AgentsProbe.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/AppendixBExample.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/CCBBASimulation.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/source/Scenario.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/scenarios/random/RandomScenario.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationScenario.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/source/SubtaskBid.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod01.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod02.java" />
         <option value="$PROJECT_DIR$/src/CCBBA/ValidationSimulation.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/CCBBASimulation.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/AppendixBExample.java" />
-        <option value="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/source/SimulatedAbstractAgent.java" />
+        <option value="$PROJECT_DIR$/src/CCBBA/source/Task.java" />
       </list>
     </option>
   </component>
@@ -234,10 +189,10 @@
     </treeState>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-7" />
-    <option name="y" value="-7" />
-    <option name="width" value="1295" />
-    <option name="height" value="735" />
+    <option name="x" value="-127" />
+    <option name="y" value="55" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -315,7 +270,7 @@
     <property name="Repository.Attach.Sources" value="false" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1569899079127" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1569902400011" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/src/fr/cs/examples" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/libraries/orekit-10.0/pom.xml" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
@@ -337,7 +292,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.CCBBA Appendix B">
+  <component name="RunManager" selected="Application.CCBBA Validation">
     <configuration name="CCBBA Appendix B" type="Application" factoryName="Application">
       <option name="ALTERNATIVE_JRE_PATH" value="11" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
@@ -430,7 +385,7 @@
       <window_info anchor="right" id="Maven" order="7" weight="0.2853736" />
       <window_info anchor="right" id="Capture Analysis" order="8" />
       <window_info anchor="right" id="Palette&#9;" order="9" />
-      <window_info anchor="right" id="Debug" order="10" weight="0.45503357" />
+      <window_info anchor="right" id="Debug" order="10" weight="0.45469084" />
       <window_info anchor="right" id="Messages" order="11" weight="0.32782516" />
       <window_info anchor="right" id="Run" order="12" weight="0.4035181" />
     </layout>
@@ -647,51 +602,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/myMessage.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="20" selection-start-column="20" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/IterationResults.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="24" column="54" lean-forward="true" selection-start-line="24" selection-start-column="54" selection-end-line="24" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/myScheduler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" column="7" lean-forward="true" selection-start-line="14" selection-start-column="7" selection-end-line="14" selection-end-column="7" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/PathUtility.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/Subtask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="13" selection-start-line="4" selection-start-column="13" selection-end-line="4" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/Task.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1961">
-          <caret line="2" column="18" selection-start-line="2" selection-start-column="18" selection-end-line="2" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/2d_validation/ValidationAgentInt.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="68">
@@ -729,43 +639,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentInt.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" column="24" lean-forward="true" selection-start-line="11" selection-start-column="24" selection-end-line="11" selection-end-column="24" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod02.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" column="24" lean-forward="true" selection-start-line="3" selection-start-column="24" selection-end-line="3" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/SubtaskBid.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1190">
-          <caret line="235" column="10" selection-start-line="235" selection-start-column="10" selection-end-line="235" selection-end-column="10" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod01.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="453">
-          <caret line="46" column="4" selection-start-line="46" selection-start-column="4" selection-end-line="50" selection-end-column="5" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/SimulatedAgent01.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="493">
@@ -773,23 +646,6 @@
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1204">
-          <caret line="549" column="46" lean-forward="true" selection-start-line="549" selection-start-column="46" selection-end-line="549" selection-end-column="46" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/SimulatedAbstractAgent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="771">
-          <caret line="535" column="14" selection-start-line="535" selection-start-column="14" selection-end-line="535" selection-end-column="14" />
         </state>
       </provider>
     </entry>
@@ -813,42 +669,51 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationScenario.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="493">
-          <caret line="29" column="64" selection-start-line="29" selection-start-column="64" selection-end-line="29" selection-end-column="64" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#394#395#0" expanded="true" />
-            <element signature="e#434#435#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/ValidationSimulation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="493">
-          <caret line="35" column="54" lean-forward="true" selection-start-line="35" selection-start-column="54" selection-end-line="35" selection-end-column="54" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/CCBBASimulation.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="438">
-          <caret line="47" column="50" lean-forward="true" selection-start-line="47" selection-start-column="50" selection-end-line="47" selection-end-column="50" />
+        <state relative-caret-position="251">
+          <caret line="18" column="7" selection-start-line="18" selection-start-column="7" selection-end-line="18" selection-end-column="7" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/IterationResults.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="24" column="54" lean-forward="true" selection-start-line="24" selection-start-column="54" selection-end-line="24" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/myMessage.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/myScheduler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-10">
+          <caret line="14" column="7" lean-forward="true" selection-start-line="14" selection-start-column="7" selection-end-line="14" selection-end-column="7" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/PathUtility.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/source/Scenario.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="143">
-          <caret line="54" selection-start-line="54" selection-end-line="54" />
+        <state relative-caret-position="347">
+          <caret line="66" column="54" lean-forward="true" selection-start-line="66" selection-start-column="54" selection-end-line="66" selection-end-column="54" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#799#800#0" expanded="true" />
@@ -857,22 +722,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/random/RandomScenario.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1258">
-          <caret line="74" column="35" selection-start-line="74" selection-start-column="35" selection-end-line="74" selection-end-column="35" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#389#390#0" expanded="true" />
-            <element signature="e#429#430#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/AppendixBExample.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
-          <caret line="39" lean-forward="true" selection-start-line="39" selection-end-line="39" />
+        <state relative-caret-position="204">
+          <caret line="12" selection-start-line="12" selection-end-line="14" selection-end-column="7" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#479#480#0" expanded="true" />
@@ -881,10 +734,114 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentInt.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="11" column="24" lean-forward="true" selection-start-line="11" selection-start-column="24" selection-end-line="11" selection-end-column="24" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/random/RandomScenario.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="455">
+          <caret line="65" column="61" selection-start-line="65" selection-start-column="61" selection-end-line="65" selection-end-column="61" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
-          <caret line="11" column="49" selection-start-line="11" selection-start-column="49" selection-end-line="11" selection-end-column="49" />
+        <state relative-caret-position="687">
+          <caret line="53" selection-start-line="53" selection-end-line="53" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/Subtask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" column="13" selection-start-line="4" selection-start-column="13" selection-end-line="4" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/SubtaskBid.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="415">
+          <caret line="313" column="8" selection-start-line="313" selection-start-column="8" selection-end-line="320" selection-end-column="9" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1574">
+          <caret line="427" column="69" selection-start-line="427" selection-start-column="69" selection-end-line="427" selection-end-column="69" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod01.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="727">
+          <caret line="48" column="23" selection-start-line="48" selection-start-column="23" selection-end-line="48" selection-end-column="23" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationAgentMod02.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="387">
+          <caret line="24" column="24" selection-start-line="24" selection-start-column="24" selection-end-line="24" selection-end-column="24" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/ValidationSimulation.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="398">
+          <caret line="36" column="55" selection-start-line="36" selection-start-column="55" selection-end-line="36" selection-end-column="55" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/SimulatedAbstractAgent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="130" column="67" selection-start-line="130" selection-start-column="67" selection-end-line="130" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/scenarios/validation/ValidationScenario.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="867">
+          <caret line="59" column="40" selection-start-line="59" selection-start-column="40" selection-end-line="59" selection-end-column="40" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/CCBBA/source/Task.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="30" column="8" selection-start-line="30" selection-start-column="8" selection-end-line="30" selection-end-column="8" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

@@ -127,7 +127,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 Subtask j = this.J.get(i);
 
                 // Check if subtask can be bid on
-                if(canBid(j, i, localResults) && (localResults.getH().get(i) == 1)) { // task can be bid on
+//                if(canBid(j, i, localResults) && (localResults.getH().get(i) == 1)) { // task can be bid on
+                if(canBid(j, i, localResults) ){ // task can be bid
                     // Calculate bid for subtask
                     SubtaskBid localBid = new SubtaskBid();
                     localBid.calcBidForSubtask(j, this);

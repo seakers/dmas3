@@ -181,8 +181,7 @@ public class SubtaskBid {
         double S = calcSubtaskScore(path, j, t_a, agent);
         double g = calcTravelCost(path, j, agent);
         double p = calcMergePenalty(path, j, agent);
-        double c_v = calcSubtaskCost(j); //<- UNCOMMENT WHEN VALIDATION IS DONE
-//        double c_v = calcSubtaskCost(agent); // <- DELETE WHEN VALIDATION IS DONE
+        double c_v = calcSubtaskCost(j, agent);
 
         pathUtility.setUtility(S - g - p - c_v);
         pathUtility.setCost(g + p + c_v);
@@ -311,14 +310,16 @@ public class SubtaskBid {
         return C_split + C_merge;
     }
 
-    private double calcSubtaskCost(Subtask j){
-        return j.getParentTask().getCost();
+    private double calcSubtaskCost(Subtask j, SimulatedAbstractAgent agent){
+        double cost_const = j.getParentTask().getCostConst();
+        double cost_prop = j.getParentTask().getCostProp();
+        if( (cost_prop > 0.0)&&(cost_const <= 0.0) ){
+            return agent.readResources() * cost_prop;
+        }
+        else{
+            return cost_const;
+        }
     }
-
-    private double calcSubtaskCost(SimulatedAbstractAgent agent){
-        return agent.readResources() * 1.14/100;
-    }
-
 
     private double calcStartTime(double local_bid, Subtask j, Vector<Subtask> path, SimulatedAbstractAgent agent){
         double t_start = 0.0;
