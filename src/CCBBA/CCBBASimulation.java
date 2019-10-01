@@ -45,7 +45,7 @@ public class CCBBASimulation extends AbstractAgent {
         createGroup(MY_COMMUNITY, SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new Scenario("RANDOM", 30);
+        Scenario environment = new RandomScenario(30);
         launchAgent(environment);
 
         // 3 : launch some simulated agents

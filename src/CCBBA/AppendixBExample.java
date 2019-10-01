@@ -32,7 +32,7 @@ public class AppendixBExample extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new Scenario("APPENDIX_B",  2);
+        Scenario environment = new AppendixBScenario();
         launchAgent(environment);
 
         // 3 : launch some simulated agents

@@ -505,6 +505,36 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     private void doTasks() throws IOException {
         getLogger().info("Doing Tasks...");
+        /*
+        for all items in the bundle
+            if resources are left
+                //move to task
+                start to move
+                while agent is not at task
+                    if agent is not there and resources are not zero
+                        move one step
+                        reduce resources
+                    end if
+                end while
+
+                //do task
+                while coalition partners are not there
+                    wait
+                end while
+                mark task as done
+                reduce resources
+            else
+                do nothing
+                die
+            end if
+        end for
+
+        if tasks are available
+            make new plan
+        else
+            die
+        end if
+         */
 
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
     }
