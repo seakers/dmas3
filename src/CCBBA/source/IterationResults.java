@@ -256,9 +256,27 @@ public class IterationResults {
     public void setTz(Vector<Double> tz_new){this. tz = tz_new; }
     public void setC(Vector<Double> c_new){ this.c = c_new; }
     public void setS(Vector<Integer> s_new){ this.s = s_new; }
-    public void setV(Vector<Integer> v_new){ this.v = v_new; }
-    public void setW_solo(Vector<Integer> w_solo_new){ this.w_solo = w_solo_new; }
-    public void setW_any(Vector<Integer> w_any_new){ this.w_any = w_any_new; }
+    public void setV(Vector<Integer> v_new){
+        this.v = new Vector<>();
+        this.v.setSize(v_new.size());
+        for(int i = 0; i < v_new.size(); i++){
+            this.v.setElementAt( v_new.get(i), i);
+        }
+    }
+    public void setW_solo(Vector<Integer> w_solo_new){
+        this.w_solo = new Vector<>();
+        this.w_solo.setSize(w_solo_new.size());
+        for(int i = 0; i < w_solo_new.size(); i++){
+            this.w_solo.setElementAt( w_solo_new.get(i), i);
+        }
+    }
+    public void setW_any(Vector<Integer> w_any_new){
+        this.w_any = new Vector<>();
+        this.w_any.setSize(w_any_new.size());
+        for(int i = 0; i < w_any_new.size(); i++){
+            this.w_any.setElementAt( w_any_new.get(i) , i);
+        }
+    }
     public void setH(Vector<Integer> y_new){ this.h = y_new; }
 
 }
