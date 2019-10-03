@@ -613,7 +613,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         Vector<Subtask> dependentTasks = new Vector<>();
 
         for(int u = 0; u < parentTask.getJ().size(); u++){
-            if( (D[u][q] > 1) && (D[q][u] == 1) ){
+            if( (D[u][q] >= 1) && (D[q][u] == 1) ){
                 dependentTasks.add(parentTask.getJ().get(u));
             }
         }
