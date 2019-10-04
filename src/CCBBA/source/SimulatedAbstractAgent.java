@@ -504,7 +504,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
     @SuppressWarnings("unused")
     private void doTasks() throws IOException {
-        getLogger().info("Doing Tasks...");
+        //getLogger().info("Doing Tasks...");
         /*
         for all items in the bundle
             if resources are left
@@ -536,16 +536,20 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         end if
          */
 
+
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
     }
 
     @Override
     protected void end(){
         getLogger().info("Tasks completed. Killing agent, goodbye!");
-
         AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
         myMessage myDeath = new myMessage(this.localResults, this.getName());
         sendMessage(resultsAddress, myDeath);
+    }
+
+    protected void dead(){
+
     }
 
     /**
@@ -858,7 +862,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     private int getConvergenceIndicator(){
-        int convergenceIndicator = 2;
+        int convergenceIndicator = 10;
         return convergenceIndicator;
     }
 

@@ -22,6 +22,7 @@ public class CCBBASimulation extends AbstractAgent {
     public static final String AGENT_THINK = "agent_planner";
     public static final String AGENT_DO = "agent_execute";
     public static final String AGENT_DIE = "agent_die";
+    public static final String AGENT_DEAD = "agent_dead";
     public static final String ENV_ROLE = "environment";
     public static final String SCH_ROLE = "scheduler";
     public static final String RESULTS_ROLE = "results";

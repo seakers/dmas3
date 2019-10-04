@@ -15,6 +15,7 @@ public class ResultsCompiler extends AbstractAgent {
     private int numAgents;
     protected Scenario environment;
     private Vector<IterationResults> receivedResults;
+    private Vector<SimulatedAbstractAgent> agentList = new Vector<>();
 
     public ResultsCompiler(int numAgents, String directoryAddress){
         this.directoryAddress = directoryAddress;
@@ -33,8 +34,15 @@ public class ResultsCompiler extends AbstractAgent {
         //Receive results
         List<Message> receivedMessages = nextMessages(null);
         Vector<IterationResults> receivedResults = new Vector<>();
+
+
         for(int i = 0; i < receivedMessages.size(); i++){
             myMessage message = (myMessage) receivedMessages.get(i);
+
+//            if(this.agentList.contains(message.myResults.getParentAgent())){
+//                continue;
+//            }
+//            this.agentList.add(message.myResults.getParentAgent());
             receivedResults.add(message.myResults);
         }
 
