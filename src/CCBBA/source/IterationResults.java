@@ -20,7 +20,9 @@ public class IterationResults {
     private Vector<Integer> h = new Vector<>();                     // availability checks vector
     private Vector<Vector<SimulatedAbstractAgent>> omega = new Vector<>();// coalition mates
     private Vector<Subtask> bundle = new Vector<>();                // current bundle
+    private Vector<Subtask> overallBundle = new Vector<>();         // overall bundle
     private Vector<Subtask> path = new Vector<>();                  // current path order
+    private Vector<Subtask> overallPath = new Vector<>();           // overall path order
     private Vector<Dimension> xpath = new Vector<>();               // current path coordinates
     private Vector<Double> cost = new Vector<>();                   // cost vector
     // Fixed quantities ****************************
@@ -81,6 +83,7 @@ public class IterationResults {
         this.w_any = new Vector<>();
         this.omega = new Vector<>();
         this.bundle = new Vector<>();
+        this.overallBundle = new Vector<>();
         this.path = new Vector<>();
         this.cost = new Vector<>();
 
@@ -108,10 +111,14 @@ public class IterationResults {
             this.path.add( prevResults.getPath().get(i) );
         }
 
+        for(Subtask j : prevResults.getOverallBundle()){
+            this.overallBundle.add(j);
+        }
+
         if(omega_toggle) {
             for (int i = 0; i < this.M; i++) {
                 Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
-                if ((this.bundle.size() >= i + 1) && (this.bundle.size() > 0)) {
+                if (this.bundle.size() >= i + 1) {
                     for (int i_j = 0; i_j < this.J.size(); i_j++) {
                         int i_bundle = this.J.indexOf(this.bundle.get(i));
                         if ((this.z.get(i_j) != this.z.get(i_bundle)) && (this.z.get(i_j) != null) && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
@@ -169,6 +176,18 @@ public class IterationResults {
 
     }
 
+    public void updateResults(Vector<Subtask> newOverallBundle, Vector<Subtask> newOverallPath){
+        this.overallBundle = new Vector<>();
+        this.overallPath = new Vector<>();
+
+        for(int i = 0; i < this.bundle.size(); i++){
+            Subtask j = this.bundle.get(i);
+            Subtask j_p = this.path.get(i);
+            this.overallBundle.add(j);
+            this.overallPath.add(j_p);
+        }
+    }
+
     public void updateResults(IterationResults receivedResults, int i, Vector<Subtask> bundle){
         double yReceived = receivedResults.getY().get(i);
         SimulatedAbstractAgent zReceived = receivedResults.getZ().get(i);
@@ -205,7 +224,7 @@ public class IterationResults {
         for(int i = 0; i< newBundle.size(); i++){
             this.bundle.add(newBundle.get(i));
             this.path.add(newPath.get(i));
-            this.xpath.add(newX_path.get(i));
+            //this.xpath.add(newX_path.get(i));
         }
     }
 
@@ -248,7 +267,9 @@ public class IterationResults {
     public Vector<Integer> getH(){ return this.h; }
     public Vector<Vector<SimulatedAbstractAgent>> getOmega(){ return this.omega; }
     public Vector<Subtask> getBundle(){ return this.bundle; }
+    public Vector<Subtask> getOverallBundle(){ return this.overallBundle; }
     public Vector<Subtask> getPath(){ return this.path; }
+    public Vector<Subtask> getOverallPath(){ return this.overallPath; }
     public Integer getM(){ return this.M; }
     public Double getC_merge(){ return this.C_merge; }
     public Double getC_split(){ return this.C_split; }

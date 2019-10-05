@@ -300,26 +300,26 @@ public class ResultsCompiler extends AbstractAgent {
             printWriter.printf("Location:\t\t\t\t[%f, %f, %f]\n", x, y, z);
             printWriter.printf("Sensor List:\t\t\t%s\n", localAgent.getSensors());
             printWriter.printf("Bundle:\t\t\t\t\t[");
-            for(int j = 0; j < localAgent.getBundle().size(); j++){
-                Subtask bundleTask = localAgent.getBundle().get(j);
+            for(int j = 0; j < localAgent.getOverallBundle().size(); j++){
+                Subtask bundleTask = localAgent.getOverallBundle().get(j);
                 printWriter.printf("%s_{", bundleTask.getMain_task());
                 for(int k = 0; k < bundleTask.getDep_tasks().size(); k++){
                     printWriter.printf("%s", bundleTask.getDep_tasks().get(k));
                     if(k != (bundleTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
                 }
-                if(j == (localAgent.getBundle().size() - 1) ) { printWriter.printf("}"); }
+                if(j == (localAgent.getOverallBundle().size() - 1) ) { printWriter.printf("}"); }
                 else{ printWriter.printf("}, "); }
             }
             printWriter.printf("]\n");
             printWriter.printf("Path:\t\t\t\t\t[");
-            for(int j = 0; j < localAgent.getPath().size(); j++){
-                Subtask pathTask = localAgent.getPath().get(j);
+            for(int j = 0; j < localAgent.getOverallPath().size(); j++){
+                Subtask pathTask = localAgent.getOverallPath().get(j);
                 printWriter.printf("%s_{", pathTask.getMain_task());
                 for(int k = 0; k < pathTask.getDep_tasks().size(); k++){
                     printWriter.printf("%s", pathTask.getDep_tasks().get(k));
                     if(k != (pathTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
                 }
-                if(j == (localAgent.getPath().size() - 1) ) { printWriter.printf("}"); }
+                if(j == (localAgent.getOverallPath().size() - 1) ) { printWriter.printf("}"); }
                 else{ printWriter.printf("}, "); }
             }
             printWriter.printf("]\n\n");
@@ -417,26 +417,26 @@ public class ResultsCompiler extends AbstractAgent {
             printWriter.printf("Location:\t\t\t\t[%f, %f, %f]\n", x, y, z);
             printWriter.printf("Sensor List:\t\t\t%s\n", localAgent.getSensors());
             printWriter.printf("Bundle:\t\t\t\t\t[");
-            for(int j = 0; j < localAgent.getBundle().size(); j++){
-                Subtask bundleTask = localAgent.getBundle().get(j);
+            for(int j = 0; j < localAgent.getOverallBundle().size(); j++){
+                Subtask bundleTask = localAgent.getOverallBundle().get(j);
                 printWriter.printf("%s_{", bundleTask.getMain_task());
                 for(int k = 0; k < bundleTask.getDep_tasks().size(); k++){
                     printWriter.printf("%s", bundleTask.getDep_tasks().get(k));
                     if(k != (bundleTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
                 }
-                if(j == (localAgent.getBundle().size() - 1) ) { printWriter.printf("}"); }
+                if(j == (localAgent.getOverallBundle().size() - 1) ) { printWriter.printf("}"); }
                 else{ printWriter.printf("}, "); }
             }
             printWriter.printf("]\n");
             printWriter.printf("Path:\t\t\t\t\t[");
-            for(int j = 0; j < localAgent.getPath().size(); j++){
-                Subtask pathTask = localAgent.getPath().get(j);
+            for(int j = 0; j < localAgent.getOverallPath().size(); j++){
+                Subtask pathTask = localAgent.getOverallPath().get(j);
                 printWriter.printf("%s_{", pathTask.getMain_task());
                 for(int k = 0; k < pathTask.getDep_tasks().size(); k++){
                     printWriter.printf("%s", pathTask.getDep_tasks().get(k));
                     if(k != (pathTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
                 }
-                if(j == (localAgent.getPath().size() - 1) ) { printWriter.printf("}"); }
+                if(j == (localAgent.getOverallPath().size() - 1) ) { printWriter.printf("}"); }
                 else{ printWriter.printf("}, "); }
             }
             printWriter.printf("]\n\n");

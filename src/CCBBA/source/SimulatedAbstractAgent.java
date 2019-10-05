@@ -11,6 +11,9 @@ import java.util.Date;
 import java.util.Vector;
 import java.util.List;
 
+import static java.lang.Math.pow;
+import static java.lang.StrictMath.sqrt;
+
 public class SimulatedAbstractAgent extends AbstractAgent {
 
 
@@ -33,10 +36,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected int W_any_max;                                        // max permissions to bid on any
     protected Vector<IterationResults> results;                     // list of results
     protected Vector<Subtask> bundle = new Vector<>();              // bundle of chosen subtasks
+    private Vector<Subtask> overallBundle;                          //
     protected Vector<Subtask> path = new Vector<>();                // path chosen
+    private Vector<Subtask> overallPath = new Vector<>();           //
     protected Vector<Dimension> X_path = new Vector<>();            // path locations
     protected String bidStrategy;                                   // bidding strategy indicator
-
     private List<AgentAddress> list_agents;                         // list of agents in planning phase
     private IterationResults localResults;                          // list of iteration results
     private int zeta = 0;                                           // iteration counter
@@ -45,7 +49,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected double C_merge;
     protected double C_split;
     protected double resources;
+    private double resourcesRemaining;
     private long t_0;
+    private boolean converged = false;                              // convergence flag
+
 
     /**
      * initialize my role and fields
@@ -73,6 +80,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.C_merge = getC_merge();
         this.C_split = getC_split();
         this.t_0 = environment.getT_0();
+        this.resourcesRemaining = this.resources;
     }
 
     /**
@@ -90,7 +98,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         //getLogger().info("Phase 1...");
 
         // Get incomplete subtasks
-        J = getIncompleteSubtasks();
+        J = getSubtasks();
 
         //Phase 1 - Task Selection
         // -Initialize results
@@ -119,8 +127,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         // -Generate Bundle
-        bundle = localResults.getBundle();
-        path = localResults.getPath();
+        this.overallBundle = this.localResults.getOverallBundle();
+        this.overallPath = this.localResults.getOverallPath();
+        this.bundle = this.localResults.getBundle();
+        this.path = this.localResults.getPath();
         while( (bundle.size() < M)&&(localResults.getH().contains(1)) ){
             Vector<SubtaskBid> bidList = new Vector<>();
             Subtask j_chosen = null;
@@ -235,7 +245,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 //getLogger().info("NO inconsistencies in plan found. Checking convergence...");
                 convergenceCounter++;
                 if(convergenceCounter >= convergenceIndicator){
-                    getLogger().info("Plan Converged");
+                    if(!this.converged){ getLogger().info("Plan Converged"); }
                     requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
                     break;
                 }
@@ -507,68 +517,113 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
     @SuppressWarnings("unused")
     private void doTasks() throws IOException {
-        //getLogger().info("Doing Tasks...");
-        /*
-        for all items in the bundle
-            if resources are left
-                //move to task
-                start to move
-                while agent is not at task
-                    if agent is not there and resources are not zero
-                        move one step
-                        reduce resources
-                    end if
-                end while
+        if(!this.converged) { getLogger().info("Doing Tasks..."); }
 
-                //do task
-                while coalition partners are not there
-                    wait
-                end while
-                mark task as done
-                reduce resources
-            else
-                do nothing
-                die
-            end if
-        end for
+        for(int i = 0; i < this.bundle.size(); i++){
+            if(resourcesLeft()){ // agent still has resources left
+                Subtask j = this.bundle.get(i);
+                // move to task
+                moveToTask(j);
+                if(this.resourcesRemaining <= 0.0){ break; }
 
-        if tasks are available
-            make new plan
-        else
-            die
-        end if
-         */
+                // do task
+                j.getParentTask().setSubtaskComplete( j );
 
+                // deduct task costs
+                double cost_const = j.getParentTask().getCostConst();
+                double cost_prop = j.getParentTask().getCostProp();
+                if( (cost_prop > 0.0)&&(cost_const <= 0.0) ){
+                    resourcesRemaining = resourcesRemaining - resourcesRemaining * cost_prop;
+                }
+                else{
+                    resourcesRemaining = resourcesRemaining - cost_const;
+                }
+            }
+            else{ // agent has no resources left
+                // agent dies
+                if(!this.converged){ getLogger().info("No remaining resources. Killing agent, goodbye!"); }
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+                this.converged = true;
+            }
+        }
 
-        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+        // release tasks from bundle
+        for(int i = 0; i < this.bundle.size(); i++){
+            Subtask j = this.bundle.get(i);
+            Subtask j_p = this.path.get(i);
+            this.overallBundle.add(j);
+            this.overallPath.add(j_p);
+        }
+        removeFromBundle(localResults.getJ(), this.localResults.getJ().indexOf( this.bundle.get(0) ) );
+        localResults.updateResults(this.overallBundle, this.overallPath);
+
+        // check agent status
+        if( (tasksAvailable()) && (this.resourcesRemaining > 0.0) ){ // tasks are available and agent has resources
+            if(!this.converged){ getLogger().info("Tasks completed."); }
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK);
+            this.converged = false;
+        }
+        else{
+            if(!this.converged){ getLogger().info("Tasks completed. Killing agent, goodbye!"); }
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+            this.converged = true;
+        }
     }
 
     @Override
     protected void end(){
-        getLogger().info("Tasks completed. Killing agent, goodbye!");
+        // send results to results compiler
         AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
         myMessage myDeath = new myMessage(this.localResults, this.getName());
         sendMessage(resultsAddress, myDeath);
     }
 
-    protected void dead(){
-
-    }
-
     /**
      * Misc tools and functions
      */
+    private boolean tasksAvailable(){
+        Vector<Task> V = new Vector<>();
+        V = environment.getTasks();
+        for (Task task : V) {
+            if (!task.getStatus()) {
+                // there exists at least one task that has not been completed
+                return true;
+            }
+        }
 
-    protected Vector<Subtask> getIncompleteSubtasks(){
+        // all tasks have been completed
+        return false;
+    }
+
+    private void moveToTask(Subtask j){
+        // substract resources
+        double delta_x;
+        Dimension x_i;
+        x_i = this.location;
+        Dimension x_f = j.getParentTask().getLocation();
+        delta_x = pow( (x_f.getHeight() - x_i.getHeight()) , 2) + pow( (x_f.getWidth() - x_i.getWidth()) , 2);
+
+        double distance = sqrt(delta_x);
+        this.resourcesRemaining = this.resourcesRemaining - distance*this.miu;
+
+        // Move agent
+        this.location = x_f;
+    }
+
+    private boolean resourcesLeft(){
+        return this.resourcesRemaining > 0.0;
+    }
+
+    private Vector<Subtask> getSubtasks(){
         //Looks for tasks from environment and checks for completion
         Vector<Task> V = environment.getTasks();
         Vector<Subtask> J_available = new Vector<>();
 
-        for(int i = 0; i < V.size(); i++){
-            Vector<Subtask> J_i = V.get(i).getJ();
-            for(int j = 0; j < J_i.size(); j++) {
-                if (!J_i.get(j).getComplete()) {
-                    J_available.add(J_i.get(j));
+        for (Task task : V) {
+            Vector<Subtask> J_i = task.getJ();
+            for (Subtask subtask : J_i) {
+                if (!subtask.getComplete()) {
+                    J_available.add(subtask);
                 }
             }
         }
@@ -576,9 +631,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return J_available;
     }
 
-    protected boolean canBid(Subtask j, int i_av, IterationResults results){
-        // checks if agent contains sensor for subtask
-        if(!this.sensors.contains(j.getMain_task())){
+    private boolean canBid(Subtask j, int i_av, IterationResults results){
+        if( !this.sensors.contains( j.getMain_task() ) ){ // checks if agent contains sensor for subtask
+            return false;
+        }
+        else if(j.getParentTask().getStatus()){ // if task is completed, I can't bid
             return false;
         }
 
@@ -612,7 +669,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
     }
 
-    protected boolean isOptimistic(Subtask j){
+    private boolean isOptimistic(Subtask j){
         //check if pessimistic or optimistic strategy
         Task parentTask = j.getParentTask();
         int[][] D = parentTask.getD();
@@ -629,7 +686,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         else{ return false; }
     }
 
-    protected int coalitionTest(SubtaskBid bid, IterationResults localResults, Subtask j, int i_subtask){
+    private int coalitionTest(SubtaskBid bid, IterationResults localResults, Subtask j, int i_subtask){
         Task parentTask = j.getParentTask();
         Vector<Subtask> J_parent = parentTask.getJ();
         Vector<Double> y = localResults.getY();
@@ -662,7 +719,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         else{ return 0; }
     }
 
-    protected int mutexTest(SubtaskBid bid, IterationResults localResults, Subtask j, int i_subtask){
+    private int mutexTest(SubtaskBid bid, IterationResults localResults, Subtask j, int i_subtask){
         Task parentTask = j.getParentTask();
         Vector<Subtask> J_parent = parentTask.getJ();
         Vector<Double> y = localResults.getY();
@@ -731,7 +788,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             for (int i = 0; i < deletedTasks.size(); i++) {
                 int i_path = path.indexOf(deletedTasks.get(i));
                 path.remove(i_path);
-                X_path.remove(i_path);
+                //X_path.remove(i_path);
             }
         }
     }
@@ -756,7 +813,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
     }
 
-    public Vector<Integer> tempSat(Subtask k_q, IterationResults results){
+    private Vector<Integer> tempSat(Subtask k_q, IterationResults results){
         double[][] T = k_q.getParentTask().getT();
         Vector<Subtask> J_parent = k_q.getParentTask().getJ();
         Vector<Subtask> J_results = this.J;
@@ -813,7 +870,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     public double getMiu(){ return this.miu; }
     public double getSpeed(){ return this.speed; }
     public Vector<Subtask> getPath(){ return this.path; }
+    public Vector<Subtask> getOverallPath(){ return this.overallPath; }
     public Vector<Subtask> getBundle(){ return this.bundle; }
+    public Vector<Subtask> getOverallBundle(){ return this.overallBundle; }
     public IterationResults getLocalResults(){ return this.localResults; }
     public Vector<Subtask> getJ(){ return this.J; }
     public int getZeta(){ return this.zeta; }
@@ -826,47 +885,40 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected Vector<String> getSensorList(){
         Vector<String> sensor_list = new Vector<>();
         sensor_list.add("IR");
+        sensor_list.add("MW");
         return sensor_list;
     }
 
     protected Dimension getInitialPosition(){
-        Dimension position = new Dimension(0,0);
-        return position;
+        return new Dimension(0,0);
     }
 
     protected int getM(){
-        int M_agent = 1;
-        return M_agent;
+        return 1;
     }
 
     private double setSpeed(){
-        double speed = 1.0;
-        return speed;
+        return 1.0;
     }
 
     protected double setMiu(){
-        double miu = 1.0;
-        return miu;
+        return 1.0;
     }
 
     public int getO_kq(){
-        int O_kq = 10;
-        return O_kq;
+        return 10;
     }
 
     public int getW_solo_max(){
-        int w_solo_max = 5;
-        return w_solo_max;
+        return 5;
     }
 
     public int getW_any_max(){
-        int w_any_max = 10;
-        return w_any_max;
+        return 10;
     }
 
     private int getConvergenceIndicator(){
-        int convergenceIndicator = 10;
-        return convergenceIndicator;
+        return 10;
     }
 
     protected double getC_merge(){

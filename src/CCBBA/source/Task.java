@@ -138,6 +138,27 @@ public class Task {
         return combinations;
     }
 
+    public void setSubtaskComplete(Subtask j){
+        // set subtask to complete
+        int i_j = this.J.indexOf(j);
+        this.J.get(i_j).setComplete(true);
+
+        // if all dependent subtasks are complete, mark all as complete
+        boolean req = true;
+        for(int i = 0; i < this.J.size(); i++){
+            if( (this.D[i_j][i] == 1) && (!this.J.get(i).getComplete()) ){
+                req = false;
+            }
+        }
+
+        if(req){
+            for(int i = 0; i < this.J.size(); i++){
+                this.J.get(i).setComplete(true);
+            }
+            this.complete = true;
+        }
+    }
+
     /**
      * Getters and Setters
      * @return returns values

@@ -181,7 +181,7 @@ public class SubtaskBid {
         double S = calcSubtaskScore(path, j, t_a, agent);
         double g = calcTravelCost(path, j, agent);
         double p = calcMergePenalty(path, j, agent);
-        double c_v = calcSubtaskCost(j, agent);
+        double c_v = calcSubtaskCost(j, g, p, agent);
 
         pathUtility.setUtility(S - g - p - c_v);
         pathUtility.setCost(g + p + c_v);
@@ -310,11 +310,11 @@ public class SubtaskBid {
         return C_split + C_merge;
     }
 
-    private double calcSubtaskCost(Subtask j, SimulatedAbstractAgent agent){
+    private double calcSubtaskCost(Subtask j, Double g, Double p, SimulatedAbstractAgent agent){
         double cost_const = j.getParentTask().getCostConst();
         double cost_prop = j.getParentTask().getCostProp();
         if( (cost_prop > 0.0)&&(cost_const <= 0.0) ){
-            return agent.readResources() * cost_prop;
+            return (agent.readResources() - g - p ) * cost_prop;
         }
         else{
             return cost_const;
