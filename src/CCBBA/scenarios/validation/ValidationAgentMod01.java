@@ -20,9 +20,8 @@ public class ValidationAgentMod01 extends SimulatedAbstractAgent {
 
         int x = (int)(x_max * Math.random());
         int y = (int)(y_max * Math.random());
-        Dimension position = new Dimension(x, y);
 
-        return position;
+        return new Dimension(x, y);
     }
 
     @Override
@@ -36,7 +35,9 @@ public class ValidationAgentMod01 extends SimulatedAbstractAgent {
     }
 
     @Override
-    protected double getResources() { return 15 * Math.random() + 35; }
+    protected double getResources() {
+        return 35 + 15 * Math.random();
+    }
 
     @Override
     protected double setMiu(){ return readResources() * 0.57/100; }

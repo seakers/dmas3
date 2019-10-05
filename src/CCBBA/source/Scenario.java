@@ -17,6 +17,7 @@ public class Scenario extends Watcher {
     protected Vector<Task> scenarioTasks = new Vector<>();
     protected int numTasks;
     protected Vector<String> instrumentList = new Vector<>();
+    protected long t_0;
 
     /**
      * so that the agents can perceive my dimension
@@ -34,6 +35,7 @@ public class Scenario extends Watcher {
 
     public Scenario(int numTasks){
         this.numTasks = numTasks;
+        this.t_0 = System.currentTimeMillis();
     }
 
     @Override
@@ -75,6 +77,8 @@ public class Scenario extends Watcher {
         addProbe(new AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE, "environment"));
 
     }
+
+    public long getT_0(){ return this.t_0; }
 
     class AgentsProbe extends PropertyProbe<AbstractAgent, Scenario> {
 

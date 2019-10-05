@@ -7,6 +7,7 @@ import CCBBA.CCBBASimulation;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Vector;
 import java.util.List;
 
@@ -44,6 +45,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected double C_merge;
     protected double C_split;
     protected double resources;
+    private long t_0;
 
     /**
      * initialize my role and fields
@@ -70,6 +72,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.convergenceIndicator = getConvergenceIndicator();
         this.C_merge = getC_merge();
         this.C_split = getC_split();
+        this.t_0 = environment.getT_0();
     }
 
     /**

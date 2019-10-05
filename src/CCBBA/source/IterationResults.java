@@ -174,21 +174,25 @@ public class IterationResults {
         SimulatedAbstractAgent zReceived = receivedResults.getZ().get(i);
         double tzReceived = receivedResults.getTz().get(i);
         double costReceived = receivedResults.getCost().get(i);
+        int timeStampReceived = receivedResults.getS().get(i);
 
         this.y.setElementAt(yReceived, i);
         this.z.setElementAt(zReceived, i);
         this.tz.setElementAt(tzReceived, i);
         this.cost.setElementAt(costReceived, i);
+        this.s.setElementAt(timeStampReceived, i);
 
         //if task is in bundle, then reset subsequent scores
         if(bundle.contains(J.get(i))){
             for(int i_b = bundle.indexOf( J.get(i) ); i_b < bundle.size(); i_b++){
                 int i_j = J.indexOf(bundle.get(i_b));
 
-                this.y.setElementAt(0.0, i_j);
-                this.z.setElementAt(null, i_j);
-                this.tz.setElementAt(0.0, i_j);
-                this.cost.setElementAt(0.0, i_j);
+                if(i_j != i) {
+                    this.y.setElementAt(0.0, i_j);
+                    this.z.setElementAt(null, i_j);
+                    this.tz.setElementAt(0.0, i_j);
+                    this.cost.setElementAt(0.0, i_j);
+                }
             }
         }
     }
@@ -210,6 +214,7 @@ public class IterationResults {
         this.z.setElementAt(null, i);
         this.tz.setElementAt(0.0, i);
         this.cost.setElementAt(0.0, i);
+        this.s.setElementAt(0, i);
 
         //if task is in bundle, then reset subsequent scores
         if(bundle.contains(J.get(i))){

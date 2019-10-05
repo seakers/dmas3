@@ -27,20 +27,19 @@ public class ValidationScenario extends Scenario {
         this.instrumentList.add("IR");
         this.instrumentList.add("MW");
 
-        for(int i = 0; i < this.numTasks; i++){ //for every task
+        for (int i = 0; i < this.numTasks; i++) { //for every task
             // determine location
-            int x = (int)(x_max * Math.random());
-            int y = (int)(y_max * Math.random());
+            int x = (int) (x_max * Math.random());
+            int y = (int) (y_max * Math.random());
             Dimension x_task = new Dimension(x, y);
 
             // determine instrument requirements
             Vector<String> instruments = new Vector<>();
-            if(i < (int) this.numTasks/2 ) {
+            if (i < (int) this.numTasks / 2) {
                 // create 50% of tasks with two sensors
                 instruments.add(this.instrumentList.get(0));
                 instruments.add(this.instrumentList.get(1));
-            }
-            else{
+            } else {
                 // create 50% of tasks with two sensors
                 int i_ins = (int) (this.instrumentList.size() * Math.random());
                 instruments.add(this.instrumentList.get(i_ins));
@@ -52,12 +51,12 @@ public class ValidationScenario extends Scenario {
             tc.add(0.0);                //t_start
             tc.add(inf);                //t_end
             tc.add(Math.random());      //task duration
-            tc.add(inf);                //t_corr
+            tc.add(8.0);                //t_corr
             tc.add(0.015);              //lambda
 
             // determine task costs and max score
             double S_max = 100.0 * Math.random();
-            double task_cost = 1.14/100;
+            double task_cost = 1.14 / 100;
 
             // add task to scenario vector
             Task tempTask = new Task(S_max, x_task, "PROPORTIONAL", task_cost, instruments, tc);
