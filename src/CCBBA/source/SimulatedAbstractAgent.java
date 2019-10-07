@@ -98,7 +98,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         //getLogger().info("Phase 1...");
 
         // Get incomplete subtasks
-        J = getSubtasks();
+        this.J = getSubtasks();
 
         //Phase 1 - Task Selection
         // -Initialize results
@@ -247,6 +247,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 if(convergenceCounter >= convergenceIndicator){
                     if(!this.converged){ getLogger().info("Plan Converged"); }
                     requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+                    convergenceCounter = 0;
                     break;
                 }
             }
@@ -411,12 +412,12 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     int n_sat = 0;
                     for(int k = 0; k < parentTask.getJ().size(); k++){
                         if(i_task == k){ continue;}
-                        if( D[i_task][k] == 1){ N_req = N_req + 1; }
-                        if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){ n_sat = n_sat + 1; }
+                        if( D[i_task][k] == 1){ N_req++; }
+                        if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){ n_sat++; }
                     }
 
                     if(N_req != n_sat){ //if not all dependencies are met, v_i++
-                        v.setElementAt( v.get(i_j)+1 , i_j);
+                        v.setElementAt( (v.get(i_j) + 1) , i_j);
                         this.localResults.setV( v );
                     }
 
@@ -554,8 +555,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             this.overallBundle.add(j);
             this.overallPath.add(j_p);
         }
-        removeFromBundle(localResults.getJ(), this.localResults.getJ().indexOf( this.bundle.get(0) ) );
+        if(!this.bundle.isEmpty()) removeFromBundle(localResults.getJ(), this.localResults.getJ().indexOf( this.bundle.get(0) ) );
         localResults.updateResults(this.overallBundle, this.overallPath);
+
+//        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
 
         // check agent status
         if( (tasksAvailable()) && (this.resourcesRemaining > 0.0) ){ // tasks are available and agent has resources
@@ -622,9 +625,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         for (Task task : V) {
             Vector<Subtask> J_i = task.getJ();
             for (Subtask subtask : J_i) {
-                if (!subtask.getComplete()) {
-                    J_available.add(subtask);
-                }
+                J_available.add(subtask);
             }
         }
 
@@ -706,9 +707,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 if ((z.get(i) == z.get(i_subtask)) && ((D[ j_index ][ q_index ] == 0) || (D[ j_index ][ q_index ] == 1))) {
                     coalition_bid = coalition_bid + y.get(i);
                 }
-                if ((z.get(i) == this) && (D[j_index][q_index] == 1)) {
-                    new_bid = new_bid + y.get(i);
-                }
+                if (D[j_index][q_index] == 1)
+                    if (z.get(i) == this) {
+                        new_bid = new_bid + y.get(i);
+                    }
             }
         }
         new_bid = new_bid + bid.getC();;
@@ -918,7 +920,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     private int getConvergenceIndicator(){
-        return 10;
+        return 100;
     }
 
     protected double getC_merge(){

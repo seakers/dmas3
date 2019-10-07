@@ -8,7 +8,7 @@ public class Subtask {
     protected Vector<Integer> dep_nums;
     protected int main_num;
     protected String name;
-    protected boolean complete = false;
+    protected boolean complete;
     protected Task parentTask;
     protected int K;
 
@@ -25,6 +25,7 @@ public class Subtask {
         name = new_main;
         parentTask = parent;
         K = k;
+        complete = false;
     }
 
     public void addDep_task(String new_task, int new_num){
@@ -53,7 +54,7 @@ public class Subtask {
      * Geters and Setters
      */
     public String getName(){ return name; }
-    public void setComplete(boolean status){ complete = complete; }
+    public void complete(){ this.complete = true; }
     public boolean getComplete(){ return complete; }
     public Task getParentTask(){ return parentTask; }
     public int getK(){ return K; }
