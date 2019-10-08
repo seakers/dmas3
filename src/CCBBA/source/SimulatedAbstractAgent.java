@@ -50,7 +50,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected double C_split;
     protected double resources;
     private double resourcesRemaining;
-    private long t_0;
+//    private long t_0;
+    private double t_0;
     private boolean converged = false;                              // convergence flag
 
 
@@ -111,10 +112,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             localResults = new IterationResults(results.get(zeta - 1), true, this);
 
             // Checks for new coalitions
-            Vector<Vector<SimulatedAbstractAgent>> oldCoalition;
-            Vector<Vector<SimulatedAbstractAgent>> newCoalition;
-            oldCoalition = results.get(zeta-1).getOmega();
-            newCoalition = localResults.getOmega();
+            Vector<Vector<SimulatedAbstractAgent>> oldCoalition = results.get(zeta-1).getOmega();
+            Vector<Vector<SimulatedAbstractAgent>> newCoalition = localResults.getOmega();
 
             int i_j = isEqual(oldCoalition, newCoalition);
             if( (i_j > -1)&&(!bundle.isEmpty())&&(i_j < bundle.size()) ){ // if not equal, release task from bundle
@@ -131,6 +130,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.overallPath = this.localResults.getOverallPath();
         this.bundle = this.localResults.getBundle();
         this.path = this.localResults.getPath();
+
+
         while( (bundle.size() < M)&&(localResults.getH().contains(1)) ){
             Vector<SubtaskBid> bidList = new Vector<>();
             Subtask j_chosen = null;
@@ -140,8 +141,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 Subtask j = this.J.get(i);
 
                 // Check if subtask can be bid on
-                if(canBid(j, i, localResults) && (localResults.getH().get(i) == 1)) { // task can be bid on
-//                if(canBid(j, i, localResults) ){ // task can be bid
+//                if(canBid(j, i, localResults) && (localResults.getH().get(i) == 1)) { // task can be bid on
+                if(canBid(j, i, localResults) ){ // task can be bid
                     // Calculate bid for subtask
                     SubtaskBid localBid = new SubtaskBid();
                     localBid.calcBidForSubtask(j, this);
@@ -575,6 +576,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 // do task
                 j.getParentTask().setSubtaskComplete( j );
 
+                //update time
+                int i_j = this.localResults.getJ().indexOf(j);
+                this.t_0 = this.localResults.getTz().get(i_j);
+
                 // deduct task costs
                 double cost_const = j.getParentTask().getCostConst();
                 double cost_prop = j.getParentTask().getCostProp();
@@ -593,22 +598,21 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
         }
 
-        // DEBUGGING - throw flag whenever results converged to a task with dependencies left
-//        int flag = ISOKAY();
-        int x = 0;
-
         // release tasks from bundle
-        for(int i = 0; i < this.bundle.size(); i++){
-            Subtask j = this.bundle.get(i);
-            Subtask j_p = this.path.get(i);
-            this.overallBundle.add(j);
-            this.overallPath.add(j_p);
-        }
+//        for(int i = 0; i < this.bundle.size(); i++){
+//            Subtask j = this.bundle.get(i);
+//            Subtask j_p = this.path.get(i);
+//            this.overallBundle.add(j);
+//            this.overallPath.add(j_p);
+//        }
         if(!this.bundle.isEmpty()) removeFromBundle(localResults.getJ(), this.localResults.getJ().indexOf( this.bundle.get(0) ) );
-        localResults.updateResults(this.overallBundle, this.overallPath);
+        localResults.updateResults();
+        updateResultsList(localResults);
+        zeta++;
 
         // check agent status
         if( (tasksAvailable()) && (this.resourcesRemaining > 0.0) ){ // tasks are available and agent has resources
+//        if(tasksAvailable()){
             if(!this.converged){ getLogger().info("Tasks completed."); }
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK);
             this.converged = false;
@@ -659,14 +663,40 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         Vector<Task> V = new Vector<>();
         V = environment.getTasks();
         for (Task task : V) {
-            if (!task.getStatus()) {
-                // there exists at least one task that has not been completed
+            if( !checkCompletion(task) ){ // task is not completed
+                // task is available
                 return true;
             }
         }
 
         // all tasks have been completed
         return false;
+    }
+
+    private boolean checkCompletion(Task V){
+        Vector<Subtask> localJ = V.getJ();
+        int[][] D = V.getD();
+        int nullCounter = 0;
+        for(int i = 0; i < localJ.size(); i++){
+            Subtask j = localJ.get(i);
+            int i_j = this.localResults.getJ().indexOf(j);
+
+            // check if subtask has been bid on
+            if(this.localResults.getZ().get(i_j) != null) {
+                // subtask has a bid, check if dependencies are met
+                for (int k = 0; k < localJ.size(); k++) {
+                    int i_k = this.localResults.getJ().indexOf(localJ.get(k));
+                    if ((D[i][k] >= 1) && (this.localResults.getZ().get(i_k) == null)) { // dependency not met
+                        // task is available
+                        return false;
+                    }
+                }
+            }
+            else nullCounter++;
+        }
+        if(nullCounter == localJ.size()) return false;
+
+        return true;
     }
 
     private void moveToTask(Subtask j){
@@ -861,7 +891,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             for (int i = 0; i < deletedTasks.size(); i++) {
                 int i_path = path.indexOf(deletedTasks.get(i));
                 path.remove(i_path);
-                //X_path.remove(i_path);
             }
         }
     }
@@ -951,6 +980,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     public int getZeta(){ return this.zeta; }
     public Vector<String> getSensors(){ return this.sensors; }
     protected double readResources(){ return this.resources; }
+    public double getT_0() {
+        return t_0;
+    }
 
     /**
      * Abstract Agent Settings

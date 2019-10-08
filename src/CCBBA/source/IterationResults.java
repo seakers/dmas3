@@ -81,10 +81,12 @@ public class IterationResults {
         this.v = new Vector<>();
         this.w_solo = new Vector<>();
         this.w_any = new Vector<>();
+        this.h = new Vector<>();
         this.omega = new Vector<>();
         this.bundle = new Vector<>();
         this.overallBundle = new Vector<>();
         this.path = new Vector<>();
+        this.overallPath = new Vector<>();
         this.cost = new Vector<>();
 
         for(int i = 0; i < prevResults.getY().size(); i++){
@@ -111,8 +113,9 @@ public class IterationResults {
             this.path.add( prevResults.getPath().get(i) );
         }
 
-        for(Subtask j : prevResults.getOverallBundle()){
-            this.overallBundle.add(j);
+        for(int i = 0; i < prevResults.getOverallBundle().size(); i++){
+            this.overallBundle.add( prevResults.getOverallBundle().get(i) );
+            this.overallPath.add( prevResults.getOverallPath().get(i) );
         }
 
         if(omega_toggle) {
@@ -176,16 +179,16 @@ public class IterationResults {
 
     }
 
-    public void updateResults(Vector<Subtask> newOverallBundle, Vector<Subtask> newOverallPath){
-        this.overallBundle = new Vector<>();
-        this.overallPath = new Vector<>();
-
+    public void updateResults(){
         for(int i = 0; i < this.bundle.size(); i++){
-            Subtask j = this.bundle.get(i);
+            Subtask j = this.bundle .get(i);
             Subtask j_p = this.path.get(i);
             this.overallBundle.add(j);
             this.overallPath.add(j_p);
         }
+
+        this.bundle = new Vector<>();
+        this.path = new Vector<>();
     }
 
     public void updateResults(IterationResults receivedResults, int i, Vector<Subtask> bundle){
@@ -219,12 +222,10 @@ public class IterationResults {
     public void updateResults(Vector<Subtask> newBundle, Vector<Subtask> newPath, Vector<Dimension> newX_path){
         this.bundle = new Vector<>();
         this.path = new Vector<>();
-        this.xpath = new Vector<>();
 
         for(int i = 0; i< newBundle.size(); i++){
             this.bundle.add(newBundle.get(i));
             this.path.add(newPath.get(i));
-            //this.xpath.add(newX_path.get(i));
         }
     }
 

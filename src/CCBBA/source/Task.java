@@ -139,27 +139,25 @@ public class Task {
     }
 
     public void setSubtaskComplete(Subtask j) {
-         if(!this.complete){
-            // set subtask to complete
-            int i_j = this.J.indexOf(j);
-            Subtask tempTask = this.J.get(i_j);
-            tempTask.complete();
-            this.J.setElementAt(tempTask, i_j);
+        // set subtask to complete
+        int i_j = this.J.indexOf(j);
+        Subtask tempTask = this.J.get(i_j);
+        tempTask.complete();
+        this.J.setElementAt(tempTask, i_j);
 
-            // if all dependent subtasks are complete, mark all as complete
-            boolean req = true;
+        // if all dependent subtasks are complete, mark all as complete
+        boolean req = true;
+        for (int i = 0; i < this.J.size(); i++) {
+            if ((this.D[i_j][i] >= 1) && (!this.J.get(i).getComplete())) {
+                req = false;
+            }
+        }
+
+        if (req) {
             for (int i = 0; i < this.J.size(); i++) {
-                if ((this.D[i_j][i] == 1) && (!this.J.get(i).getComplete())) {
-                    req = false;
-                }
+                this.J.get(i).complete();
             }
-
-            if (req) {
-                for (int i = 0; i < this.J.size(); i++) {
-                    this.J.get(i).complete();
-                }
-                this.complete = true;
-            }
+            this.complete = true;
         }
     }
 

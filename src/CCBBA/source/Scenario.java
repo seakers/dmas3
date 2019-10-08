@@ -17,7 +17,8 @@ public class Scenario extends Watcher {
     protected Vector<Task> scenarioTasks = new Vector<>();
     protected int numTasks;
     protected Vector<String> instrumentList = new Vector<>();
-    protected long t_0;
+//    protected long t_0;
+    private double t_0;
 
     /**
      * so that the agents can perceive my dimension
@@ -35,7 +36,8 @@ public class Scenario extends Watcher {
 
     public Scenario(int numTasks){
         this.numTasks = numTasks;
-        this.t_0 = System.currentTimeMillis();
+        //this.t_0 = System.currentTimeMillis();
+        this.t_0 = 0.0;
     }
 
     @Override
@@ -78,7 +80,7 @@ public class Scenario extends Watcher {
 
     }
 
-    public long getT_0(){ return this.t_0; }
+    public double getT_0(){ return this.t_0; }
 
     class AgentsProbe extends PropertyProbe<AbstractAgent, Scenario> {
 

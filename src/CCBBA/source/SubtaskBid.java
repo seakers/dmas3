@@ -162,7 +162,8 @@ public class SubtaskBid {
 
         if(i == 0){
             x_i = agent.getInitialPosition();
-            t_0 = j.getParentTask().getTC().get(0);
+//            t_0 = j.getParentTask().getTC().get(0);
+            t_0 = agent.getT_0();
         }
         else{
             int i_prev = agent.getJ().indexOf( path.get(i-1) );
@@ -192,16 +193,16 @@ public class SubtaskBid {
     private double calcSubtaskScore(Vector<Subtask> path, Subtask j, double t_a, SimulatedAbstractAgent agent){
         double S_max = j.getParentTask().getS_max();
         double K = j.getK();
-        double e = calcUrgency(j, t_a);
+        double e = calcUrgency(j, t_a, agent);
         double alpha = calcAlpha(j.getK(), j.getParentTask().getI());
         double sigmoid = calcSigmoid(path, j, agent);
 
         return (S_max/K)*e*alpha*sigmoid;
     }
 
-    private double calcUrgency(Subtask j, double t_a){
+    private double calcUrgency(Subtask j, double t_a, SimulatedAbstractAgent agent){
         double lambda = j.getParentTask().getTC().get(3);
-        double t_start = j.getParentTask().getTC().get(0);
+        double t_start = agent.getT_0();
 
 //        return exp(- lambda * (t_a-t_start) );
         return 1.0; //<- UNCOMMENT WHEN VALIDATION STOPS

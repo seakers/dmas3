@@ -531,7 +531,7 @@ public class ResultsCompiler extends AbstractAgent {
 
 
             // print component lists
-            printWriter.printf("Location:\t\t\t\t[%f, %f, %f]\n", x, y, z);
+            printWriter.printf("Location:\t\t\t\t[%.3f\t\t%.3f\t\t%.3f]\n", x, y, z);
             printWriter.printf("Sensor List:\t\t\t%s\n", localAgent.getSensors());
             printWriter.printf("Bundle:\t\t\t\t\t[");
             for(int j = 0; j < localAgent.getOverallBundle().size(); j++){
@@ -542,7 +542,7 @@ public class ResultsCompiler extends AbstractAgent {
                     if(k != (bundleTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
                 }
                 if(j == (localAgent.getOverallBundle().size() - 1) ) { printWriter.printf("}"); }
-                else{ printWriter.printf("}, "); }
+                else{ printWriter.printf("}\t\t"); }
             }
             printWriter.printf("]\n");
             printWriter.printf("Path:\t\t\t\t\t[");
@@ -554,7 +554,15 @@ public class ResultsCompiler extends AbstractAgent {
                     if(k != (pathTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
                 }
                 if(j == (localAgent.getOverallPath().size() - 1) ) { printWriter.printf("}"); }
-                else{ printWriter.printf("}, "); }
+                else{ printWriter.printf("}\t\t"); }
+            }
+            printWriter.printf("]\n");
+            printWriter.printf("Time Assignments:\t\t[");
+            for(int j = 0; j < localAgent.getOverallPath().size(); j++){
+                Subtask pathTask = localAgent.getOverallPath().get(j);
+                int i_p = localJ.indexOf(pathTask);
+                printWriter.printf("%.3f", localTz.get(i_p));
+                if(j != (localAgent.getOverallPath().size() - 1) ) { printWriter.printf("\t\t"); }
             }
             printWriter.printf("]\n\n");
         }
