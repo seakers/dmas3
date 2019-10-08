@@ -234,6 +234,7 @@ public class IterationResults {
         this.tz.setElementAt(0.0, i);
         this.cost.setElementAt(0.0, i);
         this.s.setElementAt(0, i);
+        this.v.setElementAt(0, i);
 
         //if task is in bundle, then reset subsequent scores
         if(bundle.contains(J.get(i))){

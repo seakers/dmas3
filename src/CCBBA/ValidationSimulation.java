@@ -34,7 +34,7 @@ public class ValidationSimulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new ValidationScenario(10);
+        Scenario environment = new ValidationScenario(30);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
