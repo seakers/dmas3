@@ -393,8 +393,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
 
             // Check for constraints
-            // -Coalition constraints
             for(int i = 0; i < this.bundle.size(); i++){
+                // -Coalition constraints
                 if(isOptimistic(this.bundle.get(i))){ // task has optimistic bidding strategy
                     Vector<Integer> v = localResults.getV();
                     Vector<Integer> w_solo = localResults.getW_any();
@@ -459,8 +459,37 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     }
                 }
             }
+            //-Mutex Constraints
+            for(int i = 0; i < this.bundle.size(); i++){
+                Subtask j = this.bundle.get(i);
+                Task parentTask = j.getParentTask();
+                int i_task = parentTask.getJ().indexOf(j);
+                int[][] D = parentTask.getD();
+                int i_av = this.localResults.getJ().indexOf(j);
+                int i_bid;
 
-            // Check for time constraints
+                double y_bid = 0.0;
+                double y_mutex = 0.0;
+                for (int i_j = 0; i_j < parentTask.getJ().size(); i_j++) {
+                    if (D[i_task][i_j] == -1) {
+                        i_bid = this.localResults.getJ().indexOf(parentTask.getJ().get(i_j));
+                        y_mutex = y_mutex + this.localResults.getY().get(i_bid);
+                    } else if (D[i_task][i_j] >= 1) {
+                        i_bid = this.localResults.getJ().indexOf(parentTask.getJ().get(i_j));
+                        y_bid = y_bid + this.localResults.getY().get(i_bid);
+                    }
+                }
+                int i_j = this.localResults.getJ().indexOf(j);
+                y_bid = y_bid + this.localResults.getY().get(i_j);
+
+                if (y_mutex > y_bid) { //if outbid by mutex
+                    //release task
+                    this.localResults.resetResults(receivedResults.get(0), i_j, bundle);
+                    removeFromBundle(this.localResults.getJ(), i_j);
+                }
+            }
+
+            //-Time constraints
             for(int i = 0; i < bundle.size(); i++){
                 boolean taskReleased = false;
                 Subtask j = bundle.get(i);
