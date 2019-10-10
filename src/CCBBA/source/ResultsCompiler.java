@@ -364,15 +364,17 @@ public class ResultsCompiler extends AbstractAgent {
         Vector<Double> localY = this.receivedResults.get(0).getY();
         Vector<Double> localTz = this.receivedResults.get(0).getTz();
         Vector<SimulatedAbstractAgent> localZ = this.receivedResults.get(0).getZ();
+        Vector<Integer> localS = this.receivedResults.get(0).getS();
 
         winnersToPrint.add(localY);
         winnersToPrint.add(localTz);
         winnersToPrint.add(localZ);
         winnersToPrint.add(localJ);
+        winnersToPrint.add(localS);
 
         //- Metrics
-        double coalitionsFormed = calcCoalitionsFormed(this.receivedResults);
-        double coalitionsAvailable = countTasksAvailable();
+        int coalitionsFormed = calcCoalitionsFormed(this.receivedResults);
+        int coalitionsAvailable = countTasksAvailable();
         double scoreAchieved = calcScoreAchieved(this.receivedResults);
         double scoreAvailable = calcScoreAvailable(this.receivedResults);
         double resourcesPerCostPerAgent = calcAvgResourcesPerCost(this.receivedResults);
@@ -418,7 +420,7 @@ public class ResultsCompiler extends AbstractAgent {
             if(i == localJ.size()-1){ printWriter.printf("\t]\n");}
         }
 
-        printWriter.printf("Bids:\t\t\t\t[");
+        printWriter.printf("Bids Score:\t\t\t[");
         for(int i = 0; i < winnersToPrint.get(0).size(); i++){
             if(i != winnersToPrint.get(0).size()-1) {
                 printWriter.printf("%.3f", winnersToPrint.get(0).get(i));
@@ -438,7 +440,7 @@ public class ResultsCompiler extends AbstractAgent {
         printWriter.printf("Measurement Time:\t[");
         for(int i = 0; i < winnersToPrint.get(1).size(); i++){
             if(i != winnersToPrint.get(1).size()-1) {
-                printWriter.printf("%.3f", winnersToPrint.get(1).get(i));
+                printWriter.printf("%.2f", winnersToPrint.get(1).get(i));
                 if(i == dividerIndex.get(i_d)-1){
                     printWriter.printf("\t|\t");
                     i_d++;
@@ -448,6 +450,34 @@ public class ResultsCompiler extends AbstractAgent {
             }
             else{
                 printWriter.printf("%.3f\t]\n", winnersToPrint.get(1).get(i));
+            }
+        }
+
+        i_d = 0;
+        printWriter.printf("Iteration Assigned:\t[");
+        for(int i = 0; i < winnersToPrint.get(4).size(); i++){
+            int winnerTemp = localS.get(i);
+            if(i != winnersToPrint.get(4).size()-1) {
+                printWriter.printf("%d", winnerTemp);
+                if(i == dividerIndex.get(i_d)-1){
+                    if(winnerTemp > 1000){
+                        printWriter.printf("\t|\t");
+                    }
+                    else{
+                        printWriter.printf("\t\t|\t");
+                    }
+                    i_d++;
+                    continue;
+                }
+                if(winnerTemp > 1000){
+                    printWriter.printf("\t\t");
+                }
+                else{
+                    printWriter.printf("\t\t\t");
+                }
+            }
+            else{
+                printWriter.printf("%d\t]\n", winnerTemp);
             }
         }
 
@@ -481,13 +511,13 @@ public class ResultsCompiler extends AbstractAgent {
         printWriter.print("__________________________________");
         printWriter.print("\n");
 
-        printWriter.printf("Coalitions Formed:\t\t%f\n", coalitionsFormed);
-        printWriter.printf("Coalitions Available:\t%f\n", coalitionsAvailable);
-        printWriter.printf("Coalition Ratio:\t\t%f\n", coalitionsFormed/coalitionsAvailable);
+        printWriter.printf("Coalitions Formed:\t\t%d\n", coalitionsFormed);
+        printWriter.printf("Coalitions Available:\t%d\n", coalitionsAvailable);
+        printWriter.printf("Coalition Ratio:\t\t%f\n", (double) coalitionsFormed/ (double) coalitionsAvailable * 100.0);
         printWriter.printf("\n");
         printWriter.printf("Score Achieved:\t\t\t%f\n", scoreAchieved);
         printWriter.printf("Score Available:\t\t%f\n", scoreAvailable);
-        printWriter.printf("Score Ratio:\t\t\t%f\n", coalitionsFormed/coalitionsAvailable);
+        printWriter.printf("Score Ratio:\t\t\t%f\n", coalitionsFormed/ (double) coalitionsAvailable);
         printWriter.printf("\n");
         printWriter.printf("Merge Cost:\t\t\t\t%f\n", mergeCost);
         printWriter.printf("Split Cost:\t\t\t\t%f\n", splitCost);
@@ -562,6 +592,13 @@ public class ResultsCompiler extends AbstractAgent {
                 Subtask pathTask = localAgent.getOverallPath().get(j);
                 int i_p = localJ.indexOf(pathTask);
                 printWriter.printf("%.3f", localTz.get(i_p));
+                if(j != (localAgent.getOverallPath().size() - 1) ) { printWriter.printf("\t\t"); }
+            }
+            printWriter.printf("]\n");
+            printWriter.printf("Doing Iterations:\t\t[");
+            for(int j = 0; j < localAgent.getDoingIterations().size(); j++){
+                int i_p = localAgent.getDoingIterations().get(j);
+                printWriter.printf("%d", i_p);
                 if(j != (localAgent.getOverallPath().size() - 1) ) { printWriter.printf("\t\t"); }
             }
             printWriter.printf("]\n\n");
@@ -717,20 +754,22 @@ public class ResultsCompiler extends AbstractAgent {
 
     private int calcCoalitionsFormed(Vector<IterationResults> receivedResults){
         int count = 0;
-        Vector<Task> coalitionList = new Vector<>();
+        Vector<Task> V = environment.getTasks();
+        Vector<SimulatedAbstractAgent> localZ = receivedResults.get(0).getZ();
 
-        for(int i = 0; i < receivedResults.size(); i++){
-            Vector<Subtask> tempBundle = receivedResults.get(i).getBundle();
-            Vector<Vector<SimulatedAbstractAgent>> tempOmega = receivedResults.get(i).getOmega();
-
-            for(int j = 0; j < tempBundle.size(); j++){
-                if(tempOmega.get(j).size() > 0){                        // if the task in the bundle has a coalition partner
-                    if(!coalitionList.contains(tempBundle.get(j).getParentTask())){     // check if task related to that coalition has been counted
-                        coalitionList.add(tempBundle.get(j).getParentTask());           // if not, add coalition to list
-                        count++;                                        // increase coalition count
-                    }
+        for(Task task : V){
+            // check if it has more than winner
+            Vector<SimulatedAbstractAgent> taskWinners = new Vector<>();
+            int i_j;
+            SimulatedAbstractAgent localWinner;
+            for(Subtask j : task.getJ()){
+                i_j = receivedResults.get(0).getJ().indexOf(j);
+                localWinner = localZ.get(i_j);
+                if( (localWinner != null) && (!taskWinners.contains(localWinner)) ){
+                    taskWinners.add(localWinner);
                 }
             }
+            if(taskWinners.size() > 1) count++;
         }
         return count;
     }
@@ -762,9 +801,9 @@ public class ResultsCompiler extends AbstractAgent {
 
     }
 
-    private double countTasksAvailable(){
+    private int countTasksAvailable(){
         Vector<Task> taskList = this.environment.getTasks(); // <- TEMPORARY SOLUTION. ONLY VALID FOR VALIDATION SCENARIOS
-        return taskList.size()/2.0;
+        return taskList.size()/2;
     }
 
     private Vector<SimulatedAbstractAgent> getListOfAgents(){

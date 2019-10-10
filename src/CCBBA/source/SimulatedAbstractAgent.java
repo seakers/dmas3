@@ -1,5 +1,6 @@
 package CCBBA.source;
 
+import jmetal.encodings.variable.Int;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
@@ -53,6 +54,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 //    private long t_0;
     private double t_0;
     private boolean converged = false;                              // convergence flag
+    private Vector<Integer> doingIterations = new Vector<>();
 
 
     /**
@@ -225,42 +227,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             receivedResults.add(message.myResults);
         }
 
-        // Rule-Based Check
-        // check consistency:
-        boolean consistent = true;
-        for(int i = 0; i < receivedResults.size(); i++){ // for every received result
-            // compare local results to each received result
-            for (int i_j = 0; i_j < localResults.getY().size(); i_j++){
-                double myY = localResults.getY().get(i_j);
-                double itsY = receivedResults.get(i).getY().get(i_j);
-                if( myY != itsY ){
-                    //getLogger().info("Inconsistencies in plan found !!");
-                    consistent = false;
-                    convergenceCounter = 0;
-                    break;
-                }
-            }
-            if(!consistent){ break; }
-        }
-
-        if(consistent) {
-            // no inconsistency found
-            //getLogger().info("NO inconsistencies in plan found. Checking convergence...");
-            convergenceCounter++;
-            if (convergenceCounter >= convergenceIndicator) {
-                if (!this.converged) {
-                    getLogger().info("Plan Converged");
-                }
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
-                convergenceCounter = 0;
-            }
-        }
-        else{
-            // No consensus reached
-            convergenceCounter = 0;
-        }
-
         // Compare bids with other results
+        // Rule-Based Check
         for (int i = 0; i < receivedResults.size(); i++) { //for each received result
             for (int i_j = 0; i_j < localResults.getY().size(); i_j++) { // for each subtask
                 // Load my results
@@ -397,8 +365,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         // Check for constraints
-        // -Coalition constraints
-        if(!receivedResults.isEmpty()) {
+
+            // -Coalition constraints
             for (int i = 0; i < this.bundle.size(); i++) {
                 if (isOptimistic(this.bundle.get(i))) { // task has optimistic bidding strategy
                     Vector<Integer> v = localResults.getV();
@@ -473,6 +441,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                         this.localResults.resetResults(receivedResults.get(0), i_j, bundle);
                         removeFromBundle(this.localResults.getJ(), i_j);
                     }
+
+
                 }
             }
 
@@ -487,6 +457,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
                 double y_bid = 0.0;
                 double y_mutex = 0.0;
+
                 for (int i_j = 0; i_j < parentTask.getJ().size(); i_j++) {
                     if (D[i_task][i_j] == -1) {
                         i_bid = this.localResults.getJ().indexOf(parentTask.getJ().get(i_j));
@@ -550,7 +521,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     localResults.setW_solo(w_solo);
                 }
             }
-        }
+
 
         // Update results
         localResults.updateResults(this.bundle, this.path, this.X_path);
@@ -560,6 +531,56 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         //Broadcast results
         myMessage myResults = new myMessage(this.localResults, this.getName());
         for(int i = 0; i < list_agents.size(); i++) sendMessage(list_agents.get(i), myResults);
+
+        // check consistency:
+        boolean consistent = true;
+        for(int i = 0; i < receivedResults.size(); i++){ // for every received result
+            // compare local results to each received result
+            for (int i_j = 0; i_j < localResults.getY().size(); i_j++){
+                double myY = localResults.getY().get(i_j);
+                double itsY = receivedResults.get(i).getY().get(i_j);
+                double myTz = localResults.getTz().get(i_j);
+                double itsTz = receivedResults.get(i).getTz().get(i_j);
+                int myS = localResults.getS().get(i_j);
+                int itsS = receivedResults.get(i).getS().get(i_j);
+                int myV = localResults.getV().get(i_j);
+
+                if(( myY != itsY )||( myTz != itsTz )||( myS != itsS )){
+                    //getLogger().info("Inconsistencies in plan found !!");
+                    consistent = false;
+                    convergenceCounter = 0;
+                    break;
+                }
+            }
+            if(!consistent){ break; }
+        }
+
+        // check if bundle elements exist in constraint violations
+        for(Subtask j : this.bundle) {
+            int i_j = localResults.getJ().indexOf(j);
+            if( this.localResults.getV().get(i_j) > 0) { // element in bundle is in constraint violation, no convergence allowed
+                consistent = false;
+                convergenceCounter = 0;
+                break;
+            }
+        }
+
+        if(consistent) {
+            // no inconsistency found
+            //getLogger().info("NO inconsistencies in plan found. Checking convergence...");
+            convergenceCounter++;
+            if (convergenceCounter >= convergenceIndicator) {
+                if (!this.converged) {
+                    getLogger().info("Plan Converged");
+                }
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+                convergenceCounter = 0;
+            }
+        }
+        else{
+            // No consensus reached
+            convergenceCounter = 0;
+        }
     }
 
     @SuppressWarnings("unused")
@@ -573,8 +594,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 moveToTask(j);
                 if(this.resourcesRemaining <= 0.0){ break; }
 
-                // do task
-                j.getParentTask().setSubtaskComplete( j );
+//                // do task
+//                j.getParentTask().setSubtaskComplete( j );
 
                 //update time
                 int i_j = this.localResults.getJ().indexOf(j);
@@ -598,17 +619,23 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
         }
 
+        // set agreed tasks as completed
+        for(Subtask j : this.localResults.getJ()){
+            int i_j = this.localResults.getJ().indexOf(j);
+
+            // if it has a winner, set subtask as complete
+            if(this.localResults.getZ().get(i_j) != null) {
+                j.getParentTask().setSubtaskComplete(j);
+                this.localResults.getJ().setElementAt(j, i_j);
+            }
+        }
+
         // release tasks from bundle
-//        for(int i = 0; i < this.bundle.size(); i++){
-//            Subtask j = this.bundle.get(i);
-//            Subtask j_p = this.path.get(i);
-//            this.overallBundle.add(j);
-//            this.overallPath.add(j_p);
-//        }
+        this.doingIterations.add(this.zeta);
         if(!this.bundle.isEmpty()) removeFromBundle(localResults.getJ(), this.localResults.getJ().indexOf( this.bundle.get(0) ) );
-        localResults.updateResults();
-        updateResultsList(localResults);
-        zeta++;
+        this.localResults.updateResults();
+        updateResultsList(this.localResults);
+        this.zeta++;
 
         // check agent status
         if( (tasksAvailable()) && (this.resourcesRemaining > 0.0) ){ // tasks are available and agent has resources
@@ -738,6 +765,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             return false;
         }
         else if(j.getParentTask().getStatus()){ // if task is completed, I can't bid
+            return false;
+        }
+        else if(j.getParentTask().getJ().get( j.getParentTask().getJ().indexOf(j) ).getComplete()){
             return false;
         }
 
@@ -983,6 +1013,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     public double getT_0() {
         return t_0;
     }
+    public Vector<Integer> getDoingIterations(){ return this.doingIterations; }
 
     /**
      * Abstract Agent Settings
@@ -1011,7 +1042,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     public int getO_kq(){
-        return 100;
+        return 5;
     }
 
     public int getW_solo_max(){

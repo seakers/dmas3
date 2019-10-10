@@ -145,20 +145,29 @@ public class Task {
         tempTask.complete();
         this.J.setElementAt(tempTask, i_j);
 
-        // if all dependent subtasks are complete, mark all as complete
-        boolean req = true;
+        // if this task is done, no other mutually exclusive tasks are allowed to be bid on
         for (int i = 0; i < this.J.size(); i++) {
-            if ((this.D[i_j][i] >= 1) && (!this.J.get(i).getComplete())) {
-                req = false;
+            if (this.D[i_j][i] == -1) {
+                Subtask exclusiveTemp = this.J.get(i);
+                exclusiveTemp.complete();
+                this.J.setElementAt(exclusiveTemp, i);
             }
         }
 
-        if (req) {
-            for (int i = 0; i < this.J.size(); i++) {
-                this.J.get(i).complete();
-            }
-            this.complete = true;
-        }
+//        // if all dependent subtasks are complete, mark task all as complete
+//        boolean req = true;
+//        for (int i = 0; i < this.J.size(); i++) {
+//            if ((this.D[i_j][i] >= 1) && (!this.J.get(i).getComplete())) {
+//                req = false;
+//            }
+//        }
+//
+//        if (req) {
+//            for (int i = 0; i < this.J.size(); i++) {
+//                this.J.get(i).complete();
+//            }
+//            this.complete = true;
+//        }
     }
 
     /**
