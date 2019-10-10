@@ -197,12 +197,14 @@ public class IterationResults {
         double tzReceived = receivedResults.getTz().get(i);
         double costReceived = receivedResults.getCost().get(i);
         int timeStampReceived = receivedResults.getS().get(i);
+        int violationIterations = receivedResults.getV().get(i);
 
         this.y.setElementAt(yReceived, i);
         this.z.setElementAt(zReceived, i);
         this.tz.setElementAt(tzReceived, i);
         this.cost.setElementAt(costReceived, i);
         this.s.setElementAt(timeStampReceived, i);
+        this.v.setElementAt(violationIterations, i);
 
         //if task is in bundle, then reset subsequent scores
         if(bundle.contains(J.get(i))){
@@ -214,6 +216,8 @@ public class IterationResults {
                     this.z.setElementAt(null, i_j);
                     this.tz.setElementAt(0.0, i_j);
                     this.cost.setElementAt(0.0, i_j);
+                    this.s.setElementAt(0, i_j);
+                    this.v.setElementAt(0, i_j);
                 }
             }
         }
@@ -246,6 +250,8 @@ public class IterationResults {
                 this.z.setElementAt(null, i_j);
                 this.tz.setElementAt(0.0, i_j);
                 this.cost.setElementAt(0.0, i_j);
+                this.s.setElementAt(0, i_j);
+                this.v.setElementAt(0, i_j);
             }
         }
     }
