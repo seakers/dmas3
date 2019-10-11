@@ -2,6 +2,7 @@ package CCBBA.source;
 
 import madkit.action.SchedulingAction;
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.SchedulingMessage;
 import CCBBA.CCBBASimulation;
@@ -32,30 +33,32 @@ public class ResultsCompiler extends AbstractAgent {
         // TBA
 
         //Receive results
-        List<Message> receivedMessages = nextMessages(null);
-        Vector<IterationResults> receivedResults = new Vector<>();
+        List<AgentAddress> resultsAddress = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
 
-
-        for(int i = 0; i < receivedMessages.size(); i++){
-            myMessage message = (myMessage) receivedMessages.get(i);
+        if( (resultsAddress != null)&&(resultsAddress.size() >= this.numAgents) ){
+            List<Message> receivedMessages = nextMessages(null);
+            Vector<IterationResults> receivedResults = new Vector<>();
+            for (int i = 0; i < receivedMessages.size(); i++) {
+                myMessage message = (myMessage) receivedMessages.get(i);
 
 //            if(this.agentList.contains(message.myResults.getParentAgent())){
 //                continue;
 //            }
 //            this.agentList.add(message.myResults.getParentAgent());
-            receivedResults.add(message.myResults);
-        }
+                receivedResults.add(message.myResults);
+            }
 
-        if(receivedResults.size() >= this.numAgents){ // checks if every agent has sent finished its tasks.
-            // Every agent has finished its tasks
-            getLogger().info("Terminating Sim. Saving Results.");
+            if (receivedResults.size() >= this.numAgents) { // checks if every agent has sent finished its tasks.
+                // Every agent has finished its tasks
+                getLogger().info("Terminating Sim. Saving Results.");
 
-            // print results
-            printResults(receivedResults);
+                // print results
+                printResults(receivedResults);
 
-            // terminate sim
-            SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
-            sendMessage(getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.SCH_ROLE), terminate);
+                // terminate sim
+                SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
+                sendMessage(getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.SCH_ROLE), terminate);
+            }
         }
     }
 
@@ -477,7 +480,7 @@ public class ResultsCompiler extends AbstractAgent {
                 }
             }
             else{
-                printWriter.printf("%d\t]\n", winnerTemp);
+                printWriter.printf("%d\t\t]\n", winnerTemp);
             }
         }
 
@@ -592,7 +595,14 @@ public class ResultsCompiler extends AbstractAgent {
                 Subtask pathTask = localAgent.getOverallPath().get(j);
                 int i_p = localJ.indexOf(pathTask);
                 printWriter.printf("%.3f", localTz.get(i_p));
-                if(j != (localAgent.getOverallPath().size() - 1) ) { printWriter.printf("\t\t"); }
+                if(j != (localAgent.getOverallPath().size() - 1) ) {
+                    if(localTz.get(i_p) > 100){
+                        printWriter.printf("\t\t");
+                    }
+                    else{
+                        printWriter.printf("\t\t\t");
+                    }
+                }
             }
             printWriter.printf("]\n");
             printWriter.printf("Doing Iterations:\t\t[");

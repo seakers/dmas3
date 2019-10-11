@@ -12,8 +12,12 @@ import java.util.Vector;
 
 public class ValidationScenario extends Scenario {
 
-    public ValidationScenario(int numTasks){
+    public ValidationScenario(int numTasks, String simType){
         this.numTasks = numTasks;
+        if(simType.equals("INT")){ this.numAgents = 2; }
+        else if(simType.equals("MOD")){ this.numAgents = 4; }
+
+        this.t_0 = 0;
     }
 
     @Override
@@ -67,7 +71,7 @@ public class ValidationScenario extends Scenario {
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.ENV_ROLE);
 
         // 2 : this probe is used to initialize the agents' environment field
-        addProbe(new ValidationScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "environment"));
+        addProbe(new ValidationScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "environment"));
         addProbe(new ValidationScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE, "environment"));
 
     }

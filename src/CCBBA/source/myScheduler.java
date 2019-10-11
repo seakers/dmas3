@@ -30,9 +30,19 @@ public class myScheduler extends Scheduler {
         // 2 : execute planners
         if(this.planner == "CCBBA") { //Consensus Constraint-Based Bundle Algorithm
             //thinking phase
-            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "phaseOne");
+//            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "phaseOne");
+//            addActivator(agents);
+            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "phaseOne");
             addActivator(agents);
-            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "phaseTwo");
+            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2, "phaseTwo");
+            addActivator(agents);
+
+            //waiting phase
+            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES, "waitOnBundles");
+            addActivator(agents);
+            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS, "waitOnResults");
+            addActivator(agents);
+            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV, "waitOnConvergence");
             addActivator(agents);
 
             //doing phase
@@ -40,7 +50,7 @@ public class myScheduler extends Scheduler {
             addActivator(agents);
 
             //dying phase
-            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE, "end");
+            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE, "die");
             addActivator(agents);
         }
         else if(this.planner == "DEBUG_TASK"){  //Does not execute agents, just creates environment
@@ -49,7 +59,7 @@ public class myScheduler extends Scheduler {
             addActivator(agents);
 
             //dying phase
-            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "end");
+            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "die");
             addActivator(agents);
         }
 

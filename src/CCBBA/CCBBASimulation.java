@@ -3,12 +3,8 @@ package CCBBA;
 import madkit.kernel.AbstractAgent;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import CCBBA.CCBBASimulation;
 import CCBBA.scenarios.random.*;
 import CCBBA.source.*;
 
@@ -20,9 +16,13 @@ public class CCBBASimulation extends AbstractAgent {
     public static final String MY_COMMUNITY = "simu";
     public static final String SIMU_GROUP = "simu";
     public static final String AGENT_THINK = "agent_planner";
+    public static final String AGENT_THINK1 = "agent_planner1";
+    public static final String AGENT_THINK2 = "agent_planner2";
     public static final String AGENT_DO = "agent_execute";
+    public static final String AGENT_WAIT_BUNDLES = "agent_wait_bund";
+    public static final String AGENT_WAIT_RESULTS = "agent_wait_res";
+    public static final String AGENT_WAIT_CONV = "agent_wait_conv";
     public static final String AGENT_DIE = "agent_die";
-    public static final String AGENT_DEAD = "agent_dead";
     public static final String ENV_ROLE = "environment";
     public static final String SCH_ROLE = "scheduler";
     public static final String RESULTS_ROLE = "results";

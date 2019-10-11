@@ -16,9 +16,10 @@ public class Scenario extends Watcher {
     protected Dimension dimension;
     protected Vector<Task> scenarioTasks = new Vector<>();
     protected int numTasks;
+    protected int numAgents;
     protected Vector<String> instrumentList = new Vector<>();
 //    protected long t_0;
-    private double t_0;
+    protected double t_0;
 
     /**
      * so that the agents can perceive my dimension

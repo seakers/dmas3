@@ -233,7 +233,7 @@ public class IterationResults {
         }
     }
 
-    public void resetResults(IterationResults receivedResults, int i, Vector<Subtask> bundle){
+    public void resetResults(int i, Vector<Subtask> bundle){
         this.y.setElementAt(0.0, i);
         this.z.setElementAt(null, i);
         this.tz.setElementAt(0.0, i);
