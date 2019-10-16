@@ -44,9 +44,9 @@ public class myScheduler extends Scheduler {
             addActivator(agents);
             agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_COMP, "waitOnComparisons");
             addActivator(agents);
-            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_DO, "waitOnResults");
-            addActivator(agents);
             agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV, "waitOnConvergence");
+            addActivator(agents);
+            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_DO, "waitOnTaskDoing");
             addActivator(agents);
 
             //doing phase

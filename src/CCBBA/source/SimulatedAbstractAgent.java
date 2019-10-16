@@ -106,6 +106,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         // Get incomplete subtasks
         this.J = getSubtasks();
 
+        // Empty mailbox
+        emptyMailbox();
+
         //Phase 1 - Task Selection
         // -Initialize results
         if(this.zeta == 0){
@@ -568,28 +571,20 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             if(!consistent){ break; }
         }
 
-//        //-check if bundle elements exist in constraint violations
-//        for(Subtask j : this.bundle) {
-//            int i_j = localResults.getJ().indexOf(j);
-//            if( this.localResults.getV().get(i_j) > 0) { // element in bundle is in constraint violation, no convergence allowed
-//                consistent = false;
-//                break;
-//            }
-//        }
+        receivedResults = new Vector<>();
 
         if(consistent) {
-            //-no inconsistencies found, check convergence
             //getLogger().info("NO inconsistencies in plan found. Checking convergence...");
-
+            //-no inconsistencies found, check convergence
             this.converged = true;
             this.convergenceCounter = 0;
             leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_COMP);
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
         }
         else{
+            //getLogger().info("Inconsistencies in plan found. Creating new plan...");
             //-no consensus reached
             this.convergenceCounter = 0;
-            receivedResults = new Vector<>();
             leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_COMP);
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
         }
@@ -601,6 +596,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         getLogger().info("Doing Tasks...");
         boolean alive = true;
 
+        //empty mailbox
+        emptyMailbox();
+
+        // do tasks in bundle
         for(int i = 0; i < this.bundle.size(); i++){
             if(resourcesLeft()){ // agent still has resources left
                 Subtask j = this.bundle.get(i);
@@ -704,13 +703,19 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     @SuppressWarnings("unused")
-    public void waitOnResults(){ // wait for other tasks to do their tasks
+    public void waitOnTaskDoing(){ // wait for other tasks to do their tasks
         abstractWait(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_DO, CCBBASimulation.AGENT_THINK1);
     }
 
     /**
      * Misc tools and functions
      */
+    private void emptyMailbox(){
+        while(!isMessageBoxEmpty()){
+            Message tempMessage = nextMessage();
+        }
+    }
+
     private void abstractWait(String community, String group, String roleWait, String roleActive){
         // inform agents that a goal has been reached on my end
         List<AgentAddress> agentsAlive = getAgentsWithRole(community, group, roleWait);
@@ -738,6 +743,17 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 requestRole(community, group, roleActive);
             }
             else if(agentsAlive.size() == (environment.numAgents - 1)){
+                // broadcast my results
+                broadcastMessage(community, group, roleWait, myResults);
+                broadcastMessage(community, group, roleActive, myResults);
+
+                // exit wait phase and start active phase
+                leaveRole(community, group, roleWait);
+                requestRole(community, group, roleActive);
+            }
+        }
+        else if (agentsDead != null){
+            if(agentsDead.size() == (environment.numAgents - 1)){
                 // broadcast my results
                 broadcastMessage(community, group, roleWait, myResults);
                 broadcastMessage(community, group, roleActive, myResults);
