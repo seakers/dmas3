@@ -10,6 +10,10 @@ import java.awt.*;
 import java.util.Vector;
 
 public class AppendixBScenario extends Scenario {
+    public AppendixBScenario(int numTasks, int numAgents){
+        this.numTasks = numTasks;
+        this.numAgents = numAgents;
+    }
 
     @Override
     protected void activate() {
@@ -75,7 +79,8 @@ public class AppendixBScenario extends Scenario {
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.ENV_ROLE);
 
         // 2 : this probe is used to initialize the agents' environment field
-        addProbe(new AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "environment"));
+        addProbe(new AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "environment"));
+        addProbe(new AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2, "environment"));
         addProbe(new AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE, "environment"));
 
     }

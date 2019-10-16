@@ -53,6 +53,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     private double t_0;
     private boolean converged = false;                              // convergence flag
     private Vector<Integer> doingIterations = new Vector<>();
+    private boolean messageSent;
+    private Vector<IterationResults> receivedResults;
 
 
     /**
@@ -60,6 +62,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
      */
     @Override
     protected void activate() {
+        getLogger().info("Activating agent");
+
         // Request Role
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
 
@@ -82,6 +86,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.C_split = getC_split();
         this.t_0 = environment.getT_0();
         this.resourcesRemaining = this.resources;
+        this.messageSent = false;
+        this.receivedResults = new Vector<>();
     }
 
 
@@ -94,9 +100,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.list_agents = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, false);
 
         // Phase 1 - Create bid for individual spacecraft
-        if(this.zeta == 0) {
-            getLogger().info("Creating plan...");
-        }
+        if(this.zeta == 0) getLogger().info("Creating plan...");
         //getLogger().info("Phase 1...");
 
         // Get incomplete subtasks
@@ -208,8 +212,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
         }
 
-
-        //prepare results for broadcast
+        leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
     }
 
@@ -220,7 +223,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         //Read received results
         List<Message> receivedMessages = nextMessages(null);
-        Vector<IterationResults> receivedResults = new Vector<>();
 
         for(int i = 0; i < receivedMessages.size(); i++){
             myMessage message = (myMessage) receivedMessages.get(i);
@@ -250,8 +252,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 }
                 else{ itsZ = receivedResults.get(i).getZ().get(i_j).getName(); }
                 double itsTz = receivedResults.get(i).getTz().get(i_j);
-                myMessage m = (myMessage) receivedMessages.get(i);
-                String it = m.senderName;
+//                myMessage m = (myMessage) receivedMessages.get(i);
+//                String it = m.senderName;
+                String it = receivedResults.get(i).getParentAgent().getName();
                 int itsS = receivedResults.get(i).getS().get(i_j);
 
                 // Comparing bids. See Ref 40 Table 1
@@ -559,35 +562,37 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         if(consistent) {
-            //-no inconsistency found
+            //-no inconsistencies found
             //getLogger().info("NO inconsistencies in plan found. Checking convergence...");
             convergenceCounter++;
+
             if (convergenceCounter >= convergenceIndicator) {
                 //-consensus reached
-                if (!this.converged) {
-                    getLogger().info("Plan Converged");
-                }
+                getLogger().info("Plan Converged");
                 this.converged = true;
-                //requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
-                convergenceCounter = 0;
+                this.convergenceCounter = 0;
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
             }
         }
         else{
             //-no consensus reached
-            this.converged = false;
-            convergenceCounter = 0;
-            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS);
+            this.convergenceCounter = 0;
+            receivedResults = new Vector<>();
+            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
         }
     }
 
     @SuppressWarnings("unused")
     private void doTasks() throws IOException, InterruptedException {
-        if(!this.converged) { getLogger().info("Doing Tasks..."); }
+        getLogger().info("Doing Tasks...");
+        boolean alive = true;
 
         for(int i = 0; i < this.bundle.size(); i++){
             if(resourcesLeft()){ // agent still has resources left
                 Subtask j = this.bundle.get(i);
+
                 // move to task
                 moveToTask(j);
                 if(this.resourcesRemaining <= 0.0){ break; }
@@ -599,7 +604,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 int i_j = this.localResults.getJ().indexOf(j);
                 this.t_0 = this.localResults.getTz().get(i_j);
 
-                // deduct task costs
+                // deduct task costs from resources
                 double cost_const = j.getParentTask().getCostConst();
                 double cost_prop = j.getParentTask().getCostProp();
                 if( (cost_prop > 0.0)&&(cost_const <= 0.0) ){
@@ -611,9 +616,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
             else{ // agent has no resources left
                 // agent dies
-                if(!this.converged){ getLogger().info("No remaining resources. Killing agent, goodbye!"); }
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
-                this.converged = true;
+                getLogger().info("No remaining resources. Killing agent, goodbye!");
+                alive = false;
+                break;
             }
         }
 
@@ -636,17 +641,23 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.zeta++;
         boolean tasksAvailable = tasksAvailable();
 
-        // check agent status
-        if( (tasksAvailable) && (this.resourcesRemaining > 0.0) ){ // tasks are available and agent has resources
-//        if(tasksAvailable()){
-            if(!this.converged){ getLogger().info("Tasks completed. Creating new plan..."); }
-            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
-            this.converged = false;
+        if(alive) {
+            // check agent status
+            if ((tasksAvailable) && (this.resourcesRemaining > 0.0)) { // tasks are available and agent has resources
+                getLogger().info("Tasks in bundle completed \n\t\t\t\t\t\t\t\tCreating a new plan...");
+                this.converged = false;
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS);
+            }
+            else {
+                getLogger().info("Tasks completed. Killing agent, goodbye!");
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+            }
         }
-        else{
-            if(!this.converged){ getLogger().info("Tasks completed. Killing agent, goodbye!"); }
+        else {
+            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
-            this.converged = true;
         }
     }
 
@@ -671,38 +682,80 @@ public class SimulatedAbstractAgent extends AbstractAgent {
      */
 
     @SuppressWarnings("unused")
-    public void waitOnBundles(){
+    public void waitOnBundles(){ // waits on other available agents to construct their bundles
         // inform agents that a bundle has been constructed on my end
         List<AgentAddress> agentsWithBundles = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
         List<AgentAddress> agentsDead = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+        myMessage myResults = new myMessage(this.localResults, this.getName());
 
-        // check other agent's response
-        if(agentsWithBundles != null){
+
+        if(!isMessageBoxEmpty()){
+            // broadcast my results
+            broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES, myResults);
+            broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2, myResults);
+
+            // start phase 2 of planner
+            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+        }
+        else if(agentsWithBundles != null){ // check other agent's response
             if( (agentsDead != null)&&((agentsWithBundles.size() + agentsDead.size()) == (environment.numAgents - 1)) ){
                 // broadcast my results
-                myMessage myResults = new myMessage(this.localResults, this.getName());
-                sendMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES, myResults);
+                broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES, myResults);
+                broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2, myResults);
 
                 // start phase 2 of planner
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
                 requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
             }
             else if(agentsWithBundles.size() == (environment.numAgents - 1)){
                 // broadcast my results
-                myMessage myResults = new myMessage(this.localResults, this.getName());
-                sendMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES, myResults);
+                broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES, myResults);
+                broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2, myResults);
 
                 // start phase 2 of planner
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
                 requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
             }
-            else{
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void waitOnConvergence(){ // waits on other agents to realize that their plans agree
+        // inform agents that plan has been reached on my end
+        List<AgentAddress> agentsConverged = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
+        List<AgentAddress> agentsDead = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+
+        if(!isMessageBoxEmpty()){
+            //empty mailbox
+            while(!isMessageBoxEmpty()){
+                Message temp = nextMessage();
+            }
+
+            // start phase 2 of planner
+            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+        }
+        else if(agentsConverged != null){ // check other agent's response
+            if( (agentsDead != null)&&((agentsConverged.size() + agentsDead.size()) == (environment.numAgents - 1)) ){
+                // inform other
+                Message bundleReached = new Message();
+                broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV, bundleReached);
+
+                // start task doing phase
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+            }
+            else if(agentsConverged.size() == (environment.numAgents - 1)){
+                // inform other
+                Message bundleReached = new Message();
+                broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV, bundleReached);
+
+                // start task doing phase
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
             }
         }
-        else{
-            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
-        }
-
-
     }
 
     @SuppressWarnings("unused")
@@ -711,57 +764,36 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         List<AgentAddress> agentsWithBundles = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS);
         List<AgentAddress> agentsDead = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
 
-        // check other agent's response
-        if(agentsWithBundles != null){
+        if(!isMessageBoxEmpty()){
+            //empty mailbox
+            while(!isMessageBoxEmpty()){
+                Message temp = nextMessage();
+            }
 
+            // start phase 2 of planner
+            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS);
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK);
+        }
+        else if(agentsWithBundles != null){ // check other agent's response
             if( (agentsDead != null)&&((agentsWithBundles.size() + agentsDead.size()) == (environment.numAgents - 1)) ){
-                // broadcast my results
-                myMessage myResults = new myMessage(this.localResults, this.getName());
-                sendMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS, myResults);
+                // inform other
+                Message bundleReached = new Message();
+                broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS, bundleReached);
+
 
                 // start phase 1 of planner
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK);
             }
             else if(agentsWithBundles.size() == (environment.numAgents - 1)){
-                // broadcast my results
-                myMessage myResults = new myMessage(this.localResults, this.getName());
-                sendMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS, myResults);
+                // inform other
+                Message bundleReached = new Message();
+                broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS, bundleReached);
 
                 // start phase 1 of planner
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK);
             }
-            else{
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS);
-            }
-        }
-        else{
-            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_RESULTS);
-        }
-
-    }
-
-    @SuppressWarnings("unused")
-    public void waitOnConvergence(){
-        // inform agents that plan has been reached on my end
-        List<AgentAddress> agentsConverged = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
-        List<AgentAddress> agentsDead = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
-
-        // check other agent's response
-        if(agentsConverged != null){
-            if( (agentsDead != null)&&((agentsConverged.size() + agentsDead.size()) == (environment.numAgents - 1)) ){
-                // start doing phase
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
-            }
-            else if(agentsConverged.size() == (environment.numAgents - 1)){
-                // start doing phase
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
-            }
-            else{
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
-            }
-        }
-        else {
-            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
         }
     }
 
@@ -796,9 +828,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         Vector<Task> V = new Vector<>();
         V = environment.getTasks();
         for (Task task : V) {
-            if( !checkCompletion(task) ){ // task is not completed
-                // task is available
-                return true;
+            if( !checkCompletion(task) ){ // task is not completed and thus available
+                // check if agent can resolve any of the subtasks available
+                for(Subtask j : task.getJ()){
+                   if( !j.getComplete() && this.sensors.contains(j.getMain_task()) ){
+                       return true;
+                   }
+                }
+
             }
         }
 
@@ -806,7 +843,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return false;
     }
 
-    private boolean checkCompletion(Task V){
+    private boolean checkCompletion(Task V){ // checks if a task has all of its dependencies met
         Vector<Subtask> localJ = V.getJ();
         int[][] D = V.getD();
         int nullCounter = 0;
@@ -815,7 +852,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             int i_j = this.localResults.getJ().indexOf(j);
 
             // check if subtask has been bid on
-            if(this.localResults.getZ().get(i_j) != null) {
+            if (this.localResults.getZ().get(i_j) != null) {
                 // subtask has a bid, check if dependencies are met
                 for (int k = 0; k < localJ.size(); k++) {
                     int i_k = this.localResults.getJ().indexOf(localJ.get(k));
@@ -824,8 +861,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                         return false;
                     }
                 }
-            }
-            else nullCounter++;
+            } else nullCounter++;
         }
         if(nullCounter == localJ.size()) return false;
 
@@ -873,7 +909,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         else if(j.getParentTask().getStatus()){ // if task is completed, I can't bid
             return false;
         }
-        else if(j.getParentTask().getJ().get( j.getParentTask().getJ().indexOf(j) ).getComplete()){
+        else if(j.getComplete()){ // if task has been completed, I can't bid
             return false;
         }
 

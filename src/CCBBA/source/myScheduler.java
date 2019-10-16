@@ -55,7 +55,7 @@ public class myScheduler extends Scheduler {
         }
         else if(this.planner == "DEBUG_TASK"){  //Does not execute agents, just creates environment
             //thinking phase
-            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "phaseOne");
+            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "phaseOne");
             addActivator(agents);
 
             //dying phase
