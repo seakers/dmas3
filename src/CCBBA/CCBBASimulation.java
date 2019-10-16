@@ -18,10 +18,12 @@ public class CCBBASimulation extends AbstractAgent {
     public static final String AGENT_THINK = "agent_planner";
     public static final String AGENT_THINK1 = "agent_planner1";
     public static final String AGENT_THINK2 = "agent_planner2";
+    public static final String AGENT_COMP = "agent_compare";
     public static final String AGENT_DO = "agent_execute";
-    public static final String AGENT_WAIT_BUNDLES = "agent_wait_bund";
-    public static final String AGENT_WAIT_RESULTS = "agent_wait_res";
-    public static final String AGENT_WAIT_CONV = "agent_wait_conv";
+    public static final String AGENT_WAIT_BUNDLES = "agent_wait_bundles";
+    public static final String AGENT_WAIT_COMP = "agent_wait_comparison";
+    public static final String AGENT_WAIT_CONV = "agent_wait_convergence";
+    public static final String AGENT_WAIT_DO = "agent_wait_doing_tasks";
     public static final String AGENT_DIE = "agent_die";
     public static final String ENV_ROLE = "environment";
     public static final String SCH_ROLE = "scheduler";
