@@ -105,7 +105,7 @@ public class Task {
                     for (int i = 0; i < temp_task1.getDep_nums().size(); i++){
                         if (temp_task1.getDep_nums().get(i) == temp_task2.getMain_num()){
                             D[j][q] = 1;
-                            T[j][q] = TC.get(2);
+                            T[j][q] = TC.get(3);
                         }
                         else{
                             T[j][q] = inf;

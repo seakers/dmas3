@@ -501,7 +501,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             for (int i_v = 0; i_v < tempViolations.size(); i_v++) {  // if time constraint violations exist
                 //compare each time violation
                 int i_u = tempViolations.get(i_v);
-                if ((D[parenTask.getJ().indexOf(j)][i_u - i_o] == 1) && (D[i_u - i_o][parenTask.getJ().indexOf(j)] != 1)) {
+                if ((D[parenTask.getJ().indexOf(j)][i_u - i_o] == 1) && (D[i_u - i_o][parenTask.getJ().indexOf(j)] <= 0)) {
                     //release task
                     localResults.resetResults(i_q, bundle);
                     removeFromBundle(localResults.getJ(), i_q);

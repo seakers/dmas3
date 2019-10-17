@@ -38,10 +38,15 @@ public class ResultsCompiler extends AbstractAgent {
         if( (resultsAddress != null)&&(resultsAddress.size() == this.numAgents) ){
             List<Message> receivedMessages = nextMessages(null);
             Vector<IterationResults> receivedResults = new Vector<>();
+            Vector<String> senderList = new Vector<>();
 
             for (int i = 0; i < receivedMessages.size(); i++) {
                 myMessage message = (myMessage) receivedMessages.get(i);
-                receivedResults.add(message.myResults);
+
+                if(!senderList.contains(message.senderName) ) {
+                    senderList.add(message.senderName);
+                    receivedResults.add(message.myResults);
+                }
             }
 
             if (receivedResults.size() >= this.numAgents) { // checks if every agent has sent finished its tasks.

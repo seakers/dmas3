@@ -34,11 +34,11 @@ public class ValidationSimulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new ValidationScenario(20, "MOD");
+        Scenario environment = new ValidationScenario(30, "INT");
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent("2D_VALIDATION_MOD");
+        setupAgent("INT");
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);
@@ -51,12 +51,12 @@ public class ValidationSimulation extends AbstractAgent {
      * Helping functions
      */
     private void setupAgent(String agentType){
-        if(agentType.equals("2D_VALIDATION_INT")){
+        if(agentType.equals("INT")){
             launchAgent(new ValidationAgentInt());
             launchAgent(new ValidationAgentInt());
             this.numAgents = 2;
         }
-        else if(agentType.equals("2D_VALIDATION_MOD")){
+        else if(agentType.equals("MOD")){
             // e = {IR}
             launchAgent(new ValidationAgentMod01());
             launchAgent(new ValidationAgentMod01());
