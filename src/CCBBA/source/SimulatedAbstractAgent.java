@@ -404,6 +404,10 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     v.setElementAt((v.get(i_j) + 1), i_j);
                     this.localResults.setV(v);
                 }
+                else if((N_req == n_sat)&&(N_req > 0)){ // if all dependencies are met, v_i = 0
+                    v.setElementAt(0, i_j);
+                    this.localResults.setV(v);
+                }
 
                 if (v.get(i_j) >= this.O_kq) { // if task has held on to task for too long, release task
                     this.localResults.resetResults(i_j, this.bundle);
@@ -550,6 +554,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         // Check consistency
         boolean consistent = true;
+        boolean coalViolation;
         for(int i = 0; i < receivedResults.size(); i++){ // for every received result
             // compare local results to each received result
             for (int i_j = 0; i_j < localResults.getY().size(); i_j++){
@@ -562,7 +567,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 int myV = localResults.getV().get(i_j);
                 int itsV = receivedResults.get(i).getV().get(i_j);
 
-                if( ( myY != itsY )||( myTz != itsTz )||( myS != itsS )||( (myV > 0)||(itsV > 0) ) ){
+                coalViolation = ( (myV > 0)&&( myY > 0.0) )||( (itsV > 0)&&( itsY > 0.0) );
+
+                if( ( myY != itsY )||( myTz != itsTz )||( myS != itsS )||coalViolation ){
                     //getLogger().info("Inconsistencies in plan found !!");
                     consistent = false;
                     break;
@@ -593,7 +600,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
     @SuppressWarnings("unused")
     private void doTasks() throws IOException, InterruptedException {
-        getLogger().info("Doing Tasks...");
+        //getLogger().info("Doing Tasks...");
         boolean alive = true;
 
         //empty mailbox
@@ -661,7 +668,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_DO);
             }
             else {
-                getLogger().info("Tasks completed. Killing agent, goodbye!");
+                getLogger().info("No more tasks available. \n\t\t\t\t\t\t\t\tKilling agent, goodbye!");
                 leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
                 requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
             }
@@ -678,6 +685,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
         myMessage myDeath = new myMessage(this.localResults, this.getName());
         sendMessage(resultsAddress, myDeath);
+
+        leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_END);
     }
 
     @Override
@@ -766,17 +776,37 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     private boolean tasksAvailable(){
-        Vector<Task> V = new Vector<>();
-        V = environment.getTasks();
-        for (Task task : V) {
-            if( !checkCompletion(task) ){ // task is not completed and thus available
-                // check if agent can resolve any of the subtasks available
-                for(Subtask j : task.getJ()){
-                   if( !j.getComplete() && this.sensors.contains(j.getMain_task()) ){
-                       return true;
-                   }
-                }
+        boolean allCompleted = true;
+        for(Subtask j : this.localResults.getJ()){
+            if( !j.getComplete() ){
+                allCompleted = false;
+                break;
+            }
+        }
 
+        if(allCompleted) {
+            return false;
+        }
+        else{
+            Vector<Task> V = new Vector<>();
+            V = environment.getTasks();
+            for (Task task : V) {
+                if (!checkCompletion(task)) { // check if task's dependencies have been met
+                    for (Subtask j : task.getJ()) {
+                        if (!j.getComplete() && this.sensors.contains(j.getMain_task())) { // check if agent can resolve any of the subtasks available
+                            SubtaskBid localBid = new SubtaskBid();
+                            localBid.calcBidForSubtask(j, this);
+
+                            if ((this.resourcesRemaining >= localBid.getC()) && (localBid.getC() > 0.0)) { // check if agent has enough resources to resolve available subtask
+                                int i_j = this.localResults.getJ().indexOf(j);
+                                if ((this.localResults.getW_any().get(i_j) > 0) && (this.localResults.getW_solo().get(i_j) > 0)) { // check if agent has exhausted attempts to bid on tasks
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+
+                }
             }
         }
 
@@ -1129,11 +1159,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     public int getW_solo_max(){
-        return 10;
+        return 5;
     }
 
     public int getW_any_max(){
-        return 100;
+        return 10;
     }
 
     private int getConvergenceIndicator(){

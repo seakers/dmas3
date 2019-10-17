@@ -34,11 +34,11 @@ public class ValidationSimulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new ValidationScenario(20, "INT");
+        Scenario environment = new ValidationScenario(20, "MOD");
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent("2D_VALIDATION_INT");
+        setupAgent("2D_VALIDATION_MOD");
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);

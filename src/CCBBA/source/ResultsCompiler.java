@@ -35,16 +35,12 @@ public class ResultsCompiler extends AbstractAgent {
         //Receive results
         List<AgentAddress> resultsAddress = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
 
-        if( (resultsAddress != null)&&(resultsAddress.size() >= this.numAgents) ){
+        if( (resultsAddress != null)&&(resultsAddress.size() == this.numAgents) ){
             List<Message> receivedMessages = nextMessages(null);
             Vector<IterationResults> receivedResults = new Vector<>();
+
             for (int i = 0; i < receivedMessages.size(); i++) {
                 myMessage message = (myMessage) receivedMessages.get(i);
-
-//            if(this.agentList.contains(message.myResults.getParentAgent())){
-//                continue;
-//            }
-//            this.agentList.add(message.myResults.getParentAgent());
                 receivedResults.add(message.myResults);
             }
 
