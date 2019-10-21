@@ -1,11 +1,13 @@
 function [] = validationPlots()
-    clc; clear all; close all;
+    clc; clear all; close all;               
     
-    % Obtain results folders in results directory
-    results = readData("M5");               
+    % Figure 3
+    results3 = readData("figure_3/M5"); 
+    figureThree(results3);
     
-    % Create plots for all figures
-    figureThree(results);
+    % Figure 3
+    results3 = readData("figure_3/M5"); 
+    figureThree(results3);
     
 end
 
