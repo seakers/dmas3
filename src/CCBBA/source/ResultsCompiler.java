@@ -517,11 +517,11 @@ public class ResultsCompiler extends AbstractAgent {
 
         printWriter.printf("Coalitions Formed:\t\t%d\n", coalitionsFormed);
         printWriter.printf("Coalitions Available:\t%d\n", coalitionsAvailable);
-        printWriter.printf("Coalition Ratio:\t\t%f\n", (double) coalitionsFormed/ (double) coalitionsAvailable * 100.0);
+        printWriter.printf("Coalition Ratio:\t\t%.2f%%\n", (double) coalitionsFormed/ (double) coalitionsAvailable * 100.0);
         printWriter.printf("\n");
-        printWriter.printf("Score Achieved:\t\t\t%f\n", scoreAchieved);
-        printWriter.printf("Score Available:\t\t%f\n", scoreAvailable);
-        printWriter.printf("Score Ratio:\t\t\t%f\n", coalitionsFormed/ (double) coalitionsAvailable);
+        printWriter.printf("Score Achieved:\t\t\t%.3f\n", scoreAchieved);
+        printWriter.printf("Score Available:\t\t%.3f\n", scoreAvailable);
+        printWriter.printf("Score Ratio:\t\t\t%.2f%%\n", scoreAchieved/ scoreAvailable * 100.0);
         printWriter.printf("\n");
         printWriter.printf("Merge Cost:\t\t\t\t%f\n", mergeCost);
         printWriter.printf("Split Cost:\t\t\t\t%f\n", splitCost);

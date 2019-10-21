@@ -1,5 +1,6 @@
-function [results] = readData()
+function [results] = readData(Mfolder)
     % Obtain results folders in results directory
+    cd(Mfolder)
     currentFolder = dir;
     cases = [];
     
@@ -54,6 +55,7 @@ function [results] = readData()
         cd ..;
     end
     
+    cd ..;
     %- "results" struct now contains data from all validation experiments
 end
 

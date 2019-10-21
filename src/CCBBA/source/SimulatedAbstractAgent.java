@@ -35,26 +35,25 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected int W_any_max;                                        // max permissions to bid on any
     protected Vector<IterationResults> results;                     // list of results
     protected Vector<Subtask> bundle = new Vector<>();              // bundle of chosen subtasks
-    private Vector<Subtask> overallBundle;                          //
+    private Vector<Subtask> overallBundle;                          // bundle chosen throughout simulation
     protected Vector<Subtask> path = new Vector<>();                // path chosen
-    private Vector<Subtask> overallPath = new Vector<>();           //
+    private Vector<Subtask> overallPath = new Vector<>();           // path chosen throughout simulation
     protected Vector<Dimension> X_path = new Vector<>();            // path locations
     protected String bidStrategy;                                   // bidding strategy indicator
     private List<AgentAddress> list_agents;                         // list of agents in planning phase
     private IterationResults localResults;                          // list of iteration results
     private int zeta = 0;                                           // iteration counter
-    private int convergenceCounter;
-    private int convergenceIndicator;
-    protected double C_merge;
-    protected double C_split;
-    protected double resources;
-    private double resourcesRemaining;
+    private int convergenceCounter;                                 // Counts iterations in agreement
+    private int convergenceIndicator;                               // Max number of agreement iterations before doing phase
+    protected double C_merge;                                       // Merging cost
+    protected double C_split;                                       // Splitting cost
+    protected double resources;                                     // Initial resources for agent
+    private double resourcesRemaining;                              // Current resources for agent
 //    private long t_0;
-    private double t_0;
+    private double t_0;                                             // start time
     private boolean converged = false;                              // convergence flag
-    private Vector<Integer> doingIterations = new Vector<>();
-    private boolean messageSent;
-    private Vector<IterationResults> receivedResults;
+    private Vector<Integer> doingIterations = new Vector<>();       // Iterations in which plans were agreed
+    private Vector<IterationResults> receivedResults;               // list of received results
 
 
     /**
@@ -86,7 +85,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.C_split = getC_split();
         this.t_0 = environment.getT_0();
         this.resourcesRemaining = this.resources;
-        this.messageSent = false;
         this.receivedResults = new Vector<>();
     }
 
@@ -620,7 +618,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
                 //update time
                 int i_j = this.localResults.getJ().indexOf(j);
-                this.t_0 = this.localResults.getTz().get(i_j);
+                this.t_0 = this.localResults.getTz().get(i_j) + j.getParentTask().getT_d();
 
                 // deduct task costs from resources
                 double cost_const = j.getParentTask().getCostConst();
@@ -685,9 +683,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
         myMessage myDeath = new myMessage(this.localResults, this.getName());
         sendMessage(resultsAddress, myDeath);
-
-        leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
-        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_END);
     }
 
     @Override

@@ -49,7 +49,7 @@ public class ValidationAgentInt extends SimulatedAbstractAgent {
 
     @Override
     protected int getM(){
-        int M_agent = 30;
+        int M_agent = 5;
         return M_agent;
     }
 }

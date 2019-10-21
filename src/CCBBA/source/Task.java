@@ -194,4 +194,6 @@ public class Task {
         //TC = {t_start, t_end, d, t_corr, lambda}
         return TC;
     }
+    public double getT_d(){ return TC.get(2); }
+    public double getLambda(){ return TC.get(4); }
 }

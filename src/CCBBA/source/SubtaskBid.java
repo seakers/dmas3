@@ -162,7 +162,6 @@ public class SubtaskBid {
 
         if(i == 0){
             x_i = agent.getInitialPosition();
-//            t_0 = j.getParentTask().getTC().get(0);
             t_0 = agent.getT_0();
         }
         else{
@@ -201,11 +200,11 @@ public class SubtaskBid {
     }
 
     private double calcUrgency(Subtask j, double t_a, SimulatedAbstractAgent agent){
-        double lambda = j.getParentTask().getTC().get(3);
+        double lambda = j.getParentTask().getLambda();
         double t_start = agent.getT_0();
 
-//        return exp(- lambda * (t_a-t_start) );
-        return 1.0; //<- UNCOMMENT WHEN VALIDATION STOPS
+        return exp(- lambda * (t_a-t_start) );
+//        return 1.0; //<- UNCOMMENT WHEN VALIDATION STOPS
     }
 
     private double calcAlpha(double K, double I){
@@ -231,9 +230,8 @@ public class SubtaskBid {
 
         double gamma = j.getParentTask().getGamma();
         double distance =  sqrt(delta_x);
-        double e = exp( gamma  * distance );
-//        return 1.0/( 1 + e);
-        return 1.0;
+        double e = exp( gamma * distance );
+        return 1.0/( 1 + e);
     }
 
     private double calcTravelCost(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent){

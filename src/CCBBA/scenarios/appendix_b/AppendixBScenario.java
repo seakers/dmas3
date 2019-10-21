@@ -38,11 +38,11 @@ public class AppendixBScenario extends Scenario {
         e_1.add("IR");
         e_1.add("MW");
 
-        tc_1.add(0.0);
-        tc_1.add(inf);
-        tc_1.add(1.0);
-        tc_1.add(1.0);
-        tc_1.add(1.0);
+        tc_1.add(0.0);                //t_start
+        tc_1.add(inf);                //t_end
+        tc_1.add(1.0);                //task duration
+        tc_1.add(0.0);                //t_corr
+        tc_1.add(0.015);              //lambda
 
         Task task1 = new Task(100.0, x_1, "CONSTANT", 2.0, e_1, tc_1);
         scenarioTasks.add(task1);
@@ -50,11 +50,11 @@ public class AppendixBScenario extends Scenario {
         //Define task 2
         e_2.add("MW");
 
-        tc_2.add(0.0);
-        tc_2.add(inf);
-        tc_2.add(1.0);
-        tc_2.add(1.0);
-        tc_2.add(1.0);
+        tc_2.add(0.0);                //t_start
+        tc_2.add(inf);                //t_end
+        tc_2.add(1.0);                //task duration
+        tc_2.add(1.0);                //t_corr
+        tc_2.add(0.015);              //lambda
 
         Task task2 = new Task(30.0, x_2, "CONSTANT", 2.0, e_2, tc_2);
         scenarioTasks.add(task2);
