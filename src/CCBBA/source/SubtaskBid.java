@@ -28,10 +28,8 @@ public class SubtaskBid {
     void calcBidForSubtask(Subtask j, SimulatedAbstractAgent agent){
         Vector<Subtask> oldBundle = agent.getBundle();
         Vector<Subtask> oldPath = agent.getPath();
-
-        double maxPathBid = Double.NEGATIVE_INFINITY;
-        //double oldUtility = calcPathUtility(oldPath, agent);
         PathUtility oldUtility = calcPathUtility(oldPath, agent);
+
         Vector<Vector<Subtask>> possiblePaths = generateNewPaths(oldPath, j);
 
         Vector<Subtask> newBundle = new Vector<>();
@@ -40,13 +38,16 @@ public class SubtaskBid {
         }
         newBundle.add(j);
 
+        // find optimal placement in path
+        double maxPathBid = 0.0;
         for (int i = 0; i < possiblePaths.size(); i++) { // Calculate utility for each new path
+            // get new path and calc utility
             Vector<Subtask> newPath = possiblePaths.get(i);
-            //double newUtility = calcPathUtility(newPath, agent);
             PathUtility newPathUtility = calcPathUtility(newPath, agent);
-            double newPathBid = newPathUtility.getUtility() - oldUtility.getUtility();
 
-            if(i != possiblePaths.size()-1){  // if ideal path modifies previously agreed order, deduct points
+            // subtstract path utilities to obtain subtask utility
+            double newPathBid = newPathUtility.getUtility() - oldUtility.getUtility();
+            if(i != possiblePaths.size()-1){  // if path modifies previously agreed order, deduct points
                 newPathBid = newPathBid - 5.0;
             }
 
@@ -81,7 +82,6 @@ public class SubtaskBid {
 
             // Add to path utility
             pathUtility.setUtility( pathUtility.getUtility() + subtaskUtility.getUtility() );
-            pathUtility.setCost( pathUtility.getCost() + subtaskUtility.getCost() );
         }
         return pathUtility;
     }

@@ -163,7 +163,13 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     }
 
                     // Check if agent has enough resources to execute task
-                    if(localBid.getCost_aj() > this.resourcesRemaining){
+                    double bundle_cost = 0.0;
+                    for(Subtask subtask : this.bundle){ // count costs of bundle
+                        int i_j = localResults.getJ().indexOf(subtask);
+                        bundle_cost += localResults.getCost().get(i_j);
+                    }
+                    if( (localBid.getCost_aj() + bundle_cost) > this.resourcesRemaining){
+                        // agent does NOT have enough resources
                         h.setElementAt( 0, i);
                     }
 
@@ -547,45 +553,49 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     @SuppressWarnings("unused")
-    public void compareResults(){ // compares results with other agents
+    public void compareResults(){
+        // compares results with other agents
+
         //Read received results
         List<Message> receivedMessages = nextMessages(null);
 
-        for(int i = 0; i < receivedMessages.size(); i++){
-            myMessage message = (myMessage) receivedMessages.get(i);
+        for (Message receivedMessage : receivedMessages) {
+            myMessage message = (myMessage) receivedMessage;
             receivedResults.add(message.myResults);
         }
 
         // Check consistency
         boolean consistent = true;
         boolean coalViolation;
-        for(int i = 0; i < receivedResults.size(); i++){ // for every received result
+        for (IterationResults receivedResult : receivedResults) { // for every received result
             // compare local results to each received result
-            for (int i_j = 0; i_j < localResults.getY().size(); i_j++){
+            for (int i_j = 0; i_j < localResults.getY().size(); i_j++) {
                 double myY = localResults.getY().get(i_j);
-                double itsY = receivedResults.get(i).getY().get(i_j);
+                double itsY = receivedResult.getY().get(i_j);
                 double myTz = localResults.getTz().get(i_j);
-                double itsTz = receivedResults.get(i).getTz().get(i_j);
+                double itsTz = receivedResult.getTz().get(i_j);
                 int myS = localResults.getS().get(i_j);
-                int itsS = receivedResults.get(i).getS().get(i_j);
+                int itsS = receivedResult.getS().get(i_j);
                 int myV = localResults.getV().get(i_j);
-                int itsV = receivedResults.get(i).getV().get(i_j);
+                int itsV = receivedResult.getV().get(i_j);
 
-                coalViolation = ( (myV > 0)&&( myY > 0.0) )||( (itsV > 0)&&( itsY > 0.0) );
+                coalViolation = ((myV > 0) && (myY > 0.0)) || ((itsV > 0) && (itsY > 0.0));
 
-                if( ( myY != itsY )||( myTz != itsTz )||( myS != itsS )||coalViolation ){
-                    //getLogger().info("Inconsistencies in plan found !!");
+                if ((myY != itsY) || (myTz != itsTz) || (myS != itsS) || coalViolation) {
+                    // inconsistency found
                     consistent = false;
                     break;
                 }
             }
-            if(!consistent){ break; }
+            if (!consistent) {
+                break;
+            }
         }
 
+        // empty received results list
         receivedResults = new Vector<>();
 
         if(consistent) {
-            //getLogger().info("NO inconsistencies in plan found. Checking convergence...");
             //-no inconsistencies found, check convergence
             this.converged = true;
             this.convergenceCounter = 0;
@@ -593,8 +603,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
         }
         else{
-            //getLogger().info("Inconsistencies in plan found. Creating new plan...");
-            //-no consensus reached
+            //-no consensus reached, create new plan
             this.convergenceCounter = 0;
             leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_COMP);
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
@@ -603,7 +612,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     @SuppressWarnings("unused")
-    private void doTasks() throws IOException, InterruptedException {
+    private void doTasks(){
         //getLogger().info("Doing Tasks...");
         boolean alive = true;
 
@@ -627,8 +636,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 this.resourcesRemaining -= this.localResults.getCost().get(i_j);
             }
             else{ // agent has no resources left
-                // agent dies
-                getLogger().info("No remaining resources. Killing agent, goodbye!");
                 alive = false;
                 break;
             }
@@ -650,11 +657,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         if(!this.bundle.isEmpty()) {
             removeFromBundle(localResults.getJ(), this.localResults.getJ().indexOf( this.bundle.get(0) ) );
         }
+
+        // update results
         this.localResults.updateResults();
         updateResultsList(this.localResults);
         this.zeta++;
-        boolean tasksAvailable = tasksAvailable();
 
+        // check for remaining tasks
+        boolean tasksAvailable = tasksAvailable();
         if(alive) {
             // check agent status
             if ((tasksAvailable) && (this.resourcesRemaining > 0.0)) { // tasks are available and agent has resources
@@ -669,7 +679,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
             }
         }
-        else {
+        else { // agent has no remaining resources
+            getLogger().info("No remaining resources. Killing agent, goodbye!");
             leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
         }
@@ -682,9 +693,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         myMessage myDeath = new myMessage(this.localResults, this.getName());
         sendMessage(resultsAddress, myDeath);
     }
-
-    @Override
-    protected void end() {}
 
     /**
      * Wait functions

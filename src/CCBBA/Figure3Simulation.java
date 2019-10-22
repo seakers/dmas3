@@ -20,7 +20,7 @@ public class Figure3Simulation extends AbstractAgent {
      * Sim Setup
      */
     public static void main(String[] args) {
-        for(int i = 0; i < 1; i++) {
+        for(int i = 0; i < 10; i++) {
             executeThisAgent(1, false);
         }
     }
@@ -34,11 +34,11 @@ public class Figure3Simulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new ValidationScenario(30, "MOD");
+        Scenario environment = new ValidationScenario(30, "INT");
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent("MOD");
+        setupAgent("INT");
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);

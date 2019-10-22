@@ -763,10 +763,12 @@ public class ResultsCompiler extends AbstractAgent {
     private int countTasksDone( Vector<IterationResults> receivedResults){
         int count = 0;
         Vector<Task> V = environment.getTasks();
+        Vector<SimulatedAbstractAgent> localZ = receivedResults.get(0).getZ();
         for(Task v : V){
             int completeSubtasks = 0;
             for(Subtask j : v.getJ()){
-                if(j.getComplete()){
+                int i_j = receivedResults.get(0).getJ().indexOf(j);
+                if(j.getComplete()){ // <- INCLUDE
                     completeSubtasks++;
                 }
             }
