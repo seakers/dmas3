@@ -1,4 +1,4 @@
-package CCBBA.scenarios.figure3;
+package CCBBA.scenarios.figure5;
 
 import CCBBA.CCBBASimulation;
 import CCBBA.scenarios.appendix_b.AppendixBScenario;
@@ -30,6 +30,7 @@ public class ValidationScenario extends Scenario {
 
         this.instrumentList.add("IR");
         this.instrumentList.add("MW");
+        this.instrumentList.add("VIS");
 
         for (int i = 0; i < this.numTasks; i++) { //for every task
             // determine location
@@ -39,14 +40,32 @@ public class ValidationScenario extends Scenario {
 
             // determine instrument requirements
             Vector<String> instruments = new Vector<>();
-            if (i < (int) this.numTasks / 2) {
-                // create 50% of tasks with two sensors
+            if (i < 9) {
+                // create 9 tasks with three sensors
                 instruments.add(this.instrumentList.get(0));
                 instruments.add(this.instrumentList.get(1));
-            } else {
-                // create 50% of tasks with one sensors
-                int i_ins = (int) (this.instrumentList.size() * Math.random());
-                instruments.add(this.instrumentList.get(i_ins));
+                instruments.add(this.instrumentList.get(2));
+            }
+            else if (i < 12){ // create 9 tasks with two sensors
+                instruments.add(this.instrumentList.get(0));
+                instruments.add(this.instrumentList.get(1));
+            }
+            else if (i < 15){
+                instruments.add(this.instrumentList.get(0));
+                instruments.add(this.instrumentList.get(2));
+            }
+            else if (i < 18){
+                instruments.add(this.instrumentList.get(1));
+                instruments.add(this.instrumentList.get(2));
+            }
+            else if (i < 22){ // create 12 tasks with one sensors
+                instruments.add(this.instrumentList.get(0));
+            }
+            else if (i < 26){
+                instruments.add(this.instrumentList.get(1));
+            }
+            else {
+                instruments.add(this.instrumentList.get(2));
             }
 
             // determine time constraints
