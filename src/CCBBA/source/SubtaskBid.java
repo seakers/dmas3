@@ -13,6 +13,7 @@ public class SubtaskBid {
     private Dimension x_aj;             // location of realization
     private int i_opt;                  // index of optimal path
     private double cost_aj;             // cost of task
+    private double score;               // score of a task
 
     public SubtaskBid(){
         int inf = Integer.MIN_VALUE;
@@ -21,9 +22,10 @@ public class SubtaskBid {
         this.x_aj = new Dimension(inf,inf);
         this.i_opt = 0;
         this.cost_aj = 0;
+        this.score = 0.0;
     }
 
-    public void calcBidForSubtask(Subtask j, SimulatedAbstractAgent agent){
+    void calcBidForSubtask(Subtask j, SimulatedAbstractAgent agent){
         Vector<Subtask> oldBundle = agent.getBundle();
         Vector<Subtask> oldPath = agent.getPath();
 
@@ -41,9 +43,8 @@ public class SubtaskBid {
         for (int i = 0; i < possiblePaths.size(); i++) { // Calculate utility for each new path
             Vector<Subtask> newPath = possiblePaths.get(i);
             //double newUtility = calcPathUtility(newPath, agent);
-            PathUtility newUtility = calcPathUtility(newPath, agent);
-            double newPathBid = newUtility.getUtility() - oldUtility.getUtility();
-            double newPathCost = newUtility.getCost() - oldUtility.getCost();
+            PathUtility newPathUtility = calcPathUtility(newPath, agent);
+            double newPathBid = newPathUtility.getUtility() - oldUtility.getUtility();
 
             if(i != possiblePaths.size()-1){  // if ideal path modifies previously agreed order, deduct points
                 newPathBid = newPathBid - 5.0;
@@ -56,17 +57,18 @@ public class SubtaskBid {
                 this.t_aj = calcTimeOfArrival(newPath, j, agent);
                 this.x_aj = j.getParentTask().getLocation();
                 this.i_opt = newPath.indexOf(j);
-                this.cost_aj = newPathCost;
+
+                PathUtility subtaskUtility = calcSubtaskUtility(newPath, j, this.t_aj, agent);
+                this.cost_aj = subtaskUtility.getCost();
+                this.score = subtaskUtility.getScore();
             }
 
         }
     }
 
-    protected PathUtility calcPathUtility(Vector<Subtask> path, SimulatedAbstractAgent agent){
+    private PathUtility calcPathUtility(Vector<Subtask> path, SimulatedAbstractAgent agent){
         PathUtility pathUtility = new PathUtility();
-        PathUtility subtaskUtility = new PathUtility();
-        //double pathUtility = 0.0;
-        //double subtaskUtility;
+        PathUtility subtaskUtility;
 
         for(int i = 0; i < path.size(); i++){
             Subtask j = path.get(i);
@@ -84,7 +86,7 @@ public class SubtaskBid {
         return pathUtility;
     }
 
-    protected double calcTimeOfArrival(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent){
+    private double calcTimeOfArrival(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent){
         //Calculate time of arrival
         IterationResults localResults = agent.getLocalResults();
         double t_a;
@@ -98,11 +100,11 @@ public class SubtaskBid {
             double maxTz = Double.NEGATIVE_INFINITY;
             int i_max = 0;
 
-            for (int i_j = 0; i_j < timeConstraints.size(); i_j++) {
-                double thisTz = localResults.getTz().get( timeConstraints.get(i_j) );
-                if( thisTz > maxTz ){
+            for (Integer timeConstraint : timeConstraints) {
+                double thisTz = localResults.getTz().get(timeConstraint);
+                if (thisTz > maxTz) {
                     maxTz = thisTz;
-                    i_max = timeConstraints.get(i_j);
+                    i_max = timeConstraint;
                 }
             }
 
@@ -121,14 +123,12 @@ public class SubtaskBid {
         return t_a;
     }
 
-    protected Vector<Vector<Subtask>> generateNewPaths(Vector<Subtask> oldPath, Subtask j){
+    private Vector<Vector<Subtask>> generateNewPaths(Vector<Subtask> oldPath, Subtask j){
         Vector<Vector<Subtask>> newPaths = new Vector<>();
 
         for(int i = 0; i < (oldPath.size()+1); i++){
             Vector<Subtask> tempPath = new Vector<>();
-            for(int k = 0; k < oldPath.size(); k++){
-                tempPath.add(oldPath.get(k));
-            }
+            tempPath.addAll(oldPath);
             tempPath.add(i,j);
             newPaths.add(tempPath);
         }
@@ -136,7 +136,7 @@ public class SubtaskBid {
         return newPaths;
     }
 
-    protected Vector<Integer> getTimeConstraints(Subtask j, Vector<Subtask> path, SimulatedAbstractAgent agent){
+    private Vector<Integer> getTimeConstraints(Subtask j, Vector<Subtask> path, SimulatedAbstractAgent agent){
         Vector<Integer> timeConstraints = new Vector<>();
         Task parentTask = j.getParentTask();
         int[][] D = parentTask.getD();
@@ -154,30 +154,31 @@ public class SubtaskBid {
         return timeConstraints;
     }
 
-    protected double calcQuickestArrivalTime(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent, IterationResults localResults){
+    private double calcQuickestArrivalTime(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent, IterationResults localResults){
         double delta_x;
-        Dimension x_i;
+        Dimension x_0;
         int i = path.indexOf(j);
         double t_0;
 
         if(i == 0){
-            x_i = agent.getInitialPosition();
+            x_0 = agent.getInitialPosition();
             t_0 = agent.getT_0();
         }
         else{
             int i_prev = agent.getJ().indexOf( path.get(i-1) );
-            x_i = path.get(i-1).getParentTask().getLocation();
+            x_0 = path.get(i-1).getParentTask().getLocation();
             t_0 =  localResults.getTz().get(i_prev);
         }
 
         Dimension x_f = j.getParentTask().getLocation();
-        delta_x = pow( (x_f.getHeight() - x_i.getHeight()) , 2) + pow( (x_f.getWidth() - x_i.getWidth()) , 2);
+        delta_x = pow( (x_f.getHeight() - x_0.getHeight()) , 2) + pow( (x_f.getWidth() - x_0.getWidth()) , 2);
 
         return sqrt(delta_x)/agent.getSpeed() + t_0;
     }
 
     private PathUtility calcSubtaskUtility(Vector<Subtask> path, Subtask j, double t_a, SimulatedAbstractAgent agent){
         PathUtility pathUtility = new PathUtility();
+
         double S = calcSubtaskScore(path, j, t_a, agent);
         double g = calcTravelCost(path, j, agent);
         double p = calcMergePenalty(path, j, agent);
@@ -185,6 +186,7 @@ public class SubtaskBid {
 
         pathUtility.setUtility(S - g - p - c_v);
         pathUtility.setCost(g + p + c_v);
+        pathUtility.setScore(S);
 
         return pathUtility;
     }
@@ -204,7 +206,6 @@ public class SubtaskBid {
         double t_start = agent.getT_0();
 
         return exp(- lambda * (t_a-t_start) );
-//        return 1.0; //<- UNCOMMENT WHEN VALIDATION STOPS
     }
 
     private double calcAlpha(double K, double I){
@@ -259,7 +260,8 @@ public class SubtaskBid {
 
         IterationResults localResults = agent.getLocalResults();
         Vector<Vector<SimulatedAbstractAgent>> omega = localResults.getOmega();
-        if( i == 0){ // j is at beginning of path, no split penalty
+
+        if( i == 0 ){ // j is at beginning of path, no split penalty
             if(omega.get(i) != null) { // Is there a coalition at i?
                 C_merge = agent.getC_merge();
             }
@@ -342,4 +344,5 @@ public class SubtaskBid {
     public Dimension getX_aj(){return this.x_aj;}
     public int getI_opt(){return this.i_opt;}
     public double getCost_aj(){ return this.cost_aj; }
+    public double getScore(){ return this.score; }
 }

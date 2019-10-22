@@ -15,16 +15,18 @@ public class IterationResults {
     private Vector<Double> c = new Vector<>();                      // self bid list
     private Vector<Integer> s = new Vector<>();                     // iteration stamp list
     private Vector<Integer> v = new Vector<>();                     // number of iterations in constraint violation
+    private Vector<Double> cost = new Vector<>();                   // cost vector
+    private Vector<Double> score = new Vector<>();                  // score vector
     private Vector<Integer> w_solo = new Vector<>();                // permission to bid solo
     private Vector<Integer> w_any = new Vector<>();                 // permission to bid any
     private Vector<Integer> h = new Vector<>();                     // availability checks vector
     private Vector<Vector<SimulatedAbstractAgent>> omega = new Vector<>();// coalition mates
+    private Vector<Vector<SimulatedAbstractAgent>> overallOmega = new Vector<>(); // overall coalition mates
     private Vector<Subtask> bundle = new Vector<>();                // current bundle
     private Vector<Subtask> overallBundle = new Vector<>();         // overall bundle
     private Vector<Subtask> path = new Vector<>();                  // current path order
     private Vector<Subtask> overallPath = new Vector<>();           // overall path order
     private Vector<Dimension> xpath = new Vector<>();               // current path coordinates
-    private Vector<Double> cost = new Vector<>();                   // cost vector
     // Fixed quantities ****************************
     private int M;                                                  // planning horizon
     private double C_merge;                                         // merge cost
@@ -48,6 +50,7 @@ public class IterationResults {
         h.setSize(size);
         omega.setSize(M);
         this.cost.setSize(size);
+        this.score.setSize(size);
 
         this.M = M;
         this.C_merge = C_merge;
@@ -66,6 +69,7 @@ public class IterationResults {
             w_any.setElementAt(w_any_max, i);
             h.setElementAt(1, i);
             this.cost.setElementAt(0.0, i);
+            this.score.setElementAt(0.0, i);
         }
     }
 
@@ -88,6 +92,7 @@ public class IterationResults {
         this.path = new Vector<>();
         this.overallPath = new Vector<>();
         this.cost = new Vector<>();
+        this.score = new Vector<>();
 
         for(int i = 0; i < prevResults.getY().size(); i++){
             this.J.add(prevResults.getJ().get(i));
@@ -101,6 +106,7 @@ public class IterationResults {
             this.w_any.add(prevResults.getW_any().get(i));
             this.h.add(1);
             this.cost.add(prevResults.getCost().get(i));
+            this.score.add(prevResults.getScore().get(i));
         }
 
         this.M = prevResults.getM();
@@ -152,6 +158,7 @@ public class IterationResults {
             this.s.setElementAt(zeta, i_max);
             this.tz.setElementAt(maxBid.getTStart(), i_max);
             this.cost.setElementAt(maxBid.getCost_aj(), i_max);
+            this.score.setElementAt(maxBid.getScore(), i_max);
 
             this.bundle = new Vector<>();
             this.path = new Vector<>();
@@ -180,6 +187,8 @@ public class IterationResults {
     }
 
     public void updateResults(){
+//        this.overallOmega.addAll(this.omega);
+
         for(int i = 0; i < this.bundle.size(); i++){
             Subtask j = this.bundle .get(i);
             Subtask j_p = this.path.get(i);
@@ -187,6 +196,7 @@ public class IterationResults {
             this.overallPath.add(j_p);
         }
 
+//        this.omega = new Vector<>();
         this.bundle = new Vector<>();
         this.path = new Vector<>();
     }
@@ -196,6 +206,7 @@ public class IterationResults {
         SimulatedAbstractAgent zReceived = receivedResults.getZ().get(i);
         double tzReceived = receivedResults.getTz().get(i);
         double costReceived = receivedResults.getCost().get(i);
+        double scoreReceived = receivedResults.getScore().get(i);
         int timeStampReceived = receivedResults.getS().get(i);
         int violationIterations = receivedResults.getV().get(i);
 
@@ -203,6 +214,7 @@ public class IterationResults {
         this.z.setElementAt(zReceived, i);
         this.tz.setElementAt(tzReceived, i);
         this.cost.setElementAt(costReceived, i);
+        this.score.setElementAt(scoreReceived, i);
         this.s.setElementAt(timeStampReceived, i);
         this.v.setElementAt(violationIterations, i);
 
@@ -216,6 +228,7 @@ public class IterationResults {
                     this.z.setElementAt(null, i_j);
                     this.tz.setElementAt(0.0, i_j);
                     this.cost.setElementAt(0.0, i_j);
+                    this.score.setElementAt(0.0, i_j);
                     this.s.setElementAt(0, i_j);
                     this.v.setElementAt(0, i_j);
                 }
@@ -238,6 +251,7 @@ public class IterationResults {
         this.z.setElementAt(null, i);
         this.tz.setElementAt(0.0, i);
         this.cost.setElementAt(0.0, i);
+        this.score.setElementAt(0.0, i);
         this.s.setElementAt(0, i);
         this.v.setElementAt(0, i);
 
@@ -250,6 +264,7 @@ public class IterationResults {
                 this.z.setElementAt(null, i_j);
                 this.tz.setElementAt(0.0, i_j);
                 this.cost.setElementAt(0.0, i_j);
+                this.score.setElementAt(0.0, i_j);
                 this.s.setElementAt(0, i_j);
                 this.v.setElementAt(0, i_j);
             }
@@ -283,6 +298,7 @@ public class IterationResults {
     public Double getC_split(){ return this.C_split; }
     public double getResources(){ return this.resources; }
     public Vector<Double> getCost(){ return this.cost; }
+    public Vector<Double> getScore(){ return this.score; }
     public SimulatedAbstractAgent getParentAgent(){ return this.parentAgent; }
 
     public void setY(Vector<Double> y_new){ this.y = y_new; }

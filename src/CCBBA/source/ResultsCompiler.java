@@ -126,10 +126,10 @@ public class ResultsCompiler extends AbstractAgent {
         Vector resultsToPrint = new Vector();
 
         double coalitionsFormed = calcCoalitionsFormed(this.receivedResults);
-        double coalitionsAvailable = countTasksAvailable();
+        double coalitionsAvailable = countCoalitionsAvailable();
         double scoreAchieved = calcScoreAchieved(this.receivedResults);
         double scoreAvailable = calcScoreAvailable(this.receivedResults);
-        double resourcesPerCostPerAgent = calcAvgResourcesPerCost(this.receivedResults);
+        double costPerResourcesPerAent = calcAvgCostPerResources(this.receivedResults);
         double mergeCost = this.receivedResults.get(0).getC_merge();
         double splitCost = this.receivedResults.get(0).getC_split();
         int numberOfTasksDone = countTasksDone(this.receivedResults);
@@ -139,7 +139,7 @@ public class ResultsCompiler extends AbstractAgent {
         resultsToPrint.add(coalitionsAvailable);
         resultsToPrint.add(scoreAchieved);
         resultsToPrint.add(scoreAvailable);
-        resultsToPrint.add(resourcesPerCostPerAgent);
+        resultsToPrint.add(costPerResourcesPerAent);
         resultsToPrint.add(mergeCost);
         resultsToPrint.add(splitCost);
         resultsToPrint.add(numberOfTasksDone);
@@ -150,7 +150,6 @@ public class ResultsCompiler extends AbstractAgent {
             printWriter.print(resultsToPrint.get(i));
             printWriter.print("\t");
         }
-        printWriter.print("\n");
 
         //close file
         printWriter.close();
@@ -378,13 +377,14 @@ public class ResultsCompiler extends AbstractAgent {
 
         //- Metrics
         int coalitionsFormed = calcCoalitionsFormed(this.receivedResults);
-        int coalitionsAvailable = countTasksAvailable();
+        int coalitionsAvailable = countCoalitionsAvailable();
         double scoreAchieved = calcScoreAchieved(this.receivedResults);
         double scoreAvailable = calcScoreAvailable(this.receivedResults);
-        double resourcesPerCostPerAgent = calcAvgResourcesPerCost(this.receivedResults);
+        double costPerResourcesPerAgent = calcAvgCostPerResources(this.receivedResults);
         double mergeCost = this.receivedResults.get(0).getC_merge();
         double splitCost = this.receivedResults.get(0).getC_split();
         int numberOfTasksDone = countTasksDone(this.receivedResults);
+        int numberOfTasksAvailable = countTasksAvailable();
         int planHorizon = this.receivedResults.get(0).getM();
 
 
@@ -521,14 +521,17 @@ public class ResultsCompiler extends AbstractAgent {
         printWriter.printf("\n");
         printWriter.printf("Score Achieved:\t\t\t%.3f\n", scoreAchieved);
         printWriter.printf("Score Available:\t\t%.3f\n", scoreAvailable);
-        printWriter.printf("Score Ratio:\t\t\t%.2f%%\n", scoreAchieved/ scoreAvailable * 100.0);
+        printWriter.printf("Score Ratio:\t\t\t%.2f%%\n", scoreAchieved / scoreAvailable * 100.0);
         printWriter.printf("\n");
         printWriter.printf("Merge Cost:\t\t\t\t%f\n", mergeCost);
         printWriter.printf("Split Cost:\t\t\t\t%f\n", splitCost);
         printWriter.printf("\n");
-        printWriter.printf("Avg Resource por Cost:\t%f\n", resourcesPerCostPerAgent);
+        printWriter.printf("Avg Cost per Research:\t%.2f%%\n", costPerResourcesPerAgent * 100.0);
         printWriter.printf("\n");
         printWriter.printf("Tasks Done:\t\t\t\t%d\n", numberOfTasksDone);
+        printWriter.printf("Tasks Available:\t\t%d\n", numberOfTasksAvailable);
+        printWriter.printf("Tasks Done Ratio:\t\t%.2f%%\n", (double) numberOfTasksDone / (double) numberOfTasksAvailable * 100.0);
+        printWriter.printf("\n");
         printWriter.printf("Planning Horizon:\t\t%d\n", planHorizon);
 
         //- Agents
@@ -736,9 +739,14 @@ public class ResultsCompiler extends AbstractAgent {
 
     private double calcScoreAchieved( Vector<IterationResults> receivedResults){
         double count = 0;
-        Vector<Double> localY = receivedResults.get(0).getY();
-        for(int i = 0; i < localY.size(); i ++){
-            count = count + localY.get(i);
+//        Vector<Double> localY = receivedResults.get(0).getY();
+//        for(int i = 0; i < localY.size(); i ++){
+//            count = count + localY.get(i);
+//        }
+
+        Vector<Double> localScore = receivedResults.get(0).getScore();
+        for(Double Score : localScore){
+            count += Score;
         }
         return count;
     }
@@ -754,9 +762,15 @@ public class ResultsCompiler extends AbstractAgent {
 
     private int countTasksDone( Vector<IterationResults> receivedResults){
         int count = 0;
-        Vector<SimulatedAbstractAgent> localZ = receivedResults.get(0).getZ();
-        for(int i = 0; i < localZ.size(); i++){
-            if(localZ.get(i) != null){
+        Vector<Task> V = environment.getTasks();
+        for(Task v : V){
+            int completeSubtasks = 0;
+            for(Subtask j : v.getJ()){
+                if(j.getComplete()){
+                    completeSubtasks++;
+                }
+            }
+            if(completeSubtasks == v.getJ().size()){
                 count++;
             }
         }
@@ -785,36 +799,51 @@ public class ResultsCompiler extends AbstractAgent {
         return count;
     }
 
-    private double calcAvgResourcesPerCost( Vector<IterationResults> receivedResults){
+    private double calcAvgCostPerResources( Vector<IterationResults> receivedResults){
         Vector<SimulatedAbstractAgent> agentList = new Vector<>();
         Vector<SimulatedAbstractAgent> localZ = receivedResults.get(0).getZ();
         Vector<Double> cost = receivedResults.get(0).getCost();
-        double avg = 0;
+        double avg = 0.0;
         double resources;
         double localCost;
 
         for (int i = 0; i < localZ.size(); i++) {
             if ((localZ.get(i) != null) && (!agentList.contains(localZ.get(i)))) {
                 agentList.add(localZ.get(i));
-                resources = localZ.get(i).getResources();
+                resources = localZ.get(i).readResources();
                 localCost = 0;
 
                 for (int j = i; j < localZ.size(); j++) {
                     if (localZ.get(j) == localZ.get(i)) {
-                        localCost = localCost + cost.get(j);
+                        localCost += cost.get(j);
                     }
                 }
-                avg = avg + resources / localCost;
+                avg += localCost / resources;
             }
         }
 
-        return avg / receivedResults.size();
+        return avg / agentList.size();
 
     }
 
     private int countTasksAvailable(){
-        Vector<Task> taskList = this.environment.getTasks(); // <- TEMPORARY SOLUTION. ONLY VALID FOR VALIDATION SCENARIOS
-        return taskList.size()/2;
+        Vector<Task> taskList = this.environment.getTasks();
+        return taskList.size();
+    }
+
+    private int countCoalitionsAvailable(){
+        int count = 0;
+        Vector<Task> V = this.environment.getTasks();
+        for(Task v : V){
+            if(v.getSensors().size() == 2){
+                count += 1;
+            }
+            else if(v.getSensors().size()  == 3){
+                count += 4;
+            }
+        }
+
+        return count;
     }
 
     private Vector<SimulatedAbstractAgent> getListOfAgents(){

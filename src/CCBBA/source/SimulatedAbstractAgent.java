@@ -161,6 +161,12 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     if(h.get(i) == 1){
                         h.setElementAt( mutexTest(localBid, localResults, j, i), i);
                     }
+
+                    // Check if agent has enough resources to execute task
+                    if(localBid.getCost_aj() > this.resourcesRemaining){
+                        h.setElementAt( 0, i);
+                    }
+
                     localResults.setH( h );
                 }
                 else{ // task CANNOT be bid on
@@ -613,22 +619,12 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 moveToTask(j);
                 if(this.resourcesRemaining <= 0.0){ break; }
 
-//                // do task
-//                j.getParentTask().setSubtaskComplete( j );
-
                 //update time
                 int i_j = this.localResults.getJ().indexOf(j);
                 this.t_0 = this.localResults.getTz().get(i_j) + j.getParentTask().getT_d();
 
                 // deduct task costs from resources
-                double cost_const = j.getParentTask().getCostConst();
-                double cost_prop = j.getParentTask().getCostProp();
-                if( (cost_prop > 0.0)&&(cost_const <= 0.0) ){
-                    resourcesRemaining = resourcesRemaining - resourcesRemaining * cost_prop;
-                }
-                else{
-                    resourcesRemaining = resourcesRemaining - cost_const;
-                }
+                this.resourcesRemaining -= this.localResults.getCost().get(i_j);
             }
             else{ // agent has no resources left
                 // agent dies
@@ -651,7 +647,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         // release tasks from bundle
         this.doingIterations.add(this.zeta);
-        if(!this.bundle.isEmpty()) removeFromBundle(localResults.getJ(), this.localResults.getJ().indexOf( this.bundle.get(0) ) );
+        if(!this.bundle.isEmpty()) {
+            removeFromBundle(localResults.getJ(), this.localResults.getJ().indexOf( this.bundle.get(0) ) );
+        }
         this.localResults.updateResults();
         updateResultsList(this.localResults);
         this.zeta++;
@@ -789,13 +787,16 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 if (!checkCompletion(task)) { // check if task's dependencies have been met
                     for (Subtask j : task.getJ()) {
                         if (!j.getComplete() && this.sensors.contains(j.getMain_task())) { // check if agent can resolve any of the subtasks available
+                            // calculate bid
                             SubtaskBid localBid = new SubtaskBid();
                             localBid.calcBidForSubtask(j, this);
 
-                            if ((this.resourcesRemaining >= localBid.getC()) && (localBid.getC() > 0.0)) { // check if agent has enough resources to resolve available subtask
-                                int i_j = this.localResults.getJ().indexOf(j);
-                                if ((this.localResults.getW_any().get(i_j) > 0) && (this.localResults.getW_solo().get(i_j) > 0)) { // check if agent has exhausted attempts to bid on tasks
-                                    return true;
+                            if ( this.resourcesRemaining >= localBid.getCost_aj() ) { // check if agent has enough resources to resolve available subtask
+                                if(localBid.getC() > 0.0) { // check if bid produces a net gain
+                                    int i_j = this.localResults.getJ().indexOf(j);
+                                    if ((this.localResults.getW_any().get(i_j) > 0) && (this.localResults.getW_solo().get(i_j) > 0)) { // check if agent has exhausted attempts to bid on tasks
+                                        return true;
+                                    }
                                 }
                             }
                         }
@@ -841,9 +842,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         x_i = this.location;
         Dimension x_f = j.getParentTask().getLocation();
         delta_x = pow( (x_f.getHeight() - x_i.getHeight()) , 2) + pow( (x_f.getWidth() - x_i.getWidth()) , 2);
-
+//
         double distance = sqrt(delta_x);
-        this.resourcesRemaining = this.resourcesRemaining - distance*this.miu;
+//        this.resourcesRemaining = this.resourcesRemaining - distance*this.miu;
 
         // Move agent
         this.location = x_f;
