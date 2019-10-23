@@ -5,7 +5,7 @@ import java.util.Vector;
 
 public class IterationResults {
     // Info used with other agents*********************
-    private Vector<Subtask> J = new Vector<>();                     // available task list
+    private Vector<Subtask> J;                                      // available task list
     private Vector<Double> y = new Vector<>();                      // winner bid list
     private Vector<SimulatedAbstractAgent> z = new Vector<>();      // winner agent list
     private Vector<Double> tz = new Vector<>();                     // arrival time list
@@ -34,21 +34,22 @@ public class IterationResults {
     private double resources;
 
 
-    public IterationResults(Vector<Subtask> J, int w_solo_max, int w_any_max, int M, double C_merge, double C_split, double resources, SimulatedAbstractAgent parentAgent){
+    IterationResults(Vector<Subtask> J, int w_solo_max, int w_any_max, int M, double C_merge, double C_split, double resources, SimulatedAbstractAgent parentAgent){
+        // initialize all values
         this.parentAgent = parentAgent;
         int size = J.size();
         this.J = J;
-        y.setSize(size);
-        z.setSize(size);
-        tz.setSize(size);
+        this.y.setSize(size);
+        this.z.setSize(size);
+        this.tz.setSize(size);
 
-        c.setSize(size);
-        s.setSize(size);
-        v.setSize(size);
-        w_solo.setSize(size);
-        w_any.setSize(size);
-        h.setSize(size);
-        omega.setSize(M);
+        this.c.setSize(size);
+        this.s.setSize(size);
+        this.v.setSize(size);
+        this.w_solo.setSize(size);
+        this.w_any.setSize(size);
+        this.h.setSize(size);
+        this.omega.setSize(M);
         this.cost.setSize(size);
         this.score.setSize(size);
 
@@ -58,22 +59,22 @@ public class IterationResults {
         this.resources = resources;
 
         for(int i = 0; i < size; i ++){
-            y.setElementAt(0.0, i);
-            z.setElementAt(null, i);
-            tz.setElementAt(0.0, i);
+            this.y.setElementAt(0.0, i);
+            this.z.setElementAt(null, i);
+            this.tz.setElementAt(0.0, i);
 
-            c.setElementAt(0.0, i);
-            s.setElementAt(0, i);
-            v.setElementAt(0, i);
-            w_solo.setElementAt(w_solo_max, i);
-            w_any.setElementAt(w_any_max, i);
-            h.setElementAt(1, i);
+            this.c.setElementAt(0.0, i);
+            this.s.setElementAt(0, i);
+            this.v.setElementAt(0, i);
+            this.w_solo.setElementAt(w_solo_max, i);
+            this.w_any.setElementAt(w_any_max, i);
+            this.h.setElementAt(1, i);
             this.cost.setElementAt(0.0, i);
             this.score.setElementAt(0.0, i);
         }
     }
 
-    public IterationResults(IterationResults prevResults, boolean omega_toggle, SimulatedAbstractAgent parentAgent){
+    IterationResults(IterationResults prevResults, boolean omega_toggle, SimulatedAbstractAgent parentAgent){
         // Copies results from previous iteration
         this.parentAgent = parentAgent;
         this.J = new Vector<>();
@@ -87,6 +88,7 @@ public class IterationResults {
         this.w_any = new Vector<>();
         this.h = new Vector<>();
         this.omega = new Vector<>();
+        this.overallOmega = new Vector<>();
         this.bundle = new Vector<>();
         this.overallBundle = new Vector<>();
         this.path = new Vector<>();
@@ -119,37 +121,19 @@ public class IterationResults {
             this.path.add( prevResults.getPath().get(i) );
         }
 
-        for(int i = 0; i < prevResults.getOverallBundle().size(); i++){
-            this.overallBundle.add( prevResults.getOverallBundle().get(i) );
-            this.overallPath.add( prevResults.getOverallPath().get(i) );
-        }
+        this.overallBundle.addAll( prevResults.getOverallBundle() );
+        this.overallPath.addAll( prevResults.getOverallPath() );
+        this.overallOmega.addAll( prevResults.getOverallOmega() );
 
-        if(omega_toggle) {
-            for (int i = 0; i < this.M; i++) {
-                Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
-                if (this.bundle.size() >= i + 1) {
-                    for (int i_j = 0; i_j < this.J.size(); i_j++) {
-                        int i_bundle = this.J.indexOf(this.bundle.get(i));
-                        if ((this.z.get(i_j) != this.z.get(i_bundle)) && (this.z.get(i_j) != null) && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
-                            tempCoal.add(this.z.get(i_j));
-                        }
-                    }
-                }
-                this.omega.add(tempCoal);
-            }
+        if(omega_toggle) { // update coalitions
+            updateOmega(parentAgent);
         }
-        else{
-            for (int i = 0; i < this.M; i++) {
-                Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
-                for (int i_j = 0; i_j < prevResults.getOmega().get(i).size(); i_j++) {
-                    tempCoal.add(prevResults.getOmega().get(i).get(i_j));
-                }
-                this.omega.add(tempCoal);
-            }
+        else{ // copy previous iteration's coalitions
+            copyOmega(prevResults);
         }
     }
 
-    public void updateResults(SubtaskBid maxBid, int i_max, SimulatedAbstractAgent agent, int zeta){
+    void updateResults(SubtaskBid maxBid, int i_max, SimulatedAbstractAgent agent, int zeta){
 
         if(y.get(i_max) < maxBid.getC()){
             this.y.setElementAt(maxBid.getC() ,i_max);
@@ -169,34 +153,18 @@ public class IterationResults {
         }
 
 
-        Vector<Vector<SimulatedAbstractAgent>> newOmega = new Vector<>();
-        for(int i = 0; i < this.M; i++) {
-            Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
-            if((this.bundle.size() >= i+1)&&(this.bundle.size() > 0)) {
-                for (int i_j = 0; i_j < this.J.size(); i_j++) {
-                    if ((this.z.get(i_j) != agent) && (this.z.get(i_j) != null) && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
-                        tempCoal.add(this.z.get(i_j));
-                    }
-                }
-            }
-            newOmega.add(tempCoal);
-        }
-
-        this.omega = newOmega;
-
+        updateOmega(parentAgent);
     }
 
-    public void updateResults(){
-//        this.overallOmega.addAll(this.omega);
-
+    void updateResults(){
         for(int i = 0; i < this.bundle.size(); i++){
             Subtask j = this.bundle .get(i);
             Subtask j_p = this.path.get(i);
             this.overallBundle.add(j);
             this.overallPath.add(j_p);
+            this.overallOmega.add(this.omega.get(i));
         }
 
-//        this.omega = new Vector<>();
         this.bundle = new Vector<>();
         this.path = new Vector<>();
     }
@@ -275,6 +243,34 @@ public class IterationResults {
 
     }
 
+    private void updateOmega(SimulatedAbstractAgent agent){
+        Vector<Vector<SimulatedAbstractAgent>> newOmega = new Vector<>();
+        for(int i = 0; i < this.M; i++) {
+            Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
+
+            if( this.bundle.size() >= i+1 ) {
+                for (int i_j = 0; i_j < this.J.size(); i_j++) {
+                    if ((this.z.get(i_j) != agent)
+                            && (this.z.get(i_j) != null)
+                            && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
+                        tempCoal.add(this.z.get(i_j));
+                    }
+                }
+            }
+            newOmega.add(tempCoal);
+        }
+
+        this.omega = newOmega;
+    }
+
+    private void copyOmega(IterationResults prevResults){
+        for (int i = 0; i < this.M; i++) {
+            Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
+            tempCoal.addAll(prevResults.getOmega().get(i));
+            this.omega.add(tempCoal);
+        }
+    }
+
     /**
      * Getters and Setters
      */
@@ -289,6 +285,7 @@ public class IterationResults {
     public Vector<Integer> getW_any(){ return this.w_any; }
     public Vector<Integer> getH(){ return this.h; }
     public Vector<Vector<SimulatedAbstractAgent>> getOmega(){ return this.omega; }
+    public Vector<Vector<SimulatedAbstractAgent>> getOverallOmega(){ return this.overallOmega; }
     public Vector<Subtask> getBundle(){ return this.bundle; }
     public Vector<Subtask> getOverallBundle(){ return this.overallBundle; }
     public Vector<Subtask> getPath(){ return this.path; }

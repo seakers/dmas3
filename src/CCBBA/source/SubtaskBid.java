@@ -33,9 +33,7 @@ public class SubtaskBid {
         Vector<Vector<Subtask>> possiblePaths = generateNewPaths(oldPath, j);
 
         Vector<Subtask> newBundle = new Vector<>();
-        for(int i = 0; i < oldBundle.size(); i++) {
-            newBundle.add(oldBundle.get(i));
-        }
+        newBundle.addAll(oldBundle);
         newBundle.add(j);
 
         // find optimal placement in path
@@ -45,7 +43,7 @@ public class SubtaskBid {
             Vector<Subtask> newPath = possiblePaths.get(i);
             PathUtility newPathUtility = calcPathUtility(newPath, agent);
 
-            // subtstract path utilities to obtain subtask utility
+            // substract path utilities to obtain subtask utility
             double newPathBid = newPathUtility.getUtility() - oldUtility.getUtility();
             if(i != possiblePaths.size()-1){  // if path modifies previously agreed order, deduct points
                 newPathBid = newPathBid - 5.0;
@@ -53,15 +51,37 @@ public class SubtaskBid {
 
             //get max bid from all new paths
             if(newPathBid > maxPathBid){
-                maxPathBid = newPathBid;
-                this.c_aj = newPathBid;
-                this.t_aj = calcTimeOfArrival(newPath, j, agent);
-                this.x_aj = j.getParentTask().getLocation();
-                this.i_opt = newPath.indexOf(j);
+            maxPathBid = newPathBid;
+            this.c_aj = newPathBid;
+            this.t_aj = calcTimeOfArrival(newPath, j, agent);
+            this.x_aj = j.getParentTask().getLocation();
+            this.i_opt = newPath.indexOf(j);
 
-                PathUtility subtaskUtility = calcSubtaskUtility(newPath, j, this.t_aj, agent);
-                this.cost_aj = subtaskUtility.getCost();
-                this.score = subtaskUtility.getScore();
+
+            // calculate path's coalition matrix - omega
+            Vector<Subtask> localJ = agent.getLocalResults().getJ();
+            Vector<SimulatedAbstractAgent> localZ = agent.getLocalResults().getZ();
+            Vector<Vector<SimulatedAbstractAgent>> pathOmega = new Vector<>();
+
+            for(int k = 0; k < agent.getM(); k++) {
+                Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
+
+                if( newPath.size() >= k+1 ) {
+                    for (int i_j = 0; i_j < localJ.size(); i_j++) {
+                        if ((localZ.get(i_j) != agent)
+                                && (localZ.get(i_j) != null)
+                                && (newPath.get(k).getParentTask() == localJ.get(i_j).getParentTask())) {
+                            tempCoal.add(localZ.get(i_j));
+                        }
+                    }
+                }
+                pathOmega.add(tempCoal);
+            }
+
+            // calculate task's cost and score
+            PathUtility subtaskUtility = calcSubtaskUtility(newPath, j, this.t_aj, agent, pathOmega);
+            this.cost_aj = subtaskUtility.getCost();
+            this.score = subtaskUtility.getScore();
             }
 
         }
@@ -71,6 +91,25 @@ public class SubtaskBid {
         PathUtility pathUtility = new PathUtility();
         PathUtility subtaskUtility;
 
+        // calculate path's coalition matrix - omega
+        Vector<Subtask> localJ = agent.getLocalResults().getJ();
+        Vector<SimulatedAbstractAgent> localZ = agent.getLocalResults().getZ();
+        Vector<Vector<SimulatedAbstractAgent>> pathOmega = new Vector<>();
+
+        for(int i = 0; i < path.size(); i++) {
+            Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
+            for (int i_j = 0; i_j < localJ.size(); i_j++) {
+                if ((localZ.get(i_j) != agent)
+                        && (localZ.get(i_j) != null)
+                        && (path.get(i).getParentTask() == localJ.get(i_j).getParentTask())) {
+                    tempCoal.add(localZ.get(i_j));
+                }
+            }
+
+            pathOmega.add(tempCoal);
+        }
+
+        // calculate total path utility
         for(int i = 0; i < path.size(); i++){
             Subtask j = path.get(i);
 
@@ -78,7 +117,7 @@ public class SubtaskBid {
             double t_a = calcTimeOfArrival(path, j, agent);
 
             // Calculate subtask utility within path
-            subtaskUtility = calcSubtaskUtility(path,j,t_a, agent);
+            subtaskUtility = calcSubtaskUtility(path,j,t_a, agent, pathOmega);
 
             // Add to path utility
             pathUtility.setUtility( pathUtility.getUtility() + subtaskUtility.getUtility() );
@@ -176,12 +215,12 @@ public class SubtaskBid {
         return sqrt(delta_x)/agent.getSpeed() + t_0;
     }
 
-    private PathUtility calcSubtaskUtility(Vector<Subtask> path, Subtask j, double t_a, SimulatedAbstractAgent agent){
+    private PathUtility calcSubtaskUtility(Vector<Subtask> path, Subtask j, double t_a, SimulatedAbstractAgent agent, Vector<Vector<SimulatedAbstractAgent>> pathOmega){
         PathUtility pathUtility = new PathUtility();
 
         double S = calcSubtaskScore(path, j, t_a, agent);
         double g = calcTravelCost(path, j, agent);
-        double p = calcMergePenalty(path, j, agent);
+        double p = calcMergePenalty(path, j, agent, pathOmega);
         double c_v = calcSubtaskCost(j, g, p, agent);
 
         pathUtility.setUtility(S - g - p - c_v);
@@ -240,7 +279,14 @@ public class SubtaskBid {
         double delta_x;
         Dimension x_i;
         if(i == 0){
-            x_i = agent.getInitialPosition();
+            Vector<Subtask> overallPath = agent.getLocalResults().getOverallPath();
+            if(overallPath.size() == 0){
+                x_i = agent.getInitialPosition();
+            }
+            else {
+                int i_last = overallPath.size() - 1;
+                x_i = overallPath.get(i_last).getParentTask().getLocation();
+            }
         }
         else{
             x_i = path.get(i-1).getParentTask().getLocation();
@@ -253,53 +299,108 @@ public class SubtaskBid {
         return distance*agent.getMiu();
     }
 
-    private double calcMergePenalty(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent){
+    private double calcMergePenalty(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent, Vector<Vector<SimulatedAbstractAgent>> pathOmega){
         int i = path.indexOf(j);
         double C_split = 0.0;
         double C_merge = 0.0;
 
         IterationResults localResults = agent.getLocalResults();
-        Vector<Vector<SimulatedAbstractAgent>> omega = localResults.getOmega();
+        Vector<Subtask> overallBundle = localResults.getOverallBundle();
+        Vector<Subtask> overallPath = localResults.getOverallPath();
+        Vector<Vector<SimulatedAbstractAgent>> overallOmega = localResults.getOverallOmega();
 
-        if( i == 0 ){ // j is at beginning of path, no split penalty
-            if(omega.get(i) != null) { // Is there a coalition at i?
-                C_merge = agent.getC_merge();
+        if( i == 0 ){ // j is at beginning of new path
+            if( overallOmega.size() == 0) { // no previous coalitions, no split cost
+                if (pathOmega.get(i).size() > 0) { // Is there a coalition at i_bundle?
+                    C_merge = agent.getC_merge();
+                } else {
+                    C_merge = 0.0;
+                }
+                C_split = 0.0;
             }
-            else{
-                C_merge = 0.0;
+            else{ // previous coalitions might exist
+                Subtask j_last = overallPath.get( overallPath.size() - 1);
+                int i_last = overallBundle.indexOf(j_last);
+
+                if(overallOmega.get(i_last).size() > 0) { // is there a coalition at i - 1?
+                    if(pathOmega.get(i).size() > 0) { // Is there a coalition at i?
+                        boolean sameCoalition = true;
+
+                        //check if coalition is the same at i-1 and i
+                        if(pathOmega.get(i).size() == overallOmega.get(i_last).size()){ // check size
+                            for(SimulatedAbstractAgent coalMember : pathOmega.get(i)){ // check member by member
+                                if(!overallOmega.get(i_last).contains(coalMember) ){
+                                    // previous coalition does not contain all of the current coalition members
+                                    sameCoalition = false;
+                                    break;
+                                }
+                            }
+                        }
+                        else{
+                            // coalition size is different
+                            sameCoalition = false;
+                        }
+
+                        if(!sameCoalition){
+                            // coalition is different
+                            C_split = agent.getC_split();
+                            C_merge = agent.getC_merge();
+                        }
+                        else{
+                            // coalition is the same
+                            C_split = 0.0;
+                            C_merge = 0.0;
+                        }
+                    }
+                }
+                else{ // there is no coalition at i - 1
+                    if(pathOmega.get(i).size() > 0) { // Is there a coalition at i?
+                        // new coalition at i
+                        C_merge = agent.getC_merge();
+                    }
+                    else{
+                        // no coalition at i
+                        C_split = 0.0;
+                        C_merge = 0.0;
+                    }
+                }
             }
-            C_split = 0.0;
+
         }
         else {  // j has a previous subtask in the path
-            if(omega.get(i-1) != null){ // Is there was a coalition at i - 1?
-                if(omega.get(i) != null){ // Is there a coalition at i?
+            if(pathOmega.get(i - 1).size() > 0){ // Is there was a coalition at i - 1?
+                if(pathOmega.get(i).size() > 0){ // Is there a coalition at i?
                     boolean sameCoalition = true;
 
                     //check if coalition is the same at i-1 and i
-                    if(omega.get(i).size() == omega.get(i-1).size()){
-                        for(int i_j = 0; i_j < omega.get(i).size(); i_j++){
-                            if(!omega.get(i-1).contains( omega.get(i).get(i_j) )){
+                    if(pathOmega.get(i).size() == pathOmega.get(i - 1).size()){ // check size
+                        for(SimulatedAbstractAgent coalMember : pathOmega.get(i)){ // check member by member
+                            if(!pathOmega.get(i - 1).contains(coalMember) ){
+                                // previous coalition does not contain all of the current coalition members
                                 sameCoalition = false;
                                 break;
                             }
                         }
                     }
                     else{
+                        // coalition size is different
                         sameCoalition = false;
                     }
 
                     if(!sameCoalition){
+                        // coalition is different
                         C_split = agent.getC_split();
                         C_merge = agent.getC_merge();
                     }
                     else{
+                        // coalition is the same
                         C_split = 0.0;
                         C_merge = 0.0;
                     }
                 }
             }
             else{ // There was NO coalition at i-1
-                if(omega.get(i) != null) { // Is there a coalition at i?
+                if(pathOmega.get(i).size() > 0) { // Is there a coalition at i?
                     C_merge = agent.getC_merge();
                 }
                 else{
