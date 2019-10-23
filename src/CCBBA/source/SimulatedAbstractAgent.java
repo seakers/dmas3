@@ -542,6 +542,73 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
         }
 
+        //-Coalition Member Constraints
+        for (int i = 0; i < this.bundle.size(); i++){
+            // get list of coalition members
+            Vector<SimulatedAbstractAgent> coalitionMembers = this.localResults.getOmega().get(i);
+            boolean taskReleased = false;
+
+            // check if every coalition partner has the same list
+            for(SimulatedAbstractAgent coalitionMember : coalitionMembers){
+
+                // get coalition member's bundle and coalition member lists
+                Vector<Vector<SimulatedAbstractAgent>> memberOmega = new Vector<>();
+                Vector<Subtask> memberBundle = new Vector<>();
+                for(IterationResults result : receivedResults){
+                    if( result.getParentAgent() == coalitionMember ){
+                        memberOmega = result.getOmega();
+                        memberBundle = result.getBundle();
+                    }
+                }
+
+                // find index of subtask with shared task
+                int i_member = -1;
+                for(Subtask j : memberBundle){
+                    if( j.getParentTask() == this.bundle.get(i).getParentTask() ){
+                        i_member = memberBundle.indexOf(j);
+                    }
+                }
+
+                if(i_member == -1){ // index not found
+                    // member does not have dependent subtask, release subtask
+                    Subtask j = this.bundle.get(i);
+                    int i_j = this.localResults.getJ().indexOf(j);
+                    this.localResults.resetResults(i_j, bundle);
+                    removeFromBundle(this.localResults.getJ(), i_j);
+                    taskReleased = true;
+                    break;
+                }
+
+                //compare lists
+                Vector<SimulatedAbstractAgent> myList = this.localResults.getOmega().get(i);
+                Vector<SimulatedAbstractAgent> itsList = memberOmega.get(i_member);
+
+                for(SimulatedAbstractAgent member : myList){
+                    if(!itsList.contains(member)){
+                        // if its list does not contain a member of mine, release task
+                        Subtask j = this.bundle.get(i);
+                        int i_j = this.localResults.getJ().indexOf(j);
+                        this.localResults.resetResults(i_j, bundle);
+                        removeFromBundle(this.localResults.getJ(), i_j);
+                        taskReleased = true;
+                        break;
+                    }
+                }
+                if(!itsList.contains(this)){
+                    // if its list does not contain a me, release task
+                    Subtask j = this.bundle.get(i);
+                    int i_j = this.localResults.getJ().indexOf(j);
+                    this.localResults.resetResults(i_j, bundle);
+                    removeFromBundle(this.localResults.getJ(), i_j);
+                    taskReleased = true;
+                    break;
+                }
+            }
+            if(taskReleased){
+                break;
+            }
+        }
+
         // Update results
         localResults.updateResults(this.bundle, this.path, this.X_path);
         updateResultsList(localResults);
