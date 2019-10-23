@@ -244,7 +244,8 @@ public class SubtaskBid {
         double lambda = j.getParentTask().getLambda();
         double t_start = agent.getT_0();
 
-        return exp(- lambda * (t_a-t_start) );
+//        return exp(- lambda * (t_a-t_start) );
+        return 1.0;
     }
 
     private double calcAlpha(double K, double I){
@@ -352,6 +353,10 @@ public class SubtaskBid {
                             C_merge = 0.0;
                         }
                     }
+                    else{ // there is NO coalition at i
+                        C_split = agent.getC_split();
+                        C_merge = 0.0;
+                    }
                 }
                 else{ // there is no coalition at i - 1
                     if(pathOmega.get(i).size() > 0) { // Is there a coalition at i?
@@ -375,7 +380,7 @@ public class SubtaskBid {
                     //check if coalition is the same at i-1 and i
                     if(pathOmega.get(i).size() == pathOmega.get(i - 1).size()){ // check size
                         for(SimulatedAbstractAgent coalMember : pathOmega.get(i)){ // check member by member
-                            if(!pathOmega.get(i - 1).contains(coalMember) ){
+                            if( !pathOmega.get(i - 1).contains(coalMember) ){
                                 // previous coalition does not contain all of the current coalition members
                                 sameCoalition = false;
                                 break;
@@ -398,9 +403,14 @@ public class SubtaskBid {
                         C_merge = 0.0;
                     }
                 }
+                else{ // there is NO coalition at i
+                    C_split = agent.getC_split();
+                    C_merge = 0.0;
+                }
             }
             else{ // There was NO coalition at i-1
                 if(pathOmega.get(i).size() > 0) { // Is there a coalition at i?
+                    C_split = 0.0;
                     C_merge = agent.getC_merge();
                 }
                 else{

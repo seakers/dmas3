@@ -152,7 +152,6 @@ public class IterationResults {
             }
         }
 
-
         updateOmega(parentAgent);
     }
 
@@ -235,6 +234,8 @@ public class IterationResults {
                 this.score.setElementAt(0.0, i_j);
                 this.s.setElementAt(0, i_j);
                 this.v.setElementAt(0, i_j);
+
+                this.omega.setElementAt(new Vector<>(), i_b);
             }
         }
     }

@@ -110,34 +110,19 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         //Phase 1 - Task Selection
         // -Initialize results
         if(this.zeta == 0){
-            // Set results to 0
+            // Initialize results
             localResults = new IterationResults(this.J, this.W_solo_max, this.W_any_max, this.M, this.C_merge, this.C_split, this.resources, this);
         }
         else{
             // Import results from previous iteration
             localResults = new IterationResults(results.get(zeta - 1), true, this);
-
-            // Checks for new coalitions
-            Vector<Vector<SimulatedAbstractAgent>> oldCoalition = results.get(zeta-1).getOmega();
-            Vector<Vector<SimulatedAbstractAgent>> newCoalition = localResults.getOmega();
-
-            int i_j = isEqual(oldCoalition, newCoalition);
-            if( (i_j > -1)&&(!bundle.isEmpty())&&(i_j < bundle.size()) ){ // if not equal, release task from bundle
-                int i_remove = localResults.getJ().indexOf( this.bundle.get(i_j) );
-                localResults.resetResults(i_remove, bundle);
-                removeFromBundle(i_j);
-                localResults.updateResults(this.bundle, this.path, this.X_path);
-            }
-
         }
-
-        // -Generate Bundle
         this.overallBundle = this.localResults.getOverallBundle();
         this.overallPath = this.localResults.getOverallPath();
         this.bundle = this.localResults.getBundle();
         this.path = this.localResults.getPath();
 
-
+        // -Generate Bundle
         while( (bundle.size() < M)&&(localResults.getH().contains(1)) ){
             Vector<SubtaskBid> bidList = new Vector<>();
             Subtask j_chosen = null;
@@ -543,69 +528,67 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         //-Coalition Member Constraints
+        // create list of new coalition members
+        Vector<Vector<SimulatedAbstractAgent>> newOmega = new Vector<>();
+        for(int i = 0; i < this.M; i++) {
+            Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
+
+            if( this.bundle.size() >= i+1 ) {
+                for (int i_j = 0; i_j < this.localResults.getJ().size(); i_j++) {
+                    if ((this.localResults.getZ().get(i_j) != this)
+                            && (this.localResults.getZ().get(i_j) != null)
+                            && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
+                        tempCoal.add(this.localResults.getZ().get(i_j));
+                    }
+                }
+            }
+            newOmega.add(tempCoal);
+        }
+
+        Vector<Vector<SimulatedAbstractAgent>> oldOmega = this.localResults.getOmega();
+
+        // compare old list vs new list
         for (int i = 0; i < this.bundle.size(); i++){
-            // get list of coalition members
-            Vector<SimulatedAbstractAgent> coalitionMembers = this.localResults.getOmega().get(i);
-            boolean taskReleased = false;
-
-            // check if every coalition partner has the same list
-            for(SimulatedAbstractAgent coalitionMember : coalitionMembers){
-
-                // get coalition member's bundle and coalition member lists
-                Vector<Vector<SimulatedAbstractAgent>> memberOmega = new Vector<>();
-                Vector<Subtask> memberBundle = new Vector<>();
-                for(IterationResults result : receivedResults){
-                    if( result.getParentAgent() == coalitionMember ){
-                        memberOmega = result.getOmega();
-                        memberBundle = result.getBundle();
-                    }
-                }
-
-                // find index of subtask with shared task
-                int i_member = -1;
-                for(Subtask j : memberBundle){
-                    if( j.getParentTask() == this.bundle.get(i).getParentTask() ){
-                        i_member = memberBundle.indexOf(j);
-                    }
-                }
-
-                if(i_member == -1){ // index not found
-                    // member does not have dependent subtask, release subtask
+            if (oldOmega.get(i).size() == 0) { // no coalition partners in original list
+                if(newOmega.get(i).size() > 0){ // new coalition partners in new list
+                    // release task
                     Subtask j = this.bundle.get(i);
                     int i_j = this.localResults.getJ().indexOf(j);
                     this.localResults.resetResults(i_j, bundle);
                     removeFromBundle(this.localResults.getJ(), i_j);
-                    taskReleased = true;
                     break;
                 }
-
-                //compare lists
-                Vector<SimulatedAbstractAgent> myList = this.localResults.getOmega().get(i);
-                Vector<SimulatedAbstractAgent> itsList = memberOmega.get(i_member);
-
-                for(SimulatedAbstractAgent member : myList){
-                    if(!itsList.contains(member)){
-                        // if its list does not contain a member of mine, release task
+            }
+            else{ // coalition partners exist in original list, compare lists
+                if(newOmega.get(i).size() > 0){ // new list is not empty
+                    // compare lists
+                    if(oldOmega.get(i).size() != newOmega.get(i).size()){ // if different sizes, then lists are not the same
+                        // release task
                         Subtask j = this.bundle.get(i);
                         int i_j = this.localResults.getJ().indexOf(j);
                         this.localResults.resetResults(i_j, bundle);
                         removeFromBundle(this.localResults.getJ(), i_j);
-                        taskReleased = true;
                         break;
                     }
+                    else{ // compare element by element
+                        boolean released = false;
+                        for(SimulatedAbstractAgent listMember : oldOmega.get(i)){
+                            if(!newOmega.get(i).contains(listMember)){
+                                released = true;
+                                break;
+                            }
+                        }
+                        if(released){
+                            // release task
+                            Subtask j = this.bundle.get(i);
+                            int i_j = this.localResults.getJ().indexOf(j);
+                            this.localResults.resetResults(i_j, bundle);
+                            removeFromBundle(this.localResults.getJ(), i_j);
+                            break;
+                        }
+                    }
                 }
-                if(!itsList.contains(this)){
-                    // if its list does not contain a me, release task
-                    Subtask j = this.bundle.get(i);
-                    int i_j = this.localResults.getJ().indexOf(j);
-                    this.localResults.resetResults(i_j, bundle);
-                    removeFromBundle(this.localResults.getJ(), i_j);
-                    taskReleased = true;
-                    break;
-                }
-            }
-            if(taskReleased){
-                break;
+
             }
         }
 

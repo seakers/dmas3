@@ -41,7 +41,7 @@ public class AppendixBScenario extends Scenario {
         tc_1.add(0.0);                //t_start
         tc_1.add(inf);                //t_end
         tc_1.add(1.0);                //task duration
-        tc_1.add(0.0);                //t_corr
+        tc_1.add(1.0);                //t_corr
         tc_1.add(0.015);              //lambda
 
         Task task1 = new Task(100.0, x_1, "CONSTANT", 2.0, e_1, tc_1);

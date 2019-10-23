@@ -49,8 +49,8 @@ public class AppendixBExample extends AbstractAgent {
      * Helping functions
      */
     private void setupAgent(){
-        launchAgent(new SimulatedAgent02());
         launchAgent(new SimulatedAgent01());
+        launchAgent(new SimulatedAgent02());
     }
 
     private void createFile(){
