@@ -34,11 +34,11 @@ public class Figure3Simulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new ValidationScenario(30, "MOD");
+        Scenario environment = new ValidationScenario(10, "INT");
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent("MOD");
+        setupAgent("INT");
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);

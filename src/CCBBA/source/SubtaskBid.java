@@ -46,7 +46,7 @@ public class SubtaskBid {
             // substract path utilities to obtain subtask utility
             double newPathBid = newPathUtility.getUtility() - oldUtility.getUtility();
             if(i != possiblePaths.size()-1){  // if path modifies previously agreed order, deduct points
-                newPathBid = newPathBid - 5.0;
+                newPathBid = newPathBid - 2.0;
             }
 
             //get max bid from all new paths
@@ -185,7 +185,8 @@ public class SubtaskBid {
             int i_j = parentTask.getJ().indexOf(j);
             int i_u = agent.getLocalResults().getJ().indexOf(parentTask.getJ().get(i));
             // if j depends on u and u has a winner, then add relationship to time constraints list
-            if( ( D[i_j][i] == 1)&&(agent.getLocalResults().getZ().get(i_u) != null )&&(agent.getLocalResults().getZ().get(i_u) != agent ) ){
+            if( ( D[i_j][i] >= 1)&&(agent.getLocalResults().getZ().get(i_u) != null) ){
+                // &&(agent.getLocalResults().getZ().get(i_u) != agent )
                 timeConstraints.add( agent.getJ().indexOf(j) - parentTask.getJ().indexOf(j) + i );
             }
         }
@@ -244,8 +245,8 @@ public class SubtaskBid {
         double lambda = j.getParentTask().getLambda();
         double t_start = agent.getT_0();
 
-//        return exp(- lambda * (t_a-t_start) );
-        return 1.0;
+        return exp(- lambda * (t_a-t_start) );
+//        return 1.0;
     }
 
     private double calcAlpha(double K, double I){
@@ -302,8 +303,8 @@ public class SubtaskBid {
 
     private double calcMergePenalty(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent, Vector<Vector<SimulatedAbstractAgent>> pathOmega){
         int i = path.indexOf(j);
-        double C_split = 0.0;
-        double C_merge = 0.0;
+        double C_split;
+        double C_merge;
 
         IterationResults localResults = agent.getLocalResults();
         Vector<Subtask> overallBundle = localResults.getOverallBundle();
@@ -361,6 +362,7 @@ public class SubtaskBid {
                 else{ // there is no coalition at i - 1
                     if(pathOmega.get(i).size() > 0) { // Is there a coalition at i?
                         // new coalition at i
+                        C_split = 0.0;
                         C_merge = agent.getC_merge();
                     }
                     else{

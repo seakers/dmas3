@@ -1,0 +1,337 @@
+__________________________________
+          WINNING VECTORS         
+__________________________________
+Subtasks:			[IR_{}		IR_{MW}		MW_{}		MW_{IR}	|	IR_{}		IR_{MW}		MW_{}		MW_{IR}	|	IR_{}		IR_{MW}		MW_{}		MW_{IR}	|	IR_{}		IR_{MW}		MW_{}		MW_{IR}	|	IR_{}		IR_{MW}		MW_{}		MW_{IR}	|	IR_{}	|	IR_{}	|	IR_{}	|	MW_{}	|	MW_{}	]
+Bids Score:			[0.000		29.822		0.000		17.572	|	0.000		60.224		0.000		32.761	|	0.000		0.000		28.173		0.000	|	0.000		18.474		0.000		21.962	|	0.000		33.890		0.000		50.982	|	31.142	|	41.976	|	32.550	|	30.963	|	25.828	]
+Measurement Time:	[0.00		59.94		0.00		56.58	|	0.00		26.25		0.00		30.81	|	0.00		0.00		59.44		0.00	|	0.00		72.47		0.00		46.40	|	0.00		16.16		0.00		33.18	|	25.96	|	30.89	|	30.49	|	21.10	|	20.248	]
+Iteration Assigned:	[0			17			0			15		|	0			7			0			9		|	0			0			17			0		|	0			17			0			15		|	0			9			0			8		|	1		|	0		|	9		|	6		|	1		]
+Winners:			[-			2			-			2		|	-			2			-			2		|	-			-			2			-		|	-			2			-			2		|	-			2			-			1		|	1		|	2		|	2		|	1		|	1		]
+
+__________________________________
+        PERFORMANCE METRICS       
+__________________________________
+Coalitions Formed:		1
+Coalitions Available:	5
+Coalition Ratio:		20.00%
+
+Score Achieved:			342.212
+Score Available:		528.005
+Score Ratio:			64.81%
+
+Merge Cost:				0.000000
+Split Cost:				0.000000
+
+Avg Cost per Research:	66.30%
+
+Tasks Done:				10
+Tasks Available:		10
+Tasks Done Ratio:		100.00%
+
+Planning Horizon:		5
+
+__________________________________
+           AGENT LIST             
+__________________________________
+Agent Number:			1
+Planning Horizon:		5
+Max Const Iteration:	5
+Max Solo Bids:			5
+Max Any Bids:			10
+Iteration Counter:		19
+Resources:				91.022754
+
+Location:				[27.000		19.000		0.000]
+Sensor List:			[IR, MW]
+Bundle:					[IR_{}		MW_{}		MW_{}		MW_{IR}]
+Path:					[MW_{}		MW_{IR}		MW_{}		IR_{}]
+Time Assignments:		[21.095			33.178			20.248			25.962]
+Doing Iterations:		[14		18		]
+
+
+**********************************
+Agent Number:			2
+Planning Horizon:		5
+Max Const Iteration:	5
+Max Solo Bids:			5
+Max Any Bids:			10
+Iteration Counter:		19
+Resources:				97.092173
+
+Location:				[2.000		15.000		0.000]
+Sensor List:			[IR, MW]
+Bundle:					[IR_{}		IR_{MW}		IR_{MW}		MW_{IR}		IR_{}		MW_{IR}		MW_{IR}		MW_{}		IR_{MW}		IR_{MW}]
+Path:					[MW_{IR}		IR_{MW}		IR_{MW}		IR_{}		IR_{}		IR_{MW}		MW_{IR}		MW_{}		IR_{MW}		MW_{IR}]
+Time Assignments:		[30.806			16.155			26.249			30.491			30.887			59.942			46.397			59.435			72.474			56.583]
+Doing Iterations:		[14		18		]
+
+__________________________________
+            TASK LIST             
+__________________________________
+Task Number:		0
+Maximum Score:		67.660529
+Subtask Cost:		1.140000
+Number of Sensors:	2.000000
+Number of Subtasks:	4
+
+Location:			[17.000000, 20.000000, 0.000000]
+Sensor List:		[IR, MW]
+Subtask List:		[IR_{}, IR_{MW}, MW_{}, MW_{IR}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.314998
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************
+Task Number:		1
+Maximum Score:		76.069052
+Subtask Cost:		1.140000
+Number of Sensors:	2.000000
+Number of Subtasks:	4
+
+Location:			[16.000000, 29.000000, 0.000000]
+Sensor List:		[IR, MW]
+Subtask List:		[IR_{}, IR_{MW}, MW_{}, MW_{IR}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.213357
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************
+Task Number:		2
+Maximum Score:		31.169367
+Subtask Cost:		1.140000
+Number of Sensors:	2.000000
+Number of Subtasks:	4
+
+Location:			[29.000000, 21.000000, 0.000000]
+Sensor List:		[IR, MW]
+Subtask List:		[IR_{}, IR_{MW}, MW_{}, MW_{IR}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.725269
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************
+Task Number:		3
+Maximum Score:		49.734073
+Subtask Cost:		1.140000
+Number of Sensors:	2.000000
+Number of Subtasks:	4
+
+Location:			[28.000000, 34.000000, 0.000000]
+Sensor List:		[IR, MW]
+Subtask List:		[IR_{}, IR_{MW}, MW_{}, MW_{IR}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.883842
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************
+Task Number:		4
+Maximum Score:		88.956441
+Subtask Cost:		1.140000
+Number of Sensors:	2.000000
+Number of Subtasks:	4
+
+Location:			[10.000000, 19.000000, 0.000000]
+Sensor List:		[IR, MW]
+Subtask List:		[IR_{}, IR_{MW}, MW_{}, MW_{IR}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.652277
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	Infinity]
+
+
+**********************************
+Task Number:		5
+Maximum Score:		35.913730
+Subtask Cost:		1.140000
+Number of Sensors:	1.000000
+Number of Subtasks:	1
+
+Location:			[35.000000, 27.000000, 0.000000]
+Sensor List:		[IR]
+Subtask List:		[IR_{}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.975362
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0]
+
+Time Constraint Matrix:
+   [Infinity]
+
+
+**********************************
+Task Number:		6
+Maximum Score:		76.311494
+Subtask Cost:		1.140000
+Number of Sensors:	1.000000
+Number of Subtasks:	1
+
+Location:			[7.000000, 30.000000, 0.000000]
+Sensor List:		[IR]
+Subtask List:		[IR_{}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.737063
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0]
+
+Time Constraint Matrix:
+   [Infinity]
+
+
+**********************************
+Task Number:		7
+Maximum Score:		12.482540
+Subtask Cost:		1.140000
+Number of Sensors:	1.000000
+Number of Subtasks:	1
+
+Location:			[13.000000, 32.000000, 0.000000]
+Sensor List:		[IR]
+Subtask List:		[IR_{}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.381354
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0]
+
+Time Constraint Matrix:
+   [Infinity]
+
+
+**********************************
+Task Number:		8
+Maximum Score:		51.493296
+Subtask Cost:		1.140000
+Number of Sensors:	1.000000
+Number of Subtasks:	1
+
+Location:			[15.000000, 8.000000, 0.000000]
+Sensor List:		[MW]
+Subtask List:		[MW_{}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.610591
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0]
+
+Time Constraint Matrix:
+   [Infinity]
+
+
+**********************************
+Task Number:		9
+Maximum Score:		38.214081
+Subtask Cost:		1.140000
+Number of Sensors:	1.000000
+Number of Subtasks:	1
+
+Location:			[24.000000, 22.000000, 0.000000]
+Sensor List:		[MW]
+Subtask List:		[MW_{}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		Infinity
+Task Duration:	0.014284
+Corr Time:		Infinity
+Lambda:			0.015000
+Dependency Matrix:
+   [0]
+
+Time Constraint Matrix:
+   [Infinity]
+

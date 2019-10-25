@@ -39,19 +39,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected Vector<Subtask> path = new Vector<>();                // path chosen
     private Vector<Subtask> overallPath = new Vector<>();           // path chosen throughout simulation
     protected Vector<Dimension> X_path = new Vector<>();            // path locations
-    protected String bidStrategy;                                   // bidding strategy indicator
-    private List<AgentAddress> list_agents;                         // list of agents in planning phase
     private IterationResults localResults;                          // list of iteration results
     private int zeta = 0;                                           // iteration counter
-    private int convergenceCounter;                                 // Counts iterations in agreement
-    private int convergenceIndicator;                               // Max number of agreement iterations before doing phase
     protected double C_merge;                                       // Merging cost
     protected double C_split;                                       // Splitting cost
     protected double resources;                                     // Initial resources for agent
     private double resourcesRemaining;                              // Current resources for agent
 //    private long t_0;
     private double t_0;                                             // start time
-    private boolean converged = false;                              // convergence flag
     private Vector<Integer> doingIterations = new Vector<>();       // Iterations in which plans were agreed
     private Vector<IterationResults> receivedResults;               // list of received results
 
@@ -77,10 +72,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.W_any_max = getW_any_max();
         this.results = new Vector<>();
         this.bundle = new Vector<>();
-        this.bidStrategy = "OBS";
         this.zeta = 0;
-        this.convergenceCounter = 0;
-        this.convergenceIndicator = getConvergenceIndicator();
         this.C_merge = getC_merge();
         this.C_split = getC_split();
         this.t_0 = environment.getT_0();
@@ -94,9 +86,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
      */
     @SuppressWarnings("unused")
     public void phaseOne(){
-        //Obtain list of planning agents
-        this.list_agents = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, false);
-
         // Phase 1 - Create bid for individual spacecraft
         if(this.zeta == 0) getLogger().info("Creating plan...");
         //getLogger().info("Phase 1...");
@@ -629,7 +618,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 int myV = localResults.getV().get(i_j);
                 int itsV = receivedResult.getV().get(i_j);
 
-                coalViolation = ((myV > 0) && (myY > 0.0)) || ((itsV > 0) && (itsY > 0.0));
+                coalViolation = ( (myV > 0) || (itsV > 0) );
 
                 if ((myY != itsY) || (myTz != itsTz) || (myS != itsS) || coalViolation) {
                     // inconsistency found
@@ -647,14 +636,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         if(consistent) {
             //-no inconsistencies found, check convergence
-            this.converged = true;
-            this.convergenceCounter = 0;
             leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_COMP);
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_CONV);
         }
         else{
             //-no consensus reached, create new plan
-            this.convergenceCounter = 0;
             leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_COMP);
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
         }
@@ -719,7 +705,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             // check agent status
             if ((tasksAvailable) && (this.resourcesRemaining > 0.0)) { // tasks are available and agent has resources
                 getLogger().info("Tasks in bundle completed \n\t\t\t\t\t\t\t\tCreating a new plan...");
-                this.converged = false;
                 leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
                 requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_DO);
             }
@@ -952,7 +937,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         int n_sat = 0;
         for(int k = 0; k < parentTask.getJ().size(); k++){
             if(i_task == k){ continue;}
-            if( D[i_task][k] == 1){ N_req++; }
+            if( D[i_task][k] >= 1){ N_req++; }
             if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){ n_sat++; }
         }
 

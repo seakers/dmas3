@@ -31,7 +31,7 @@ public class ValidationAgentMod01 extends SimulatedAbstractAgent {
 
     @Override
     protected double getC_split() {
-        return 1.0;
+        return 0.0;
     }
 
     @Override
