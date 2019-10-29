@@ -63,13 +63,161 @@ public class ResultsCompiler extends AbstractAgent {
         }
     }
 
-    protected void printResults( Vector<IterationResults> receivedResults ) throws IOException {
+    private void printResults( Vector<IterationResults> receivedResults ) throws IOException {
         this.receivedResults = receivedResults;
-        printWinningVectors();
-        printTaskList();
-        printAgentList();
-        printMetrics();
-        printReport();
+        if( compareResults(receivedResults) ) {
+            printWinningVectors();
+            printTaskList();
+            printAgentList();
+            printMetrics();
+            printReport();
+        }
+        else{
+
+        }
+    }
+
+    private boolean compareResults( Vector<IterationResults> receivedResults ){
+        boolean consistent = true;
+        int i_e = -1;
+
+        // compare results and ensure that they match
+        for(IterationResults result : receivedResults){
+            for(IterationResults comparedResult : receivedResults){
+                // skip if compared to itself
+                if(result == comparedResult){
+                    continue;
+                }
+
+                // compare J vector
+                for(int i = 0; i < result.getJ().size(); i++){
+                    if(result.getJ().get(i) != comparedResult.getJ().get(i)){
+                        consistent = false;
+                        i_e = i;
+                        break;
+                    }
+                }
+
+                // compare Y vector
+                for(int i = 0; i < result.getY().size(); i++){
+                    if(result.getY().get(i) != comparedResult.getY().get(i)){
+                        consistent = false;
+                        i_e = i;
+                        break;
+                    }
+                }
+
+                // Compare Z vector
+                for(int i = 0; i < result.getZ().size(); i++){
+                    if(result.getZ().get(i) != comparedResult.getZ().get(i)){
+                        consistent = false;
+                        i_e = i;
+                        break;
+                    }
+                }
+
+                // Compare Tz vector
+                for(int i = 0; i < result.getTz().size(); i++){
+                    if(result.getTz().get(i) != comparedResult.getTz().get(i)){
+                        consistent = false;
+                        i_e = i;
+                        break;
+                    }
+                }
+
+                // Compare V vector
+                for(int i = 0; i < result.getV().size(); i++){
+                    if(result.getV().get(i) != comparedResult.getV().get(i)){
+                        consistent = false;
+                        i_e = i;
+                        break;
+                    }
+                }
+            }
+
+            if(!consistent){
+                getLogger().info("Inconsistencies found! Results did not match.");
+                String status = String.format("First inconsistency at: %d\n", i_e);
+                getLogger().info(status);
+
+                printAllVectors( receivedResults );
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void printAllVectors( Vector<IterationResults> receivedResults ){
+        //create new file in directory
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = this.directoryAddress + "/all_vectors.out";
+
+        try {
+            fileWriter = new FileWriter( outAddress, false );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        printWriter = new PrintWriter(fileWriter);
+
+        // print values
+        Vector<SimulatedAbstractAgent> agentList = new Vector<>();
+        for(int i = 0; i < receivedResults.get(0).getJ().size(); i++){
+            printWriter.printf("%d\t|\t",i);
+            // bid list
+            for(IterationResults result : receivedResults){
+                // obtain values
+                Vector<Double> localY = result.getY();
+                // print values
+                printWriter.printf("%f\t", localY.get(i));
+            }
+
+            // time assignments list
+            for(IterationResults result : receivedResults){
+                if(receivedResults.indexOf(result) == 0){
+                    printWriter.printf("|\t");
+                }
+                // obtain values
+                Vector<Double> localTz = result.getTz();
+                // print values
+                printWriter.printf("%f\t", localTz.get(i));
+            }
+
+            // winners
+            for(IterationResults result : receivedResults){
+                if(receivedResults.indexOf(result) == 0){
+                    printWriter.printf("|\t");
+                }
+                // obtain values
+                Vector<SimulatedAbstractAgent> localZ = result.getZ();
+                int i_winner;
+                if(!agentList.contains( localZ.get(i) )){
+                    agentList.add( localZ.get(i) );
+                }
+                i_winner = agentList.indexOf( localZ.get(i) ) + 1;
+
+
+                // print values
+                printWriter.printf("%d\t", i_winner);
+            }
+
+            // error counters
+            for(IterationResults result : receivedResults){
+                if(receivedResults.indexOf(result) == 0){
+                    printWriter.printf("|\t");
+                }
+                // obtain values
+                Vector<Integer> localV = result.getV();
+                // print values
+                printWriter.printf("%d\t", localV.get(i));
+            }
+            printWriter.printf("\n");
+        }
+
+        //close file
+        printWriter.close();
     }
 
     private void printWinningVectors(){

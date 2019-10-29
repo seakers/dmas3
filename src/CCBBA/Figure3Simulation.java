@@ -20,7 +20,7 @@ public class Figure3Simulation extends AbstractAgent {
      * Sim Setup
      */
     public static void main(String[] args) {
-        for(int i = 0; i < 30; i++) {
+        for(int i = 0; i < 1; i++) {
             executeThisAgent(1, false);
         }
     }

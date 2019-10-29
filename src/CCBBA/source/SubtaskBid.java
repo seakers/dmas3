@@ -221,11 +221,20 @@ public class SubtaskBid {
         int i = path.indexOf(j);
         double t_0;
 
-        if(i == 0){
-            x_0 = agent.getPosition();
-            t_0 = agent.getT_0();
+        if(i == 0){ // task is at the beginning of the path
+            if(agent.getLocalResults().getOverallPath().size() > 0){ // there exists a path before new path
+                Subtask j_p = agent.getLocalResults().getOverallPath().get( agent.getLocalResults().getOverallPath().size() - 1 ); // last task in previous path
+                int i_p = agent.getLocalResults().getJ().indexOf( j_p ); // index of las path task in J results vector
+
+                x_0 = j_p.getParentTask().getLocation();
+                t_0 = agent.getLocalResults().getTz().get(i_p);
+            }
+            else{ // there was no previous path
+                x_0 = agent.getPosition();
+                t_0 = agent.getT_0();
+            }
         }
-        else{
+        else{ // there is a task before the current task
             x_0 = path.get(i-1).getParentTask().getLocation();
             t_0 =  pathUtility.getTz().get(i-1);
         }
