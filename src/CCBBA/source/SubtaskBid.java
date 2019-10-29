@@ -46,44 +46,43 @@ public class SubtaskBid {
             // substract path utilities to obtain subtask utility
             double newPathBid = newPathUtility.getUtility() - oldUtility.getUtility();
             if(i != possiblePaths.size()-1){  // if path modifies previously agreed order, deduct points
-                newPathBid = newPathBid - 2.0;
+                newPathBid = newPathBid - 5.0;
             }
 
             //get max bid from all new paths
             if(newPathBid > maxPathBid){
-            maxPathBid = newPathBid;
-            this.c_aj = newPathBid;
-            this.t_aj = calcTimeOfArrival(newPath, j, agent);
-            this.x_aj = j.getParentTask().getLocation();
-            this.i_opt = newPath.indexOf(j);
+                maxPathBid = newPathBid;
+                this.c_aj = newPathBid;
+                this.t_aj = newPathUtility.getTz().get( newPath.indexOf(j) );
+                this.x_aj = j.getParentTask().getLocation();
+                this.i_opt = newPath.indexOf(j);
 
 
-            // calculate path's coalition matrix - omega
-            Vector<Subtask> localJ = agent.getLocalResults().getJ();
-            Vector<SimulatedAbstractAgent> localZ = agent.getLocalResults().getZ();
-            Vector<Vector<SimulatedAbstractAgent>> pathOmega = new Vector<>();
+                // calculate path's coalition matrix - omega
+                Vector<Subtask> localJ = agent.getLocalResults().getJ();
+                Vector<SimulatedAbstractAgent> localZ = agent.getLocalResults().getZ();
+                Vector<Vector<SimulatedAbstractAgent>> pathOmega = new Vector<>();
 
-            for(int k = 0; k < agent.getM(); k++) {
-                Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
+                for(int k = 0; k < agent.getM(); k++) {
+                    Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
 
-                if( newPath.size() >= k+1 ) {
-                    for (int i_j = 0; i_j < localJ.size(); i_j++) {
-                        if ((localZ.get(i_j) != agent)
-                                && (localZ.get(i_j) != null)
-                                && (newPath.get(k).getParentTask() == localJ.get(i_j).getParentTask())) {
-                            tempCoal.add(localZ.get(i_j));
+                    if( newPath.size() >= k+1 ) {
+                        for (int i_j = 0; i_j < localJ.size(); i_j++) {
+                            if ((localZ.get(i_j) != agent)
+                                    && (localZ.get(i_j) != null)
+                                    && (newPath.get(k).getParentTask() == localJ.get(i_j).getParentTask())) {
+                                tempCoal.add(localZ.get(i_j));
+                            }
                         }
                     }
+                    pathOmega.add(tempCoal);
                 }
-                pathOmega.add(tempCoal);
-            }
 
-            // calculate task's cost and score
-            PathUtility subtaskUtility = calcSubtaskUtility(newPath, j, this.t_aj, agent, pathOmega);
-            this.cost_aj = subtaskUtility.getCost();
-            this.score = subtaskUtility.getScore();
+                // calculate task's cost and score
+                PathUtility subtaskUtility = calcSubtaskUtility(newPath, j, this.t_aj, agent, pathOmega);
+                this.cost_aj = subtaskUtility.getCost();
+                this.score = subtaskUtility.getScore();
             }
-
         }
     }
 
@@ -114,33 +113,48 @@ public class SubtaskBid {
             Subtask j = path.get(i);
 
             //Calculate time of arrival
-            double t_a = calcTimeOfArrival(path, j, agent);
+            double t_a = calcTimeOfArrival(path, j, agent, pathUtility);
 
             // Calculate subtask utility within path
             subtaskUtility = calcSubtaskUtility(path,j,t_a, agent, pathOmega);
 
-            // Add to path utility
+            // Add to subtask utility to path utility
             pathUtility.setUtility( pathUtility.getUtility() + subtaskUtility.getUtility() );
+
+            // Add time of arrival to path
+            pathUtility.addTz(t_a);
         }
         return pathUtility;
     }
 
-    private double calcTimeOfArrival(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent){
+    private double calcTimeOfArrival(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent, PathUtility pathUtility){
         //Calculate time of arrival
         IterationResults localResults = agent.getLocalResults();
         double t_a;
         double t_corr;
-        double t_quickest = calcQuickestArrivalTime(path, j, agent, localResults);
+        double t_quickest = calcQuickestArrivalTime(path, j, agent, pathUtility);
 
         Vector<Integer> timeConstraints = getTimeConstraints(j, path, agent);
-        if(timeConstraints.size() != 0 ) { // if there are time constraints, consider them
+        if(timeConstraints.size() > 0 ) { // if there are time constraints, consider them
             Task parentTask = j.getParentTask();
             double[][] T = parentTask.getT();
             double maxTz = Double.NEGATIVE_INFINITY;
             int i_max = 0;
 
             for (Integer timeConstraint : timeConstraints) {
-                double thisTz = localResults.getTz().get(timeConstraint);
+                double thisTz;
+                boolean pathContainsTimeConstraint = path.contains( agent.getLocalResults().getJ().get(timeConstraint) );
+                boolean isBehindInPath =  path.indexOf(j) > path.indexOf( agent.getLocalResults().getJ().get(timeConstraint) );
+
+                if( pathContainsTimeConstraint && isBehindInPath ){
+                    int i_const = path.indexOf( agent.getLocalResults().getJ().get(timeConstraint) );
+                    thisTz = pathUtility.getTz().get(i_const);
+                }
+                else {
+                    thisTz = localResults.getTz().get(timeConstraint);
+                }
+
+
                 if (thisTz > maxTz) {
                     maxTz = thisTz;
                     i_max = timeConstraint;
@@ -184,9 +198,16 @@ public class SubtaskBid {
         for(int i = 0; i < parentTask.getJ().size(); i++){
             int i_j = parentTask.getJ().indexOf(j);
             int i_u = agent.getLocalResults().getJ().indexOf(parentTask.getJ().get(i));
+            int i_j_path = path.indexOf(j);
+            int i_u_path = path.indexOf( parentTask.getJ().get(i) );
+
             // if j depends on u and u has a winner, then add relationship to time constraints list
-            if( ( D[i_j][i] >= 1)&&(agent.getLocalResults().getZ().get(i_u) != null) ){
-                // &&(agent.getLocalResults().getZ().get(i_u) != agent )
+            boolean isDependent = D[i_j][i] >= 1;
+            boolean hasWinner = agent.getLocalResults().getZ().get(i_u) != null;
+            boolean isInPath = path.contains( parentTask.getJ().get(i_j) ) && (parentTask.getJ().get(i_j) != j);
+            boolean isBehindInPath = i_j_path > i_u_path;
+
+            if( isDependent && (hasWinner || (isInPath && isBehindInPath)) ){
                 timeConstraints.add( agent.getJ().indexOf(j) - parentTask.getJ().indexOf(j) + i );
             }
         }
@@ -194,20 +215,19 @@ public class SubtaskBid {
         return timeConstraints;
     }
 
-    private double calcQuickestArrivalTime(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent, IterationResults localResults){
+    private double calcQuickestArrivalTime(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent, PathUtility pathUtility){
         double delta_x;
         Dimension x_0;
         int i = path.indexOf(j);
         double t_0;
 
         if(i == 0){
-            x_0 = agent.getInitialPosition();
+            x_0 = agent.getPosition();
             t_0 = agent.getT_0();
         }
         else{
-            int i_prev = agent.getJ().indexOf( path.get(i-1) );
             x_0 = path.get(i-1).getParentTask().getLocation();
-            t_0 =  localResults.getTz().get(i_prev);
+            t_0 =  pathUtility.getTz().get(i-1);
         }
 
         Dimension x_f = j.getParentTask().getLocation();
@@ -272,8 +292,16 @@ public class SubtaskBid {
 
         double gamma = j.getParentTask().getGamma();
         double distance =  sqrt(delta_x);
-        double e = exp( gamma * distance );
-        return 1.0/( 1 + e);
+
+        double e;
+        if( gamma == Double.NEGATIVE_INFINITY ) {
+            e = 0.0;
+        }
+        else {
+            e = exp(gamma * distance);
+        }
+//        return 1.0/( 1 + e);
+        return 1.0;
     }
 
     private double calcTravelCost(Vector<Subtask> path, Subtask j, SimulatedAbstractAgent agent){

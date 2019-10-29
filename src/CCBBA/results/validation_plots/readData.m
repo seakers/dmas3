@@ -45,7 +45,7 @@ function [results] = readData(Mfolder)
                 end
             end
             
-            if(length(tempData) >= 55)
+            if(length(tempData) >= 50)
                 break;
             end
         end

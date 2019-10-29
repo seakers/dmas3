@@ -134,7 +134,7 @@ public class IterationResults {
     }
 
     void updateResults(SubtaskBid maxBid, int i_max, SimulatedAbstractAgent agent, int zeta){
-
+        // updates results with highest bid
         if(y.get(i_max) < maxBid.getC()){
             this.y.setElementAt(maxBid.getC() ,i_max);
             this.z.setElementAt(agent, i_max);
@@ -186,9 +186,9 @@ public class IterationResults {
         this.v.setElementAt(violationIterations, i);
 
         //if task is in bundle, then reset subsequent scores
-        if(bundle.contains(J.get(i))){
+        if(bundle.contains(this.J.get(i))){
             for(int i_b = bundle.indexOf( J.get(i) ); i_b < bundle.size(); i_b++){
-                int i_j = J.indexOf(bundle.get(i_b));
+                int i_j = this.J.indexOf(bundle.get(i_b));
 
                 if(i_j != i) {
                     this.y.setElementAt(0.0, i_j);
@@ -204,6 +204,7 @@ public class IterationResults {
     }
 
     public void updateResults(Vector<Subtask> newBundle, Vector<Subtask> newPath, Vector<Dimension> newX_path){
+        // updates bundle and path
         this.bundle = new Vector<>();
         this.path = new Vector<>();
 
@@ -214,6 +215,7 @@ public class IterationResults {
     }
 
     public void resetResults(int i, Vector<Subtask> bundle){
+        // sets results to zero
         this.y.setElementAt(0.0, i);
         this.z.setElementAt(null, i);
         this.tz.setElementAt(0.0, i);

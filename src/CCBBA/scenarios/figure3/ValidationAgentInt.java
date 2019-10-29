@@ -40,14 +40,8 @@ public class ValidationAgentInt extends SimulatedAbstractAgent {
     protected double getResources() { return 70.0 + 30 * Math.random(); }
 
     @Override
-    protected double setMiu(){
-        double miu = readResources() * 0.57/100;
-        return miu;
-    }
+    protected double setMiu(){ return readResources() * 0.57/100; }
 
     @Override
-    protected int getM(){
-        int M_agent = 5;
-        return M_agent;
-    }
+    protected int getM(){ return 5; }
 }

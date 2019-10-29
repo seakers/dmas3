@@ -194,6 +194,9 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     this.bundle.add(j_chosen);
                     this.path.add(maxBid.getI_opt(), j_chosen);
                     this.X_path.add(maxBid.getX_aj());
+                    Vector<Integer> h = localResults.getH();
+                    h.setElementAt( 0, i_max);
+                    localResults.setH( h );
                 }
                 localResults.updateResults(maxBid, i_max, this, zeta);
             }
@@ -517,41 +520,29 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         //-Coalition Member Constraints
-        // create list of new coalition members
-        Vector<Vector<SimulatedAbstractAgent>> newOmega = new Vector<>();
-        for(int i = 0; i < this.M; i++) {
-            Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
+            // create list of new coalition members
+            Vector<Vector<SimulatedAbstractAgent>> newOmega = new Vector<>();
+            for(int i = 0; i < this.M; i++) {
+                Vector<SimulatedAbstractAgent> tempCoal = new Vector<>();
 
-            if( this.bundle.size() >= i+1 ) {
-                for (int i_j = 0; i_j < this.localResults.getJ().size(); i_j++) {
-                    if ((this.localResults.getZ().get(i_j) != this)
-                            && (this.localResults.getZ().get(i_j) != null)
-                            && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
-                        tempCoal.add(this.localResults.getZ().get(i_j));
+                if( this.bundle.size() >= i+1 ) {
+                    for (int i_j = 0; i_j < this.localResults.getJ().size(); i_j++) {
+                        if ((this.localResults.getZ().get(i_j) != this)
+                                && (this.localResults.getZ().get(i_j) != null)
+                                && (this.bundle.get(i).getParentTask() == this.J.get(i_j).getParentTask())) {
+                            tempCoal.add(this.localResults.getZ().get(i_j));
+                        }
                     }
                 }
+                newOmega.add(tempCoal);
             }
-            newOmega.add(tempCoal);
-        }
 
-        Vector<Vector<SimulatedAbstractAgent>> oldOmega = this.localResults.getOmega();
+            Vector<Vector<SimulatedAbstractAgent>> oldOmega = this.localResults.getOmega();
 
-        // compare old list vs new list
-        for (int i = 0; i < this.bundle.size(); i++){
-            if (oldOmega.get(i).size() == 0) { // no coalition partners in original list
-                if(newOmega.get(i).size() > 0){ // new coalition partners in new list
-                    // release task
-                    Subtask j = this.bundle.get(i);
-                    int i_j = this.localResults.getJ().indexOf(j);
-                    this.localResults.resetResults(i_j, bundle);
-                    removeFromBundle(this.localResults.getJ(), i_j);
-                    break;
-                }
-            }
-            else{ // coalition partners exist in original list, compare lists
-                if(newOmega.get(i).size() > 0){ // new list is not empty
-                    // compare lists
-                    if(oldOmega.get(i).size() != newOmega.get(i).size()){ // if different sizes, then lists are not the same
+            // compare old list vs new list
+            for (int i = 0; i < this.bundle.size(); i++){
+                if (oldOmega.get(i).size() == 0) { // no coalition partners in original list
+                    if(newOmega.get(i).size() > 0){ // new coalition partners in new list
                         // release task
                         Subtask j = this.bundle.get(i);
                         int i_j = this.localResults.getJ().indexOf(j);
@@ -559,15 +550,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                         removeFromBundle(this.localResults.getJ(), i_j);
                         break;
                     }
-                    else{ // compare element by element
-                        boolean released = false;
-                        for(SimulatedAbstractAgent listMember : oldOmega.get(i)){
-                            if(!newOmega.get(i).contains(listMember)){
-                                released = true;
-                                break;
-                            }
-                        }
-                        if(released){
+                }
+                else{ // coalition partners exist in original list, compare lists
+                    if(newOmega.get(i).size() > 0){ // new list is not empty
+                        // compare lists
+                        if(oldOmega.get(i).size() != newOmega.get(i).size()){ // if different sizes, then lists are not the same
                             // release task
                             Subtask j = this.bundle.get(i);
                             int i_j = this.localResults.getJ().indexOf(j);
@@ -575,11 +562,27 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                             removeFromBundle(this.localResults.getJ(), i_j);
                             break;
                         }
+                        else{ // compare element by element
+                            boolean released = false;
+                            for(SimulatedAbstractAgent listMember : oldOmega.get(i)){
+                                if(!newOmega.get(i).contains(listMember)){
+                                    released = true;
+                                    break;
+                                }
+                            }
+                            if(released){
+                                // release task
+                                Subtask j = this.bundle.get(i);
+                                int i_j = this.localResults.getJ().indexOf(j);
+                                this.localResults.resetResults(i_j, bundle);
+                                removeFromBundle(this.localResults.getJ(), i_j);
+                                break;
+                            }
+                        }
                     }
-                }
 
+                }
             }
-        }
 
         // Update results
         localResults.updateResults(this.bundle, this.path, this.X_path);
@@ -618,9 +621,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 int myV = localResults.getV().get(i_j);
                 int itsV = receivedResult.getV().get(i_j);
 
-                coalViolation = ( (myV > 0) || (itsV > 0) );
+//                coalViolation = ( (myV > 0) || (itsV > 0) );
+                coalViolation = ( (myV > 0) && (myY > 0.0) ) || ( (itsV > 0) && (itsY > 0.0) );
 
-                if ((myY != itsY) || (myTz != itsTz) || (myS != itsS) || coalViolation) {
+
+                    if ((myY != itsY) || (myTz != itsTz) || (myS != itsS) || coalViolation) {
                     // inconsistency found
                     consistent = false;
                     break;
@@ -809,6 +814,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 requestRole(community, group, roleActive);
             }
         }
+        else if ( environment.numAgents == 1 ){ // it is the only agent in the scenario
+            // exit wait phase and start active phase
+            leaveRole(community, group, roleWait);
+            requestRole(community, group, roleActive);
+        }
     }
 
     private boolean tasksAvailable(){
@@ -922,15 +932,29 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         else if(j.getComplete()){ // if task has been completed, I can't bid
             return false;
         }
+        else if(this.bundle.contains(j)){
+            return false;
+        }
 
-        //check if pessimistic or optimistic strategy
-        // if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
-        Vector<Integer> w_solo = results.getW_any();
-        Vector<Integer> w_any  = results.getW_solo();
-        Vector<SimulatedAbstractAgent> z = results.getZ();
+        // check if bid for a subtask of the same task is in the bundle
         Task parentTask = j.getParentTask();
         int i_task = parentTask.getJ().indexOf(j);
         int[][] D = parentTask.getD();
+
+        for(Subtask bundleSubtask : this.bundle){
+            if(bundleSubtask.getParentTask() == parentTask) {
+                int i_b = parentTask.getJ().indexOf(bundleSubtask);
+                if (D[i_task][i_b] == -1) { // if subtask j has a mutually exclusive task in bundle, you cannot bid
+                    return false;
+                }
+            }
+        }
+
+
+        //check if pessimistic or optimistic strategy -> if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
+        Vector<Integer> w_solo = results.getW_any();
+        Vector<Integer> w_any  = results.getW_solo();
+        Vector<SimulatedAbstractAgent> z = results.getZ();
 
         // Count number of requirements and number of completed requirements
         int N_req = 0;
@@ -1162,9 +1186,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     public int getZeta(){ return this.zeta; }
     public Vector<String> getSensors(){ return this.sensors; }
     protected double readResources(){ return this.resources; }
-    public double getT_0() {
-        return t_0;
-    }
+    public double getT_0() { return t_0; }
+    public Dimension getPosition(){ return this.location; }
     public Vector<Integer> getDoingIterations(){ return this.doingIterations; }
 
     /**

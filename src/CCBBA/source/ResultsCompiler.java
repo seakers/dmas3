@@ -399,7 +399,7 @@ public class ResultsCompiler extends AbstractAgent {
 
         Vector<Task> printedTasks = new Vector<>();
         Vector<Integer> dividerIndex = new Vector<>();
-        int i_d = 0;
+        int i_d;
 
         printWriter.printf("Subtasks:\t\t\t[");
         for(int i = 0; i < localJ.size(); i++ ){
@@ -413,7 +413,7 @@ public class ResultsCompiler extends AbstractAgent {
                     printedTasks.add(tempTask);
                     printWriter.printf("\t|\t");
                     dividerIndex.add(i);
-                } else if (i < localJ.size() - 1) {
+                } else if (i <= localJ.size() - 1) {
                     printWriter.printf("\t\t");
                 }
             }
@@ -424,11 +424,12 @@ public class ResultsCompiler extends AbstractAgent {
             if(i == localJ.size()-1){ printWriter.printf("\t]\n");}
         }
 
+        i_d = 0;
         printWriter.printf("Bids Score:\t\t\t[");
         for(int i = 0; i < winnersToPrint.get(0).size(); i++){
             if(i != winnersToPrint.get(0).size()-1) {
                 printWriter.printf("%.3f", winnersToPrint.get(0).get(i));
-                if(i == dividerIndex.get(i_d)-1){
+                if( (dividerIndex.size() > i_d) && (i == dividerIndex.get(i_d)-1) ){
                     printWriter.printf("\t|\t");
                     i_d++;
                     continue;
@@ -445,7 +446,7 @@ public class ResultsCompiler extends AbstractAgent {
         for(int i = 0; i < winnersToPrint.get(1).size(); i++){
             if(i != winnersToPrint.get(1).size()-1) {
                 printWriter.printf("%.2f", winnersToPrint.get(1).get(i));
-                if(i == dividerIndex.get(i_d)-1){
+                if( (dividerIndex.size() > i_d) && (i == dividerIndex.get(i_d)-1) ){
                     printWriter.printf("\t|\t");
                     i_d++;
                     continue;
@@ -463,7 +464,7 @@ public class ResultsCompiler extends AbstractAgent {
             int winnerTemp = localS.get(i);
             if(i != winnersToPrint.get(4).size()-1) {
                 printWriter.printf("%d", winnerTemp);
-                if(i == dividerIndex.get(i_d)-1){
+                if( (dividerIndex.size() > i_d) && (i == dividerIndex.get(i_d)-1) ){
                     if(winnerTemp > 1000){
                         printWriter.printf("\t|\t");
                     }
@@ -473,7 +474,7 @@ public class ResultsCompiler extends AbstractAgent {
                     i_d++;
                     continue;
                 }
-                if(winnerTemp > 1000){
+                if(winnerTemp > 999){
                     printWriter.printf("\t\t");
                 }
                 else{
@@ -496,7 +497,7 @@ public class ResultsCompiler extends AbstractAgent {
             else{ printWriter.printf("%d", winnerTemp); }
 
             if(i != winnersToPrint.get(1).size()-1) {
-                if(i == dividerIndex.get(i_d)-1){
+                if( (dividerIndex.size() > i_d) && (i == dividerIndex.get(i_d)-1) ){
                     printWriter.printf("\t\t|\t");
                     i_d++;
                     continue;
@@ -571,27 +572,31 @@ public class ResultsCompiler extends AbstractAgent {
             printWriter.printf("Location:\t\t\t\t[%.3f\t\t%.3f\t\t%.3f]\n", x, y, z);
             printWriter.printf("Sensor List:\t\t\t%s\n", localAgent.getSensors());
             printWriter.printf("Bundle:\t\t\t\t\t[");
-            for(int j = 0; j < localAgent.getOverallBundle().size(); j++){
+            for(int j = 0; j < localAgent.getOverallBundle().size(); j++) {
                 Subtask bundleTask = localAgent.getOverallBundle().get(j);
-                printWriter.printf("%s_{", bundleTask.getMain_task());
-                for(int k = 0; k < bundleTask.getDep_tasks().size(); k++){
-                    printWriter.printf("%s", bundleTask.getDep_tasks().get(k));
-                    if(k != (bundleTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
+                int i_j = localAgent.getLocalResults().getJ().indexOf(bundleTask);
+                printWriter.printf("%d", i_j);
+                if (j < localAgent.getOverallBundle().size() - 1){
+                    if (i_j < 100) {
+                        printWriter.printf("\t\t\t");
+                    } else {
+                        printWriter.printf("\t\t");
+                    }
                 }
-                if(j == (localAgent.getOverallBundle().size() - 1) ) { printWriter.printf("}"); }
-                else{ printWriter.printf("}\t\t"); }
             }
             printWriter.printf("]\n");
             printWriter.printf("Path:\t\t\t\t\t[");
             for(int j = 0; j < localAgent.getOverallPath().size(); j++){
-                Subtask pathTask = localAgent.getOverallPath().get(j);
-                printWriter.printf("%s_{", pathTask.getMain_task());
-                for(int k = 0; k < pathTask.getDep_tasks().size(); k++){
-                    printWriter.printf("%s", pathTask.getDep_tasks().get(k));
-                    if(k != (pathTask.getDep_tasks().size() - 1) ) { printWriter.printf(", "); }
+                Subtask bundleTask = localAgent.getOverallPath().get(j);
+                int i_j = localAgent.getLocalResults().getJ().indexOf(bundleTask);
+                printWriter.printf("%d", i_j);
+                if (j < localAgent.getOverallPath().size() - 1){
+                    if (i_j < 100) {
+                        printWriter.printf("\t\t\t");
+                    } else {
+                        printWriter.printf("\t\t");
+                    }
                 }
-                if(j == (localAgent.getOverallPath().size() - 1) ) { printWriter.printf("}"); }
-                else{ printWriter.printf("}\t\t"); }
             }
             printWriter.printf("]\n");
             printWriter.printf("Time Assignments:\t\t[");
@@ -601,10 +606,10 @@ public class ResultsCompiler extends AbstractAgent {
                 printWriter.printf("%.3f", localTz.get(i_p));
                 if(j != (localAgent.getOverallPath().size() - 1) ) {
                     if(localTz.get(i_p) > 100){
-                        printWriter.printf("\t\t");
+                        printWriter.printf("\t");
                     }
                     else{
-                        printWriter.printf("\t\t\t");
+                        printWriter.printf("\t\t");
                     }
                 }
             }

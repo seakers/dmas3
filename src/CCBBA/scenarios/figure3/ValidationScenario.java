@@ -40,6 +40,7 @@ public class ValidationScenario extends Scenario {
             // determine instrument requirements
             Vector<String> instruments = new Vector<>();
             if (i < this.numTasks / 2) {
+//            if (i < this.numTasks ) { // create all tasks with two sensor requirements
                 // create 50% of tasks with two sensors
                 instruments.add(this.instrumentList.get(0));
                 instruments.add(this.instrumentList.get(1));
@@ -55,7 +56,7 @@ public class ValidationScenario extends Scenario {
             tc.add(0.0);                //t_start
             tc.add(inf);                //t_end
             tc.add(Math.random());      //task duration
-            tc.add(inf);                //t_corr
+            tc.add(8.0);                //t_corr
             tc.add(0.015);              //lambda
 
             // determine task costs and max score
