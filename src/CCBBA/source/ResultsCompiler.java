@@ -100,7 +100,9 @@ public class ResultsCompiler extends AbstractAgent {
 
                 // compare Y vector
                 for(int i = 0; i < result.getY().size(); i++){
-                    if(result.getY().get(i) != comparedResult.getY().get(i)){
+                    double myY = result.getY().get(i);
+                    double itsY = comparedResult.getY().get(i);
+                    if( myY != itsY){
                         consistent = false;
                         i_e = i;
                         break;
@@ -118,7 +120,9 @@ public class ResultsCompiler extends AbstractAgent {
 
                 // Compare Tz vector
                 for(int i = 0; i < result.getTz().size(); i++){
-                    if(result.getTz().get(i) != comparedResult.getTz().get(i)){
+                    double myTz = result.getTz().get(i);
+                    double itsTz = comparedResult.getTz().get(i);
+                    if(myTz != itsTz){
                         consistent = false;
                         i_e = i;
                         break;
@@ -127,7 +131,9 @@ public class ResultsCompiler extends AbstractAgent {
 
                 // Compare V vector
                 for(int i = 0; i < result.getV().size(); i++){
-                    if(result.getV().get(i) != comparedResult.getV().get(i)){
+                    int myV = result.getV().get(i);
+                    int itsV = comparedResult.getV().get(i);
+                    if( myV !=  itsV){
                         consistent = false;
                         i_e = i;
                         break;
