@@ -71,9 +71,10 @@ public class ResultsCompiler extends AbstractAgent {
             printAgentList();
             printMetrics();
             printReport();
+            printAllVectors( receivedResults );
         }
         else{
-
+            printAllVectors( receivedResults );
         }
     }
 
@@ -145,8 +146,6 @@ public class ResultsCompiler extends AbstractAgent {
                 getLogger().info("Inconsistencies found! Results did not match.");
                 String status = String.format("First inconsistency at: %d\n", i_e);
                 getLogger().info(status);
-
-                printAllVectors( receivedResults );
                 return false;
             }
         }
