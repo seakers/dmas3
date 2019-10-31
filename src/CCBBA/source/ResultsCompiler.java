@@ -135,17 +135,20 @@ public class ResultsCompiler extends AbstractAgent {
                     int myV = result.getV().get(i);
                     int itsV = comparedResult.getV().get(i);
                     if( myV !=  itsV){
-                        consistent = false;
-                        i_e = i;
-                        break;
+                        double myY = result.getY().get(i);
+
+                        if(myY > 0.0) {
+                            consistent = false;
+                            i_e = i;
+                            break;
+                        }
                     }
                 }
             }
 
             if(!consistent){
-                getLogger().info("Inconsistencies found! Results did not match.");
-                String status = String.format("First inconsistency at: %d\n", i_e);
-                getLogger().info(status);
+                String status = String.format("\n\t\t\tFirst inconsistency at: %d\n", i_e);
+                getLogger().info("ERROR: Final plans did not match." + status );
                 return false;
             }
         }
@@ -169,6 +172,10 @@ public class ResultsCompiler extends AbstractAgent {
 
         // print values
         Vector<SimulatedAbstractAgent> agentList = new Vector<>();
+        for(IterationResults result : receivedResults){
+            agentList.add(result.getParentAgent());
+        }
+
         for(int i = 0; i < receivedResults.get(0).getJ().size(); i++){
             printWriter.printf("%d\t|\t",i);
             // bid list
@@ -197,15 +204,15 @@ public class ResultsCompiler extends AbstractAgent {
                 }
                 // obtain values
                 Vector<SimulatedAbstractAgent> localZ = result.getZ();
-                int i_winner;
-                if(!agentList.contains( localZ.get(i) )){
-                    agentList.add( localZ.get(i) );
-                }
-                i_winner = agentList.indexOf( localZ.get(i) ) + 1;
-
+                int i_winner = agentList.indexOf( localZ.get(i) ) + 1;
 
                 // print values
-                printWriter.printf("%d\t", i_winner);
+                if(localZ.get(i) != null) {
+                    printWriter.printf("%d\t", i_winner);
+                }
+                else{
+                    printWriter.printf("-\t");
+                }
             }
 
             // error counters
@@ -896,13 +903,10 @@ public class ResultsCompiler extends AbstractAgent {
     }
 
     private double calcScoreAchieved( Vector<IterationResults> receivedResults){
-        double count = 0;
-//        Vector<Double> localY = receivedResults.get(0).getY();
-//        for(int i = 0; i < localY.size(); i ++){
-//            count = count + localY.get(i);
-//        }
+        double count = 0.0;
 
-        Vector<Double> localScore = receivedResults.get(0).getScore();
+//        Vector<Double> localScore = receivedResults.get(0).getScore();
+        Vector<Double> localScore = receivedResults.get(0).getY();
         for(Double Score : localScore){
             count += Score;
         }

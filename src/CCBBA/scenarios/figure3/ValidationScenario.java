@@ -56,7 +56,7 @@ public class ValidationScenario extends Scenario {
             tc.add(0.0);                //t_start
             tc.add(inf);                //t_end
             tc.add(Math.random());      //task duration
-            tc.add(8.0);                //t_corr
+            tc.add(0.0);                //t_corr
             tc.add(0.015);              //lambda
 
             // determine task costs and max score

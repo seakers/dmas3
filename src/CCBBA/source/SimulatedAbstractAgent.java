@@ -82,7 +82,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
 
     /**
-     * Main Sim functions
+     * Planner functions
      */
     @SuppressWarnings("unused")
     public void phaseOne(){
@@ -111,8 +111,14 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         this.bundle = this.localResults.getBundle();
         this.path = this.localResults.getPath();
 
+        boolean alive = true;
+        var myRoles = getMyRoles(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
+        if(myRoles.contains( CCBBASimulation.AGENT_DIE )){
+            alive = false;
+        }
+
         // -Generate Bundle
-        while( (bundle.size() < M)&&(localResults.getH().contains(1)) ){
+        while( (bundle.size() < M) && (localResults.getH().contains(1)) && alive ){
             Vector<SubtaskBid> bidList = new Vector<>();
             Subtask j_chosen = null;
 
@@ -647,14 +653,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         else{
             //-no consensus reached, create new plan
             leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_COMP);
-            var myRoles = getMyRoles(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
-
-            if( myRoles.contains(CCBBASimulation.AGENT_DIE) ){
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
-            }
-            else{
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
-            }
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
         }
 
     }
@@ -718,59 +717,32 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             if ((tasksAvailable) && (this.resourcesRemaining > 0.0)) { // tasks are available and agent has resources
                 getLogger().info("Tasks in bundle completed \n\t\t\t\t\t\t\t\tCreating a new plan...");
                 leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
-
-                var myRoles = getMyRoles(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
-                if( myRoles.contains(CCBBASimulation.AGENT_DIE) ){
-                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
-                }
-                else{
-                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_DO);
-                }
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_DO);
             }
             else {
-                getLogger().info("No more tasks available. \n\t\t\t\t\t\t\t\tKilling agent, goodbye!");
+                var myRoles = getMyRoles(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
+                if(!myRoles.contains( CCBBASimulation.AGENT_DIE )){
+                    getLogger().info("No more tasks available.");
+                }
                 leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
                 requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_DO);
             }
         }
         else { // agent has no remaining resources
-            getLogger().info("No remaining resources. Killing agent, goodbye!");
+            var myRoles = getMyRoles(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
+            if(!myRoles.contains( CCBBASimulation.AGENT_DIE )){
+                getLogger().info("No remaining resources.");
+            }
             leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
             requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_DO);
         }
-    }
-
-    @SuppressWarnings("unused")
-    protected void die(){
-        List<AgentAddress> agentsDead = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
-
-        if (agentsDead != null) {
-            if(agentsDead.size() == (environment.numAgents - 1)){
-                // send results to results compiler
-                AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
-                myMessage myDeath = new myMessage(this.localResults, this.getName());
-                sendMessage(resultsAddress, myDeath);
-            }
-            else{
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
-            }
-        }
-        else{
-            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
-        }
-
-//        var myRoles = getMyRoles(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
-
-//        // send results to results compiler
-//        AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
-//        myMessage myDeath = new myMessage(this.localResults, this.getName());
-//        sendMessage(resultsAddress, myDeath);
     }
 
     /**
-     * Wait functions
+     * Waiting functions
      */
-
     @SuppressWarnings("unused")
     public void waitOnBundles(){ // waits on other available agents to construct their bundles
         abstractWait(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES, CCBBASimulation.AGENT_THINK2);
@@ -792,6 +764,16 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     }
 
     /**
+     * Agent death function(s)
+     */
+    @SuppressWarnings("unused")
+    protected void die(){ // send results to results compiler
+        AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
+        myMessage myDeath = new myMessage(this.localResults, this.getName());
+        sendMessage(resultsAddress, myDeath);
+    }
+
+    /**
      * Misc tools and functions
      */
     private void emptyMailbox(){
@@ -805,52 +787,61 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         List<AgentAddress> agentsAlive = getAgentsWithRole(community, group, roleWait);
         List<AgentAddress> agentsDead = getAgentsWithRole(community, group, CCBBASimulation.AGENT_DIE);
         myMessage myResults = new myMessage(this.localResults, this.getName());
+        boolean skip = false;
 
+        if(roleWait.equals( CCBBASimulation.AGENT_WAIT_DO )){
+            if ( (agentsDead != null)&&(agentsDead.size() == (environment.numAgents - 1)) ){
+                getLogger().info("All agents are dead. \n\t\t\t\t\t\t\t\tSending results.");
 
-        if(!isMessageBoxEmpty()){
-            // broadcast my results
-            broadcastMessage(community, group, roleWait, myResults);
-            broadcastMessage(community, group, roleActive, myResults);
+                leaveRole(community, group, roleWait);
+                requestRole(community, group, CCBBASimulation.AGENT_DIE);
+                requestRole(community, group, CCBBASimulation.AGENT_WAIT_DIE);
 
-            // start phase 2 of planner
-            leaveRole(community, group, roleWait);
-            requestRole(community, group, roleActive);
+                skip = true;
+            }
         }
-        else if(agentsAlive != null){ // check other agent's response
-            if( (agentsDead != null)&&((agentsAlive.size() + agentsDead.size()) >= (environment.numAgents - 1)) ){
+        if (!skip) {
+            if (!isMessageBoxEmpty()) {
                 // broadcast my results
                 broadcastMessage(community, group, roleWait, myResults);
                 broadcastMessage(community, group, roleActive, myResults);
 
-                // exit wait phase and start active phase
+                // start phase 2 of planner
                 leaveRole(community, group, roleWait);
                 requestRole(community, group, roleActive);
-            }
-            else if(agentsAlive.size() == (environment.numAgents - 1)){
-                // broadcast my results
-                broadcastMessage(community, group, roleWait, myResults);
-                broadcastMessage(community, group, roleActive, myResults);
+            } else if (agentsAlive != null) { // check other agent's response
+                if ((agentsDead != null) && ((agentsAlive.size() + agentsDead.size()) >= (environment.numAgents - 1))) {
+                    // broadcast my results
+                    broadcastMessage(community, group, roleWait, myResults);
+                    broadcastMessage(community, group, roleActive, myResults);
 
-                // exit wait phase and start active phase
-                leaveRole(community, group, roleWait);
-                requestRole(community, group, roleActive);
-            }
-        }
-        else if (agentsDead != null){
-            if(agentsDead.size() == (environment.numAgents - 1)){
-                // broadcast my results
-                broadcastMessage(community, group, roleWait, myResults);
-                broadcastMessage(community, group, roleActive, myResults);
+                    // exit wait phase and start active phase
+                    leaveRole(community, group, roleWait);
+                    requestRole(community, group, roleActive);
+                } else if (agentsAlive.size() == (environment.numAgents - 1)) {
+                    // broadcast my results
+                    broadcastMessage(community, group, roleWait, myResults);
+                    broadcastMessage(community, group, roleActive, myResults);
 
+                    // exit wait phase and start active phase
+                    leaveRole(community, group, roleWait);
+                    requestRole(community, group, roleActive);
+                }
+            } else if (agentsDead != null) {
+                if (agentsDead.size() == (environment.numAgents - 1)) {
+                    // broadcast my results
+                    broadcastMessage(community, group, roleWait, myResults);
+                    broadcastMessage(community, group, roleActive, myResults);
+
+                    // exit wait phase and start active phase
+                    leaveRole(community, group, roleWait);
+                    requestRole(community, group, roleActive);
+                }
+            } else if (environment.numAgents == 1) { // it is the only agent in the scenario
                 // exit wait phase and start active phase
                 leaveRole(community, group, roleWait);
                 requestRole(community, group, roleActive);
             }
-        }
-        else if ( environment.numAgents == 1 ){ // it is the only agent in the scenario
-            // exit wait phase and start active phase
-            leaveRole(community, group, roleWait);
-            requestRole(community, group, roleActive);
         }
     }
 

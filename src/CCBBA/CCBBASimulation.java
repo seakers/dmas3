@@ -24,8 +24,8 @@ public class CCBBASimulation extends AbstractAgent {
     public static final String AGENT_WAIT_COMP = "agent_wait_comparison";
     public static final String AGENT_WAIT_CONV = "agent_wait_convergence";
     public static final String AGENT_WAIT_DO = "agent_wait_doing_tasks";
-    public static final String AGENT_DIE = "agent_die";
-    public static final String AGENT_END = "agent_end";
+    public static final String AGENT_WAIT_DIE = "agent_wait_die";
+    public static final String AGENT_DIE = "dead_agent";
     public static final String ENV_ROLE = "environment";
     public static final String SCH_ROLE = "scheduler";
     public static final String RESULTS_ROLE = "results";
