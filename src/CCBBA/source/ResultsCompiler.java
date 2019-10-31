@@ -282,6 +282,7 @@ public class ResultsCompiler extends AbstractAgent {
         }
         printWriter = new PrintWriter(fileWriter);
 
+        // overall performance metrics
         //obtain values
         Vector resultsToPrint = new Vector();
 
@@ -294,6 +295,9 @@ public class ResultsCompiler extends AbstractAgent {
         double splitCost = this.receivedResults.get(0).getC_split();
         int numberOfTasksDone = countTasksDone(this.receivedResults);
         int planHorizon = this.receivedResults.get(0).getM();
+        int count1 = countTasksDoneWithSensors(1);
+        int count2 = countTasksDoneWithSensors(2);
+        int count3 = countTasksDoneWithSensors(3);
 
         resultsToPrint.add(coalitionsFormed);
         resultsToPrint.add(coalitionsAvailable);
@@ -304,12 +308,17 @@ public class ResultsCompiler extends AbstractAgent {
         resultsToPrint.add(splitCost);
         resultsToPrint.add(numberOfTasksDone);
         resultsToPrint.add(planHorizon);
+        resultsToPrint.add(count1);
+        resultsToPrint.add(count2);
+        resultsToPrint.add(count3);
 
         //print values
         for(int i = 0; i < resultsToPrint.size(); i++){
             printWriter.print(resultsToPrint.get(i));
             printWriter.print("\t");
         }
+
+
 
         //close file
         printWriter.close();
@@ -693,6 +702,10 @@ public class ResultsCompiler extends AbstractAgent {
         printWriter.printf("Tasks Available:\t\t%d\n", numberOfTasksAvailable);
         printWriter.printf("Tasks Done Ratio:\t\t%.2f%%\n", (double) numberOfTasksDone / (double) numberOfTasksAvailable * 100.0);
         printWriter.printf("\n");
+        printWriter.printf("Tasks done w/ 1 sens:\t%d\n", countTasksDoneWithSensors(1) );
+        printWriter.printf("Tasks done w/ 2 sens:\t%d\n", countTasksDoneWithSensors(2) );
+        printWriter.printf("Tasks done w/ 3 sens:\t%d\n", countTasksDoneWithSensors(3) );
+        printWriter.printf("\n");
         printWriter.printf("Planning Horizon:\t\t%d\n", planHorizon);
 
         //- Agents
@@ -900,6 +913,23 @@ public class ResultsCompiler extends AbstractAgent {
 
         //close file
         printWriter.close();
+    }
+
+    private int countTasksDoneWithSensors(int numSensors){
+        int count = 0;
+
+        Vector<Task> V = environment.getTasks();
+        Vector<SimulatedAbstractAgent> localZ = receivedResults.get(0).getZ();
+        for(Task v : V){
+            for(Subtask j : v.getJ()){
+                int i_j = receivedResults.get(0).getJ().indexOf(j);
+                if( (localZ.get(i_j) != null) && (j.getDep_tasks().size() == numSensors - 1) ){
+                    count++;
+                    break;
+                }
+            }
+        }
+        return count;
     }
 
     private double calcScoreAchieved( Vector<IterationResults> receivedResults){

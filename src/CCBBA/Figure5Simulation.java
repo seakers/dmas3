@@ -38,7 +38,7 @@ public class Figure5Simulation extends AbstractAgent {
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent();
+        setupAgent(0.0);
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);
@@ -50,16 +50,16 @@ public class Figure5Simulation extends AbstractAgent {
     /**
      * Helping functions
      */
-    private void setupAgent(){
+    private void setupAgent(double merge_cost){
         // e = {IR}
-        launchAgent(new ValidationAgentMod01());
-        launchAgent(new ValidationAgentMod01());
+        launchAgent(new ValidationAgentMod01(merge_cost));
+        launchAgent(new ValidationAgentMod01(merge_cost));
         // e = {MW}
-        launchAgent(new ValidationAgentMod02());
-        launchAgent(new ValidationAgentMod02());
+        launchAgent(new ValidationAgentMod02(merge_cost));
+        launchAgent(new ValidationAgentMod02(merge_cost));
         // e = {VIS}
-        launchAgent(new ValidationAgentMod03());
-        launchAgent(new ValidationAgentMod03());
+        launchAgent(new ValidationAgentMod03(merge_cost));
+        launchAgent(new ValidationAgentMod03(merge_cost));
         this.numAgents = 6;
     }
 

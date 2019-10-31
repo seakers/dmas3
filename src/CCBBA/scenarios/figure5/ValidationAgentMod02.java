@@ -5,6 +5,12 @@ import java.util.Vector;
 import CCBBA.source.*;
 
 public class ValidationAgentMod02 extends SimulatedAbstractAgent {
+    private double C_merge_percent = 0.0;
+
+    public ValidationAgentMod02(double C_merge){
+        this.C_merge_percent = C_merge;
+    }
+
     @Override
     protected Vector<String> getSensorList() {
         Vector<String> sensor_list = new Vector<>();
@@ -26,7 +32,7 @@ public class ValidationAgentMod02 extends SimulatedAbstractAgent {
 
     @Override
     protected double getC_merge() {
-        return readResources() * 0.0;
+        return readResources() * C_merge_percent;
     }
 
     @Override
