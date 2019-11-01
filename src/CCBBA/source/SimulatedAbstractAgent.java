@@ -1256,9 +1256,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         return 10;
     }
 
-    protected double getC_merge(){
-        return 0;
-    }
+    protected double getC_merge(){ return 0; }
     protected double getC_split(){
         return 0;
     }

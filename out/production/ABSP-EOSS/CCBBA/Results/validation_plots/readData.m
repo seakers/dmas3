@@ -1,4 +1,4 @@
-function [results] = readData(Mfolder)
+function [results] = readData(Mfolder, numPoints)
     % Obtain results folders in results directory
     cd(Mfolder)
     currentFolder = dir;
@@ -45,7 +45,7 @@ function [results] = readData(Mfolder)
                 end
             end
             
-            if(length(tempData) >= 50)
+            if(length(tempData) >= numPoints)
                 break;
             end
         end

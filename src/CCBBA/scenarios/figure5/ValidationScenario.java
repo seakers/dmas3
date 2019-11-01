@@ -1,7 +1,6 @@
 package CCBBA.scenarios.figure5;
 
 import CCBBA.CCBBASimulation;
-import CCBBA.scenarios.appendix_b.AppendixBScenario;
 import CCBBA.source.Scenario;
 import CCBBA.source.Task;
 import madkit.kernel.AbstractAgent;
@@ -12,10 +11,9 @@ import java.util.Vector;
 
 public class ValidationScenario extends Scenario {
 
-    public ValidationScenario(int numTasks, String simType){
+    public ValidationScenario(int numTasks){
         this.numTasks = numTasks;
-        if(simType.equals("INT")){ this.numAgents = 2; }
-        else if(simType.equals("MOD")){ this.numAgents = 4; }
+        this.numAgents = 6;
 
         this.t_0 = 0;
     }

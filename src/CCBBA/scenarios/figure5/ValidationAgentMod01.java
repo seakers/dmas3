@@ -31,9 +31,7 @@ public class ValidationAgentMod01 extends SimulatedAbstractAgent {
     }
 
     @Override
-    protected double getC_merge() {
-        return readResources() * C_merge_percent;
-    }
+    protected double getC_merge() { return readResources() * C_merge_percent / 100; }
 
     @Override
     protected double getC_split() {
