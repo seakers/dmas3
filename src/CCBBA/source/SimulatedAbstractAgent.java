@@ -248,8 +248,6 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 }
                 else{ itsZ = receivedResults.get(i).getZ().get(i_j).getName(); }
                 double itsTz = receivedResults.get(i).getTz().get(i_j);
-//                myMessage m = (myMessage) receivedMessages.get(i);
-//                String it = m.senderName;
                 String it = receivedResults.get(i).getParentAgent().getName();
                 int itsS = receivedResults.get(i).getS().get(i_j);
 
@@ -393,6 +391,19 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                     }
                 }
 
+                if(v.get(i_j) == 0) {
+                    if (n_sat <= 0) {
+                        // agent must be the first to win a bid for this tasks
+                        w_solo.setElementAt((w_solo.get(i_j) - 1), i_j);
+                        this.localResults.setW_solo(w_solo);
+                    }
+                    else if(N_req != n_sat){
+                        // agent bids on a task without all of its requirements met for the first time
+                        w_any.setElementAt((w_any.get(i_j) - 1), i_j);
+                        this.localResults.setW_solo(w_any);
+                    }
+                }
+
                 if ((N_req != n_sat) && (N_req > 0)) { //if not all dependencies are met, v_i++
                     v.setElementAt((v.get(i_j) + 1), i_j);
                     this.localResults.setV(v);
@@ -408,14 +419,12 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
                     w_solo.setElementAt((w_solo.get(i_j) - 1), i_j);
                     w_any.setElementAt((w_any.get(i_j) - 1), i_j);
-                    v.setElementAt(0, i_j);
                     this.localResults.setW_solo(w_solo);
                     this.localResults.setW_any(w_any);
-                    this.localResults.setV(v);
                 }
             } else { // task has pessimistic bidding strategy
-                Vector<Integer> w_solo = this.localResults.getW_any();
-                Vector<Integer> w_any = this.localResults.getW_solo();
+                Vector<Integer> w_any = this.localResults.getW_any();
+                Vector<Integer> w_solo = this.localResults.getW_solo();
                 Vector<SimulatedAbstractAgent> z = this.localResults.getZ();
                 Subtask j = this.bundle.get(i);
                 Task parentTask = j.getParentTask();
@@ -519,7 +528,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 Vector<Integer> w_any = localResults.getW_any();
                 Vector<Integer> w_solo = localResults.getW_solo();
                 w_any.setElementAt(w_any.get(i_q) - 1, i_q);
-                w_solo.setElementAt(w_any.get(i_q) - 1, i_q);
+                w_solo.setElementAt(w_solo.get(i_q) - 1, i_q);
                 localResults.setW_any(w_any);
                 localResults.setW_solo(w_solo);
             }
@@ -614,7 +623,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         // Check consistency
         boolean consistent = true;
-        boolean coalViolation;
+        boolean coalSat;
+        boolean match;
         for (IterationResults receivedResult : receivedResults) { // for every received result
             // compare local results to each received result
             for (int i_j = 0; i_j < localResults.getY().size(); i_j++) {
@@ -627,11 +637,11 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                 int myV = localResults.getV().get(i_j);
                 int itsV = receivedResult.getV().get(i_j);
 
-//                coalViolation = ( (myV > 0) || (itsV > 0) );
-                coalViolation = ( (myV > 0) && (myY > 0.0) ) || ( (itsV > 0) && (itsY > 0.0) );
+//                coalViolation = ( (myV > 0) && (myY > 0.0) ) || ( (itsV > 0) && (itsY > 0.0) );
+                coalSat = (myV == 0) && (itsV == 0);
+                match = (myY == itsY) && (myTz == itsTz) && (myS == itsS) && coalSat;
 
-
-                    if ((myY != itsY) || (myTz != itsTz) || (myS != itsS) || coalViolation) {
+                if (!match) {
                     // inconsistency found
                     consistent = false;
                     break;
@@ -769,7 +779,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     protected void die(){ // send results to results compiler
         AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
-        myMessage myDeath = new myMessage(this.localResults, this.getName());
+        myMessage myDeath = new myMessage(this.localResults, this.getName(), this);
         sendMessage(resultsAddress, myDeath);
     }
 
@@ -786,7 +796,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         // inform agents that a goal has been reached on my end
         List<AgentAddress> agentsAlive = getAgentsWithRole(community, group, roleWait);
         List<AgentAddress> agentsDead = getAgentsWithRole(community, group, CCBBASimulation.AGENT_DIE);
-        myMessage myResults = new myMessage(this.localResults, this.getName());
+        myMessage myResults = new myMessage(this.localResults, this.getName(), this);
         boolean skip = false;
 
         if(roleWait.equals( CCBBASimulation.AGENT_WAIT_DO )){
@@ -858,8 +868,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             return false;
         }
         else{
-            Vector<Task> V = new Vector<>();
-            V = environment.getTasks();
+            Vector<Task> V = this.environment.getTasks();
             for (Task task : V) {
                 if (!checkCompletion(task)) { // check if task's dependencies have been met
                     for (Subtask j : task.getJ()) {
@@ -868,7 +877,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
                             SubtaskBid localBid = new SubtaskBid();
                             localBid.calcBidForSubtask(j, this);
 
-                            if ( this.resourcesRemaining >= localBid.getCost_aj() ) { // check if agent has enough resources to resolve available subtask
+                            if ( this.resourcesRemaining > localBid.getCost_aj() ) { // check if agent has enough resources to resolve available subtask
                                 if(localBid.getC() > 0.0) { // check if bid produces a net gain
                                     int i_j = this.localResults.getJ().indexOf(j);
                                     if ((this.localResults.getW_any().get(i_j) > 0) && (this.localResults.getW_solo().get(i_j) > 0)) { // check if agent has exhausted attempts to bid on tasks
@@ -938,9 +947,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
         for (Task task : V) {
             Vector<Subtask> J_i = task.getJ();
-            for (Subtask subtask : J_i) {
-                J_available.add(subtask);
-            }
+            J_available.addAll(J_i);
         }
 
         return J_available;
@@ -976,8 +983,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
 
 
         //check if pessimistic or optimistic strategy -> if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
-        Vector<Integer> w_solo = results.getW_any();
-        Vector<Integer> w_any  = results.getW_solo();
+        Vector<Integer> w_any = results.getW_any();
+        Vector<Integer> w_solo  = results.getW_solo();
         Vector<SimulatedAbstractAgent> z = results.getZ();
 
         // Count number of requirements and number of completed requirements
@@ -992,11 +999,21 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         if(!isOptimistic(j)){
             // Agent has spent all possible tries biding on this task with dependencies
             // Pessimistic Bidding Strategy to be used
+            if( (w_any.get(i_av) < 0)||( w_solo.get(i_av) < 0 ) ) {
+                int x = 1;
+            }
+
             return (n_sat == N_req);
         }
         else{
             // Agent has NOT spent all possible tries biding on this task with dependencies
             // Optimistic Bidding Strategy to be used
+            if( (w_any.get(i_av) <= 0)||( w_solo.get(i_av) <= 0 ) ) {
+                int x = w_any.get(i_av);
+                int y = w_solo.get(i_av);
+                int xy = 1;
+            }
+
             return ( (w_any.get(i_av) > 0)&&(n_sat > 0) )||( w_solo.get(i_av) > 0 )||(n_sat == N_req);
         }
     }
@@ -1217,50 +1234,20 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     /**
      * Abstract Agent Settings
      */
-    protected Vector<String> getSensorList(){
+    protected Vector<String> getSensorList() {
         Vector<String> sensor_list = new Vector<>();
         sensor_list.add("IR");
         sensor_list.add("MW");
         return sensor_list;
     }
-
-    protected Dimension getInitialPosition(){
-        return new Dimension(0,0);
-    }
-
-    protected int getM(){
-        return 1;
-    }
-
-    private double setSpeed(){
-        return 1.0;
-    }
-
-    protected double setMiu(){
-        return 1.0;
-    }
-
-    public int getO_kq(){
-        return 5;
-    }
-
-    public int getW_solo_max(){
-        return 5;
-    }
-
-    public int getW_any_max(){
-        return 10;
-    }
-
-    private int getConvergenceIndicator(){
-        return 10;
-    }
-
+    protected Dimension getInitialPosition(){ return new Dimension(0,0); }
+    protected int getM(){ return 1; }
+    private double setSpeed(){ return 1.0; }
+    protected double setMiu(){ return 1.0; }
+    public int getO_kq(){ return 5; }
+    public int getW_solo_max(){ return 5; }
+    public int getW_any_max(){ return 10; }
     protected double getC_merge(){ return 0; }
-    protected double getC_split(){
-        return 0;
-    }
-    protected double getResources(){
-        return 0;
-    }
+    protected double getC_split(){ return 0; }
+    protected double getResources(){ return 0; }
 }

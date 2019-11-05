@@ -30,8 +30,6 @@ public class myScheduler extends Scheduler {
         // 2 : execute planners
         if(this.planner == "CCBBA") { //Consensus Constraint-Based Bundle Algorithm
             //thinking phase
-//            agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "phaseOne");
-//            addActivator(agents);
             agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "phaseOne");
             addActivator(agents);
             agents = new GenericBehaviorActivator<>(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2, "phaseTwo");

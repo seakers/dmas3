@@ -9,7 +9,6 @@ import CCBBA.scenarios.random.*;
 import CCBBA.source.*;
 
 public class CCBBASimulation extends AbstractAgent {
-
     /**
      * Organizational constants
      */

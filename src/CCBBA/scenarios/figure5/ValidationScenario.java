@@ -90,7 +90,6 @@ public class ValidationScenario extends Scenario {
         // 2 : this probe is used to initialize the agents' environment field
         addProbe(new ValidationScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "environment"));
         addProbe(new ValidationScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE, "environment"));
-
     }
 
     class AgentsProbe extends PropertyProbe<AbstractAgent, Scenario> {

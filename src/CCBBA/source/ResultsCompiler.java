@@ -29,9 +29,6 @@ public class ResultsCompiler extends AbstractAgent {
     }
 
     private void checkResults() throws IOException {
-        // Wait and check for messages
-        // TBA
-
         //Receive results
         List<AgentAddress> resultsAddress = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
 

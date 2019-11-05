@@ -20,7 +20,7 @@ public class Figure3Simulation extends AbstractAgent {
      * Sim Setup
      */
     public static void main(String[] args) {
-        for(int i = 0; i < 1; i++) {
+        for(int i = 0; i < 10; i++) {
             executeThisAgent(1, false);
         }
     }
@@ -70,7 +70,7 @@ public class Figure3Simulation extends AbstractAgent {
     private void createFile(){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd-HH_mm_ss_SSS");
         LocalDateTime now = LocalDateTime.now();
-        this.directoryAddress = "src/CCBBA/results/results-validation-"+ dtf.format(now);
+        this.directoryAddress = "src/CCBBA/results/results-validation-3-"+ dtf.format(now);
         new File( this.directoryAddress ).mkdir();
     }
 }

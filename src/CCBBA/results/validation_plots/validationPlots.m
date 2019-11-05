@@ -8,6 +8,6 @@ function [] = validationPlots()
     figureThree(results3);
     
     % Figure 5
-    results5 = readData("figure_5", 1); 
+    results5 = readData("figure_5", 50); 
     figureFive(results5);
 end
