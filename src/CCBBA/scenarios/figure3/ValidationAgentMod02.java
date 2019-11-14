@@ -40,14 +40,14 @@ public class ValidationAgentMod02 extends SimulatedAbstractAgent {
     }
 
     @Override
-    protected double setMiu(){ return readResources() * 0.57/100; }
+    protected double setMiu(){ return readResources() * 0.57/1000; }
 
     @Override
     protected int getM(){ return 2; }
 
     @Override
     public int getO_kq(){
-        return 10;
+        return 2;
     }
 
     @Override

@@ -30,7 +30,7 @@ public class ValidationScenario extends Scenario {
         this.instrumentList.add("MW");
         this.instrumentList.add("VIS");
 
-        for (int i = 0; i < this.numTasks; i++) { //for every task
+        for (int i = 1; i <= this.numTasks; i++) { //for every task
             // determine location
             int x = (int) (x_max * Math.random());
             int y = (int) (y_max * Math.random());
@@ -38,28 +38,28 @@ public class ValidationScenario extends Scenario {
 
             // determine instrument requirements
             Vector<String> instruments = new Vector<>();
-            if (i < 9) {
+            if (i < (this.numTasks / 3.0) * 1.0 ) {
                 // create 9 tasks with three sensors
                 instruments.add(this.instrumentList.get(0));
                 instruments.add(this.instrumentList.get(1));
                 instruments.add(this.instrumentList.get(2));
             }
-            else if (i < 12){ // create 9 tasks with two sensors
+            else if (i <= (this.numTasks / 5.0) * 2.0){ // create 9 tasks with two sensors
                 instruments.add(this.instrumentList.get(0));
                 instruments.add(this.instrumentList.get(1));
             }
-            else if (i < 15){
+            else if (i <= (this.numTasks / 2.0) * 1.0){
                 instruments.add(this.instrumentList.get(0));
                 instruments.add(this.instrumentList.get(2));
             }
-            else if (i < 18){
+            else if (i <= (this.numTasks / 5.0) * 3.0){
                 instruments.add(this.instrumentList.get(1));
                 instruments.add(this.instrumentList.get(2));
             }
-            else if (i < 22){ // create 12 tasks with one sensors
+            else if (i <= (this.numTasks / 15.0) * 11.0){ // create 12 tasks with one sensors
                 instruments.add(this.instrumentList.get(0));
             }
-            else if (i < 26){
+            else if (i <= (this.numTasks / 15.0) * 13.0){
                 instruments.add(this.instrumentList.get(1));
             }
             else {

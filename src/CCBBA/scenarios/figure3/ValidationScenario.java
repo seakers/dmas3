@@ -11,12 +11,13 @@ import java.awt.*;
 import java.util.Vector;
 
 public class ValidationScenario extends Scenario {
+    private double t_corr;
 
-    public ValidationScenario(int numTasks, String simType){
+    public ValidationScenario(int numTasks, String simType, double t_corr){
         this.numTasks = numTasks;
         if(simType.equals("INT")){ this.numAgents = 2; }
         else if(simType.equals("MOD")){ this.numAgents = 4; }
-
+        this.t_corr = t_corr;
         this.t_0 = 0;
     }
 
@@ -56,11 +57,11 @@ public class ValidationScenario extends Scenario {
             tc.add(0.0);                //t_start
             tc.add(inf);                //t_end
             tc.add(Math.random());      //task duration
-            tc.add(0.0);                //t_corr
+            tc.add(this.t_corr);        //t_corr
             tc.add(0.015);              //lambda
 
             // determine task costs and max score
-            double S_max = 100.0 * Math.random();
+            double S_max = 50.0 + 50 * Math.random();
             double task_cost = 1.14 / 100;
 
             // add task to scenario vector

@@ -932,8 +932,8 @@ public class ResultsCompiler extends AbstractAgent {
     private double calcScoreAchieved( Vector<IterationResults> receivedResults){
         double count = 0.0;
 
-//        Vector<Double> localScore = receivedResults.get(0).getScore();
-        Vector<Double> localScore = receivedResults.get(0).getY();
+        Vector<Double> localScore = receivedResults.get(0).getScore();
+//        Vector<Double> localScore = receivedResults.get(0).getY();
         for(Double Score : localScore){
             count += Score;
         }

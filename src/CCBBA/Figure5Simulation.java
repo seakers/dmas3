@@ -21,7 +21,7 @@ public class Figure5Simulation extends AbstractAgent {
      * Sim Setup
      */
     public static void main(String[] args) {
-        for(int i = 0; i < 25; i++) {
+        for(int i = 0; i < 1; i++) {
             executeThisAgent(1, false);
         }
     }
@@ -35,7 +35,7 @@ public class Figure5Simulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new ValidationScenario(30);
+        Scenario environment = new ValidationScenario(10);
         launchAgent(environment);
 
         // 3 : launch some simulated agents

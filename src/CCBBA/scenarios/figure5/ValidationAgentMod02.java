@@ -51,7 +51,7 @@ public class ValidationAgentMod02 extends SimulatedAbstractAgent {
 
     @Override
     public int getO_kq(){
-        return 2;
+        return 10;
     }
 
     @Override

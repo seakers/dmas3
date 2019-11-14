@@ -37,24 +37,24 @@ public class ValidationAgentInt extends SimulatedAbstractAgent {
     }
 
     @Override
-    protected double getResources() { return 70.0 + 30 * Math.random(); }
+    protected double getResources() { return 100; }
 
     @Override
-    protected double setMiu(){ return readResources() * 0.57/100; }
+    protected double setMiu(){ return readResources() * 0.57/1000; }
 
     @Override
     protected int getM(){ return 2; }
 
     @Override
     public int getO_kq(){
-        return 5;
+        return 2;
     }
 
     @Override
     public int getW_solo_max(){
-        return 5;
+        return 2;
     }
 
     @Override
-    public int getW_any_max(){ return 10; }
+    public int getW_any_max(){ return 5; }
 }
