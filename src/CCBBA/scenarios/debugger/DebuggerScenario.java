@@ -8,10 +8,10 @@ import madkit.simulation.probe.PropertyProbe;
 import java.awt.*;
 import java.util.Vector;
 
-public class ValidationScenario extends Scenario {
+public class DebuggerScenario extends Scenario {
     private double t_corr;
 
-    public ValidationScenario(int numTasks, String simType, double t_corr){
+    public DebuggerScenario(int numTasks, String simType, double t_corr){
         this.numTasks = numTasks;
         if(simType.equals("INT")){ this.numAgents = 2; }
         else if(simType.equals("MOD")){ this.numAgents = 4; }
@@ -71,8 +71,8 @@ public class ValidationScenario extends Scenario {
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.ENV_ROLE);
 
         // 2 : this probe is used to initialize the agents' environment field
-        addProbe(new ValidationScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "environment"));
-        addProbe(new ValidationScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE, "environment"));
+        addProbe(new DebuggerScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "environment"));
+        addProbe(new DebuggerScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE, "environment"));
 
     }
 
@@ -85,7 +85,7 @@ public class ValidationScenario extends Scenario {
         @Override
         protected void adding(AbstractAgent agent) {
             super.adding(agent);
-            setPropertyValue(agent, ValidationScenario.this);
+            setPropertyValue(agent, DebuggerScenario.this);
         }
     }
 }

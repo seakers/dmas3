@@ -6,7 +6,7 @@ import java.util.Vector;
 import CCBBA.CCBBASimulation;
 import CCBBA.bin.*;
 
-public class ValidationAgentMod02 extends AbstractSimulatedAgent {
+public class DebuggerAgentMod02 extends AbstractSimulatedAgent {
     @Override
     protected void activate() {
         getLogger().info("Activating agent");
@@ -27,14 +27,13 @@ public class ValidationAgentMod02 extends AbstractSimulatedAgent {
                 this.C_merge, this.C_split, this.resources,
                 this);
         this.zeta = 0;                                          // iteration counter
-        this.C_merge = 0.0;                                     // Merging cost
-        this.C_split = 0.0;                                     // Splitting cost
+        this.C_merge = 1.0;                                     // Merging cost
+        this.C_split = 2.0;                                     // Splitting cost
         this.resources = 100.0;                                 // Initial resources for agent
-        this.miu = this.resources * 0.0/100;;                   // Travel cost
+        this.miu = this.resources * 0.54/100;;                  // Travel cost
         this.resourcesRemaining = this.resources;               // Current resources for agent
         this.t_0 = 0.0; //    private long t_0;                 // start time
-        this.receivedResults = new Vector<>();                  // list of received results.
-        this.bundle = new Vector<>();                           // subtask bundle
+        this.receivedResults = new Vector<>();                  // list of received results
     }
 
 

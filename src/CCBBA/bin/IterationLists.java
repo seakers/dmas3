@@ -133,7 +133,7 @@ public class IterationLists {
         }
     }
 
-    void updateResults(SubtaskBid maxBid, int i_max, AbstractSimulatedAgent agent, int zeta){
+    void updateResults(AbstractBid maxBid, int i_max, AbstractSimulatedAgent agent, int zeta){
         // updates results with highest bid
         if(y.get(i_max) < maxBid.getC()){
             this.y.setElementAt(maxBid.getC() ,i_max);
@@ -146,10 +146,10 @@ public class IterationLists {
 
             this.bundle = new Vector<>();
             this.path = new Vector<>();
-            for(int i = 0; i < agent.getBundle().size(); i++){
-                this.bundle.add( agent.getBundle().get(i) );
-                this.path.add( agent.getPath().get(i) );
-            }
+//            for(int i = 0; i < agent.getBundle().size(); i++){
+//                this.bundle.add( agent.getBundle().get(i) );
+//                this.path.add( agent.getPath().get(i) );
+//            }
         }
 
         updateOmega(parentAgent);

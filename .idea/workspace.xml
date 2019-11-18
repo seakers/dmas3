@@ -2,116 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5ed5f4b0-5cd6-4ed4-b23a-eac4fc17b05b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/DebuggerSimulation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/bin/IterationLists.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/bin/AbstractBid.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/AppendixBExample.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/AppendixBExample.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/CCBBASimulation.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/CCBBASimulation.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Figure3Simulation.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Figure3Simulation.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Figure5Simulation.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Figure5Simulation.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/validation_plots/readData.m" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/validation_plots/readData.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/validation_plots/validationPlots.m" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/validation_plots/validationPlots.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_803/REPORT.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_803/agent_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_803/all_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_803/performance_metrics.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_803/task_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_803/winning_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_830/REPORT.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_830/agent_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_830/all_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_830/performance_metrics.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_830/task_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/INT_inf-2019_11_13-17_46_18_830/winning_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_0.0-2019_11_13-17_46_18_665/REPORT.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_0.0-2019_11_13-17_46_18_665/agent_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_0.0-2019_11_13-17_46_18_665/all_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_0.0-2019_11_13-17_46_18_665/performance_metrics.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_0.0-2019_11_13-17_46_18_665/task_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_0.0-2019_11_13-17_46_18_665/winning_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_2.0-2019_11_13-17_46_18_688/REPORT.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_2.0-2019_11_13-17_46_18_688/agent_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_2.0-2019_11_13-17_46_18_688/all_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_2.0-2019_11_13-17_46_18_688/performance_metrics.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_2.0-2019_11_13-17_46_18_688/task_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_2.0-2019_11_13-17_46_18_688/winning_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_4.0-2019_11_13-17_46_18_718/REPORT.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_4.0-2019_11_13-17_46_18_718/agent_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_4.0-2019_11_13-17_46_18_718/all_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_4.0-2019_11_13-17_46_18_718/performance_metrics.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_4.0-2019_11_13-17_46_18_718/task_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_4.0-2019_11_13-17_46_18_718/winning_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_6.0-2019_11_13-17_46_18_740/REPORT.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_6.0-2019_11_13-17_46_18_740/agent_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_6.0-2019_11_13-17_46_18_740/all_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_6.0-2019_11_13-17_46_18_740/performance_metrics.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_6.0-2019_11_13-17_46_18_740/task_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_6.0-2019_11_13-17_46_18_740/winning_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_8.0-2019_11_13-17_46_18_764/REPORT.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_8.0-2019_11_13-17_46_18_764/agent_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_8.0-2019_11_13-17_46_18_764/all_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_8.0-2019_11_13-17_46_18_764/performance_metrics.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_8.0-2019_11_13-17_46_18_764/task_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/MOD_8.0-2019_11_13-17_46_18_764/winning_vectors.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/appendix_b/AppendixBScenario$AgentsProbe.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/appendix_b/AppendixBScenario$AgentsProbe.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/appendix_b/AppendixBScenario.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/appendix_b/AppendixBScenario.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/appendix_b/SimulatedAgent01.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/appendix_b/SimulatedAgent01.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/appendix_b/SimulatedAgent02.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/appendix_b/SimulatedAgent02.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentInt.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentInt.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentMod01.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentMod01.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentMod02.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentMod02.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationScenario$AgentsProbe.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationScenario$AgentsProbe.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationScenario.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationScenario.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationAgentMod01.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationAgentMod01.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationAgentMod02.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationAgentMod02.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationAgentMod03.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationAgentMod03.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationScenario$AgentsProbe.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationScenario$AgentsProbe.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationScenario.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure5/ValidationScenario.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/random/RandomScenario$AgentsProbe.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/random/RandomScenario$AgentsProbe.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/random/RandomScenario.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/random/RandomScenario.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/random/SimulatedAgentRandom.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/random/SimulatedAgentRandom.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/IterationResults.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/PathUtility.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/ResultsCompiler.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/Scenario$AgentsProbe.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/Scenario.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/SimulatedAbstractAgent.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/Subtask.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/SubtaskBid.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/Task.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/myMessage.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/myScheduler.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/scratch.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/AppendixBExample.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/AppendixBExample.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/CCBBASimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/CCBBASimulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/Figure3Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/Figure3Simulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/Figure5Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/Figure5Simulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/validation_plots/readData.m" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/results/validation_plots/readData.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/validation_plots/validationPlots.m" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/results/validation_plots/validationPlots.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/AppendixBScenario.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/SimulatedAgent01.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/SimulatedAgent01.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/SimulatedAgent02.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/appendix_b/SimulatedAgent02.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentInt.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentInt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentMod01.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentMod01.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentMod02.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentMod02.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationScenario.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure5/ValidationAgentMod01.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure5/ValidationAgentMod01.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure5/ValidationAgentMod02.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure5/ValidationAgentMod02.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure5/ValidationAgentMod03.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure5/ValidationAgentMod03.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure5/ValidationScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure5/ValidationScenario.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/random/RandomScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/random/RandomScenario.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/random/SimulatedAgentRandom.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/random/SimulatedAgentRandom.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/IterationResults.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/PathUtility.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/Scenario.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/SimulatedAbstractAgent.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/Subtask.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/SubtaskBid.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/Task.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/myMessage.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/myScheduler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/scratch.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/bin/AbstractSimulatedAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/bin/AbstractSimulatedAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/bin/IterationLists.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/bin/IterationLists.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/ValidationAgentInt.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/ValidationAgentMod01.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/ValidationAgentMod02.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/ValidationScenario.java" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -252,7 +150,7 @@
       <workItem from="1572543644677" duration="29015000" />
       <workItem from="1572968215691" duration="41506000" />
       <workItem from="1573676272472" duration="19874000" />
-      <workItem from="1573769464551" duration="12452000" />
+      <workItem from="1573769464551" duration="14458000" />
     </task>
     <servers />
   </component>
