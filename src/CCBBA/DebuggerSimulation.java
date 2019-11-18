@@ -1,12 +1,10 @@
 package CCBBA;
 
-import CCBBA.bin.ResultsCompiler;
-import CCBBA.bin.Scenario;
-import CCBBA.bin.myScheduler;
-import CCBBA.scenarios.figure3.ValidationAgentInt;
-import CCBBA.scenarios.figure3.ValidationAgentMod01;
-import CCBBA.scenarios.figure3.ValidationAgentMod02;
-import CCBBA.scenarios.figure3.ValidationScenario;
+import CCBBA.bin.*;
+import CCBBA.scenarios.debugger.DebuggerAgentInt;
+import CCBBA.scenarios.debugger.DebuggerAgentMod01;
+import CCBBA.scenarios.debugger.DebuggerAgentMod02;
+import CCBBA.scenarios.debugger.DebuggerScenario;
 import madkit.kernel.AbstractAgent;
 
 import java.io.File;
@@ -71,7 +69,7 @@ public class DebuggerSimulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new ValidationScenario(30, type, t_c);
+        Scenario environment = new DebuggerScenario(2, type, t_c);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
@@ -81,7 +79,7 @@ public class DebuggerSimulation extends AbstractAgent {
         launchAgent(new myScheduler("CCBBA"), false);
 
         // 5 : launch results compiler
-        launchAgent( new ResultsCompiler(this.numAgents, this.directoryAddress), false );
+        launchAgent( new AbstractResultsCompiler(this.numAgents, this.directoryAddress), false );
     }
 
     /**
@@ -89,18 +87,18 @@ public class DebuggerSimulation extends AbstractAgent {
      */
     private void setupAgents(String type){
         if(type.equals("INT")){
-            launchAgent(new ValidationAgentInt());
-            launchAgent(new ValidationAgentInt());
+            launchAgent(new DebuggerAgentInt());
+            launchAgent(new DebuggerAgentInt());
             this.numAgents = 2;
         }
         else if(type.equals("MOD")){
             // e = {IR}
-            launchAgent(new ValidationAgentMod01());
-            launchAgent(new ValidationAgentMod01());
+            launchAgent(new DebuggerAgentMod01());
+//            launchAgent(new DebuggerAgentMod01());
             // e = {MW}
-            launchAgent(new ValidationAgentMod02());
-            launchAgent(new ValidationAgentMod02());
-            this.numAgents = 4;
+            launchAgent(new DebuggerAgentMod02());
+//            launchAgent(new DebuggerAgentMod02());
+            this.numAgents = 2;
         }
     }
 

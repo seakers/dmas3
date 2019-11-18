@@ -34,11 +34,11 @@ public class IterationLists {
     private double resources;
 
 
-    public IterationLists(Vector<Subtask> J, int w_solo_max, int w_any_max, int M, double C_merge, double C_split, double resources, AbstractSimulatedAgent parentAgent){
+    public IterationLists( int w_solo_max, int w_any_max, int M, double C_merge, double C_split, double resources, AbstractSimulatedAgent parentAgent){
         // initialize all values
         this.parentAgent = parentAgent;
+        this.J = getSubtasks(parentAgent);
         int size = J.size();
-        this.J = J;
         this.y.setSize(size);
         this.z.setSize(size);
         this.tz.setSize(size);
@@ -143,13 +143,6 @@ public class IterationLists {
             this.tz.setElementAt(maxBid.getTStart(), i_max);
             this.cost.setElementAt(maxBid.getCost_aj(), i_max);
             this.score.setElementAt(maxBid.getScore(), i_max);
-
-            this.bundle = new Vector<>();
-            this.path = new Vector<>();
-//            for(int i = 0; i < agent.getBundle().size(); i++){
-//                this.bundle.add( agent.getBundle().get(i) );
-//                this.path.add( agent.getPath().get(i) );
-//            }
         }
 
         updateOmega(parentAgent);
@@ -157,7 +150,7 @@ public class IterationLists {
 
     void updateResults(){
         for(int i = 0; i < this.bundle.size(); i++){
-            Subtask j = this.bundle .get(i);
+            Subtask j = this.bundle.get(i);
             Subtask j_p = this.path.get(i);
             this.overallBundle.add(j);
             this.overallPath.add(j_p);
@@ -168,7 +161,7 @@ public class IterationLists {
         this.path = new Vector<>();
     }
 
-    public void updateResults(IterationLists receivedResults, int i, Vector<Subtask> bundle){
+    public void updateResults(IterationLists receivedResults, int i){
         double yReceived = receivedResults.getY().get(i);
         AbstractSimulatedAgent zReceived = receivedResults.getZ().get(i);
         double tzReceived = receivedResults.getTz().get(i);
@@ -200,6 +193,9 @@ public class IterationLists {
                     this.v.setElementAt(0, i_j);
                 }
             }
+
+            // remove subtask and all subsequent ones from bundle
+            removeFromBundle(i);
         }
     }
 
@@ -214,7 +210,7 @@ public class IterationLists {
         }
     }
 
-    public void resetResults(int i, Vector<Subtask> bundle){
+    public void resetResults(int i){
         // sets results to zero
         this.y.setElementAt(0.0, i);
         this.z.setElementAt(null, i);
@@ -239,11 +235,29 @@ public class IterationLists {
 
                 this.omega.setElementAt(new Vector<>(), i_b);
             }
+            // remove subtask and all subsequent ones from bundle
+            removeFromBundle(i);
         }
     }
 
     public void leaveResults(IterationLists receivedResults, int i){
 
+    }
+
+    public void removeFromBundle(int i){
+        Subtask j = this.J.get(i);
+
+        Vector<Subtask> deletedTasks = new Vector<>();
+        for (int i_bundle = bundle.indexOf(j); i_bundle < bundle.size(); ) {
+            deletedTasks.add(bundle.get(i_bundle));
+            bundle.remove(i_bundle);
+        }
+
+        //remove current and subsequent subtasks from path
+        for (Subtask deletedTask : deletedTasks) {
+            int i_path = path.indexOf(deletedTask);
+            path.remove(i_path);
+        }
     }
 
     private void updateOmega(AbstractSimulatedAgent agent){
@@ -273,6 +287,50 @@ public class IterationLists {
             this.omega.add(tempCoal);
         }
     }
+
+    private Vector<Subtask> getSubtasks(AbstractSimulatedAgent agent){
+        //Looks for tasks from environment and checks for completion
+        Vector<Task> V = agent.getEnvironment().getTasks();
+        Vector<Subtask> J_available = new Vector<>();
+
+        for (Task task : V) {
+            Vector<Subtask> J_i = task.getJ();
+            J_available.addAll(J_i);
+        }
+
+        return J_available;
+    }
+
+    public boolean compareToList(IterationLists prevList){
+        // Check consistency
+        boolean consistent = true;
+        boolean coalSat;
+        boolean match;
+
+        // compare local results to each received result
+        for (int i_j = 0; i_j < this.getY().size(); i_j++) {
+            double myY = this.getY().get(i_j);
+            double itsY = this.getY().get(i_j);
+            double myTz = this.getTz().get(i_j);
+            double itsTz = this.getTz().get(i_j);
+            int myS = this.getS().get(i_j);
+            int itsS = this.getS().get(i_j);
+            int myV = this.getV().get(i_j);
+            int itsV = this.getV().get(i_j);
+
+            coalSat = (myV == 0) && (itsV == 0);
+            match = (myY == itsY) && (myTz == itsTz) && (myS == itsS) && coalSat;
+
+            if (!match) {
+                // inconsistency found
+                consistent = false;
+                break;
+            }
+        }
+
+        return !consistent;
+    }
+
 
     /**
      * Getters and Setters

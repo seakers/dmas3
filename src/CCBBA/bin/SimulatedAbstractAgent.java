@@ -225,181 +225,125 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             receivedResults.add(message.myResults);
         }
 
-//        // Decrease w_solo and w_any bid counters
-//        for (int i = 0; i < this.bundle.size(); i++) {
-//            if (isOptimistic(this.bundle.get(i))) { // task has optimistic bidding strategy
-//                Vector<Integer> v = localResults.getV();
-//                Vector<Integer> w_solo = localResults.getW_solo();
-//                Vector<Integer> w_any = localResults.getW_any();
-//                Vector<SimulatedAbstractAgent> z = localResults.getZ();
-//                Subtask j = bundle.get(i);
-//                Task parentTask = j.getParentTask();
-//                int i_task = parentTask.getJ().indexOf(j);
-//                int i_j = this.J.indexOf(bundle.get(i));
-//                int[][] D = parentTask.getD();
-//                int i_av = this.J.indexOf(j);
-//
-//                // Count number of requirements and number of completed requirements
-//                int N_req = 0;
-//                int n_sat = 0;
-//                for (int k = 0; k < parentTask.getJ().size(); k++) {
-//                    if (i_task == k) {
-//                        continue;
-//                    }
-//                    if (D[i_task][k] >= 1) {
-//                        N_req++;
-//                    }
-//                    if ((z.get(i_av - i_task + k) != null) && (D[i_task][k] == 1)) {
-//                        n_sat++;
-//                    }
-//                }
-//
-//                if(v.get(i_j) == 0) {
-//                    if (n_sat <= 0) {
-//                        // agent must be the first to win a bid for this tasks
-//                        w_solo.setElementAt((w_solo.get(i_j) - 1), i_j);
-//                        this.localResults.setW_solo(w_solo);
-//                    }
-//                    else if(N_req != n_sat){
-//                        // agent bids on a task without all of its requirements met for the first time
-//                        w_any.setElementAt((w_any.get(i_j) - 1), i_j);
-//                        this.localResults.setW_solo(w_any);
-//                    }
-//                }
-//            }
-//        }
-
         // Compare bids with other results
         // Rule-Based Check
-        for (int i = 0; i < receivedResults.size(); i++) { //for each received result
+        for (IterationResults receivedResult : receivedResults) { //for each received result
             for (int i_j = 0; i_j < localResults.getY().size(); i_j++) { // for each subtask
                 // Load my results
                 double myY = localResults.getY().get(i_j);
                 String myZ;
-                if(localResults.getZ().get(i_j) == null){
+                if (localResults.getZ().get(i_j) == null) {
                     myZ = "";
+                } else {
+                    myZ = localResults.getZ().get(i_j).getName();
                 }
-                else{ myZ = localResults.getZ().get(i_j).getName(); }
                 double myTz = localResults.getTz().get(i_j);
                 String me = this.getName();
                 int myS = localResults.getS().get(i_j);
 
                 // Load received results
-                double itsY = receivedResults.get(i).getY().get(i_j);
+                double itsY = receivedResult.getY().get(i_j);
                 String itsZ;
-                if(receivedResults.get(i).getZ().get(i_j) == null){
+                if (receivedResult.getZ().get(i_j) == null) {
                     itsZ = "";
+                } else {
+                    itsZ = receivedResult.getZ().get(i_j).getName();
                 }
-                else{ itsZ = receivedResults.get(i).getZ().get(i_j).getName(); }
-                double itsTz = receivedResults.get(i).getTz().get(i_j);
-                String it = receivedResults.get(i).getParentAgent().getName();
-                int itsS = receivedResults.get(i).getS().get(i_j);
+                double itsTz = receivedResult.getTz().get(i_j);
+                String it = receivedResult.getParentAgent().getName();
+                int itsS = receivedResult.getS().get(i_j);
 
                 // Comparing bids. See Ref 40 Table 1
-                if( itsZ == it ){
-                    if( myZ == me ){
-                        if( itsY > myY ){
+                if (itsZ == it) {
+                    if (myZ == me) {
+                        if (itsY > myY) {
                             // update
-                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                            localResults.updateResults(receivedResult, i_j, bundle);
                             removeFromBundle(localResults.getJ(), i_j);
                         }
-                    }
-                    else if( myZ == it){
+                    } else if (myZ == it) {
                         // update
-                        localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                        localResults.updateResults(receivedResult, i_j, bundle);
                         removeFromBundle(localResults.getJ(), i_j);
-                    }
-                    else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
-                        if( (itsS > myS)||(itsY > myY) ){
+                    } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                        if ((itsS > myS) || (itsY > myY)) {
                             // update
-                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                            localResults.updateResults(receivedResult, i_j, bundle);
                             removeFromBundle(localResults.getJ(), i_j);
                         }
-                    }
-                    else if( myZ == "" ){
+                    } else if (myZ == "") {
                         // update
-                        localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                        localResults.updateResults(receivedResult, i_j, bundle);
                         removeFromBundle(localResults.getJ(), i_j);
                     }
-                }
-                else if( itsZ == me ){
-                    if( myZ == me ){
+                } else if (itsZ == me) {
+                    if (myZ == me) {
                         // leave
-                        localResults.leaveResults(receivedResults.get(i), i_j);
-                    }
-                    else if( myZ == it){
+                        localResults.leaveResults(receivedResult, i_j);
+                    } else if (myZ == it) {
                         // reset
                         localResults.resetResults(i_j, bundle);
                         removeFromBundle(localResults.getJ(), i_j);
-                    }
-                    else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
-                        if(itsS > myS){
-                            // reset
-                            localResults.resetResults(i_j, bundle);
-                            removeFromBundle(localResults.getJ(), i_j);
-                        }
-                    }
-                    else if( myZ == "" ){
-                        // leave
-                        localResults.leaveResults(receivedResults.get(i), i_j);
-                    }
-                }
-                else if( (itsZ != it)&&( itsZ != me)&&(itsZ != "") ){
-                    if( myZ == me ){
-                        if( (itsS > myS)&&(itsY > myY) ){
-                            // update
-                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
-                            removeFromBundle(localResults.getJ(), i_j);
-                        }
-                    }
-                    else if( myZ == it){
-                        if( itsS > myS ){
-                            //update
-                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
-                            removeFromBundle(localResults.getJ(), i_j);
-                        }
-                        else{
-                            // reset
-                            localResults.resetResults(i_j, bundle);
-                            removeFromBundle(localResults.getJ(), i_j);
-                        }
-                    }
-                    else if( myZ == itsZ ){
-                        if(itsS > myS){
-                            // update
-                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
-                            removeFromBundle(localResults.getJ(), i_j);
-                        }
-                    }
-                    else if( (myZ != me)&&(myZ != it)&&(myZ != itsZ)&&(myZ != "") ){
-                        if( (itsS > myS)&&( itsY > myY ) ){
-                            // update
-                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
-                            removeFromBundle(localResults.getJ(), i_j);
-                        }
-                    }
-                    else if( myZ == "" ){
-                        // leave
-                        localResults.leaveResults(receivedResults.get(i), i_j);
-                    }
-                }
-                else if( itsZ == "") {
-                    if (myZ == me) {
-                        // leave
-                        localResults.leaveResults(receivedResults.get(i), i_j);
-                    } else if (myZ == it) {
-                        // update
-                        localResults.updateResults(receivedResults.get(i), i_j, bundle);
-                        removeFromBundle(localResults.getJ(), i_j);
                     } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
                         if (itsS > myS) {
-                            // update
-                            localResults.updateResults(receivedResults.get(i), i_j, bundle);
+                            // reset
+                            localResults.resetResults(i_j, bundle);
                             removeFromBundle(localResults.getJ(), i_j);
                         }
                     } else if (myZ == "") {
                         // leave
-                        localResults.leaveResults(receivedResults.get(i), i_j);
+                        localResults.leaveResults(receivedResult, i_j);
+                    }
+                } else if ((itsZ != it) && (itsZ != me) && (itsZ != "")) {
+                    if (myZ == me) {
+                        if ((itsS > myS) && (itsY > myY)) {
+                            // update
+                            localResults.updateResults(receivedResult, i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        }
+                    } else if (myZ == it) {
+                        if (itsS > myS) {
+                            //update
+                            localResults.updateResults(receivedResult, i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        } else {
+                            // reset
+                            localResults.resetResults(i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        }
+                    } else if (myZ == itsZ) {
+                        if (itsS > myS) {
+                            // update
+                            localResults.updateResults(receivedResult, i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        }
+                    } else if ((myZ != me) && (myZ != it) && (myZ != itsZ) && (myZ != "")) {
+                        if ((itsS > myS) && (itsY > myY)) {
+                            // update
+                            localResults.updateResults(receivedResult, i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        }
+                    } else if (myZ == "") {
+                        // leave
+                        localResults.leaveResults(receivedResult, i_j);
+                    }
+                } else if (itsZ == "") {
+                    if (myZ == me) {
+                        // leave
+                        localResults.leaveResults(receivedResult, i_j);
+                    } else if (myZ == it) {
+                        // update
+                        localResults.updateResults(receivedResult, i_j, bundle);
+                        removeFromBundle(localResults.getJ(), i_j);
+                    } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                        if (itsS > myS) {
+                            // update
+                            localResults.updateResults(receivedResult, i_j, bundle);
+                            removeFromBundle(localResults.getJ(), i_j);
+                        }
+                    } else if (myZ == "") {
+                        // leave
+                        localResults.leaveResults(receivedResult, i_j);
                     }
                 }
             }

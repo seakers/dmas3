@@ -1,10 +1,17 @@
 package CCBBA.bin;
 
 import CCBBA.CCBBASimulation;
+import CCBBA.scenarios.debugger.DebuggerScenario;
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.AgentAddress;
+import madkit.kernel.Message;
+import org.moeaframework.util.tree.Abs;
 
 import java.awt.*;
+import java.util.List;
 import java.util.Vector;
+
+import static java.lang.Math.pow;
 
 public class AbstractSimulatedAgent extends AbstractAgent {
     /**
@@ -16,9 +23,9 @@ public class AbstractSimulatedAgent extends AbstractAgent {
      * Properties
      */
     protected Dimension location = new Dimension();                 // current location
+    protected Dimension initialPosition = new Dimension();          // initial location
     protected double speed;                                         // displacement speed of agent
     protected Vector<String> sensors = new Vector<>();              // list of all sensors
-    protected Vector<Subtask> J = new Vector<>();                   // list of all subtasks
     protected double miu;                                           // Travel cost
     protected int M;                                                // planning horizon
     protected int O_kq;                                             // max iterations in constraint violations
@@ -31,8 +38,11 @@ public class AbstractSimulatedAgent extends AbstractAgent {
     protected double resources;                                     // Initial resources for agent
     protected double resourcesRemaining;                            // Current resources for agent
     protected double t_0; //    private long t_0;                   // start time
-    protected Vector<IterationResults> receivedResults;             // list of received results
-    protected boolean alive = true;                                 // alive indicator
+    protected Vector<IterationLists> receivedResults;               // list of received results
+    private boolean alive = true;                                   // alive indicator
+    private int convCounter = 0;                                    // Convergence Counter
+    private int convIndicator = 10;                                 // Convergence Indicator
+    protected Vector<Integer> doingIterations = new Vector<>();     // Iterations in which plans were agreed
 
     /**
      * Activator - constructor
@@ -44,9 +54,9 @@ public class AbstractSimulatedAgent extends AbstractAgent {
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
 
         this.location = new Dimension(0,0);       // current location
+        initialPosition = new Dimension(0, 0);    // initial position
         this.speed = 1;                                         // displacement speed of agent
         this.sensors = new Vector<>();                          // list of all sensors
-        this.J = new Vector<>();                                // list of all subtasks
         this.miu = 0;                                           // Travel cost
         this.M = 1;                                             // planning horizon
         this.O_kq = 2;                                          // max iterations in constraint violations
@@ -70,7 +80,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
         // -Initialize results
         if(this.zeta == 0){
             // Initialize results
-            localResults = new IterationLists(this.J, this.W_solo_max, this.W_any_max,
+            localResults = new IterationLists(this.W_solo_max, this.W_any_max,
                     this.M, this.C_merge, this.C_split, this.resources, this);
         }
         else{
@@ -84,8 +94,8 @@ public class AbstractSimulatedAgent extends AbstractAgent {
             Subtask j_chosen = null;
 
             // Calculate bid for every subtask
-            for(int i = 0; i < this.J.size(); i++){
-                Subtask j = this.J.get(i);
+            for(int i = 0; i < localResults.getJ().size(); i++){
+                Subtask j = localResults.getJ().get(i);
 
                 // Check if subtask can be bid on
 //                if(canBid(j, i, localResults) && (localResults.getH().get(i) == 1)) { // task can be bid on
@@ -140,7 +150,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                     currentMax = c*h;
                     i_max = i;
                     maxBid = bidList.get(i);
-                    j_chosen = this.J.get(i_max);
+                    j_chosen = localResults.getJ().get(i_max);
                 }
             }
 
@@ -168,12 +178,499 @@ public class AbstractSimulatedAgent extends AbstractAgent {
             }
         }
 
+
+        // Broadcast my results
+        myMessage myResults = new myMessage( this.localResults, this );
+        broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, myResults);
+        broadcastMessage(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2, myResults);
+
+        leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
     }
 
+    public void phaseTwo() {
+        if(!isMessageBoxEmpty()){ // results received
+            // Save current results
+            IterationLists prevResults = new IterationLists( localResults, false, this);
+
+            // unpack results
+            List<Message> receivedMessages = nextMessages(null);
+
+            for(int i = 0; i < receivedMessages.size(); i++){
+                myMessage message = (myMessage) receivedMessages.get(i);
+                receivedResults.add(message.myLists);
+            }
+
+            // compare results
+            boolean changesMade = false;
+            for(IterationLists result : this.receivedResults){
+                for(int i_j = 0; i_j < result.getJ().size(); i_j++){
+                    // Load my results
+                    double myY = localResults.getY().get(i_j);
+                    String myZ;
+                    if(localResults.getZ().get(i_j) == null){
+                        myZ = "";
+                    }
+                    else{ myZ = localResults.getZ().get(i_j).getName(); }
+                    double myTz = localResults.getTz().get(i_j);
+                    String me = this.getName();
+                    int myS = localResults.getS().get(i_j);
+
+                    // Load received results
+                    double itsY = result.getY().get(i_j);
+                    String itsZ;
+                    if(result.getZ().get(i_j) == null){
+                        itsZ = "";
+                    }
+                    else{ itsZ = result.getZ().get(i_j).getName(); }
+                    double itsTz = result.getTz().get(i_j);
+                    String it = result.getParentAgent().getName();
+                    int itsS = result.getS().get(i_j);
+
+                    // Comparing bids. See Ref 40 Table 1
+                    if( itsZ == it ){
+                        if( myZ == me ){
+                            if( itsY > myY ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( myZ == it){
+                            // update
+                            localResults.updateResults(result, i_j);
+                        }
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
+                            if( (itsS > myS)||(itsY > myY) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // update
+                            localResults.updateResults(result, i_j);
+                        }
+                    }
+                    else if( itsZ == me ){
+                        if( myZ == me ){
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        }
+                        else if( myZ == it){
+                            // reset
+                            localResults.resetResults(i_j);
+                        }
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
+                            if(itsS > myS){
+                                // reset
+                                localResults.resetResults(i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        }
+                    }
+                    else if( (itsZ != it)&&( itsZ != me)&&(itsZ != "") ){
+                        if( myZ == me ){
+                            if( (itsS > myS)&&(itsY > myY) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( myZ == it){
+                            if( itsS > myS ){
+                                //update
+                                localResults.updateResults(result, i_j);
+                            }
+                            else{
+                                // reset
+                                localResults.resetResults(i_j);
+                            }
+                        }
+                        else if( myZ == itsZ ){
+                            if(itsS > myS){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != itsZ)&&(myZ != "") ){
+                            if( (itsS > myS)&&( itsY > myY ) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        }
+                    }
+                    else if( itsZ == "") {
+                        if (myZ == me) {
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        } else if (myZ == it) {
+                            // update
+                            localResults.updateResults(result, i_j);
+                        } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                            if (itsS > myS) {
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        } else if (myZ == "") {
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        }
+                    }
+                }
+            }
+
+            // constrain checks
+            for(Subtask j : localResults.getBundle()){
+                // create list of new coalition members
+                Vector<Vector<AbstractSimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
+                Vector<Vector<AbstractSimulatedAgent>> oldOmega = this.localResults.getOmega();
+
+                if (!mutexSat(j) || !timeSat(j) || !depSat(j, oldOmega, newOmega) ){
+                    // subtask does not satisfy all constraints, release task
+                    int i_j =  this.localResults.getJ().indexOf(j);
+                    localResults.resetResults(i_j);
+                    changesMade = true;
+                    break;
+                }
+            }
+
+            if(!changesMade){
+                changesMade = checkForChanges(prevResults);
+            }
+
+            if(changesMade){
+                // changes were made, reconsider bids
+                leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                this.convCounter = 0;
+            }
+            else{
+                // no changes were made, check convergence
+                this.convCounter++;
+                if(convCounter >= convIndicator){
+                    leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+                }
+                else {
+                    leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                }
+            }
+        }
+        else{ // wait for results to come in
+            int x = 1;
+        }
+        this.zeta++;
+    }
+
+    @SuppressWarnings("unused")
+    private void doTasks(){
+        //getLogger().info("Doing Tasks...");
+        boolean alive = true;
+
+        // do tasks in bundle
+        for(int i = 0; i < localResults.getBundle().size(); i++){
+            if( this.resourcesRemaining > 0.0 ) { // agent still has resources left
+                Subtask j = localResults.getBundle().get(i);
+
+                // move to task
+                moveToTask(j);
+                if(this.resourcesRemaining <= 0.0){ break; }
+
+                // deduct task costs from resources
+                int i_j = this.localResults.getJ().indexOf(j);
+                this.resourcesRemaining -= this.localResults.getCost().get(i_j);
+            }
+            else{ // agent has no resources left
+                alive = false;
+                break;
+            }
+        }
+
+        // set agreed tasks as completed
+        for(Subtask j : this.localResults.getJ()){
+            int i_j = this.localResults.getJ().indexOf(j);
+
+            // if it has a winner, set subtask as complete
+            if(this.localResults.getZ().get(i_j) != null) {
+                j.getParentTask().setSubtaskComplete(j);
+                this.localResults.getJ().setElementAt(j, i_j);
+            }
+        }
+
+        // release tasks from bundle
+        this.doingIterations.add(this.zeta);
+
+        // update results
+        this.localResults.updateResults();
+
+        var myRoles = getMyRoles(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
+        if(!myRoles.contains( CCBBASimulation.AGENT_DIE )){
+            getLogger().info("No remaining resources.");
+        }
+        leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+    }
+
+    /**
+     * Agent death function(s)
+     */
+    @SuppressWarnings("unused")
+    protected void dying(){ // send results to results compiler
+        AgentAddress resultsAddress = getAgentWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
+        myMessage myDeath = new myMessage(this.localResults,this);
+        sendMessage(resultsAddress, myDeath);
+    }
 
     /**
      * Misc helper functions
      */
+    private void moveToTask(Subtask j){
+        // update location
+        double delta_x;
+        Dimension x_i;
+        x_i = this.location;
+        Dimension x_f = j.getParentTask().getLocation();
+        delta_x = pow( (x_f.getHeight() - x_i.getHeight()) , 2) + pow( (x_f.getWidth() - x_i.getWidth()) , 2);
+        this.location = x_f;
+
+        // deduct resources
+//        double distance = sqrt(delta_x);
+//        this.resourcesRemaining = this.resourcesRemaining - distance*this.miu;
+    }
+
+    private boolean checkForChanges(IterationLists prevResults){
+        return localResults.compareToList(prevResults);
+    }
+
+    private boolean mutexSat(Subtask j){
+        Task parentTask = j.getParentTask();
+        int i_task = parentTask.getJ().indexOf(j);
+        int[][] D = parentTask.getD();
+        int i_av = this.localResults.getJ().indexOf(j);
+        int i_bid;
+
+        double y_bid = 0.0;
+        double y_mutex = 0.0;
+
+        for (int i_j = 0; i_j < parentTask.getJ().size(); i_j++) {
+            if( (i_j != i_task) && (D[i_task][i_j] <= 0) ){
+                i_bid = this.localResults.getJ().indexOf(parentTask.getJ().get(i_j));
+                y_mutex += this.localResults.getY().get(i_bid);
+            } else if (D[i_task][i_j] >= 1) {
+                i_bid = this.localResults.getJ().indexOf(parentTask.getJ().get(i_j));
+                y_bid += this.localResults.getY().get(i_bid);
+            }
+        }
+        int i_j = this.localResults.getJ().indexOf(j);
+        y_bid += this.localResults.getY().get(i_j);
+
+        //if outbid by mutex, release task
+        return !(y_mutex > y_bid);
+    }
+
+    private boolean depSat(Subtask j, Vector<Vector<AbstractSimulatedAgent>> oldOmega, Vector<Vector<AbstractSimulatedAgent>> newOmega){
+        Vector<Integer> v = localResults.getV();
+        Vector<Integer> w_solo = localResults.getW_solo();
+        Vector<Integer> w_any = localResults.getW_any();
+        Vector<AbstractSimulatedAgent> z = localResults.getZ();
+
+        Task parentTask = j.getParentTask();
+        int i_task = parentTask.getJ().indexOf(j);
+        int i_j = localResults.getJ().indexOf(j);
+        int[][] D = parentTask.getD();
+        int i_av = localResults.getJ().indexOf(j);
+
+        // Count number of requirements and number of completed requirements
+        int N_req = 0;
+        int n_sat = 0;
+        for (int k = 0; k < parentTask.getJ().size(); k++) {
+            if (i_task == k) {
+                continue;
+            }
+            if (D[i_task][k] >= 1) {
+                N_req++;
+            }
+            if ((z.get(i_av - i_task + k) != null) && (D[i_task][k] == 1)) {
+                n_sat++;
+            }
+        }
+
+        if ( isOptimistic(j) ) { // task has optimistic bidding strategy
+              if(v.get(i_j) == 0) {
+                if ( (n_sat == 0)  && (N_req > 0) ) {
+                    // agent must be the first to win a bid for this tasks
+                    w_solo.setElementAt((w_solo.get(i_j) - 1), i_j);
+                    this.localResults.setW_solo(w_solo);
+                }
+                else if( (N_req > n_sat)  && (N_req > 0) ){
+                    // agent bids on a task without all of its requirements met for the first time
+                    w_any.setElementAt((w_any.get(i_j) - 1), i_j);
+                    this.localResults.setW_solo(w_any);
+                }
+            }
+
+            if ( (N_req != n_sat) && (N_req > 0) ) { //if not all dependencies are met, v_i++
+                v.setElementAt((v.get(i_j) + 1), i_j);
+                this.localResults.setV(v);
+            }
+            else if( (N_req == n_sat) && (N_req > 0)){ // if all dependencies are met, v_i = 0
+                v.setElementAt(0, i_j);
+                this.localResults.setV(v);
+            }
+
+            if (v.get(i_j) > this.O_kq) { // if task has held on to task for too long, release task
+                w_solo.setElementAt((w_solo.get(i_j) - 1), i_j);
+                w_any.setElementAt((w_any.get(i_j) - 1), i_j);
+                this.localResults.setW_solo(w_solo);
+                this.localResults.setW_any(w_any);
+
+                return false;
+            }
+        }
+        else { // task has pessimistic bidding strategy
+            //if not all dependencies are met
+            if( N_req > n_sat){
+                //release task
+                return false;
+            }
+        }
+
+        //-Coalition Member Constraints
+        int i_b = localResults.getBundle().indexOf(j);
+
+        if (oldOmega.get(i_b).size() == 0) { // no coalition partners in original list
+            if(newOmega.get(i_b).size() > 0){ // new coalition partners in new list
+                // release task
+                return false;
+            }
+        }
+        else{ // coalition partners exist in original list, compare lists
+            if(newOmega.get(i_b).size() > 0){ // new list is not empty
+                // compare lists
+                if(oldOmega.get(i_b).size() != newOmega.get(i_b).size()){ // if different sizes, then lists are not the same
+                    // release task
+                    return false;
+                }
+                else{ // compare element by element
+                    boolean released = false;
+                    for(AbstractSimulatedAgent listMember : oldOmega.get(i_b)){
+                        if(!newOmega.get(i_b).contains(listMember)){ // if new list does not contain member of old list, then lists are not the same
+                            // release task
+                            released = true;
+                            break;
+                        }
+                    }
+                    if(released){
+                        // release task
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private boolean timeSat(Subtask j){
+        boolean taskReleased = false;
+        Task parenTask = j.getParentTask();
+        int[][] D = parenTask.getD();
+
+        Vector<Integer> tempViolations = tempSat(j);
+
+        int i_q = localResults.getJ().indexOf(j);
+        int i_o = i_q - parenTask.getJ().indexOf(j);
+        for (int i_v = 0; i_v < tempViolations.size(); i_v++) {  // if time constraint violations exist
+            //compare each time violation
+            int i_u = tempViolations.get(i_v);
+            if ((D[parenTask.getJ().indexOf(j)][i_u - i_o] == 1) && (D[i_u - i_o][parenTask.getJ().indexOf(j)] <= 0)) {
+                //release task
+                taskReleased = true;
+                break;
+            } else if ((D[parenTask.getJ().indexOf(j)][i_u - i_o] == 1) && (D[i_u - i_o][parenTask.getJ().indexOf(j)] == 1)) {
+                double tz_q = localResults.getTz().get(localResults.getJ().indexOf(j));
+                double tz_u = localResults.getTz().get(i_u);
+                double t_start = t_0;
+                if (tz_q - t_start <= tz_u - t_start) {
+                    // release task
+                    taskReleased = true;
+                    break;
+                }
+
+            }
+        }
+
+        if (taskReleased) {
+            if(isOptimistic(j)) {
+                Vector<Integer> w_any = localResults.getW_any();
+                Vector<Integer> w_solo = localResults.getW_solo();
+                w_any.setElementAt(w_any.get(i_q) - 1, i_q);
+                w_solo.setElementAt(w_solo.get(i_q) - 1, i_q);
+                localResults.setW_any(w_any);
+                localResults.setW_solo(w_solo);
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private Vector<Integer> tempSat(Subtask k_q){
+        double[][] T = k_q.getParentTask().getT();
+        Vector<Subtask> J_parent = k_q.getParentTask().getJ();
+        Vector<Subtask> J_results = localResults.getJ();
+        Vector<Double> tz = localResults.getTz();
+        Vector<AbstractSimulatedAgent> z = localResults.getZ();
+
+        Vector<Integer> violationIndexes = new Vector<>();
+
+        for(int k = 0; k < J_parent.size(); k++){
+            Subtask k_u = J_parent.get(k);
+            int i_q = J_results.indexOf(k_q);  // index of subtask q
+            int i_u = J_results.indexOf(k_u);  // index of subtask u
+            boolean req1 = true;
+            boolean req2 = true;
+
+            if( ( k != J_parent.indexOf(k_q) )&&( z.get(i_u) != null ) ){ // if not the same subtask and other subtask has a winner
+                req1 = tz.get(i_q) <=  tz.get(i_u) + T[J_parent.indexOf(k_q)][k];
+                req2 = tz.get(i_u) <=  tz.get(i_q) + T[k][J_parent.indexOf(k_q)];
+            }
+
+            if( !(req1 && req2) ){
+                violationIndexes.add( i_u );
+            }
+        }
+
+        return violationIndexes;
+    }
+
+    private Vector<Vector<AbstractSimulatedAgent>> getNewCoalitionMemebers(Subtask j) {
+        Vector<Vector<AbstractSimulatedAgent>> newOmega = new Vector<>();
+        for(int i = 0; i < this.M; i++) {
+            Vector<AbstractSimulatedAgent> tempCoal = new Vector<>();
+
+            if( localResults.getBundle().size() >= i+1 ) {
+                for (int i_o = 0; i_o < this.localResults.getJ().size(); i_o++) {
+                    if ((this.localResults.getZ().get(i_o) != this)             // if winner at i_o is not me
+                            && (this.localResults.getZ().get(i_o) != null)      // and if winner at i_o is not empty
+                            && (j.getParentTask() == localResults.getJ().get(i_o).getParentTask())) // and subtasks share a task
+                    {
+                        // then winner at i_o is a coalition partner
+                        tempCoal.add(this.localResults.getZ().get(i_o));
+                    }
+                }
+            }
+            newOmega.add(tempCoal);
+        }
+        return newOmega;
+    }
+
     private boolean canBid(Subtask j, int i_av, IterationLists results){
         if( !this.sensors.contains( j.getMain_task() ) ){ // checks if agent contains sensor for subtask
             return false;
@@ -339,9 +836,9 @@ public class AbstractSimulatedAgent extends AbstractAgent {
      */
     public Scenario getEnvironment() { return environment;}
     public Dimension getLocation() { return location; }
+    public Dimension getInitialPosition(){return this.initialPosition; }
     public double getSpeed() { return speed; }
     public Vector<String> getSensors() { return sensors; }
-    public Vector<Subtask> getJ() { return J; }
     public double getMiu() { return miu; }
     public int getM() { return M; }
     public int getO_kq() { return O_kq; }
@@ -354,12 +851,12 @@ public class AbstractSimulatedAgent extends AbstractAgent {
     public double getResources() { return resources; }
     public double getResourcesRemaining() { return resourcesRemaining; }
     public double getT_0() { return t_0; }
+    public Vector<Integer> getDoingIterations(){ return this.doingIterations; }
 
     public void setEnvironment(Scenario environment) { this.environment = environment; }
     public void setLocation(Dimension location) { this.location = location; }
     public void setSpeed(double speed) { this.speed = speed; }
     public void setSensors(Vector<String> sensors) { this.sensors = sensors; }
-    public void setJ(Vector<Subtask> j) { J = j; }
     public void setMiu(double miu) { this.miu = miu; }
     public void setM(int m) { this.M = m; }
     public void setO_kq(int o_kq) { this.O_kq = o_kq; }
@@ -372,6 +869,6 @@ public class AbstractSimulatedAgent extends AbstractAgent {
     public void setResources(double resources) { this.resources = resources; }
     public void setResourcesRemaining(double resourcesRemaining) { this.resourcesRemaining = resourcesRemaining; }
     public void setT_0(double t_0) { this.t_0 = t_0; }
-    public void setReceivedResults(Vector<IterationResults> receivedResults) { this.receivedResults = receivedResults; }
+    public void setReceivedResults(Vector<IterationLists> receivedResults) { this.receivedResults = receivedResults; }
 
 }
