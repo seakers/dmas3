@@ -2,8 +2,7 @@ package CCBBA.scenarios.figure3;
 
 import CCBBA.CCBBASimulation;
 import CCBBA.scenarios.appendix_b.AppendixBScenario;
-import CCBBA.source.Scenario;
-import CCBBA.source.Task;
+import CCBBA.bin.*;
 import madkit.kernel.AbstractAgent;
 import madkit.simulation.probe.PropertyProbe;
 
@@ -62,7 +61,7 @@ public class ValidationScenario extends Scenario {
 
             // determine task costs and max score
             double S_max = 50.0 + 50 * Math.random();
-            double task_cost = 1.14 / 100;
+            double task_cost = 0.0 / 100;
 
             // add task to scenario vector
             Task tempTask = new Task(S_max, x_task, "PROPORTIONAL", task_cost, instruments, tc);

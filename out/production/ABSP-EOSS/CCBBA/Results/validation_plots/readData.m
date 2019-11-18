@@ -38,10 +38,12 @@ function [results] = readData(Mfolder, numPoints)
                     % if folder is NOT empty, process data
                     dataFile = sprintf("%s%s%s%s", folder, "\", name, "\performance_metrics.out");
                     fileID = fopen(dataFile,'r');
-                    data =  fscanf(fileID, '%f');
-                    fclose(fileID);
-                    
-                    tempData = [tempData; data'];
+                    if(fileID ~= -1)
+                        data =  fscanf(fileID, '%f');
+                        fclose(fileID);
+
+                        tempData = [tempData; data'];
+                    end                   
                 end
             end
             

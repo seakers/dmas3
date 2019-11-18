@@ -2,7 +2,7 @@ package CCBBA.scenarios.figure3;
 
 import java.awt.*;
 import java.util.Vector;
-import CCBBA.source.*;
+import CCBBA.bin.*;
 
 public class ValidationAgentMod02 extends SimulatedAbstractAgent {
     @Override
@@ -40,7 +40,7 @@ public class ValidationAgentMod02 extends SimulatedAbstractAgent {
     }
 
     @Override
-    protected double setMiu(){ return readResources() * 0.57/1000; }
+    protected double setMiu(){ return readResources() * 0.0/100; }
 
     @Override
     protected int getM(){ return 2; }

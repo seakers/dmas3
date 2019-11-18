@@ -4,7 +4,7 @@ function [] = validationPlots()
     addpath("./figure_5");
     
     % Figure 3
-    results3 = readData("figure_3", 50); 
+    results3 = readData("figure_3", 42); 
     figureThree(results3);
     
 %     % Figure 5

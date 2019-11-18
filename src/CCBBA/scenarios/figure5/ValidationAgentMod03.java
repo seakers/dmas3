@@ -2,7 +2,7 @@ package CCBBA.scenarios.figure5;
 
 import java.awt.*;
 import java.util.Vector;
-import CCBBA.source.*;
+import CCBBA.bin.*;
 
 public class ValidationAgentMod03 extends SimulatedAbstractAgent {
     private double C_merge_percent = 0.0;

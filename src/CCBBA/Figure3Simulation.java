@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Vector;
 
-import CCBBA.source.*;
+import CCBBA.bin.*;
 import CCBBA.scenarios.figure3.*;
 
 public class Figure3Simulation extends AbstractAgent {
@@ -28,16 +28,16 @@ public class Figure3Simulation extends AbstractAgent {
      */
     public static void main(String[] args) {
         Vector<Double> timeList = new Vector<>();
-        timeList.add(Double.POSITIVE_INFINITY);
-        timeList.add(0.0);
+//        timeList.add(Double.POSITIVE_INFINITY);
+//        timeList.add(0.0);
         timeList.add(2.0);
-        timeList.add(4.0);
-        timeList.add(6.0);
-        timeList.add(8.0);
+//        timeList.add(4.0);
+//        timeList.add(6.0);
+//        timeList.add(8.0);
 
         Vector<String> nameList = new Vector<>();
         nameList.add("MOD");
-        nameList.add("INT");
+//        nameList.add("INT");
 
         for(String name : nameList){
             for(double time : timeList){
@@ -48,7 +48,7 @@ public class Figure3Simulation extends AbstractAgent {
                 symType = name;
                 t_corr = time;
 
-                for(int i = 0; i < 128; i++) {
+                for(int i = 0; i < 1; i++) {
                     executeThisAgent(1, false);
                 }
 

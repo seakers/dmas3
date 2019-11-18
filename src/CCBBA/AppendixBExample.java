@@ -2,7 +2,7 @@ package CCBBA;
 
 import CCBBA.CCBBASimulation;
 import CCBBA.scenarios.appendix_b.*;
-import CCBBA.source.*;
+import CCBBA.bin.*;
 import madkit.kernel.AbstractAgent;
 
 import java.io.File;

@@ -6,7 +6,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import CCBBA.scenarios.random.*;
-import CCBBA.source.*;
+import CCBBA.bin.*;
 
 public class CCBBASimulation extends AbstractAgent {
     /**

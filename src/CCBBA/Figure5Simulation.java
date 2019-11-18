@@ -5,9 +5,8 @@ import madkit.kernel.AbstractAgent;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import CCBBA.source.*;
+import CCBBA.bin.*;
 import CCBBA.scenarios.figure5.*;
-import madkit.kernel.Madkit;
 
 public class Figure5Simulation extends AbstractAgent {
 

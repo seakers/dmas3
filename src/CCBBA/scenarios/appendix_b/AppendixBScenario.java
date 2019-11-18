@@ -1,8 +1,7 @@
 package CCBBA.scenarios.appendix_b;
 
 import CCBBA.CCBBASimulation;
-import CCBBA.source.Scenario;
-import CCBBA.source.Task;
+import CCBBA.bin.*;
 import madkit.kernel.AbstractAgent;
 import madkit.simulation.probe.PropertyProbe;
 
