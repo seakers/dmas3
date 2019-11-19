@@ -49,7 +49,7 @@ public class DebuggerSimulation extends AbstractAgent {
                 symType = name;
                 t_corr = time;
 
-                for(int i = 0; i < 1; i++) {
+                for(int i = 0; i < 100; i++) {
                     executeThisAgent(1, false);
                 }
 

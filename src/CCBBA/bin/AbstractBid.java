@@ -277,8 +277,8 @@ public class AbstractBid{
         double lambda = j.getParentTask().getLambda();
         double t_start = agent.getT_0();
 
-//        return exp(- lambda * (t_a-t_start) );
-        return 1.0; // <- USED ONLY IN APPENDIX B EXAMPLE
+        return exp(- lambda * (t_a-t_start) );
+//        return 1.0; // <- USED ONLY IN APPENDIX B EXAMPLE
     }
 
     private double calcAlpha(double K, double I){

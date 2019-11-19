@@ -992,7 +992,7 @@ public class SimulatedAbstractAgent extends AbstractAgent {
             }
         }
 
-        // check if dependent task has reached coalition violation timeout
+        // check if dependent task is about to reach coalition violation timeout
         for(Subtask subtask : parentTask.getJ()){
             int i_q = results.getJ().indexOf(subtask);
             int i_jd = parentTask.getJ().indexOf(j);

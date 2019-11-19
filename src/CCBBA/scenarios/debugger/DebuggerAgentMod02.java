@@ -26,11 +26,11 @@ public class DebuggerAgentMod02 extends AbstractSimulatedAgent {
                 this.C_merge, this.C_split, this.resources,
                 this);
         this.zeta = 0;                                          // iteration counter
-        this.C_merge = 2.0;                                     // Merging cost
-        this.C_split = 1.0;                                     // Splitting cost
+        this.C_merge = 0.0;                                     // Merging cost
+        this.C_split = 0.0;                                     // Splitting cost
         this.resources = 100.0;                                 // Initial resources for agent
-//        this.miu = this.resources * 0.54/100;;                  // Travel cost
-        this.miu = 1.0;
+        this.miu = this.resources * 0.54/100;;                  // Travel cost
+//        this.miu = 1.0;
         this.resourcesRemaining = this.resources;               // Current resources for agent
         this.t_0 = 0.0; //    private long t_0;                 // start time
         this.receivedResults = new Vector<>();                  // list of received results
@@ -45,8 +45,8 @@ public class DebuggerAgentMod02 extends AbstractSimulatedAgent {
 
         int x = (int)(x_max * Math.random());
         int y = (int)(y_max * Math.random());
-//        Dimension position = new Dimension(x, y);
-        Dimension position = new Dimension(4, 0);
+        Dimension position = new Dimension(x, y);
+//        Dimension position = new Dimension(10, 0);
 
         return position;
     }
