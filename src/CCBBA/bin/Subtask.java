@@ -54,7 +54,7 @@ public class Subtask {
      * Geters and Setters
      */
     public String getName(){ return name; }
-    public void complete(){ this.complete = true; }
+    public void setComplete(){ this.complete = true; }
     public boolean getComplete(){ return complete; }
     public Task getParentTask(){ return parentTask; }
     public int getK(){ return K; }

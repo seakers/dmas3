@@ -142,14 +142,14 @@ public class Task {
         // set subtask to complete
         int i_j = this.J.indexOf(j);
         Subtask tempTask = this.J.get(i_j);
-        tempTask.complete();
+        tempTask.setComplete();
         this.J.setElementAt(tempTask, i_j);
 
         // if this task is done, no other mutually exclusive tasks are allowed to be bid on
         for (int i = 0; i < this.J.size(); i++) {
             if (this.D[i_j][i] == -1) {
                 Subtask exclusiveTemp = this.J.get(i);
-                exclusiveTemp.complete();
+                exclusiveTemp.setComplete();
                 this.J.setElementAt(exclusiveTemp, i);
             }
         }

@@ -73,6 +73,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
     /**
      * Planner functions
      */
+    @SuppressWarnings("unused")
     public void phaseOne() {
         // Phase 1 - Create bid for individual spacecraft
         if (this.zeta == 0) getLogger().info("Creating plan...");
@@ -188,6 +189,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
     }
 
+    @SuppressWarnings("unused")
     public void phaseTwo() {
         if(!isMessageBoxEmpty()){ // results received
             // Save current results
@@ -215,6 +217,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                     double myTz = localResults.getTz().get(i_j);
                     String me = this.getName();
                     int myS = localResults.getS().get(i_j);
+                    boolean myCompletion = localResults.getJ().get(i_j).getComplete();
 
                     // Load received results
                     double itsY = result.getY().get(i_j);
@@ -226,11 +229,16 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                     double itsTz = result.getTz().get(i_j);
                     String it = result.getParentAgent().getName();
                     int itsS = result.getS().get(i_j);
+                    boolean itsCompletion = result.getJ().get(i_j).getComplete();
 
                     // Comparing bids. See Ref 40 Table 1
                     if( itsZ == it ){
                         if( myZ == me ){
-                            if( itsY > myY ){
+                            if( (itsCompletion) && (itsCompletion != myCompletion) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                            else if( itsY > myY ) {
                                 // update
                                 localResults.updateResults(result, i_j);
                             }
@@ -272,7 +280,11 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                     }
                     else if( (itsZ != it)&&( itsZ != me)&&(itsZ != "") ){
                         if( myZ == me ){
-                            if( (itsS > myS)&&(itsY > myY) ){
+                            if( (itsCompletion) && (itsCompletion != myCompletion) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                            else if( (itsS > myS)&&(itsY > myY) ){
                                 // update
                                 localResults.updateResults(result, i_j);
                             }
@@ -330,7 +342,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                 Vector<Vector<AbstractSimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
                 Vector<Vector<AbstractSimulatedAgent>> oldOmega = this.localResults.getOmega();
 
-                if (!mutexSat(j) || !timeSat(j) || !depSat(j, oldOmega, newOmega) ){
+                if (!mutexSat(j) || !timeSat(j) || !depSat(j) || !coalitionSat(j, oldOmega, newOmega) ){
                     // subtask does not satisfy all constraints, release task
                     int i_j =  this.localResults.getJ().indexOf(j);
                     localResults.resetResults(i_j);
@@ -371,11 +383,11 @@ public class AbstractSimulatedAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     private void doTasks(){
         //getLogger().info("Doing Tasks...");
-        boolean alive = true;
+        boolean resourcesRem = true;
 
         // do tasks in bundle
         for(int i = 0; i < localResults.getBundle().size(); i++){
-            if( this.resourcesRemaining > 0.0 ) { // agent still has resources left
+            if( alive ) { // agent still has resources left
                 Subtask j = localResults.getBundle().get(i);
 
                 // move to task
@@ -385,36 +397,55 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                 // deduct task costs from resources
                 int i_j = this.localResults.getJ().indexOf(j);
                 this.resourcesRemaining -= this.localResults.getCost().get(i_j);
-            }
-            else{ // agent has no resources left
-                alive = false;
-                break;
-            }
-        }
 
-        // set agreed tasks as completed
-        for(Subtask j : this.localResults.getJ()){
-            int i_j = this.localResults.getJ().indexOf(j);
-
-            // if it has a winner, set subtask as complete
-            if(this.localResults.getZ().get(i_j) != null) {
+                // set subtask as completed
                 j.getParentTask().setSubtaskComplete(j);
                 this.localResults.getJ().setElementAt(j, i_j);
             }
+            else{ // agent has no resources left
+                break;
+            }
+            resourcesRem = this.resourcesRemaining > 0.0;
         }
 
         // release tasks from bundle
         this.doingIterations.add(this.zeta);
 
-        // update results
+        // update results with new overall bundle and path
         this.localResults.updateResults();
 
+        // check for remaining tasks
+        boolean tasksAvailable = tasksAvailable();
         var myRoles = getMyRoles(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
-        if(!myRoles.contains( CCBBASimulation.AGENT_DIE )){
-            getLogger().info("No remaining resources.");
-        }
         leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
-        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+        if(resourcesRem && this.alive) {
+            // check agent status
+            if (tasksAvailable) { // tasks are available and agent has resources
+                    getLogger().info("Tasks in bundle completed! " +
+                            "\n\t\t\t\t\t\t\t\tResources still available. " +
+                            "\n\t\t\t\t\t\t\t\tCreating a new plan...");
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+            }
+            else {
+                if(!myRoles.contains( CCBBASimulation.AGENT_DIE )){
+                    getLogger().info("Tasks in bundle completed!" +
+                            "\n\t\t\t\t\t\t\t\tNo more tasks available. " +
+                            "\n\t\t\t\t\t\t\t\tKilling Agent.");
+                }
+                this.alive = false;
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+            }
+        }
+        else { // agent has no remaining resources
+            if(!myRoles.contains( CCBBASimulation.AGENT_DIE )){
+                getLogger().info("Tasks in bundle completed! " +
+                        "\n\t\t\t\t\t\t\t\tNo remaining resources. " +
+                        "\n\t\t\t\t\t\t\t\tKilling Agent.");
+            }
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);
+            requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+        }
     }
 
     /**
@@ -430,6 +461,85 @@ public class AbstractSimulatedAgent extends AbstractAgent {
     /**
      * Misc helper functions
      */
+    private boolean tasksAvailable(){
+        boolean allCompleted = true;
+        for(Subtask j : this.localResults.getJ()){
+            if( !j.getComplete() ){
+                allCompleted = false;
+                break;
+            }
+        }
+        if(allCompleted) {
+            return false;
+        }
+
+        else{
+            Vector<Task> V = this.environment.getTasks();
+            for (Task task : V) {
+                if (!checkCompletion(task)) { // check if task's dependencies have been met
+                    for (Subtask j : task.getJ()) {
+                        int i_j = this.localResults.getJ().indexOf(j);
+                        if(canBid(j, i_j, this.localResults)){ // if agent is allowed to bid
+                            // Calculate bid for subtask
+                            AbstractBid localBid = new AbstractBid();
+                            localBid.calcBidForSubtask(j, this);
+
+                            // Coalition & Mutex Tests
+                            int h = coalitionTest(localBid, localResults, j, i_j);
+                            if(h == 1){
+                                h = mutexTest(localBid, localResults, j, i_j);
+                            }
+
+                            // Check if agent has enough resources to execute task
+                            double bundle_cost = 0.0;
+                            for(Subtask subtask : this.localResults.getBundle()){ // count costs of bundle
+                                int i_b = localResults.getJ().indexOf(subtask);
+                                bundle_cost += localResults.getCost().get(i_b);
+                            }
+                            if( (localBid.getCost_aj() + bundle_cost) > this.resourcesRemaining){
+                                // agent does NOT have enough resources
+                                h = 0;
+                            }
+
+                            if(h == 1){
+                                return true;
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        // all tasks have been completed
+        return false;
+    }
+
+    private boolean checkCompletion(Task V){ // checks if a task has all of its dependencies met
+        Vector<Subtask> localJ = V.getJ();
+        int[][] D = V.getD();
+        int nullCounter = 0;
+        for(int i = 0; i < localJ.size(); i++){
+            Subtask j = localJ.get(i);
+            int i_j = this.localResults.getJ().indexOf(j);
+
+            // check if subtask has been bid on
+            if (this.localResults.getZ().get(i_j) != null) {
+                // subtask has a bid, check if dependencies are met
+                for (int k = 0; k < localJ.size(); k++) {
+                    int i_k = this.localResults.getJ().indexOf(localJ.get(k));
+                    if ((D[i][k] >= 1) && (this.localResults.getZ().get(i_k) == null)) { // check if dependency not met
+                        // task is available
+                        return false;
+                    }
+                }
+            } else nullCounter++;
+        }
+        if(nullCounter == localJ.size()) return false;
+
+        return true;
+    }
+
     private void moveToTask(Subtask j){
         // update location
         double delta_x;
@@ -474,7 +584,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
         return !(y_mutex > y_bid);
     }
 
-    private boolean depSat(Subtask j, Vector<Vector<AbstractSimulatedAgent>> oldOmega, Vector<Vector<AbstractSimulatedAgent>> newOmega){
+    private boolean depSat(Subtask j){
         Vector<Integer> v = localResults.getV();
         Vector<Integer> w_solo = localResults.getW_solo();
         Vector<Integer> w_any = localResults.getW_any();
@@ -541,7 +651,13 @@ public class AbstractSimulatedAgent extends AbstractAgent {
             }
         }
 
-        //-Coalition Member Constraints
+
+
+        return true;
+    }
+
+    private boolean coalitionSat(Subtask j, Vector<Vector<AbstractSimulatedAgent>> oldOmega, Vector<Vector<AbstractSimulatedAgent>> newOmega){
+        // Check Coalition Member Constraints
         int i_b = localResults.getBundle().indexOf(j);
 
         if (oldOmega.get(i_b).size() == 0) { // no coalition partners in original list
