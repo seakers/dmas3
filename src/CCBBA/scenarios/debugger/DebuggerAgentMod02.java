@@ -19,6 +19,7 @@ public class DebuggerAgentMod02 extends AbstractSimulatedAgent {
         this.sensors = simSensorList();                         // list of all sensors
         this.M = 2;                                             // planning horizon
         this.O_kq = 2;                                          // max iterations in constraint violations
+        this.O_all = 100;                                       // max number of bids before tie-break is implemented
         this.W_solo_max = 5;                                    // max permissions to bid solo
         this.W_any_max = 10;                                    // max permissions to bid on any
         this.localResults = new IterationLists(                 // list of iteration results
@@ -46,7 +47,7 @@ public class DebuggerAgentMod02 extends AbstractSimulatedAgent {
         int x = (int)(x_max * Math.random());
         int y = (int)(y_max * Math.random());
         Dimension position = new Dimension(x, y);
-//        Dimension position = new Dimension(10, 0);
+//        Dimension position = new Dimension(7, 0);
 
         return position;
     }

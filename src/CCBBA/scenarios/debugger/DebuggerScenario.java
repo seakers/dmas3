@@ -15,7 +15,7 @@ public class DebuggerScenario extends Scenario {
     public DebuggerScenario(int numTasks, String simType, double t_corr){
         this.numTasks = numTasks;
         if(simType.equals("INT")){ this.numAgents = 2; }
-        else if(simType.equals("MOD")){ this.numAgents = 2; }
+        else if(simType.equals("MOD")){ this.numAgents = 4; }
         this.t_corr = t_corr;
         this.t_0 = 0;
     }
@@ -39,7 +39,7 @@ public class DebuggerScenario extends Scenario {
 
             // determine instrument requirements
             Vector<String> instruments = new Vector<>();
-            if (i < this.numTasks / 1) {
+            if (i < this.numTasks / 2.0) {
 //            if (i < this.numTasks ) { // create all tasks with two sensor requirements
                 // create 50% of tasks with two sensors
                 instruments.add(this.instrumentList.get(0));
@@ -76,6 +76,7 @@ public class DebuggerScenario extends Scenario {
         addProbe(new DebuggerScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE, "environment"));
 
 //        // Describe initial conditions for environment and tasks
+//        this.numAgents = 2;
 //        int x_max = 50;
 //        int y_max = 50;
 //        dimension = new Dimension(x_max, y_max);
@@ -95,7 +96,7 @@ public class DebuggerScenario extends Scenario {
 //        tc_1.add(0.0);                //t_start
 //        tc_1.add(inf);                //t_end
 //        tc_1.add(1.0);                //task duration
-//        tc_1.add(1.0);                //t_corr
+//        tc_1.add(0.0);                //t_corr
 //        tc_1.add(0.015);              //lambda
 //
 //        Task task1 = new Task(100.0, x_1, "CONSTANT", 0.0, e_1, tc_1);
@@ -112,7 +113,7 @@ public class DebuggerScenario extends Scenario {
 //        tc_2.add(0.0);                //t_start
 //        tc_2.add(inf);                //t_end
 //        tc_2.add(1.0);                //task duration
-//        tc_2.add(1.0);                //t_corr
+//        tc_2.add(0.0);                //t_corr
 //        tc_2.add(0.015);              //lambda
 //
 //        Task task2 = new Task(100.0, x_2, "CONSTANT", 0.0, e_2, tc_2);
@@ -124,7 +125,6 @@ public class DebuggerScenario extends Scenario {
 //        // 2 : this probe is used to initialize the agents' environment field
 //        addProbe(new DebuggerScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "environment"));
 //        addProbe(new DebuggerScenario.AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE, "environment"));
-
     }
 
     class AgentsProbe extends PropertyProbe<AbstractAgent, Scenario> {

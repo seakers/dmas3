@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Vector;
 
 import static java.lang.Math.pow;
+import static java.lang.Math.random;
 
 public class AbstractSimulatedAgent extends AbstractAgent {
     /**
@@ -29,6 +30,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
     protected double miu;                                           // Travel cost
     protected int M;                                                // planning horizon
     protected int O_kq;                                             // max iterations in constraint violations
+    protected int O_all;                                            // max number of bids before tie-break is implemented
     protected int W_solo_max;                                       // max permissions to bid solo
     protected int W_any_max;                                        // max permissions to bid on any
     protected IterationLists localResults;                          // list of iteration results
@@ -60,6 +62,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
         this.miu = 0;                                           // Travel cost
         this.M = 1;                                             // planning horizon
         this.O_kq = 2;                                          // max iterations in constraint violations
+        this.O_all = 100;                                       // max number of bids before tie-break is implemented
         this.W_solo_max = 5;                                    // max permissions to bid solo
         this.W_any_max = 10;                                    // max permissions to bid on any
         this.zeta = 0;                                          // iteration counter
@@ -178,7 +181,6 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                 localResults.updateResults(maxBid, i_max, this, zeta);
             }
         }
-
 
         // Broadcast my results
         myMessage myResults = new myMessage( this.localResults, this );
@@ -338,6 +340,8 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                 }
             }
 
+            int x = 1;
+
             // constrain checks
             for(Subtask j : localResults.getBundle()){
                 // create list of new coalition members
@@ -348,17 +352,12 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                     // subtask does not satisfy all constraints, release task
                     int i_j =  this.localResults.getJ().indexOf(j);
                     localResults.resetResults(i_j);
-                    changesMade = true;
                     break;
                 }
             }
-
-            if(!changesMade){
-                changesMade = checkForChanges(prevResults);
-            }
             this.zeta++;
 
-            if(changesMade){
+            if(checkForChanges(prevResults)){
                 // changes were made, reconsider bids
                 requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
                 this.convCounter = 0;
@@ -368,18 +367,20 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                 this.convCounter++;
                 if(convCounter >= convIndicator){
                     // convergence reached
+                    this.convCounter = 0;
                     requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
                 }
                 else {
                     requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
                 }
             }
-            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+
+            // empty recieved results and exit phase 2
             receivedResults = new Vector<>();
+            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
         }
-        else{
-            // wait for results to come in
-        }
+
+        // if no messages are received, wait for results to come in
     }
 
     @SuppressWarnings("unused")
@@ -466,6 +467,9 @@ public class AbstractSimulatedAgent extends AbstractAgent {
      * Misc helper functions
      */
     private boolean tasksAvailable(){
+        // -1 not enough resources available
+        // 0 no tasks available
+        // 1 tasks available
         boolean allCompleted = true;
         for(Subtask j : this.localResults.getJ()){
             if( !j.getComplete() ){
@@ -566,14 +570,13 @@ public class AbstractSimulatedAgent extends AbstractAgent {
         Task parentTask = j.getParentTask();
         int i_task = parentTask.getJ().indexOf(j);
         int[][] D = parentTask.getD();
-        int i_av = this.localResults.getJ().indexOf(j);
         int i_bid;
 
         double y_bid = 0.0;
         double y_mutex = 0.0;
 
         for (int i_j = 0; i_j < parentTask.getJ().size(); i_j++) {
-            if( (i_j != i_task) && (D[i_task][i_j] <= 0) ){
+            if( (i_j != i_task) && (D[i_task][i_j] < 0) ){
                 i_bid = this.localResults.getJ().indexOf(parentTask.getJ().get(i_j));
                 y_mutex += this.localResults.getY().get(i_bid);
             } else if (D[i_task][i_j] >= 1) {
@@ -581,11 +584,55 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                 y_bid += this.localResults.getY().get(i_bid);
             }
         }
-        int i_j = this.localResults.getJ().indexOf(j);
-        y_bid += this.localResults.getY().get(i_j);
+        int i_av = this.localResults.getJ().indexOf(j);
+        y_bid += this.localResults.getY().get(i_av);
 
         //if outbid by mutex, release task
-        return !(y_mutex > y_bid);
+        if (y_mutex > y_bid){
+            return false;
+        }
+        else if(y_mutex < y_bid){
+            return true;
+        }
+        else{ // both coalition bid values are equal, compare costs
+            double c_bid = 0.0;
+            double c_mutex = 0.0;
+
+            for (int i_j = 0; i_j < parentTask.getJ().size(); i_j++) {
+                if( (i_j != i_task) && (D[i_task][i_j] < 0) ){
+                    i_bid = this.localResults.getJ().indexOf(parentTask.getJ().get(i_j));
+                    c_mutex += this.localResults.getC().get(i_bid);
+                } else if (D[i_task][i_j] >= 1) {
+                    i_bid = this.localResults.getJ().indexOf(parentTask.getJ().get(i_j));
+                    c_bid += this.localResults.getC().get(i_bid);
+                }
+            }
+            c_bid += this.localResults.getY().get(i_av);
+
+            if(c_mutex > c_bid){
+                // opposing coalition has higher costs
+                return true;
+            }
+            else if(c_mutex < c_bid){
+                // your coalition has higher costs
+                return false;
+            }
+            else {
+                // if costs and bids are equal, the task highest on the list gets allocated
+                int i_them = 0;
+                int i_us = parentTask.getJ().indexOf(j);
+
+                for (int i_j = 0; i_j < parentTask.getJ().size(); i_j++) {
+                    if( (i_j != i_task) && (D[i_task][i_j] < 0) ){
+                        i_them = i_j;
+                        break;
+                    }
+                }
+
+
+                return (i_us > i_them);
+            }
+        }
     }
 
     private boolean depSat(Subtask j){
@@ -792,6 +839,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
     }
 
     private boolean canBid(Subtask j, int i_av, IterationLists results){
+        int i_j = results.getJ().indexOf(j);
         if( !this.sensors.contains( j.getMain_task() ) ){ // checks if agent contains sensor for subtask
             return false;
         }
@@ -803,6 +851,14 @@ public class AbstractSimulatedAgent extends AbstractAgent {
         }
         else if(results.getBundle().contains(j)){ // if subtask is already in bundle, I can't bid
             return false;
+        }
+        else if( results.getW_all().get(i_j) >= this.O_all ) {
+            // agent has bid on task for multiple iterations and reached no consensus
+            double wait = Math.random();
+            if(wait <= 0.5){
+                // randomly decide whether to wait or not to bid
+                return false;
+            }
         }
 
         // check if bid for a subtask of the same task is in the bundle

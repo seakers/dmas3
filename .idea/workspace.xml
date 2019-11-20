@@ -4,19 +4,507 @@
     <list default="true" id="5ed5f4b0-5cd6-4ed4-b23a-eac4fc17b05b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/DebuggerSimulation.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/DebuggerSimulation.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/AbstractBid.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/AbstractBid.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Figure3Simulation.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Figure3Simulation.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/validation_plots/validationPlots.m" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/validation_plots/validationPlots.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/AbstractResultsCompiler.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/AbstractResultsCompiler.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/AbstractSimulatedAgent.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/AbstractSimulatedAgent.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/IterationLists.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/IterationLists.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/ResultsCompiler.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/bin/ResultsCompiler.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_157/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_157/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_157/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_157/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_157/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_157/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_173/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_173/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_173/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_173/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_173/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_173/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_220/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_220/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_220/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_220/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_220/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_220/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_236/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_236/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_236/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_236/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_236/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_236/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_267/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_267/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_267/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_267/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_267/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_267/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_314/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_314/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_314/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_314/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_314/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_314/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_345/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_345/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_345/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_345/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_345/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_345/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_376/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_376/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_376/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_376/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_376/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_376/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_470/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_470/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_470/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_470/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_470/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_470/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_485/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_485/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_485/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_485/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_485/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_485/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_517/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_517/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_517/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_517/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_517/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_517/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_548/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_548/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_548/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_548/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_548/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_548/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_579/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_579/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_579/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_579/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_579/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_579/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_610/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_610/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_610/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_610/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_610/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_610/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_626/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_626/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_626/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_626/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_626/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_626/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_642/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_642/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_642/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_642/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_642/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_642/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_657/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_657/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_657/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_657/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_657/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_657/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_689/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_689/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_689/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_689/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_689/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_689/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_704/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_704/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_704/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_704/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_704/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_704/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_740/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_740/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_740/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_740/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_740/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_740/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_764/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_764/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_764/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_764/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_764/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_764/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_811/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_811/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_811/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_811/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_811/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_811/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_827/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_827/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_827/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_827/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_827/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_827/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_858/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_858/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_858/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_858/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_858/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_858/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_874/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_874/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_874/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_874/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_874/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_874/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_889/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_889/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_889/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_889/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_889/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_889/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_905/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_905/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_905/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_905/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_905/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_905/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_921/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_921/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_921/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_921/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_921/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_921/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_936/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_936/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_936/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_936/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_936/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_936/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_952/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_952/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_952/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_952/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_952/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_952/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_967/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_967/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_967/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_967/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_967/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_967/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_999/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_999/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_999/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_999/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_999/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_30_999/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_014/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_014/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_014/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_014/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_014/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_014/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_030/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_030/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_030/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_030/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_030/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_030/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_046/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_046/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_046/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_046/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_046/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_046/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_077/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_077/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_077/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_077/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_077/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_077/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_092/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_092/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_092/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_092/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_092/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_092/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_108/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_108/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_108/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_108/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_108/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_108/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_124/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_124/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_124/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_124/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_124/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_124/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_139/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_139/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_139/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_139/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_139/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_139/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_155/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_155/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_155/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_155/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_155/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_155/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_171/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_171/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_171/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_171/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_171/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_171/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_186/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_186/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_186/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_186/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_186/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_186/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_202/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_202/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_202/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_202/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_202/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_202/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_226/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_226/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_226/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_226/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_226/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_226/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_242/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_242/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_242/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_242/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_242/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_242/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_257/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_257/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_257/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_257/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_257/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_257/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_273/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_273/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_273/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_273/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_273/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_273/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_289/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_289/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_289/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_289/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_289/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_289/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_304/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_304/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_304/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_304/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_304/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_304/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_320/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_320/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_320/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_320/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_320/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_320/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_335/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_335/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_335/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_335/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_335/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_335/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_351/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_351/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_351/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_351/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_351/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_351/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_367/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_367/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_367/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_367/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_367/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_367/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_382/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_382/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_382/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_382/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_382/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_382/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_398/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_398/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_398/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_398/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_398/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_398/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_414/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_414/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_414/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_414/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_414/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_414/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_429/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_429/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_429/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_429/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_429/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_429/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_445/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_445/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_445/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_445/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_445/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_445/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_460/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_460/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_460/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_460/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_460/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_460/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_476/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_476/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_476/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_476/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_476/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_476/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_492/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_492/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_492/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_492/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_492/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_492/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_507/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_507/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_507/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_507/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_507/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_507/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_523/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_523/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_523/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_523/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_523/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_523/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_585/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_585/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_585/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_585/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_585/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_585/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_601/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_601/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_601/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_601/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_601/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_601/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_617/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_617/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_617/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_617/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_617/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_617/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_632/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_632/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_632/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_632/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_632/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_632/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_648/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_648/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_648/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_648/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_648/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_648/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_663/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_663/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_663/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_663/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_663/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_663/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_695/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_695/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_695/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_695/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_695/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_695/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_710/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_710/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_710/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_710/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_710/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_710/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_742/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_742/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_742/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_742/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_742/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_742/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_773/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_773/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_773/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_773/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_773/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_773/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_788/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_788/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_788/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_788/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_788/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_788/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_837/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_837/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_837/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_837/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_837/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_837/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_884/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_884/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_884/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_884/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_884/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_884/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_900/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_900/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_900/all_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_900/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_900/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/debugger/MOD_2.0/debugger_results-MOD_2.0-2019_11_18-19_11_31_900/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/validation_plots/figure_3/figureThree.m" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/validation_plots/figure_3/figureThree.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/results/validation_plots/readData.asv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerAgentInt.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerAgentInt.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerAgentMod01.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerAgentMod01.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerAgentMod02.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerAgentMod02.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerScenario$AgentsProbe.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerScenario$AgentsProbe.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerScenario.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/debugger/DebuggerScenario.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentInt.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentInt.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentMod01.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentMod01.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentMod02.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationAgentMod02.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationScenario$AgentsProbe.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationScenario$AgentsProbe.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationScenario.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/scenarios/figure3/ValidationScenario.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/DebuggerSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/DebuggerSimulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/bin/AbstractBid.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/bin/AbstractBid.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/Figure3Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/Figure3Simulation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/bin/AbstractResultsCompiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/bin/AbstractResultsCompiler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/bin/AbstractSimulatedAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/bin/AbstractSimulatedAgent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/CCBBA/bin/SimulatedAbstractAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/bin/SimulatedAbstractAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/bin/IterationLists.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/bin/IterationLists.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/bin/ResultsCompiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/bin/ResultsCompiler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/validation_plots/figure_3/figureThree.m" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/results/validation_plots/figure_3/figureThree.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/validation_plots/validationPlots.m" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/results/validation_plots/validationPlots.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/DebuggerAgentInt.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/DebuggerAgentInt.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/DebuggerAgentMod01.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/DebuggerAgentMod01.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/DebuggerAgentMod02.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/DebuggerAgentMod02.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/DebuggerScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/debugger/DebuggerScenario.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentInt.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentInt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentMod01.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentMod01.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentMod02.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationAgentMod02.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/scenarios/figure3/ValidationScenario.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -80,7 +568,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.CCBBADebugger">
+  <component name="RunManager" selected="Application.Figure 3 Validation">
     <configuration name="CCBBA Appendix B" type="Application" factoryName="Application">
       <option name="ALTERNATIVE_JRE_PATH" value="11" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
@@ -157,7 +645,9 @@
       <workItem from="1572543644677" duration="29015000" />
       <workItem from="1572968215691" duration="41506000" />
       <workItem from="1573676272472" duration="19874000" />
-      <workItem from="1573769464551" duration="30984000" />
+      <workItem from="1573769464551" duration="31816000" />
+      <workItem from="1574183469242" duration="19553000" />
+      <workItem from="1574277290885" duration="4574000" />
     </task>
     <servers />
   </component>

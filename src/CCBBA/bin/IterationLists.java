@@ -19,14 +19,14 @@ public class IterationLists {
     private Vector<Double> score = new Vector<>();                  // score vector
     private Vector<Integer> w_solo = new Vector<>();                // permission to bid solo
     private Vector<Integer> w_any = new Vector<>();                 // permission to bid any
+    private Vector<Integer> w_all = new Vector<>();                 // overall bid counter
     private Vector<Integer> h = new Vector<>();                     // availability checks vector
-    private Vector<Vector<AbstractSimulatedAgent>> omega = new Vector<>();// coalition mates
+    private Vector<Vector<AbstractSimulatedAgent>> omega = new Vector<>();// coalition mates list
     private Vector<Vector<AbstractSimulatedAgent>> overallOmega = new Vector<>(); // overall coalition mates
     private Vector<Subtask> bundle = new Vector<>();                // current bundle
     private Vector<Subtask> overallBundle = new Vector<>();         // overall bundle
     private Vector<Subtask> path = new Vector<>();                  // current path order
     private Vector<Subtask> overallPath = new Vector<>();           // overall path order
-    private Vector<Dimension> xpath = new Vector<>();               // current path coordinates
     // Fixed quantities ****************************
     private int M;                                                  // planning horizon
     private double C_merge;                                         // merge cost
@@ -48,6 +48,7 @@ public class IterationLists {
         this.v.setSize(size);
         this.w_solo.setSize(size);
         this.w_any.setSize(size);
+        this.w_all.setSize(size);
         this.h.setSize(size);
         this.omega.setSize(M);
         this.cost.setSize(size);
@@ -68,6 +69,7 @@ public class IterationLists {
             this.v.setElementAt(0, i);
             this.w_solo.setElementAt(w_solo_max, i);
             this.w_any.setElementAt(w_any_max, i);
+            this.w_all.setElementAt(0,i);
             this.h.setElementAt(1, i);
             this.cost.setElementAt(0.0, i);
             this.score.setElementAt(0.0, i);
@@ -86,6 +88,7 @@ public class IterationLists {
         this.v = new Vector<>();
         this.w_solo = new Vector<>();
         this.w_any = new Vector<>();
+        this.w_all = new Vector<>();
         this.h = new Vector<>();
         this.omega = new Vector<>();
         this.overallOmega = new Vector<>();
@@ -106,6 +109,7 @@ public class IterationLists {
             this.v.add(prevResults.getV().get(i));
             this.w_solo.add(prevResults.getW_solo().get(i));
             this.w_any.add(prevResults.getW_any().get(i));
+            this.w_all.add(prevResults.getW_all().get(i));
             this.h.add(1);
             this.cost.add(prevResults.getCost().get(i));
             this.score.add(prevResults.getScore().get(i));
@@ -143,6 +147,7 @@ public class IterationLists {
             this.tz.setElementAt(maxBid.getTStart(), i_max);
             this.cost.setElementAt(maxBid.getCost_aj(), i_max);
             this.score.setElementAt(maxBid.getScore(), i_max);
+            this.w_all.setElementAt( w_all.get(i_max) + 1 , i_max);
         }
 
         updateOmega(parentAgent);
@@ -344,6 +349,7 @@ public class IterationLists {
     public Vector<Integer> getV(){ return this.v; }
     public Vector<Integer> getW_solo(){ return this.w_solo; }
     public Vector<Integer> getW_any(){ return this.w_any; }
+    public Vector<Integer> getW_all(){ return this.w_all; }
     public Vector<Integer> getH(){ return this.h; }
     public Vector<Vector<AbstractSimulatedAgent>> getOmega(){ return this.omega; }
     public Vector<Vector<AbstractSimulatedAgent>> getOverallOmega(){ return this.overallOmega; }

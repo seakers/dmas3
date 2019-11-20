@@ -68,11 +68,8 @@ public class ResultsCompiler extends AbstractAgent {
             printAgentList();
             printMetrics();
             printReport();
-            printAllVectors( receivedResults );
         }
-        else{
-            printAllVectors( receivedResults );
-        }
+        printAllVectors( receivedResults );
     }
 
     private boolean compareResults( Vector<IterationResults> receivedResults ){
@@ -210,6 +207,17 @@ public class ResultsCompiler extends AbstractAgent {
                 else{
                     printWriter.printf("-\t");
                 }
+            }
+
+            // costs
+            for(IterationResults result : receivedResults){
+                if(receivedResults.indexOf(result) == 0){
+                    printWriter.printf("|\t");
+                }
+                // obtain values
+                Vector<Double> localCost = result.getCost();
+                // print values
+                printWriter.printf("%f\t", localCost.get(i));
             }
 
             // error counters
@@ -993,28 +1001,36 @@ public class ResultsCompiler extends AbstractAgent {
     private double calcAvgCostPerResources( Vector<IterationResults> receivedResults){
         Vector<SimulatedAbstractAgent> agentList = new Vector<>();
         Vector<SimulatedAbstractAgent> localZ = receivedResults.get(0).getZ();
+        Vector<Double> costPerAgent = new Vector<>();
+        Vector<Integer> bidsPerAgent = new Vector<>();
         Vector<Double> cost = receivedResults.get(0).getCost();
         double avg = 0.0;
-        double resources;
-        double localCost;
 
         for (int i = 0; i < localZ.size(); i++) {
             if ((localZ.get(i) != null) && (!agentList.contains(localZ.get(i)))) {
+                // add agent to list of averages
                 agentList.add(localZ.get(i));
-                resources = localZ.get(i).readResources();
-                localCost = 0;
-
-                for (int j = i; j < localZ.size(); j++) {
-                    if (localZ.get(j) == localZ.get(i)) {
-                        localCost += cost.get(j);
-                    }
-                }
-                avg += localCost / resources;
+                costPerAgent.add( cost.get(i) );
+                bidsPerAgent.add(1);
+            }
+            else if( (localZ.get(i) != null) && (agentList.contains(localZ.get(i))) ){
+                // agent exists in list, add its cost
+                int i_list = agentList.indexOf(localZ.get(i));
+                double localCost = cost.get(i);
+                costPerAgent.setElementAt( costPerAgent.get(i_list) + localCost, i_list);
+                bidsPerAgent.setElementAt( bidsPerAgent.get(i_list) + 1, i_list);
             }
         }
 
-        return avg / agentList.size();
+        for(int i = 0; i < agentList.size(); i++){
+            costPerAgent.setElementAt( costPerAgent.get(i)/agentList.get(i).getResources(), i);
+            costPerAgent.setElementAt( costPerAgent.get(i)/ (double) bidsPerAgent.get(i), i);
+        }
+        for(int i = 0; i < agentList.size(); i++){
+            avg += costPerAgent.get(i);
+        }
 
+        return avg / agentList.size();
     }
 
     private int countTasksAvailable(){

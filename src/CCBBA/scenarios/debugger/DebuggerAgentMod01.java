@@ -19,6 +19,7 @@ public class DebuggerAgentMod01 extends AbstractSimulatedAgent {
         this.sensors = simSensorList();                         // list of all sensors
         this.M = 2;                                             // planning horizon
         this.O_kq = 2;                                          // max iterations in constraint violations
+        this.O_all = 100;                                       // max number of bids before tie-break is implemented
         this.W_solo_max = 5;                                    // max permissions to bid solo
         this.W_any_max = 10;                                    // max permissions to bid on any
         this.localResults = new IterationLists(                 // list of iteration results
@@ -30,7 +31,7 @@ public class DebuggerAgentMod01 extends AbstractSimulatedAgent {
         this.C_split = 0.0;                                     // Splitting cost
         this.resources = 100.0;                                 // Initial resources for agent
         this.miu = this.resources * 0.54/100;                   // Travel cost
-//        this. miu = 1.0;
+//        this.miu = 1.0;
         this.resourcesRemaining = this.resources;               // Current resources for agent
         this.t_0 = 0.0; //    private long t_0;                 // start time
         this.receivedResults = new Vector<>();                  // list of received results
@@ -46,7 +47,7 @@ public class DebuggerAgentMod01 extends AbstractSimulatedAgent {
         int x = (int)(x_max * Math.random());
         int y = (int)(y_max * Math.random());
         Dimension position = new Dimension(x, y);
-//        Dimension position = new Dimension(0,0);
+//        Dimension position = new Dimension(3,0);
 
         return position;
     }

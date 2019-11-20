@@ -30,8 +30,8 @@ public class DebuggerSimulation extends AbstractAgent {
     public static void main(String[] args) {
         Vector<Double> timeList = new Vector<>();
 //        timeList.add(Double.POSITIVE_INFINITY);
-//        timeList.add(0.0);
-        timeList.add(2.0);
+        timeList.add(0.0);
+//        timeList.add(2.0);
 //        timeList.add(4.0);
 //        timeList.add(6.0);
 //        timeList.add(8.0);
@@ -49,7 +49,7 @@ public class DebuggerSimulation extends AbstractAgent {
                 symType = name;
                 t_corr = time;
 
-                for(int i = 0; i < 100; i++) {
+                for(int i = 0; i < 10; i++) {
                     executeThisAgent(1, false);
                 }
 
@@ -69,7 +69,7 @@ public class DebuggerSimulation extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new DebuggerScenario(2, type, t_c);
+        Scenario environment = new DebuggerScenario(20, type, t_c);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
@@ -86,20 +86,24 @@ public class DebuggerSimulation extends AbstractAgent {
      * Helping functions
      */
     private void setupAgents(String type){
+        Vector<AbstractSimulatedAgent> launchedAgents = new Vector<>();
         if(type.equals("INT")){
-            launchAgent(new DebuggerAgentInt());
-            launchAgent(new DebuggerAgentInt());
-            this.numAgents = 2;
+            launchedAgents.add(new DebuggerAgentInt());
+            launchedAgents.add(new DebuggerAgentInt());
         }
         else if(type.equals("MOD")){
             // e = {IR}
-            launchAgent(new DebuggerAgentMod01());
-//            launchAgent(new DebuggerAgentMod01());
+            launchedAgents.add(new DebuggerAgentMod01());
+            launchedAgents.add(new DebuggerAgentMod01());
             // e = {MW}
-            launchAgent(new DebuggerAgentMod02());
-//            launchAgent(new DebuggerAgentMod02());
-            this.numAgents = 2;
+            launchedAgents.add(new DebuggerAgentMod02());
+            launchedAgents.add(new DebuggerAgentMod02());
         }
+
+        for (AbstractSimulatedAgent launchedAgent : launchedAgents) {
+            launchAgent(launchedAgent);
+        }
+        this.numAgents = launchedAgents.size();
     }
 
     private void createFile(String type, double t_corr){

@@ -37,6 +37,10 @@ public class ValidationScenario extends Scenario {
             int y = (int) (y_max * Math.random());
             Dimension x_task = new Dimension(x, y);
 
+            // determine task costs and max score
+            double S_max;
+            double task_cost = 1.14 / 100;
+
             // determine instrument requirements
             Vector<String> instruments = new Vector<>();
             if (i < this.numTasks / 2) {
@@ -44,10 +48,16 @@ public class ValidationScenario extends Scenario {
                 // create 50% of tasks with two sensors
                 instruments.add(this.instrumentList.get(0));
                 instruments.add(this.instrumentList.get(1));
+
+                S_max = 100.0 + 50 * Math.random();
             } else if(i < (int) 3.0 / 4.0 * this.numTasks) {
                 instruments.add(this.instrumentList.get(0));
+
+                S_max = 50.0 + 25.0 * Math.random();
             } else {
                 instruments.add(this.instrumentList.get(1));
+
+                S_max = 50.0 + 25.0 * Math.random();
             }
 
             // determine time constraints
@@ -59,9 +69,7 @@ public class ValidationScenario extends Scenario {
             tc.add(this.t_corr);        //t_corr
             tc.add(0.015);              //lambda
 
-            // determine task costs and max score
-            double S_max = 50.0 + 50 * Math.random();
-            double task_cost = 0.0 / 100;
+
 
             // add task to scenario vector
             Task tempTask = new Task(S_max, x_task, "PROPORTIONAL", task_cost, instruments, tc);
@@ -79,7 +87,7 @@ public class ValidationScenario extends Scenario {
 
     class AgentsProbe extends PropertyProbe<AbstractAgent, Scenario> {
 
-        public AgentsProbe(String community, String group, String role, String fieldName) {
+        AgentsProbe(String community, String group, String role, String fieldName) {
             super(community, group, role, fieldName);
         }
 
