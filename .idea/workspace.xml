@@ -2,14 +2,236 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5ed5f4b0-5cd6-4ed4-b23a-eac4fc17b05b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/json_simple_1_1_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/libraries/json-simple-1.1.1/json-simple-1.1.1.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/inputs/inputTest.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/source/inputTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/Driver.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/lib/Scenario.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/lib/SimGroups.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/lib/SimulatedAgent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/lib/Task.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ABSP-EOSS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/ABSP-EOSS.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-2019_09_24-07_42_22_932/task_list.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-2019_09_24-07_42_24_648/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_11_820/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_11_820/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_11_820/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_11_820/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_11_820/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_31_831/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_31_831/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_31_831/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_31_831/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_34_31_831/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_15_362/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_15_362/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_15_362/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_15_362/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_15_362/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_55_312/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_55_312/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_55_312/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_55_312/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_35_55_312/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_36_23_117/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_36_23_117/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_36_23_117/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_36_23_117/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_36_23_117/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_43_54_910/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_43_54_910/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_43_54_910/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_43_54_910/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_43_54_910/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_44_57_290/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_44_57_290/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_44_57_290/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_44_57_290/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_44_57_290/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_46_43_487/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_46_43_487/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_46_43_487/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_46_43_487/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_46_43_487/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_47_16_673/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_47_16_673/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_47_16_673/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_47_16_673/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_47_16_673/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_08_641/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_08_641/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_08_641/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_08_641/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_08_641/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_50_957/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_50_957/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_50_957/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_50_957/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_49_50_957/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_50_31_770/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_50_31_770/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_50_31_770/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_50_31_770/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_50_31_770/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_51_32_023/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_51_32_023/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_51_32_023/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_51_32_023/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_51_32_023/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_52_22_752/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_52_22_752/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_52_22_752/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_52_22_752/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-06_52_22_752/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-09_58_08_410/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-09_58_08_410/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-09_58_08_410/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-09_58_08_410/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-09_58_08_410/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-10_45_23_140/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-10_45_23_140/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-10_45_23_140/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-10_45_23_140/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_09_30-10_45_23_140/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_10_01-04_54_35_801/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_10_01-04_54_35_801/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_10_01-04_54_35_801/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_10_01-04_54_35_801/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-appendix_b-2019_10_01-04_54_35_801/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-04_55_37_541/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-04_55_37_541/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-04_55_37_541/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-04_55_37_541/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-04_55_37_541/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-05_11_25_297/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-05_11_25_297/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-05_11_25_297/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-05_11_25_297/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-05_11_25_297/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_05_40_298/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_05_40_298/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_05_40_298/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_05_40_298/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_05_40_298/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_06_07_432/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_06_07_432/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_06_07_432/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_06_07_432/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_06_07_432/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_13_14_580/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_13_14_580/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_13_14_580/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_13_14_580/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Results/results-validation-2019_10_01-07_13_14_580/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/inputs/inputTest.json" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/inputs/inputTest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/source/inputTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/inputs/inputTest.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/inputs/inputTest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_11_820/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_11_820/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_11_820/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_11_820/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_11_820/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_31_831/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_31_831/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_31_831/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_31_831/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_34_31_831/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_15_362/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_15_362/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_15_362/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_15_362/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_15_362/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_55_312/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_55_312/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_55_312/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_55_312/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_35_55_312/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_36_23_117/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_36_23_117/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_36_23_117/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_36_23_117/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_36_23_117/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_43_54_910/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_43_54_910/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_43_54_910/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_43_54_910/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_43_54_910/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_44_57_290/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_44_57_290/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_44_57_290/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_44_57_290/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_44_57_290/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_46_43_487/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_46_43_487/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_46_43_487/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_46_43_487/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_46_43_487/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_47_16_673/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_47_16_673/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_47_16_673/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_47_16_673/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_47_16_673/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_08_641/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_08_641/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_08_641/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_08_641/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_08_641/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_50_957/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_50_957/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_50_957/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_50_957/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_49_50_957/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_50_31_770/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_50_31_770/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_50_31_770/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_50_31_770/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_50_31_770/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_51_32_023/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_51_32_023/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_51_32_023/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_51_32_023/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_51_32_023/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_52_22_752/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_52_22_752/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_52_22_752/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_52_22_752/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-06_52_22_752/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-09_58_08_410/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-09_58_08_410/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-09_58_08_410/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-09_58_08_410/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-09_58_08_410/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-10_45_23_140/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-10_45_23_140/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-10_45_23_140/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-10_45_23_140/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_09_30-10_45_23_140/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_10_01-04_54_35_801/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_10_01-04_54_35_801/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_10_01-04_54_35_801/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_10_01-04_54_35_801/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-appendix_b-2019_10_01-04_54_35_801/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-04_55_37_541/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-04_55_37_541/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-04_55_37_541/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-04_55_37_541/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-04_55_37_541/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-05_11_25_297/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-05_11_25_297/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-05_11_25_297/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-05_11_25_297/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-05_11_25_297/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_05_40_298/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_05_40_298/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_05_40_298/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_05_40_298/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_05_40_298/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_06_07_432/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_06_07_432/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_06_07_432/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_06_07_432/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_06_07_432/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_13_14_580/REPORT.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_13_14_580/agent_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_13_14_580/performance_metrics.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_13_14_580/task_list.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/results/results-validation-2019_10_01-07_13_14_580/winning_vectors.out" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/inputTest.java" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,6 +241,9 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/ABSP_EOSS$CCBBA.ic" NAME="CCBBA Coverage Results" MODIFIED="1568844964693" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+  </component>
+  <component name="CoverageViewManager">
+    <option name="myElementSize" value="133" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -85,6 +310,7 @@
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
+    <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RunDashboard">
@@ -99,7 +325,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.inputTest">
+  <component name="RunManager" selected="Application.CCBBADriver">
     <configuration name="CCBBA Appendix B" type="Application" factoryName="Application">
       <option name="ALTERNATIVE_JRE_PATH" value="11" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
@@ -113,6 +339,15 @@
       <option name="ALTERNATIVE_JRE_PATH" value="11" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="MAIN_CLASS_NAME" value="CCBBA.ValidationSimulation" />
+      <module name="ABSP-EOSS" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CCBBADriver" type="Application" factoryName="Application">
+      <option name="ALTERNATIVE_JRE_PATH" value="11" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="CCBBA.Driver" />
       <module name="ABSP-EOSS" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -134,19 +369,10 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="inputTest" type="Application" factoryName="Application">
-      <option name="ALTERNATIVE_JRE_PATH" value="11" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-      <option name="MAIN_CLASS_NAME" value="CCBBA.source.inputTest" />
-      <module name="ABSP-EOSS" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <list>
       <item itemvalue="Application.CCBBA Appendix B" />
       <item itemvalue="Application.CCBBA Validation" />
-      <item itemvalue="Application.inputTest" />
+      <item itemvalue="Application.CCBBADriver" />
       <item itemvalue="Application.EarthObservationExample" />
       <item itemvalue="Application.deltaV" />
     </list>
@@ -164,7 +390,7 @@
       <workItem from="1562858046652" duration="1192000" />
       <workItem from="1562859656035" duration="6801000" />
       <workItem from="1563203314285" duration="10170000" />
-      <workItem from="1579646478155" duration="389000" />
+      <workItem from="1579646478155" duration="14228000" />
     </task>
     <servers />
   </component>
@@ -198,12 +424,20 @@
           <line>30</line>
           <option name="timeStamp" value="48" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/CCBBA/Driver.java</url>
+          <line>84</line>
+          <option name="timeStamp" value="57" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/CCBBA/Driver.java</url>
+          <line>82</line>
+          <option name="timeStamp" value="59" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
-    <watches-manager>
-      <configuration name="Application">
-        <watch expression="localResults" language="JAVA" />
-      </configuration>
-    </watches-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/ABSP_EOSS$CCBBADriver.ic" NAME="CCBBADriver Coverage Results" MODIFIED="1579719261388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
 </project>
