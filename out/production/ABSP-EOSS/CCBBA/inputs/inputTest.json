@@ -3,65 +3,70 @@
     "SimName": "AppendixBExample",
     "NumRuns": 1,
 	"Planner": "CCBBA",
-	"Agents":[
-		{ "AgentList": [
-			{ "Agent1": [
-				{ "SensorList": [ "IR" ] },
-				{ "Position": [ 0.0, 0.0, 0.0] },
-				{ "Instances": 1 }
-			]},
-			{ "Agent2": [
-				{ "SensorList": [ "MW" ] },
-				{ "Position": [ 4.0, 0.0, 0.0] },
-				{ "Instances": 1 }
-			]}
-		]},
-		{ "Costs": [
-			{ "CostMerge": 2.0 },
-			{ "CostSplit": 1.0 },
-			{ "PlanningHorizon": 2.0 }
-		]},
-		{ "Resources": [
-			{ "Dist": "Linear" },
-			{ "Max": 100 }
-		]}
-	],
-	"Scenario": [
-		{ "TaskList": [
-			{ "Task1": [
-				{ "Instances": 1 },
-				{ "MaxScore": 100 },
-				{ "Cost": [
-					{ "Value": 2.0 },
-					{ "Dist": "const" }
-				]},
-				{ "SensorList": [ "IR", "MW" ] },
-				{ "Position": [ 0.0, 3.0, 0.0] },
-				{ "t_start": 0.0 },
-				{ "t_end": "INF" },
-				{ "duration": 1.0 },
-				{ "t_corr": 1.0 },
-				{ "lambda": 1.0 }			
-			]},
-			{ "Task2": [
-				{ "Instances": 1 },
-				{ "MaxScore": 30 },
-				{ "Cost": [
-					{ "Value": 2.0 },
-					{ "Dist": "const" }
-				]},
-				{ "SensorList": [ "MW" ] },
-				{ "Position": [ 4.0, 3.0, 0.0] },
-				{ "t_start": 0.0 },
-				{ "t_end": "INF" },
-				{ "duration": 1.0 },
-				{ "t_corr": 1.0 },
-				{ "lambda": 1.0 }			
-			]}
-		]},
-		{ "World": [
-			{"Type": "2D_Grid"},
-			{"Bounds": [ 50.0, 50.0 ] }
-		]}
-	]
+	"Agents": {
+		"AgentList": [
+			{
+				"Name": "Sat1",
+				"Instances": 1,
+				"SensorList": [ "IR" ],
+				"Position": [ 0.0, 0.0, 0.0],
+			}, 
+			{
+				"Name": "Sat2",
+				"Instances": 1,
+				"SensorList": [ "MW" ],
+				"Position": [ 4.0, 0.0, 0.0],
+			}			
+		],
+		"Costs": {
+			"CostMerge": 2.0,
+			"CostSplit": 1.0,
+			"PlanningHorizon": 2.0
+		},
+		"Resources": {
+			"Dist": "Linear",
+			"Max": 100
+		}
+	}
+	"Scenario": {
+		"TaskList": [
+			{ 
+				"Name": "Task1"
+				"Instances": 1,
+				"MaxScore": 100,
+				"Cost": {
+					"Value": 2.0,
+					"Dist": "const"
+				},
+				"SensorList": [ "IR", "MW" ],
+				"Position": [ 0.0, 3.0, 0.0],
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 1.0,
+				"t_corr": 1.0,
+				"lambda": 1.0
+			},
+			,
+			{ 
+				"Name": "Task2"
+				"Instances": 1,
+				"MaxScore": 30,
+				"Cost": {
+					"Value": 2.0,
+					"Dist": "const"
+				},
+				"SensorList": [ "MW" ],
+				"Position": [ 4.0, 3.0, 0.0],
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 1.0,
+				"t_corr": 1.0,
+				"lambda": 1.0			
+			}
+		],
+		"World": {
+			"Type": "2D_Grid",
+			"Bounds": [ 50.0, 50.0 ]
+		}
+	}
 }
