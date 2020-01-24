@@ -2,9 +2,7 @@ package CCBBA;
 
 import CCBBA.lib.Scenario;
 import CCBBA.lib.SimGroups;
-import CCBBA.lib.SimulatedAgent;
 import madkit.kernel.AbstractAgent;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -12,7 +10,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 
 public class Driver extends AbstractAgent {
     /**
@@ -33,7 +30,7 @@ public class Driver extends AbstractAgent {
     @Override
     protected void activate(){
         // 1 : load sim inputs
-        inputSimData("inputTest.json");
+        inputSimData("inputTestRand.json");
 
         // 2 : create results directory
         createFileDirectory();

@@ -36,7 +36,7 @@
 				"MaxScore": 100,
 				"Cost": {
 					"Value": 2.0,
-					"Dist": "const"
+					"Type": "const"
 				},
 				"SensorList": [ "IR", "MW" ],
 				"Position": [ 0.0, 3.0, 0.0],
@@ -44,7 +44,8 @@
 				"t_end": "INF",
 				"duration": 1.0,
 				"t_corr": 1.0,
-				"lambda": 1.0
+				"lambda": 1.0,
+				"gamma" : "NEG_INF"
 			},
 			,
 			{ 
@@ -53,7 +54,7 @@
 				"MaxScore": 30,
 				"Cost": {
 					"Value": 2.0,
-					"Dist": "const"
+					"Type": "const"
 				},
 				"SensorList": [ "MW" ],
 				"Position": [ 4.0, 3.0, 0.0],
@@ -61,7 +62,8 @@
 				"t_end": "INF",
 				"duration": 1.0,
 				"t_corr": 1.0,
-				"lambda": 1.0			
+				"lambda": 1.0,
+				"gamma" : "NEG_INF"
 			}
 		],
 		"World": {

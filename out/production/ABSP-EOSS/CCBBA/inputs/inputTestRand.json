@@ -33,13 +33,19 @@
 			{ 
 				"Name": "Task1"
 				"Instances": 1,
-				"MaxScore": 100,
+				"MaxScore": {
+					"MaxValue" : 100.0,
+					"MinValue" : 30.0,
+					"Dist": "Linear"
+				}
 				"Cost": {
 					"Value": 2.0,
 					"Type": "const"
 				},
 				"SensorList": [ "IR", "MW" ],
-				"Position": [ 0.0, 3.0, 0.0],
+				"Location": {
+					"Dist": "Linear"
+				}
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 1.0,
@@ -51,13 +57,13 @@
 			{ 
 				"Name": "Task2"
 				"Instances": 1,
-				"MaxScore": 30,
+				"MaxScore": 30.0,
 				"Cost": {
 					"Value": 2.0,
 					"Type": "const"
 				},
 				"SensorList": [ "MW" ],
-				"Position": [ 4.0, 3.0, 0.0],
+				"Location": [ 4.0, 3.0, 0.0],
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 1.0,

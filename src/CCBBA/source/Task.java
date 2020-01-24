@@ -4,7 +4,7 @@ import java.awt.*;
 import java.util.Vector;
 
 public class Task {
-    double inf = Double.POSITIVE_INFINITY;
+    private double inf = Double.POSITIVE_INFINITY;
     protected Dimension location;               // (x,y) Location of task
     protected double cost_constant;             // constant cost of executing task
     protected double cost_proportion;           // cost of executing task proportional to agent resources
