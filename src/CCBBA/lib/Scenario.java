@@ -67,9 +67,9 @@ public class Scenario extends Watcher {
                 bounds.add(y_max);
                 bounds.add(z_max);
             }
-            else if( worldType.toString().equals("Earth") ){
-                // set up Orekit 3D world
-            }
+//            else if( worldType.toString().equals("Earth") ){
+//                // set up Orekit 3D world
+//            }
             else{
                 throw new Exception("INPUT ERROR: World type not supported.");
             }

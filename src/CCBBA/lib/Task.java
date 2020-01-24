@@ -21,13 +21,13 @@ public class Task {
     private double t_start;                     // Start of availability time
     private double t_end;                       // End of availability time
     private double duration;                    // Duration of task
-    private double t_corr;                      // Decorrelation time
+    private double t_corr;                      // Correlation time
     private double lambda;                      // Score time decay parameter
     private double gamma;                       // Proximity parameter
     private ArrayList<Subtask> J;               // Subtask list
     private ArrayList<Integer> K;               // Level of partiality
     private int[][] D;                          // Dependency matrix
-    private double[][] T;                       // Decorrelation time matrix
+    private double[][] T;                       // Correlation time matrix
     private int N_sub;                          // Number of subtasks in task
     private int I;                              // Number of sensors needed
 
@@ -36,15 +36,17 @@ public class Task {
      * @param taskData - Data received from JSON input file
      */
     Task(JSONObject taskData, JSONObject worldData) throws Exception {
-        int x = 1;
-
         // Check if all required information is contained in the input file
         checkInputFormat(taskData);
 
         // Unpack data from JSON input file
         unpackInput(taskData, worldData);
 
-        x = 1;
+        // Create subtask list from sensor list
+        createSensorList();
+
+        // Fill in Dependency and Correlation time matrices
+        createDependencies();
     }
 
     private void checkInputFormat(JSONObject taskData){
@@ -253,6 +255,99 @@ public class Task {
         else{
             throw new Exception("INPUT ERROR: Task proximity parameter entry not supported.");
         }
+
+        this.I = req_sensors.size();
     }
 
+    private void createSensorList(){
+        this.J = new ArrayList<>();
+        this.K = new ArrayList<>();
+
+        for(int i = 0; i < this.req_sensors.size(); i++) {
+            ArrayList<String> remainingSensors = new ArrayList<>();
+            String mainSensor = this.req_sensors.get(i);
+
+            // create list of dependent sensors
+            for(int j = 0; j < this.req_sensors.size(); j++){
+                if(i != j){ remainingSensors.add(this.req_sensors.get(j)); }
+            }
+
+            // create combinations of dependencies
+            ArrayList<ArrayList<String>> combinations = getCombinations( remainingSensors );
+
+            for (ArrayList<String> depTasks : combinations) {
+                Subtask mainSubtask = new Subtask(mainSensor, i + 1, this);
+
+                for (String depTask : depTasks) {
+                    if (depTask.length() > 0) {
+                        mainSubtask.addDep_task(depTask, this.req_sensors.indexOf(depTask) + 1);
+                    }
+                }
+
+                this.J.add(mainSubtask);
+                this.K.add((depTasks.size() + 1));
+            }
+        }
+        N_sub = J.size();
+    }
+
+    private ArrayList<ArrayList<String>> getCombinations(ArrayList<String> remainingSensors){
+        ArrayList<ArrayList<String>> combinations = new ArrayList<>();
+
+        for(int i = 0; i < (int) Math.pow(2, remainingSensors.size()); i++ ){
+            String bitRepresentation = Integer.toBinaryString(i);
+            ArrayList<String> tempSet = new ArrayList<>();
+
+            for(int j = 0; j < bitRepresentation.length(); j++){
+                int delta = remainingSensors.size() - bitRepresentation.length();
+
+                if (bitRepresentation.charAt(j) == '1') {
+                    tempSet.add(remainingSensors.get(j + delta));
+                }
+            }
+
+            combinations.add(tempSet);
+        }
+        return combinations;
+    }
+
+    private void createDependencies(){
+        // Create T and D matrices
+        D = new int[N_sub][N_sub];
+        T = new double[N_sub][N_sub];
+
+        for (int j = 0; j < N_sub; j++){
+            Subtask temp_task1 = J.get(j);
+            for (int q = 0; q < N_sub; q++){
+                Subtask temp_task2 = J.get(q);
+                if (j == q){
+                    // Subtask has no dependency with itself
+                    D[j][q] = 0;
+                    T[j][q] = Double.POSITIVE_INFINITY;
+                }
+                else if(temp_task1.getDep_nums().size() == 0){
+                    // Subtask j has no dependent subtasks
+                    D[j][q] = -1;
+                    T[j][q] = Double.POSITIVE_INFINITY;
+                }
+                else if(temp_task2.getDep_nums().size() == 0){
+                    // Subtask q has no dependent subtasks
+                    D[j][q] = -1;
+                    T[j][q] = Double.POSITIVE_INFINITY;
+                }
+                else{
+                    // Checks for dependency constraints
+                    for (int i = 0; i < temp_task1.getDep_nums().size(); i++){
+                        if (temp_task1.getDep_nums().get(i) == temp_task2.getMain_num()){
+                            D[j][q] = 1;
+                            T[j][q] = this.t_corr;
+                        }
+                        else{
+                            T[j][q] = Double.POSITIVE_INFINITY;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
