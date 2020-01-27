@@ -2,8 +2,7 @@ package CCBBA.scenarios.random;
 
 import CCBBA.CCBBASimulation;
 import CCBBA.scenarios.appendix_b.AppendixBScenario;
-import CCBBA.source.Scenario;
-import CCBBA.source.Task;
+import CCBBA.bin.*;
 import madkit.kernel.AbstractAgent;
 import madkit.simulation.probe.PropertyProbe;
 

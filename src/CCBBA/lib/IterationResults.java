@@ -8,4 +8,8 @@ public class IterationResults {
     private ArrayList<Double> y = new ArrayList<>();                    // winner bid list
     private ArrayList<SimulatedAgent> z = new ArrayList<>();            // winner agent list
     private ArrayList<Double> tz = new ArrayList<>();                   // arrival time list
+
+    public IterationResults(SimulatedAgent parentAgent){
+
+    }
 }

@@ -1,26 +1,28 @@
 package CCBBA;
 
-import CCBBA.CCBBASimulation;
-import CCBBA.scenarios.appendix_b.*;
-import CCBBA.bin.*;
 import madkit.kernel.AbstractAgent;
 
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import CCBBA.bin.*;
+import CCBBA.scenarios.figure5.*;
 
-public class AppendixBExample extends AbstractAgent {
+public class Figure5Simulation extends AbstractAgent {
+
     /**
      * Organizational constants
      */
     private String directoryAddress;
-    private int numAgents = 2;
+    private int numAgents = 0;
 
     /**
      * Sim Setup
      */
     public static void main(String[] args) {
-        executeThisAgent(1, false);
+        for(int i = 0; i < 1; i++) {
+            executeThisAgent(1, false);
+        }
     }
 
     @Override
@@ -32,11 +34,11 @@ public class AppendixBExample extends AbstractAgent {
         createGroup(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP);
 
         // 2 : create the environment
-        Scenario environment = new AppendixBScenario(2, numAgents);
+        Scenario environment = new ValidationScenario(10);
         launchAgent(environment);
 
         // 3 : launch some simulated agents
-        setupAgent();
+        setupAgent( 100.0 );
 
         // 4 : create the scheduler
         launchAgent(new myScheduler("CCBBA"), false);
@@ -48,15 +50,23 @@ public class AppendixBExample extends AbstractAgent {
     /**
      * Helping functions
      */
-    private void setupAgent(){
-        launchAgent(new SimulatedAgent01());
-        launchAgent(new SimulatedAgent02());
+    private void setupAgent(double merge_cost){
+        // e = {IR}
+        launchAgent(new ValidationAgentMod01(merge_cost));
+        launchAgent(new ValidationAgentMod01(merge_cost));
+        // e = {MW}
+        launchAgent(new ValidationAgentMod02(merge_cost));
+        launchAgent(new ValidationAgentMod02(merge_cost));
+        // e = {VIS}
+        launchAgent(new ValidationAgentMod03(merge_cost));
+        launchAgent(new ValidationAgentMod03(merge_cost));
+        this.numAgents = 6;
     }
 
     private void createFile(){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd-hh_mm_ss_SSS");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd-HH_mm_ss_SSS");
         LocalDateTime now = LocalDateTime.now();
-        this.directoryAddress = "src/CCBBA/results/results-appendix_b-"+ dtf.format(now);
+        this.directoryAddress = "src/CCBBA/results/results-validation-5-"+ dtf.format(now);
         new File( this.directoryAddress ).mkdir();
     }
 }

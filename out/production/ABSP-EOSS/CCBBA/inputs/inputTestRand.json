@@ -9,16 +9,18 @@
 			{
 				"Name": "Sat1",
 				"Instances": 1,
-				"SensorList": [ "IR" ],
+				"SensorList": [ "IR", "MW", "VIS" ],
 				"Position": [ 0.0, 0.0, 0.0],
-				"Speed": 1
+				"Speed": 1.0,
+				"Mass": 1.0
 			}, 
 			{
 				"Name": "Sat2",
-				"Instances": 10,
+				"Instances": 1,
 				"SensorList": [ "MW" ],
 				"Position": [ 4.0, 0.0, 0.0],
-				"Velocity": [ 1.0, 0.0, 0.0],
+				"Speed": 1.0,
+				"Mass": 1.0
 			}			
 		],
 		"Costs": {

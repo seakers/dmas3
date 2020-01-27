@@ -2,7 +2,7 @@ package CCBBA.scenarios.random;
 
 import java.awt.*;
 import java.util.Vector;
-import CCBBA.source.*;
+import CCBBA.bin.*;
 
 public class SimulatedAgentRandom extends SimulatedAbstractAgent {
     Vector<String> instrumentList = new Vector<>();

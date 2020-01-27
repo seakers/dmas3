@@ -3,6 +3,7 @@ package CCBBA;
 import CCBBA.lib.Planner;
 import CCBBA.lib.Scenario;
 import CCBBA.lib.SimGroups;
+import CCBBA.lib.SimulatedAgent;
 import madkit.kernel.AbstractAgent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -33,27 +34,26 @@ public class Driver extends AbstractAgent {
 
     @Override
     protected void activate(){
-        // 1 : load sim inputs
-        inputSimData("inputTestRand.json");
-
-        // 2 : create results directory
-        createFileDirectory();
-
-        // 3 : create the simulation group
-        createGroup(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-
-        // 4 : create simulation environment
         try {
+            // 1 : load sim inputs
+            inputSimData("inputTestRand.json");
+
+            // 2 : create results directory
+            createFileDirectory();
+
+            // 3 : create the simulation group
+            createGroup(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+
+            // 4 : create simulation environment
             launchAgent( new Scenario( inputData ) );
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        // 5 : launch agents
-//        setupAgents();
+            // 5 : launch agents
+            setupAgents();
 
-        // 6 : create task scheduler
-        launchAgent(new Planner("CCBBA"), false);
+            // 6 : create task scheduler
+            launchAgent(new Planner("CCBBA"), false);
+
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
 
@@ -82,7 +82,7 @@ public class Driver extends AbstractAgent {
         new File( this.directoryAddress ).mkdir();
     }
 
-    private void setupAgents(){
+    private void setupAgents() throws Exception {
         JSONObject agentData = (JSONObject) inputData.get("Agents");
         JSONArray  agentList = (JSONArray) agentData.get("AgentList");
 
@@ -90,7 +90,7 @@ public class Driver extends AbstractAgent {
             JSONObject agentSpecs = (JSONObject) agentList.get(i);
             int instances = Integer.valueOf( agentSpecs.get("Instances").toString() );
             for(int j = 0; j < instances; j++) {
-//                launchAgent(new SimulatedAgent(agentSpecs, this.inputData));
+                launchAgent(new SimulatedAgent(agentSpecs, this.inputData));
             }
         }
         this.numAgents = agentList.size();

@@ -18,6 +18,7 @@ public class Scenario extends Watcher {
     private JSONObject worldData;
     private ArrayList<Task> scenarioTasks = new ArrayList<>();
     private Level loggerLevel;
+
     // 2D or 3D grid world
     private ArrayList<Double> bounds = new ArrayList<>();
 
@@ -72,7 +73,7 @@ public class Scenario extends Watcher {
                 bounds.add(z_max);
                 getLogger().config("3D grid world configured with bounds (" + x_max + ", " + y_max + ", " + z_max +")");
             }
-//            else if( worldType.toString().equals("Earth") ){
+//            else if( worldType.toString().equals("3D_Earth") ){
 //                // set up Orekit 3D world
 //            }
             else{
@@ -99,7 +100,7 @@ public class Scenario extends Watcher {
 
         // 1 : request my role so that the viewer can probe me
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE);
-        getLogger().config("Got assigned to " + getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP) + "role");
+        getLogger().config("Got assigned to " + getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP) + " role");
 
         // 2 : this probe is used to initialize the agents' environment field
         addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "environment"));

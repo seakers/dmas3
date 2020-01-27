@@ -50,47 +50,42 @@ public class Task {
         createDependencies();
     }
 
-    private void checkInputFormat(JSONObject taskData){
-        try {
-            if(taskData.get("MaxScore") == null){
-                throw new NullPointerException("INPUT ERROR: Task max score not contained in input file.");
-            }
-            else if(taskData.get("Cost") == null){
-                throw new NullPointerException("INPUT ERROR: Task cost not contained in input file.");
-            }
-            else if( ((JSONObject) taskData.get("Cost")).get("Value") == null){
-                throw new NullPointerException("INPUT ERROR: Task cost value not contained in input file.");
-            }
-            else if( ((JSONObject) taskData.get("Cost")).get("Type") == null){
-                throw new NullPointerException("INPUT ERROR: Task cost type not contained in input file.");
-            }
-            else if(taskData.get("SensorList") == null){
-                throw new NullPointerException("INPUT ERROR: Task Sensor List not contained in input file.");
-            }
-            else if(taskData.get("Location") == null){
-                throw new NullPointerException("INPUT ERROR: Task Location not contained in input file.");
-            }
-            else if(taskData.get("t_start") == null){
-                throw new NullPointerException("INPUT ERROR: Task start time not contained in input file.");
-            }
-            else if(taskData.get("t_end") == null){
-                throw new NullPointerException("INPUT ERROR: Task end time not contained in input file.");
-            }
-            else if(taskData.get("duration") == null){
-                throw new NullPointerException("INPUT ERROR: Task duration time not contained in input file.");
-            }
-            else if(taskData.get("t_corr") == null){
-                throw new NullPointerException("INPUT ERROR: Task correlation time not contained in input file.");
-            }
-            else if(taskData.get("lambda") == null){
-                throw new NullPointerException("INPUT ERROR: Task score time decay parameter (lambda) not contained in input file.");
-            }
-            else if(taskData.get("gamma") == null){
-                throw new NullPointerException("INPUT ERROR: Task proximity parameter (gamma) not contained in input file.");
-            }
+    private void checkInputFormat(JSONObject taskData) throws Exception{
+        if(taskData.get("MaxScore") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " max score not contained in input file.");
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        else if(taskData.get("Cost") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " cost not contained in input file.");
+        }
+        else if( ((JSONObject) taskData.get("Cost")).get("Value") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " cost value not contained in input file.");
+        }
+        else if( ((JSONObject) taskData.get("Cost")).get("Type") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " cost type not contained in input file.");
+        }
+        else if(taskData.get("SensorList") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " Sensor List not contained in input file.");
+        }
+        else if(taskData.get("Location") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " Location not contained in input file.");
+        }
+        else if(taskData.get("t_start") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " start time not contained in input file.");
+        }
+        else if(taskData.get("t_end") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " end time not contained in input file.");
+        }
+        else if(taskData.get("duration") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " duration time not contained in input file.");
+        }
+        else if(taskData.get("t_corr") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " correlation time not contained in input file.");
+        }
+        else if(taskData.get("lambda") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " score time decay parameter (lambda) not contained in input file.");
+        }
+        else if(taskData.get("gamma") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " proximity parameter (gamma) not contained in input file.");
         }
     }
 
@@ -117,24 +112,27 @@ public class Task {
 //                // NEEDS IMPLEMENTATION
 //            }
             else{
-                throw new Exception("INPUT ERROR: Task max score distribution not supported.");
+                throw new Exception("INPUT ERROR:" + this.name + " max score distribution not supported.");
             }
         }
+
         // -Cost
         JSONObject costData = (JSONObject) taskData.get("Cost");
         this.cost = (double) costData.get("Value");
         this.cost_type = (String) costData.get("Type");
         if(!this.cost_type.equals("const")){
             if(!this.cost_type.equals("proportional")){
-                throw new Exception("Cost type not supported.");
+                throw new Exception("INPUT ERROR:" + this.name + " cost type not supported.");
             }
         }
+
         // -Sensor List
         JSONArray sensorData = (JSONArray) taskData.get("SensorList");
         this.req_sensors = new ArrayList<>();
         for (Object sensorDatum : sensorData) {
             this.req_sensors.add(sensorDatum.toString());
         }
+
         // -Location
         this.location = new ArrayList<>();
         if( taskData.get("Location").getClass().equals(sensorData.getClass()) ){
@@ -149,7 +147,7 @@ public class Task {
                 this.locationType = "vector";
             }
             else{
-                throw new Exception("INPUT ERROR: Task location format not supported.");
+                throw new Exception("INPUT ERROR:" + this.name + " location format not supported.");
             }
             for (Object locationDatum : locationData) {
                 this.location.add((double) locationDatum);
@@ -192,12 +190,12 @@ public class Task {
                     this.location.add(z);
                     this.locationType = "vector";
                 }
-//                else if(worldType.equals("3D_World")){
+//                else if(worldType.equals("3D_Earth")){
 //                    // ---Task is on earth's surface
 //                    // IMPLEMENTATION NEEDED
 //                }
                 else{
-                    throw new Exception("INPUT ERROR: Task world not supported.");
+                    throw new Exception("INPUT ERROR:" + this.name + " world not supported.");
                 }
 
             }
@@ -206,7 +204,7 @@ public class Task {
 //                // NEEDS IMPLEMENTATION
 //            }
             else{
-                throw new Exception("INPUT ERROR: Task location distribution not supported.");
+                throw new Exception("INPUT ERROR:" + this.name + " location distribution not supported.");
             }
         }
 
@@ -220,7 +218,7 @@ public class Task {
             this.t_end = (double) taskData.get("t_end");
         }
         else{
-            throw new Exception("INPUT ERROR: Task end time entry not supported.");
+            throw new Exception("INPUT ERROR:" + this.name + " end time entry not supported.");
         }
         if( taskData.get("t_corr").toString().equals("INF") ){
             this.t_corr = Double.POSITIVE_INFINITY;
@@ -229,7 +227,7 @@ public class Task {
             this.t_corr = (double) taskData.get("t_corr");
         }
         else{
-            throw new Exception("INPUT ERROR: Task correlation time entry not supported.");
+            throw new Exception("INPUT ERROR:" + this.name + " correlation time entry not supported.");
         }
 
         // -Score time decay parameter
@@ -243,7 +241,7 @@ public class Task {
             this.lambda = (double) taskData.get("lambda");
         }
         else{
-            throw new Exception("INPUT ERROR: Task score decay parameter entry not supported.");
+            throw new Exception("INPUT ERROR:" + this.name + " score decay parameter entry not supported.");
         }
 
         // -Proximity parameter
@@ -257,7 +255,7 @@ public class Task {
             this.gamma = (double) taskData.get("gamma");
         }
         else{
-            throw new Exception("INPUT ERROR: Task proximity parameter entry not supported.");
+            throw new Exception("INPUT ERROR:" + this.name + " proximity parameter entry not supported.");
         }
 
         this.I = req_sensors.size();
@@ -363,4 +361,9 @@ public class Task {
                 "-Sensor List: \t%s \n" +
                 "-Location: \t\t%s \n", this.name, this.S_Max, this.req_sensors, this.location);
     }
+
+    /**
+     * Getters and Setters
+     */
+    public String getName(){ return this.name; }
 }

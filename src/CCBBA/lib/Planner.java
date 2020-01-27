@@ -23,35 +23,35 @@ public class Planner extends Scheduler {
         // 1 : request my role
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE);
 
-        // 2 : execute planners
-        if(this.planner == "CCBBA") { //Consensus Constraint-Based Bundle Algorithm
-            //thinking phase
-            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "phaseOne");
-            addActivator(agents);
-            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "phaseTwo");
-            addActivator(agents);
-
-            //doing phase
-            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, "doTasks");
-            addActivator(agents);
-
-            //dying phase
-            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE, "end");
-            addActivator(agents);
-        }
-        else if(this.planner == "DEBUG_TASK"){  //Does not execute agents, just creates environment
-            //thinking phase
-            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "phaseOne");
-            addActivator(agents);
-
-            //dying phase
-            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "end");
-            addActivator(agents);
-        }
-
-        // 3 : collect results
-        agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE, "checkResults");
-        addActivator(agents);
+//        // 2 : execute planners
+//        if(this.planner == "CCBBA") { //Consensus Constraint-Based Bundle Algorithm
+//            //thinking phase
+//            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "phaseOne");
+//            addActivator(agents);
+//            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "phaseTwo");
+//            addActivator(agents);
+//
+//            //doing phase
+//            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, "doTasks");
+//            addActivator(agents);
+//
+//            //dying phase
+//            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE, "end");
+//            addActivator(agents);
+//        }
+//        else if(this.planner == "DEBUG_TASK"){  //Does not execute agents, just creates environment
+//            //thinking phase
+//            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "phaseOne");
+//            addActivator(agents);
+//
+//            //dying phase
+//            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "end");
+//            addActivator(agents);
+//        }
+//
+//        // 3 : collect results
+//        agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE, "checkResults");
+//        addActivator(agents);
 
         // 4 : start the simulation
         setSimulationState(SimulationState.RUNNING);

@@ -9,6 +9,7 @@ public class Subtask {
     private int main_num;
     private String name;
     private Task parentTask;
+    private String parentName;
 
     public Subtask(String new_main, int new_num, Task parent){
         main_task = new_main;
@@ -17,6 +18,7 @@ public class Subtask {
         dep_nums = new ArrayList<Integer>();
         name = new_main + "_{}";
         parentTask = parent;
+        parentName = parent.getName();
     }
 
     public void addDep_task(String new_task, int new_num){

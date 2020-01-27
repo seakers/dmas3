@@ -1,8 +1,7 @@
 package CCBBA.scenarios.appendix_b;
 
 import CCBBA.CCBBASimulation;
-import CCBBA.source.Scenario;
-import CCBBA.source.Task;
+import CCBBA.bin.*;
 import madkit.kernel.AbstractAgent;
 import madkit.simulation.probe.PropertyProbe;
 
@@ -10,6 +9,10 @@ import java.awt.*;
 import java.util.Vector;
 
 public class AppendixBScenario extends Scenario {
+    public AppendixBScenario(int numTasks, int numAgents){
+        this.numTasks = numTasks;
+        this.numAgents = numAgents;
+    }
 
     @Override
     protected void activate() {
@@ -34,11 +37,11 @@ public class AppendixBScenario extends Scenario {
         e_1.add("IR");
         e_1.add("MW");
 
-        tc_1.add(0.0);
-        tc_1.add(inf);
-        tc_1.add(1.0);
-        tc_1.add(1.0);
-        tc_1.add(1.0);
+        tc_1.add(0.0);                //t_start
+        tc_1.add(inf);                //t_end
+        tc_1.add(1.0);                //task duration
+        tc_1.add(1.0);                //t_corr
+        tc_1.add(0.015);              //lambda
 
         Task task1 = new Task(100.0, x_1, "CONSTANT", 2.0, e_1, tc_1);
         scenarioTasks.add(task1);
@@ -46,11 +49,11 @@ public class AppendixBScenario extends Scenario {
         //Define task 2
         e_2.add("MW");
 
-        tc_2.add(0.0);
-        tc_2.add(inf);
-        tc_2.add(1.0);
-        tc_2.add(1.0);
-        tc_2.add(1.0);
+        tc_2.add(0.0);                //t_start
+        tc_2.add(inf);                //t_end
+        tc_2.add(1.0);                //task duration
+        tc_2.add(1.0);                //t_corr
+        tc_2.add(0.015);              //lambda
 
         Task task2 = new Task(30.0, x_2, "CONSTANT", 2.0, e_2, tc_2);
         scenarioTasks.add(task2);
@@ -75,7 +78,8 @@ public class AppendixBScenario extends Scenario {
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.ENV_ROLE);
 
         // 2 : this probe is used to initialize the agents' environment field
-        addProbe(new AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK, "environment"));
+        addProbe(new AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1, "environment"));
+        addProbe(new AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2, "environment"));
         addProbe(new AgentsProbe(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE, "environment"));
 
     }

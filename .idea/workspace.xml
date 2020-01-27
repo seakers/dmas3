@@ -2,20 +2,37 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5ed5f4b0-5cd6-4ed4-b23a-eac4fc17b05b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/lib/IterationResults.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/lib/LoggerTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/CCBBA/lib/Planner.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/source/AbstractBid.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/source/AbstractResultsCompiler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/source/AbstractSimulatedAgent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/CCBBA/source/IterationLists.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Driver.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/Driver.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/inputs/inputTestRand.json" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/inputs/inputTestRand.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/lib/Planner.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/lib/Planner.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/lib/Scenario.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/lib/Scenario.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/lib/SimulatedAgent.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/lib/SimulatedAgent.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/lib/Task.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ABSP-EOSS/CCBBA/lib/Task.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/Driver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/Driver.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/inputs/inputTestRand.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/inputs/inputTestRand.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/lib/IterationResults.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/lib/IterationResults.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/lib/Planner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/lib/Planner.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/lib/Scenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/lib/Scenario.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/lib/SimGroups.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/lib/SimGroups.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/lib/SimulatedAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/lib/SimulatedAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/lib/Subtask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/lib/Subtask.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CCBBA/lib/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/lib/Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/IterationResults.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/IterationResults.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/PathUtility.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/PathUtility.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/ResultsCompiler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/Scenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/Scenario.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/SimulatedAbstractAgent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/SimulatedAbstractAgent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/Subtask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/Subtask.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/SubtaskBid.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/SubtaskBid.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/myMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/myMessage.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/myScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/CCBBA/source/myScheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CCBBA/source/scratch.txt" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -151,7 +168,7 @@
       <workItem from="1562859656035" duration="6801000" />
       <workItem from="1563203314285" duration="10170000" />
       <workItem from="1579646478155" duration="40738000" />
-      <workItem from="1580142185846" duration="5480000" />
+      <workItem from="1580142185846" duration="11877000" />
     </task>
     <servers />
   </component>
@@ -188,9 +205,9 @@
           <option name="timeStamp" value="48" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/CCBBA/Driver.java</url>
-          <line>55</line>
-          <option name="timeStamp" value="66" />
+          <url>file://$PROJECT_DIR$/src/CCBBA/lib/Scenario.java</url>
+          <line>112</line>
+          <option name="timeStamp" value="78" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
