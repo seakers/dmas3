@@ -3,6 +3,7 @@
     "SimName": "AppendixBExample",
     "NumRuns": 1,
 	"Planner": "CCBBA",
+	"Logger": "CONFIG"
 	"Agents": {
 		"AgentList": [
 			{
@@ -10,12 +11,14 @@
 				"Instances": 1,
 				"SensorList": [ "IR" ],
 				"Position": [ 0.0, 0.0, 0.0],
+				"Speed": 1
 			}, 
 			{
 				"Name": "Sat2",
-				"Instances": 1,
+				"Instances": 10,
 				"SensorList": [ "MW" ],
 				"Position": [ 4.0, 0.0, 0.0],
+				"Velocity": [ 1.0, 0.0, 0.0],
 			}			
 		],
 		"Costs": {
@@ -73,8 +76,8 @@
 			}
 		],
 		"World": {
-			"Type": "2D_Grid",
-			"Bounds": [ 50.0, 50.0 ]
+			"Type": "3D_Grid",
+			"Bounds": [ 50.0, 50.0, 50.0 ]
 		}
 	}
 }

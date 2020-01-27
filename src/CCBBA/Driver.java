@@ -1,8 +1,10 @@
 package CCBBA;
 
+import CCBBA.lib.Planner;
 import CCBBA.lib.Scenario;
 import CCBBA.lib.SimGroups;
 import madkit.kernel.AbstractAgent;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -10,6 +12,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
 
 public class Driver extends AbstractAgent {
     /**
@@ -17,6 +20,7 @@ public class Driver extends AbstractAgent {
      */
     private JSONObject inputData;
     private String directoryAddress;
+    private Level loggerLevel;
     private int numAgents;
 
     /**
@@ -45,6 +49,11 @@ public class Driver extends AbstractAgent {
             e.printStackTrace();
         }
 
+        // 5 : launch agents
+//        setupAgents();
+
+        // 6 : create task scheduler
+        launchAgent(new Planner("CCBBA"), false);
     }
 
 
@@ -73,14 +82,17 @@ public class Driver extends AbstractAgent {
         new File( this.directoryAddress ).mkdir();
     }
 
-//    private void setupAgents(){
-//        ArrayList agentList = (ArrayList) inputData.get("AgentList");
-//        for(int i = 0; i < agentList.size(); i++){
-//            JSONObject agentSpecs = (JSONObject) agentList.get(i);
-//            int instances = (int) agentSpecs.get("Instances");
-//            for(int j = 0; j < instances; j++) {
-//                launchAgent(new SimulatedAgent(agentSpecs));
-//            }
-//        }
-//    }
+    private void setupAgents(){
+        JSONObject agentData = (JSONObject) inputData.get("Agents");
+        JSONArray  agentList = (JSONArray) agentData.get("AgentList");
+
+        for(int i = 0; i < agentList.size(); i++){
+            JSONObject agentSpecs = (JSONObject) agentList.get(i);
+            int instances = Integer.valueOf( agentSpecs.get("Instances").toString() );
+            for(int j = 0; j < instances; j++) {
+//                launchAgent(new SimulatedAgent(agentSpecs, this.inputData));
+            }
+        }
+        this.numAgents = agentList.size();
+    }
 }

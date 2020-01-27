@@ -12,6 +12,7 @@ public class Task {
     /**
      * Task parameters
      */
+    private String name;                        // Task name
     private double S_Max;                       // Maximum score
     private double cost;                        // Inherent cost of executing the task
     private String cost_type;                   // Describes if the cost is constant or not
@@ -94,6 +95,9 @@ public class Task {
     }
 
     private void unpackInput(JSONObject taskData, JSONObject worldData) throws Exception {
+        // -Task Name
+        this.name = taskData.get("Name").toString();
+
         // -Max Score
         if(taskData.get("MaxScore").getClass().equals( Double.valueOf("1.0").getClass() ) ){
             // --Constant Max Score
@@ -349,5 +353,14 @@ public class Task {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "-Name: \t\t\t%s \n" +
+                "-Max Score: \t%f \n" +
+                "-Sensor List: \t%s \n" +
+                "-Location: \t\t%s \n", this.name, this.S_Max, this.req_sensors, this.location);
     }
 }

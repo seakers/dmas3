@@ -9,7 +9,7 @@ public class SimulatedAgent extends SimulatedAbstractAgent {
     private JSONObject inputAgent;
     private ArrayList sensorList;
 
-    public SimulatedAgent(JSONObject inputAgent){
+    public SimulatedAgent(JSONObject inputAgent, JSONObject inputData){
         this.inputAgent = inputAgent;
     }
 
@@ -17,7 +17,5 @@ public class SimulatedAgent extends SimulatedAbstractAgent {
     protected void activate() {
         // Request Role
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK);
-
-
     }
 }
