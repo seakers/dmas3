@@ -1,5 +1,6 @@
 package CCBBA.lib;
 
+import jmetal.encodings.variable.Int;
 import madkit.kernel.AbstractAgent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -8,20 +9,31 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 
 public class SimulatedAgent extends AbstractAgent {
-    private JSONObject inputAgentData;
+    /**
+     * Input parameters from file
+     */
     private Level loggerLevel;
 
-    private Scenario environment;
-    private String name;
-    private ArrayList<String> sensorList;
-    private ArrayList<Double> position;
-    private ArrayList<Double> velocity;
-    private double speed;
-    private IterationResults localResults;
-    public SimulatedAgent(JSONObject inputAgentData, JSONObject inputData) throws Exception {
-        // Load Agent data
-        this.inputAgentData = inputAgentData;
+    /**
+     * Properties
+     */
+    private Scenario environment;                           // world environment
+    private String name;                                    // agent name
+    private ArrayList<String> sensorList;                   // list of available sensors
+    private ArrayList<Double> position;                     // agent position
+    private ArrayList<Double> velocity;                     // agent velocity
+    private double speed;                                   // agent speed
+    private double mass;                                    // agent mass
+    private ArrayList<IterationResults> localResults;       // list of local results
+    private ArrayList<Task> worldTasks;                     // list of tasks in world environment
+    private ArrayList<Subtask> worldSubtasks;               // list of subtasks in world environment
+    private int z;                                          // iteration counter
+    private int M;                                          // planning horizon
+    private int O_kq;                                       // max iterations in constraint violation
+    private AgentResources myResources;
 
+
+    public SimulatedAgent(JSONObject inputAgentData, JSONObject inputData) throws Exception {
         // Set up logger level
         setUpLogger(inputData);
 
@@ -34,21 +46,51 @@ public class SimulatedAgent extends AbstractAgent {
 
     @Override
     protected void activate() {
+        getLogger().info("Initiating agent");
+
         // Request Role
-        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK);
-        getLogger().config("Got assigned to " + getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP) + " role");
+        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+        getLogger().config("Assigned to " + getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP) + " role");
 
-        // Initite local results
-        this.localResults = new IterationResults(this);
+        // Initiate local results
+        this.z = 0;
+
+        // Get world subtasks
+        this.worldTasks = new ArrayList<>();
+        this.worldSubtasks = new ArrayList<>();
+        for(Task J : this.environment.getScenarioTasks()){
+            this.worldTasks.add(J);
+            this.worldSubtasks.addAll(J.getSubtaskList());
+        }
+        getLogger().info(this.worldTasks.size() + " Tasks found in world");
+        getLogger().info(this.worldSubtasks.size() + " Subtasks found in world");
+
+        // Initiate iteration results
+        this.localResults = new ArrayList<>();
+        for(Subtask j : this.worldSubtasks){
+            this.localResults.add( new IterationResults(j) );
+        }
     }
 
     @SuppressWarnings("unused")
-    public void phaseOne(){
+    public void thinkingPhaseOne(){
+        // check for new tasks
+
 
     }
 
     @SuppressWarnings("unused")
-    public void phaseTwo(){
+    public void thinkingPhaseTwo(){
+
+    }
+
+    @SuppressWarnings("unused")
+    public void consensusPhase(){
+
+    }
+
+    @SuppressWarnings("unused")
+    public void doingPhase(){
 
     }
 
@@ -104,9 +146,6 @@ public class SimulatedAgent extends AbstractAgent {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " starting position not contained in input file.");
             }
         }
-        else if(inputAgentData.get("Mass") == null){
-            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " mass not contained in input file.");
-        }
         else if(worldType.equals("3D_Grid") || worldType.equals("2D_Grid")) {
             if (inputAgentData.get("Speed") == null) {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " speed not contained in input file.");
@@ -115,12 +154,25 @@ public class SimulatedAgent extends AbstractAgent {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + "'s velocity does not match world type selected.");
             }
         }
-        else if(inputAgentData.get("Velocity") == null){
-            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " velocity not contained in input file.");
+
+        if(inputAgentData.get("Mass") == null){
+            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " mass not contained in input file.");
         }
+        else if( inputAgentData.get("PlanningHorizon") == null ){
+            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " planning horizon not contained in input file.");
+        }
+        else if( inputAgentData.get("MaxConstraintViolations") == null ){
+            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " max number of constraint violation not contained in input file.");
+        }
+        else if(inputAgentData.get("Resources") == null){
+            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " resource information not contained in input file.");
+        }
+
     }
 
     private void unpackInput(JSONObject inputAgentData) {
+        getLogger().config("Configuring agent...");
+
         // -Agent name
         this.name = inputAgentData.get("Name").toString();
 
@@ -149,6 +201,16 @@ public class SimulatedAgent extends AbstractAgent {
                 this.velocity.add( (double) velocityDatum );
             }
         }
+
+        // -Mass
+        this.mass = (double) inputAgentData.get("Mass");
+
+        // -Coalition Restrictions
+        this.M = Integer.parseInt( inputAgentData.get("PlanningHorizon").toString() );
+        this.O_kq = Integer.parseInt( inputAgentData.get("MaxConstraintViolations").toString() );
+
+        // -Resources
+        this.myResources = new AgentResources(inputAgentData);
 
         int x = 1;
     }

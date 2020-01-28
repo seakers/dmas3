@@ -10,8 +10,9 @@ public class Subtask {
     private String name;
     private Task parentTask;
     private String parentName;
+    private int k;
 
-    public Subtask(String new_main, int new_num, Task parent){
+    public Subtask(String new_main, int new_num, Task parent, int K){
         main_task = new_main;
         main_num = new_num;
         dep_tasks = new ArrayList<String>();
@@ -19,6 +20,7 @@ public class Subtask {
         name = new_main + "_{}";
         parentTask = parent;
         parentName = parent.getName();
+        k = K;
     }
 
     public void addDep_task(String new_task, int new_num){
@@ -42,4 +44,5 @@ public class Subtask {
 
     public ArrayList<Integer> getDep_nums(){ return dep_nums; }
     public int getMain_num(){ return main_num; }
+    public Task getParentTask(){ return parentTask; }
 }

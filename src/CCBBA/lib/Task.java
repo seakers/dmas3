@@ -278,7 +278,7 @@ public class Task {
             ArrayList<ArrayList<String>> combinations = getCombinations( remainingSensors );
 
             for (ArrayList<String> depTasks : combinations) {
-                Subtask mainSubtask = new Subtask(mainSensor, i + 1, this);
+                Subtask mainSubtask = new Subtask(mainSensor, i + 1, this, (depTasks.size()+1));
 
                 for (String depTask : depTasks) {
                     if (depTask.length() > 0) {
@@ -366,4 +366,5 @@ public class Task {
      * Getters and Setters
      */
     public String getName(){ return this.name; }
+    public ArrayList<Subtask> getSubtaskList(){ return this.J; }
 }

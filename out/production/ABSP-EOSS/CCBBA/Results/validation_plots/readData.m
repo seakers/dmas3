@@ -1,5 +1,6 @@
-function [results] = readData()
+function [results] = readData(Mfolder, numPoints)
     % Obtain results folders in results directory
+    cd(Mfolder)
     currentFolder = dir;
     cases = [];
     
@@ -37,14 +38,16 @@ function [results] = readData()
                     % if folder is NOT empty, process data
                     dataFile = sprintf("%s%s%s%s", folder, "\", name, "\performance_metrics.out");
                     fileID = fopen(dataFile,'r');
-                    data =  fscanf(fileID, '%f');
-                    fclose(fileID);
-                    
-                    tempData = [tempData; data'];
+                    if(fileID ~= -1)
+                        data =  fscanf(fileID, '%f');
+                        fclose(fileID);
+
+                        tempData = [tempData; data'];
+                    end                   
                 end
             end
             
-            if(length(tempData) >= 128)
+            if(length(tempData) >= numPoints)
                 break;
             end
         end
@@ -54,6 +57,7 @@ function [results] = readData()
         cd ..;
     end
     
+    cd ..;
     %- "results" struct now contains data from all validation experiments
 end
 

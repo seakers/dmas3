@@ -23,13 +23,16 @@ public class Driver extends AbstractAgent {
     private String directoryAddress;
     private Level loggerLevel;
     private int numAgents;
+    private static int numRuns = 1;
 
     /**
      * Sim Setup
      */
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        executeThisAgent(1, false);
+        for(int i = 0; i < numRuns; i++){
+            executeThisAgent(1, false);
+        }
     }
 
     @Override
@@ -71,6 +74,8 @@ public class Driver extends AbstractAgent {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        numRuns = Integer.valueOf( this.inputData.get("NumRuns").toString() );
     }
 
     private void createFileDirectory(){

@@ -35,20 +35,20 @@ public class SimulatedAbstractAgent extends AbstractAgent {
     protected int W_any_max;                                        // max permissions to bid on any
     protected Vector<IterationResults> results;                     // list of results
     protected Vector<Subtask> bundle = new Vector<>();              // bundle of chosen subtasks
-    protected Vector<Subtask> overallBundle;                          // bundle chosen throughout simulation
+    protected Vector<Subtask> overallBundle;                        // bundle chosen throughout simulation
     protected Vector<Subtask> path = new Vector<>();                // path chosen
     private Vector<Subtask> overallPath = new Vector<>();           // path chosen throughout simulation
     protected Vector<Dimension> X_path = new Vector<>();            // path locations
-    protected IterationResults localResults;                          // list of iteration results
-    protected int zeta = 0;                                           // iteration counter
+    protected IterationResults localResults;                        // list of iteration results
+    protected int zeta = 0;                                         // iteration counter
     protected double C_merge;                                       // Merging cost
     protected double C_split;                                       // Splitting cost
     protected double resources;                                     // Initial resources for agent
-    protected double resourcesRemaining;                              // Current resources for agent
+    protected double resourcesRemaining;                            // Current resources for agent
 //    private long t_0;
-    protected double t_0;                                             // start time
-    protected Vector<Integer> doingIterations = new Vector<>();       // Iterations in which plans were agreed
-    protected Vector<IterationResults> receivedResults;               // list of received results
+    protected double t_0;                                           // start time
+    protected Vector<Integer> doingIterations = new Vector<>();     // Iterations in which plans were agreed
+    protected Vector<IterationResults> receivedResults;             // list of received results
 
 
     /**
@@ -209,7 +209,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         }
 
         leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
-        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
+        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+//        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_BUNDLES);
     }
 
     @SuppressWarnings("unused")
@@ -592,7 +593,8 @@ public class SimulatedAbstractAgent extends AbstractAgent {
         receivedResults = new Vector<>();
 
         leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
-        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_COMP);
+        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_COMP);
+//        requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_WAIT_COMP);
     }
 
     @SuppressWarnings("unused")

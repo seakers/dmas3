@@ -1,7 +1,7 @@
 
 {
     "SimName": "AppendixBExample",
-    "NumRuns": 1,
+    "NumRuns": 10,
 	"Planner": "CCBBA",
 	"Logger": "CONFIG"
 	"Agents": {
@@ -12,7 +12,14 @@
 				"SensorList": [ "IR", "MW", "VIS" ],
 				"Position": [ 0.0, 0.0, 0.0],
 				"Speed": 1.0,
-				"Mass": 1.0
+				"Mass": 1.0,
+				"PlanningHorizon": 2,
+				"MaxConstraintViolations": 2,
+				"Resources": {
+					"MergeCost": 2.0,
+					"SplitCost": 1.0,
+					"Value": 100
+				}
 			}, 
 			{
 				"Name": "Sat2",
@@ -20,18 +27,17 @@
 				"SensorList": [ "MW" ],
 				"Position": [ 4.0, 0.0, 0.0],
 				"Speed": 1.0,
-				"Mass": 1.0
+				"Mass": 1.0,
+				"PlanningHorizon": 2,
+				"MaxConstraintViolations": 2,
+				"Resources": {
+					"MergeCost": 2.0,
+					"SplitCost": 1.0,
+					"Dist": "Linear",
+					"Max": 100
+				}
 			}			
-		],
-		"Costs": {
-			"CostMerge": 2.0,
-			"CostSplit": 1.0,
-			"PlanningHorizon": 2.0
-		},
-		"Resources": {
-			"Dist": "Linear",
-			"Max": 100
-		}
+		]		
 	}
 	"Scenario": {
 		"TaskList": [

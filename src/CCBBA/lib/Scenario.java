@@ -100,10 +100,11 @@ public class Scenario extends Watcher {
 
         // 1 : request my role so that the viewer can probe me
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE);
-        getLogger().config("Got assigned to " + getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP) + " role");
+        getLogger().config("Assigned to " + getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP) + " role");
 
         // 2 : this probe is used to initialize the agents' environment field
-        addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK, "environment"));
+        addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1, "environment"));
+        addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, "environment"));
         addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE, "environment"));
     }
 
@@ -154,6 +155,11 @@ public class Scenario extends Watcher {
 
         getLogger().setLevel(this.loggerLevel);
     }
+
+    /**
+     * Getters and Setters
+     */
+    public ArrayList<Task> getScenarioTasks(){ return this.scenarioTasks; }
 }
 
 
