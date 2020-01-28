@@ -120,8 +120,8 @@ public class Task {
         JSONObject costData = (JSONObject) taskData.get("Cost");
         this.cost = (double) costData.get("Value");
         this.cost_type = (String) costData.get("Type");
-        if(!this.cost_type.equals("const")){
-            if(!this.cost_type.equals("proportional")){
+        if(!this.cost_type.equals("Const")){
+            if(!this.cost_type.equals("Proportional")){
                 throw new Exception("INPUT ERROR:" + this.name + " cost type not supported.");
             }
         }
@@ -230,6 +230,9 @@ public class Task {
             throw new Exception("INPUT ERROR:" + this.name + " correlation time entry not supported.");
         }
 
+        this.t_start += (double) worldData.get("t_0");
+        this.t_end += (double) worldData.get("t_0");
+
         // -Score time decay parameter
         if( taskData.get("lambda").toString().equals("INF") ){
             this.lambda = Double.POSITIVE_INFINITY;
@@ -278,7 +281,8 @@ public class Task {
             ArrayList<ArrayList<String>> combinations = getCombinations( remainingSensors );
 
             for (ArrayList<String> depTasks : combinations) {
-                Subtask mainSubtask = new Subtask(mainSensor, i + 1, this, (depTasks.size()+1));
+                int j = combinations.indexOf( depTasks );
+                Subtask mainSubtask = new Subtask(mainSensor, i + 1, this, (depTasks.size()+1), j);
 
                 for (String depTask : depTasks) {
                     if (depTask.length() > 0) {
@@ -367,4 +371,6 @@ public class Task {
      */
     public String getName(){ return this.name; }
     public ArrayList<Subtask> getSubtaskList(){ return this.J; }
+    public int[][] getD(){ return D; }
+    public double[][] getT(){ return T; }
 }

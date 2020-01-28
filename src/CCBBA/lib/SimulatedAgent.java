@@ -2,6 +2,7 @@ package CCBBA.lib;
 
 import jmetal.encodings.variable.Int;
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.Message;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -27,10 +28,12 @@ public class SimulatedAgent extends AbstractAgent {
     private ArrayList<IterationResults> localResults;       // list of local results
     private ArrayList<Task> worldTasks;                     // list of tasks in world environment
     private ArrayList<Subtask> worldSubtasks;               // list of subtasks in world environment
-    private int z;                                          // iteration counter
+    private int zeta;                                       // iteration counter
     private int M;                                          // planning horizon
     private int O_kq;                                       // max iterations in constraint violation
-    private AgentResources myResources;
+    private AgentResources myResources;                     // agent resources
+    private ArrayList<Subtask> bundle;                      // list of tasks in agent's plan
+    private double t_0;                                     // start time
 
 
     public SimulatedAgent(JSONObject inputAgentData, JSONObject inputData) throws Exception {
@@ -54,6 +57,8 @@ public class SimulatedAgent extends AbstractAgent {
 
         // Initiate local results
         this.z = 0;
+        this.bundle = new ArrayList<>();
+        this.t_0 = this.environment.getT_0();
 
         // Get world subtasks
         this.worldTasks = new ArrayList<>();
@@ -72,11 +77,98 @@ public class SimulatedAgent extends AbstractAgent {
         }
     }
 
+    /**
+     * Planner functions
+     */
     @SuppressWarnings("unused")
     public void thinkingPhaseOne(){
+        getLogger().info("Starting phase one...");
+
         // check for new tasks
+        getAvailableSubtasks();
 
+        // Empty mailbox
+        emptyMailbox();
 
+        // construct bundle
+        boolean alive = true;
+        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+        if(myRoles.contains( SimGroups.AGENT_DIE )){
+            alive = false;
+        }
+
+        getLogger().info("Constructing bundle");
+        while( (this.bundle.size() < this.M) && (checkForAvailability()) && alive ){
+            getLogger().info("Calculating bids for every subtask");
+
+            ArrayList<SubtaskBid> bidList = new ArrayList<SubtaskBid>();
+            Subtask j_chosen = null;
+
+            // Calculate bid for every subtask
+            for(IterationResults result : this.localResults){
+                Subtask j = result.getJ();
+
+                // Chefk if subtask can be bid on
+                if( canBid(result) ){
+
+                }
+            }
+            break;
+        }
+
+        leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
+    }
+
+    private boolean canBid(IterationResults result){
+        Subtask j = result.getJ();
+        if( !this.sensorList.contains( j.getMain_task() ) ){
+            // check if agent contains sensor for subtask
+            return false;
+        }
+        // MISSING COMPLETION CHECKS
+        else if( this.bundle.contains(j) ){
+            return false;
+        }
+
+        // check if bid for a subtask of the same task is in the bundle
+        int i_q = j.getI_q();
+        Task parentTask = j.getParentTask();
+        int[][] D = parentTask.getD();
+
+        // check if subtask in question is mutually exclusive with a bid already in the bundle
+        for(Subtask bundleSubtask : this.bundle){
+            if(bundleSubtask.getParentTask() == parentTask) {
+                int i_b = bundleSubtask.getI_q();
+                if (D[i_q][i_b] == -1) { // if subtask j has a mutually exclusive task in bundle, you cannot bid
+                    return false;
+                }
+            }
+        }
+
+        // check if dependent task is about to reach coalition violation timeout
+        for(Subtask subtask : parentTask.getSubtaskList()){
+            int i_jd = j.getI_q();
+            int i_qd = subtask.getI_q();
+
+            if( (result.getV() >= this.O_kq) && (D[i_jd][i_qd] >= 1) ){
+                // if dependent subtask is about to be timed out, then don't bid
+                return false;
+            }
+        }
+
+        // Count number of requirements and number of completed requirements
+        int N_req = 0;
+        int n_sat = 0;
+        for(int k = 0; k < parentTask.getSubtaskList().size(); k++){
+            if(i_q == k){ continue;}
+            if( D[i_q][k] >= 0){ N_req++; }
+            if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){
+                n_sat++;
+            }
+        }
+
+        return true;
     }
 
     @SuppressWarnings("unused")
@@ -93,6 +185,10 @@ public class SimulatedAgent extends AbstractAgent {
     public void doingPhase(){
 
     }
+
+    /**
+     * Misc and helping functions
+     */
 
     private void setUpLogger(JSONObject inputData) throws Exception {
         if(inputData.get("Logger").toString().equals("OFF")){
@@ -170,11 +266,8 @@ public class SimulatedAgent extends AbstractAgent {
 
     }
 
-    private void unpackInput(JSONObject inputAgentData) {
+    private void unpackInput(JSONObject inputAgentData) throws Exception{
         getLogger().config("Configuring agent...");
-
-        // -Agent name
-        this.name = inputAgentData.get("Name").toString();
 
         // -Sensor List
         this.sensorList = new ArrayList();
@@ -210,8 +303,35 @@ public class SimulatedAgent extends AbstractAgent {
         this.O_kq = Integer.parseInt( inputAgentData.get("MaxConstraintViolations").toString() );
 
         // -Resources
-        this.myResources = new AgentResources(inputAgentData);
+        this.myResources = new AgentResources((JSONObject) inputAgentData.get("Resources"));
+    }
 
-        int x = 1;
+    private void getAvailableSubtasks(){
+        ArrayList<Task> J_new = this.environment.getScenarioTasks();
+
+        for(Task J : J_new){
+            if(!this.worldTasks.contains(J)){
+                // if known list of tasks does not include a task, add it to the list and create new results
+                getLogger().info("New task in world discovered");
+                this.worldTasks.add(J);
+                this.worldSubtasks.addAll(J.getSubtaskList());
+                for(Subtask j : J.getSubtaskList()){
+                    this.localResults.add( new IterationResults(j) );
+                }
+            }
+        }
+    }
+
+    private void emptyMailbox(){
+        while(!isMessageBoxEmpty()){
+            Message tempMessage = nextMessage();
+        }
+    }
+
+    private boolean checkForAvailability(){
+        for(IterationResults result : this.localResults){
+            if(result.getH() == 1){ return true; }
+        }
+        return false;
     }
 }

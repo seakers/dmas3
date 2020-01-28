@@ -16,9 +16,10 @@
 				"PlanningHorizon": 2,
 				"MaxConstraintViolations": 2,
 				"Resources": {
+					"Type": "Const",
 					"MergeCost": 2.0,
 					"SplitCost": 1.0,
-					"Value": 100
+					"Value": 100.0
 				}
 			}, 
 			{
@@ -31,10 +32,12 @@
 				"PlanningHorizon": 2,
 				"MaxConstraintViolations": 2,
 				"Resources": {
+					"Type": "Const",
 					"MergeCost": 2.0,
 					"SplitCost": 1.0,
 					"Dist": "Linear",
-					"Max": 100
+					"Max": 100.0,
+					"Min": 50.0
 				}
 			}			
 		]		
@@ -51,7 +54,7 @@
 				}
 				"Cost": {
 					"Value": 2.0,
-					"Type": "const"
+					"Type": "Const"
 				},
 				"SensorList": [ "IR", "MW" ],
 				"Location": {
@@ -71,7 +74,7 @@
 				"MaxScore": 30.0,
 				"Cost": {
 					"Value": 2.0,
-					"Type": "const"
+					"Type": "Const"
 				},
 				"SensorList": [ "MW" ],
 				"Location": [ 4.0, 3.0, 0.0],
@@ -85,7 +88,8 @@
 		],
 		"World": {
 			"Type": "3D_Grid",
-			"Bounds": [ 50.0, 50.0, 50.0 ]
+			"Bounds": [ 50.0, 50.0, 50.0 ],
+			"t_0": 0.0
 		}
 	}
 }

@@ -48,6 +48,7 @@ public class IterationResults {
     /**
      * Getters and setters
      */
+    public int getI_q(){ return i_q; }
     public Subtask getJ(){ return j; }
     public double getY() {
         return y;

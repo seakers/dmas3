@@ -18,6 +18,7 @@ public class Scenario extends Watcher {
     private JSONObject worldData;
     private ArrayList<Task> scenarioTasks = new ArrayList<>();
     private Level loggerLevel;
+    private double t_0;
 
     // 2D or 3D grid world
     private ArrayList<Double> bounds = new ArrayList<>();
@@ -80,6 +81,9 @@ public class Scenario extends Watcher {
                 throw new Exception("INPUT ERROR: World type not supported.");
             }
 
+            // Start time
+            this.t_0 = (double) this.worldData.get("t_0");
+
             // Create tasks
             // 1-Unpack task list
             this.scenarioTaskData = (JSONArray) scenarioData.get("TaskList");
@@ -94,6 +98,8 @@ public class Scenario extends Watcher {
                     getLogger().config("Task created\n" + scenarioTasks.get(i).toString());
                 }
             }
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -160,6 +166,7 @@ public class Scenario extends Watcher {
      * Getters and Setters
      */
     public ArrayList<Task> getScenarioTasks(){ return this.scenarioTasks; }
+    public double getT_0(){ return this.t_0; }
 }
 
 
