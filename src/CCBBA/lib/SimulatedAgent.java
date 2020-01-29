@@ -37,6 +37,8 @@ public class SimulatedAgent extends AbstractAgent {
     private int w_any;                                      // permission to bid on a task
     private AgentResources myResources;                     // agent resources
     private ArrayList<Subtask> bundle;                      // list of tasks in agent's plan
+    private ArrayList<Subtask> path;                        // path taken to execute bundle
+    private ArrayList<ArrayList<Double>> x_path;            // location of execution of each element in the bundle
     private double t_0;                                     // start time
 
 
@@ -282,6 +284,8 @@ public class SimulatedAgent extends AbstractAgent {
      */
     public ArrayList<String> getSensorList(){ return this.sensorList; }
     public ArrayList<Subtask> getBundle(){ return this.bundle; }
+    public ArrayList<Subtask> getPath(){ return this.path; }
+    public ArrayList<ArrayList<Double>> getX_path(){ return this.x_path; }
     public int getMaxItersInViolation(){ return this.O_kq; }
     public ArrayList<Subtask> getWorldSubtasks(){ return this.worldSubtasks; }
     public int getW_solo(){ return this.w_solo; }

@@ -20,6 +20,12 @@ public class SubtaskBid {
     }
 
     public void calcSubtaskBid(Subtask j, SimulatedAgent agent){
+        ArrayList<Subtask> oldBundle = agent.getBundle();
+        ArrayList<Subtask> oldPath = agent.getPath();
+        PathUtility oldUtility = calcPathUtility(oldPath, agent);
+    }
 
+    private PathUtility calcPathUtility(ArrayList<Subtask> path, SimulatedAgent agent){
+        return new PathUtility();
     }
 }
