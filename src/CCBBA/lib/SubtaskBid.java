@@ -26,6 +26,46 @@ public class SubtaskBid {
     }
 
     private PathUtility calcPathUtility(ArrayList<Subtask> path, SimulatedAgent agent){
-        return new PathUtility();
+        PathUtility pathUtility = new PathUtility();
+        PathUtility subtaskUtility;
+
+        // calculate path's coalition matrix - omega
+        ArrayList<Subtask> localJ = agent.getWorldSubtasks();
+        IterationResults localResults = agent.getLocalResults();
+        ArrayList<ArrayList<SimulatedAgent>> pathOmega = new ArrayList<>();
+
+        for(int i = 0; i < path.size(); i++) {
+            ArrayList<SimulatedAgent> tempCoal = new ArrayList<>();
+            for(int i_j = 0; i_j < localResults.size(); i_j++){
+                SimulatedAgent tempWinner = localResults.getIterationDatum(i_j).getZ();
+                if( (tempWinner != agent)
+                    && (tempWinner != null)
+                    && (path.get(i).getParentTask() == localResults.getIterationDatum(i_j).getJ().getParentTask()) ){
+                    tempCoal.add(tempWinner);
+                }
+
+            }
+
+            pathOmega.add(tempCoal);
+        }
+
+//        // calculate total path utility
+//        for(int i = 0; i < path.size(); i++){
+//            Subtask j = path.get(i);
+//
+//            //Calculate time of arrival
+//            double t_a = calcTimeOfArrival(path, j, agent, pathUtility);
+//
+//            // Calculate subtask utility within path
+//            subtaskUtility = calcSubtaskUtility(path,j,t_a, agent, pathOmega);
+//
+//            // Add to subtask utility to path utility
+//            pathUtility.setUtility( pathUtility.getUtility() + subtaskUtility.getUtility() );
+//
+//            // Add time of arrival to path
+//            pathUtility.addTz(t_a);
+//        }
+
+        return pathUtility;
     }
 }

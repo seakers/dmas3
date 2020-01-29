@@ -124,6 +124,7 @@ public class SubtaskBid {
             // Add time of arrival to path
             pathUtility.addTz(t_a);
         }
+
         return pathUtility;
     }
 

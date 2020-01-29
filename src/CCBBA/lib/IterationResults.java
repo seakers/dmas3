@@ -35,6 +35,10 @@ public class IterationResults {
         throw new Exception("Subtask not contained in results");
     }
 
+    public IterationDatum getIterationDatum(int i){
+        return this.results.get(i);
+    }
+
     public boolean contains(Subtask j){
         for(IterationDatum datum : this.results){
             if( datum.getJ().equals(j) ){
@@ -165,4 +169,6 @@ public class IterationResults {
 
         return dependentTasks.size() > 0;
     }
+
+    public ArrayList<IterationDatum> getResultsData(){ return  this.results; }
 }

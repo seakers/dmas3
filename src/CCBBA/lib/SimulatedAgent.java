@@ -290,4 +290,5 @@ public class SimulatedAgent extends AbstractAgent {
     public ArrayList<Subtask> getWorldSubtasks(){ return this.worldSubtasks; }
     public int getW_solo(){ return this.w_solo; }
     public int getW_any(){ return this.w_any; }
+    public IterationResults getLocalResults(){ return this.localResults; }
 }
