@@ -12,6 +12,7 @@ public class Subtask {
     private String parentName;
     private int k;
     private int i_q;                        // subtask index with respect to its parent task subtask list
+    private boolean completeness;
 
     public Subtask(String new_main, int new_num, Task parent, int K, int i){
         main_task = new_main;
@@ -23,6 +24,7 @@ public class Subtask {
         parentName = parent.getName();
         k = K;
         i_q = i;
+        completeness = false;
     }
 
     public void addDep_task(String new_task, int new_num){
@@ -49,4 +51,8 @@ public class Subtask {
     public int getMain_num(){ return main_num; }
     public Task getParentTask(){ return parentTask; }
     public int getI_q(){ return i_q; }
+    public void setToComplete(){
+        this.completeness = true;
+    }
+    public boolean getCompleteness(){ return this.completeness; }
 }

@@ -5,8 +5,10 @@ import madkit.kernel.AbstractAgent;
 import madkit.kernel.Message;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.orekit.frames.ITRFVersion;
 
 import java.util.ArrayList;
+import java.util.Vector;
 import java.util.logging.Level;
 
 public class SimulatedAgent extends AbstractAgent {
@@ -25,12 +27,14 @@ public class SimulatedAgent extends AbstractAgent {
     private ArrayList<Double> velocity;                     // agent velocity
     private double speed;                                   // agent speed
     private double mass;                                    // agent mass
-    private ArrayList<IterationResults> localResults;       // list of local results
+    private IterationResults localResults;                  // list of local results
     private ArrayList<Task> worldTasks;                     // list of tasks in world environment
     private ArrayList<Subtask> worldSubtasks;               // list of subtasks in world environment
     private int zeta;                                       // iteration counter
     private int M;                                          // planning horizon
     private int O_kq;                                       // max iterations in constraint violation
+    private int w_solo;                                     // permission to bid solo on a task
+    private int w_any;                                      // permission to bid on a task
     private AgentResources myResources;                     // agent resources
     private ArrayList<Subtask> bundle;                      // list of tasks in agent's plan
     private double t_0;                                     // start time
@@ -56,7 +60,7 @@ public class SimulatedAgent extends AbstractAgent {
         getLogger().config("Assigned to " + getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP) + " role");
 
         // Initiate local results
-        this.z = 0;
+        this.zeta = 0;
         this.bundle = new ArrayList<>();
         this.t_0 = this.environment.getT_0();
 
@@ -71,17 +75,14 @@ public class SimulatedAgent extends AbstractAgent {
         getLogger().info(this.worldSubtasks.size() + " Subtasks found in world");
 
         // Initiate iteration results
-        this.localResults = new ArrayList<>();
-        for(Subtask j : this.worldSubtasks){
-            this.localResults.add( new IterationResults(j) );
-        }
+        this.localResults = new IterationResults( this );
     }
 
     /**
      * Planner functions
      */
     @SuppressWarnings("unused")
-    public void thinkingPhaseOne(){
+    public void thinkingPhaseOne() throws Exception {
         getLogger().info("Starting phase one...");
 
         // check for new tasks
@@ -90,85 +91,27 @@ public class SimulatedAgent extends AbstractAgent {
         // Empty mailbox
         emptyMailbox();
 
-        // construct bundle
+        // Check for life status
         boolean alive = true;
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
         if(myRoles.contains( SimGroups.AGENT_DIE )){
             alive = false;
         }
 
+        // construct bundle
         getLogger().info("Constructing bundle");
-        while( (this.bundle.size() < this.M) && (checkForAvailability()) && alive ){
-            getLogger().info("Calculating bids for every subtask");
-
-            ArrayList<SubtaskBid> bidList = new ArrayList<SubtaskBid>();
-            Subtask j_chosen = null;
+        while( (this.bundle.size() < this.M) && (this.localResults.checkAvailability()) && alive ){
+            getLogger().fine("Calculating bids for every subtask");
 
             // Calculate bid for every subtask
-            for(IterationResults result : this.localResults){
-                Subtask j = result.getJ();
+            ArrayList<SubtaskBid> bidList = this.localResults.calcBidList(this);
+            Subtask j_chosen = null;
 
-                // Chefk if subtask can be bid on
-                if( canBid(result) ){
-
-                }
-            }
             break;
         }
 
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
-    }
-
-    private boolean canBid(IterationResults result){
-        Subtask j = result.getJ();
-        if( !this.sensorList.contains( j.getMain_task() ) ){
-            // check if agent contains sensor for subtask
-            return false;
-        }
-        // MISSING COMPLETION CHECKS
-        else if( this.bundle.contains(j) ){
-            return false;
-        }
-
-        // check if bid for a subtask of the same task is in the bundle
-        int i_q = j.getI_q();
-        Task parentTask = j.getParentTask();
-        int[][] D = parentTask.getD();
-
-        // check if subtask in question is mutually exclusive with a bid already in the bundle
-        for(Subtask bundleSubtask : this.bundle){
-            if(bundleSubtask.getParentTask() == parentTask) {
-                int i_b = bundleSubtask.getI_q();
-                if (D[i_q][i_b] == -1) { // if subtask j has a mutually exclusive task in bundle, you cannot bid
-                    return false;
-                }
-            }
-        }
-
-        // check if dependent task is about to reach coalition violation timeout
-        for(Subtask subtask : parentTask.getSubtaskList()){
-            int i_jd = j.getI_q();
-            int i_qd = subtask.getI_q();
-
-            if( (result.getV() >= this.O_kq) && (D[i_jd][i_qd] >= 1) ){
-                // if dependent subtask is about to be timed out, then don't bid
-                return false;
-            }
-        }
-
-        // Count number of requirements and number of completed requirements
-        int N_req = 0;
-        int n_sat = 0;
-        for(int k = 0; k < parentTask.getSubtaskList().size(); k++){
-            if(i_q == k){ continue;}
-            if( D[i_q][k] >= 0){ N_req++; }
-            if( (z.get(i_av - i_task + k) != null )&&(D[i_task][k] == 1) ){
-                n_sat++;
-            }
-        }
-
-        return true;
     }
 
     @SuppressWarnings("unused")
@@ -260,6 +203,12 @@ public class SimulatedAgent extends AbstractAgent {
         else if( inputAgentData.get("MaxConstraintViolations") == null ){
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " max number of constraint violation not contained in input file.");
         }
+        else if( inputAgentData.get("MaxBidsSolo") == null ){
+            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " max number of solo bids not contained in input file.");
+        }
+        else if( inputAgentData.get("MaxBidsAny") == null ){
+            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " max number of any bids not contained in input file.");
+        }
         else if(inputAgentData.get("Resources") == null){
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " resource information not contained in input file.");
         }
@@ -270,10 +219,10 @@ public class SimulatedAgent extends AbstractAgent {
         getLogger().config("Configuring agent...");
 
         // -Sensor List
-        this.sensorList = new ArrayList();
+        this.sensorList = new ArrayList<>();
         JSONArray sensorListData = (JSONArray) inputAgentData.get("SensorList");
-        for(int i = 0; i < sensorListData.size(); i++){
-            this.sensorList.add(sensorListData.get(i).toString() );
+        for (Object sensorListDatum : sensorListData) {
+            this.sensorList.add(sensorListDatum.toString());
         }
 
         // -Position
@@ -301,22 +250,22 @@ public class SimulatedAgent extends AbstractAgent {
         // -Coalition Restrictions
         this.M = Integer.parseInt( inputAgentData.get("PlanningHorizon").toString() );
         this.O_kq = Integer.parseInt( inputAgentData.get("MaxConstraintViolations").toString() );
+        this.w_solo = Integer.parseInt( inputAgentData.get("MaxBidsSolo").toString() );
+        this.w_any = Integer.parseInt( inputAgentData.get("MaxBidsAny").toString() );
 
         // -Resources
         this.myResources = new AgentResources((JSONObject) inputAgentData.get("Resources"));
     }
 
     private void getAvailableSubtasks(){
-        ArrayList<Task> J_new = this.environment.getScenarioTasks();
+        this.worldTasks = this.environment.getScenarioTasks();
+        this.worldSubtasks = this.environment.getScenarioSubtasks();
 
-        for(Task J : J_new){
-            if(!this.worldTasks.contains(J)){
-                // if known list of tasks does not include a task, add it to the list and create new results
-                getLogger().info("New task in world discovered");
-                this.worldTasks.add(J);
-                this.worldSubtasks.addAll(J.getSubtaskList());
-                for(Subtask j : J.getSubtaskList()){
-                    this.localResults.add( new IterationResults(j) );
+        if(this.worldSubtasks.size() > this.localResults.size()){
+            // if new tasks have been added, create new results for them
+            for(Subtask j : this.worldSubtasks){
+                if(!this.localResults.contains(j)){
+                    this.localResults.addResult(j, this);
                 }
             }
         }
@@ -328,10 +277,13 @@ public class SimulatedAgent extends AbstractAgent {
         }
     }
 
-    private boolean checkForAvailability(){
-        for(IterationResults result : this.localResults){
-            if(result.getH() == 1){ return true; }
-        }
-        return false;
-    }
+    /**
+     * Getters and Setters
+     */
+    public ArrayList<String> getSensorList(){ return this.sensorList; }
+    public ArrayList<Subtask> getBundle(){ return this.bundle; }
+    public int getMaxItersInViolation(){ return this.O_kq; }
+    public ArrayList<Subtask> getWorldSubtasks(){ return this.worldSubtasks; }
+    public int getW_solo(){ return this.w_solo; }
+    public int getW_any(){ return this.w_any; }
 }

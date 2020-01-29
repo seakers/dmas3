@@ -31,6 +31,7 @@ public class Task {
     private double[][] T;                       // Correlation time matrix
     private int N_sub;                          // Number of subtasks in task
     private int I;                              // Number of sensors needed
+    private boolean completeness;               // Completeness of task
 
     /**
      * Constructor
@@ -373,4 +374,5 @@ public class Task {
     public ArrayList<Subtask> getSubtaskList(){ return this.J; }
     public int[][] getD(){ return D; }
     public double[][] getT(){ return T; }
+    public boolean getCompleteness(){ return this.completeness; }
 }

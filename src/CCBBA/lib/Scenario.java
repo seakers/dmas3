@@ -17,6 +17,7 @@ public class Scenario extends Watcher {
     private JSONArray scenarioTaskData;
     private JSONObject worldData;
     private ArrayList<Task> scenarioTasks = new ArrayList<>();
+    private ArrayList<Subtask> scenarioSubtasks = new ArrayList<>();
     private Level loggerLevel;
     private double t_0;
 
@@ -99,6 +100,10 @@ public class Scenario extends Watcher {
                 }
             }
 
+            for(Task J : this.scenarioTasks){
+                this.scenarioSubtasks.addAll( J.getSubtaskList() );
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -166,6 +171,7 @@ public class Scenario extends Watcher {
      * Getters and Setters
      */
     public ArrayList<Task> getScenarioTasks(){ return this.scenarioTasks; }
+    public ArrayList<Subtask> getScenarioSubtasks(){ return  this.scenarioSubtasks; }
     public double getT_0(){ return this.t_0; }
 }
 
