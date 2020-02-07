@@ -5,16 +5,18 @@ import java.util.ArrayList;
 import static java.lang.Math.*;
 
 public class SubtaskBid {
+    private Subtask j_a;                // subtask to be bid on
     private double c;                   // self bid
-    private double t;                   // subtask start time
+    private double tz;                   // subtask start time
     private ArrayList<Double> x;        // position of measurement
     private int i_opt;                  // index of optimal path
     private double cost;                // cost of task
     private double score;               // score of a task
 
-    public SubtaskBid(){
+    public SubtaskBid(Subtask j){
+        this.j_a = j;
         this.c = 0.0;
-        this.t = 0.0;
+        this.tz = 0.0;
         this.x = new ArrayList<>();
         this.i_opt = 0;
         this.cost = 0.0;
@@ -22,6 +24,7 @@ public class SubtaskBid {
     }
 
     public void calcSubtaskBid(Subtask j, SimulatedAgent agent) throws Exception {
+        this.j_a = j;
         ArrayList<Subtask> oldBundle = agent.getBundle();
         ArrayList<Subtask> oldPath = agent.getPath();
         PathUtility oldUtility = calcPathUtility(oldPath, agent);
@@ -49,7 +52,7 @@ public class SubtaskBid {
             if(newPathBid > maxPathBid){
                 maxPathBid = newPathBid;
                 this.c = newPathBid;
-                this.t = newPathUtility.getTz().get( newPath.indexOf(j) );
+                this.tz = newPathUtility.getTz().get( newPath.indexOf(j) );
                 this.x = newPathUtility.getX().get( newPath.indexOf(j) );
                 this.i_opt = newPath.indexOf(j);
                 this.cost = newPathUtility.getCost();
@@ -105,4 +108,11 @@ public class SubtaskBid {
         return pathOmega;
     }
 
+    public Subtask getJ_a() { return j_a; }
+    public double getC() { return c; }
+    public double getTz() { return tz; }
+    public ArrayList<Double> getX() { return x; }
+    public int getI_opt() { return i_opt; }
+    public double getCost() { return cost; }
+    public double getScore() { return score; }
 }

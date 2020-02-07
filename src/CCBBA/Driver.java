@@ -39,7 +39,7 @@ public class Driver extends AbstractAgent {
     protected void activate(){
         try {
             // 1 : load sim inputs
-            inputSimData("inputTestRand.json");
+            inputSimData("AppendixB.json");
 
             // 2 : create results directory
             createFileDirectory();

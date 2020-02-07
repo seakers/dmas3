@@ -66,17 +66,36 @@ public class IterationResults {
         for(IterationDatum datum : results){
             // calculate bid for each task
             Subtask j = datum.getJ();
-            SubtaskBid localBid = new SubtaskBid();
+            SubtaskBid localBid = new SubtaskBid(j);
+            int h;
+
             if(canBid(j, biddingAgent)){
+                // if agent can bid, calculate bid for subtask
                 localBid.calcSubtaskBid(j, biddingAgent);
+
+                // coalition and mutex test
+                h = coalitionTest(localBid, datum.getJ()) ;
+                if(h == 1){
+                    h = mutexTest(localBid, datum.getJ());
+                }
+
+                // check if agent has enough resources to execute task
+                // MISSING
+            }
+            else{
+                h = 0;
             }
             bidList.add(localBid);
-
-            // coalition and mutex test
-
-            // check if agent has enough resources to execute task
+            datum.setH(h);
         }
         return bidList;
+    }
+
+    private int coalitionTest(SubtaskBid localBid, Subtask j){
+        return 1;
+    }
+    private int mutexTest(SubtaskBid localBid, Subtask j){
+        return 1;
     }
 
     private boolean canBid(Subtask j, SimulatedAgent biddingAgent) throws Exception {
@@ -170,5 +189,15 @@ public class IterationResults {
         return dependentTasks.size() > 0;
     }
 
-    public ArrayList<IterationDatum> getResultsData(){ return  this.results; }
+    public void updateResults(SubtaskBid maxBid, SimulatedAgent agent) throws Exception {
+        IterationDatum datum = this.getIterationDatum(maxBid.getJ_a());
+        datum.setY( maxBid.getC() );
+        datum.setZ( agent );
+        datum.setTz(maxBid.getTz());
+        datum.setC( maxBid.getC() );
+        datum.setS( agent.getIteration() );
+        datum.setCost( maxBid.getCost() );
+        datum.setScore( maxBid.getScore() );
+        datum.setX( maxBid.getX() );
+    }
 }

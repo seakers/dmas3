@@ -22,10 +22,6 @@ public class PathUtility{
 
     void calcPathUtility(ArrayList<Subtask> path, ArrayList<ArrayList<SimulatedAgent>> omega, SimulatedAgent agent) throws Exception {
         for(Subtask j : path){
-            // add path results
-            this.tz.add(null);
-            this.x.add(null);
-
             // calc subtask utility
             this.calcSubtaskUtility(j, path, omega, agent);
         }
@@ -51,6 +47,8 @@ public class PathUtility{
         this.utility += S - g - p - c_v;
         this.cost += g + p + c_v;
         this.score += S;
+        this.tz.add(t_a);
+        this.x.add(x_a);
     }
 
     private double calcTimeOfArrival(ArrayList<Subtask> path, Subtask j, SimulatedAgent agent, ArrayList<Double> x_a) throws Exception {
@@ -102,7 +100,8 @@ public class PathUtility{
         return t_a;
     }
 
-    private double calcQuickestArrivalTime(ArrayList<Subtask> path, Subtask j, SimulatedAgent agent, ArrayList<Double> x_a) throws Exception{        double delta_x;
+    private double calcQuickestArrivalTime(ArrayList<Subtask> path, Subtask j, SimulatedAgent agent, ArrayList<Double> x_a) throws Exception{
+        double delta_x;
         ArrayList<Double> x_0;
         int i = path.indexOf(j);
         double t_0;
@@ -210,7 +209,7 @@ public class PathUtility{
         }
 
         for(int i_x = 0; i_x < x_a.size(); i_x++){
-            delta_x += pow( x_a.get(i) - x_i.get(i), 2);
+            delta_x += pow( x_a.get(i_x) - x_i.get(i_x), 2);
         }
 
         double distance =  sqrt(delta_x);
@@ -237,7 +236,7 @@ public class PathUtility{
         }
 
         for(int i_x = 0; i_x < x_a.size(); i_x++){
-            delta_x += pow( x_a.get(i) - x_i.get(i), 2);
+            delta_x += pow( (x_a.get(i_x) - x_i.get(i_x)), 2);
         }
 
         double distance =  sqrt(delta_x);

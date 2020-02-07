@@ -8,7 +8,6 @@ import org.json.simple.JSONObject;
 import org.orekit.frames.ITRFVersion;
 
 import java.util.ArrayList;
-import java.util.Vector;
 import java.util.logging.Level;
 
 public class SimulatedAgent extends AbstractAgent {
@@ -69,6 +68,13 @@ public class SimulatedAgent extends AbstractAgent {
         // Initiate local results
         this.zeta = 0;
         this.bundle = new ArrayList<>();
+        this.overallBundle = new ArrayList<>();
+        this.path = new ArrayList<>();
+        this.overallPath = new ArrayList<>();
+        this.x_path = new ArrayList<>();
+        this.overallX_path = new ArrayList<>();
+        this.omega = new ArrayList<>();
+        this.overallOmega = new ArrayList<>();
         this.t_0 = this.environment.getT_0();
 
         // Get world subtasks
@@ -114,47 +120,54 @@ public class SimulatedAgent extends AbstractAgent {
             ArrayList<SubtaskBid> bidList = this.localResults.calcBidList(this);
             Subtask j_chosen = null;
 
-            for(IterationDatum datum : localResults.getResultsData()){
-                // Calculate bid for subtask
-                SubtaskBid localBid = new SubtaskBid();
-                localBid.calcSubtaskBid(datum.getJ(), this);
+            // Choose max bid
+            double currentMax = 0.0;
+            int i_max = 0;
+            SubtaskBid maxBid = new SubtaskBid(null);
 
-                bidList.add(localBid);
-
-                // Coalition & Mutex Tests
-                int h = datum.getH();
-                h = coalitionTest(localBid, datum.getJ()) ;
-                if(h == 1){
-                    h = mutexTest(localBid, datum.getJ());
+            for(int i = 0; i < bidList.size(); i++){
+                Subtask j_bid = bidList.get(i).getJ_a();
+                if( j_bid == null){
+                    continue;
                 }
 
-//                // Check if agent has enough resources to execute task
-//                double bundle_cost = 0.0;
-//                for(Subtask subtask : this.bundle){ // count costs of bundle
-//                    int i_j = localResults.getResultsData().indexOf(datum);
-//                    bundle_cost +=
-//                            localResults.getCost().get(i_j);
-//                }
-//                if( (localBid.getCost_aj() + bundle_cost) > this.resourcesRemaining){
-//                    // agent does NOT have enough resources
-//                    h = 0;
-//                }
+                double bidUtility = bidList.get(i).getC();
+                int h = localResults.getIterationDatum(j_bid).getH();
 
-                datum.setH(h);
+                if( (bidUtility*h > currentMax) ){
+                    currentMax = bidUtility*h;
+                    i_max = i;
+                    maxBid = bidList.get(i);
+                    j_chosen = j_bid;
+                }
             }
 
-            break;
+            // Check if bid already exists for that subtask in the bundle
+            boolean bidExists = false;
+            for(int i = 0; i < bundle.size(); i ++){
+                if(j_chosen == bundle.get(i)){
+                    localResults.getIterationDatum(j_chosen).setH(0);
+                    bidExists = true;
+                }
+            }
+
+            // Update results
+            if(!bidExists){
+                if( maxBid.getC() > 0 && localResults.getIterationDatum(j_chosen).getY() < maxBid.getC()) {
+                    this.bundle.add(j_chosen);
+                    this.path.add(maxBid.getI_opt(), j_chosen);
+                    this.x_path.add(maxBid.getI_opt(), maxBid.getX());
+                    localResults.updateResults(maxBid, this);
+                    localResults.getIterationDatum(j_chosen).setH(0);
+                }
+            }
+
+
+            int x = 0;
         }
 
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
-    }
-
-    private int coalitionTest(SubtaskBid localBid, Subtask j){
-        return 1;
-    }
-    private int mutexTest(SubtaskBid localBid, Subtask j){
-        return 1;
     }
 
     @SuppressWarnings("unused")
@@ -342,4 +355,5 @@ public class SimulatedAgent extends AbstractAgent {
     public AgentResources getResources(){return this.myResources; }
     public ArrayList<ArrayList<SimulatedAgent>> getOmega(){ return this.omega; }
     public ArrayList<ArrayList<SimulatedAgent>> getOverallOmega(){ return this.overallOmega; }
+    public int getIteration(){ return this.zeta; }
 }

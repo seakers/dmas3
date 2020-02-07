@@ -12,6 +12,8 @@ public class IterationDatum {
     private double c;                       // self bid
     private int s;                          // iteration stamp vector
     private ArrayList<Double> x;            // Location where the measurement will be taken
+    private double cost;                    // cost of performing subtask
+    private double score;                   // raw score from performing subtask
 
     // Info used by agent
     private int h;                          // availability
@@ -36,6 +38,8 @@ public class IterationDatum {
         this.w_any = agent.getW_any();
         this.w_solo = agent.getW_solo();
         this.x = new ArrayList<>(3);
+        this.cost = 0.0;
+        this.score = 0.0;
     }
 
 
@@ -55,4 +59,14 @@ public class IterationDatum {
     public int getW_any() { return w_any; }
     public ArrayList<Double> getX(){ return this.x; }
     public void setH(int h){ this.h = h; }
+
+    public void setY(double y) { this.y = y; }
+    public void setZ(SimulatedAgent z) { this.z = z; }
+    public void setTz(double tz) { this.tz = tz; }
+    public void setC(double c) { this.c = c; }
+    public void setS(int s) { this.s = s; }
+    public void setX(ArrayList<Double> x) { this.x = x; }
+    public void setV(int v) { this.v = v; }
+    public void setCost(double cost){ this.cost = cost; }
+    public void setScore(double score) { this.score = score; }
 }
