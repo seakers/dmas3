@@ -37,8 +37,13 @@ public class SimulatedAgent extends AbstractAgent {
     private int w_any;                                      // permission to bid on a task
     private AgentResources myResources;                     // agent resources
     private ArrayList<Subtask> bundle;                      // list of tasks in agent's plan
+    private ArrayList<Subtask> overallBundle;               // list of tasks in agent's past plans
     private ArrayList<Subtask> path;                        // path taken to execute bundle
+    private ArrayList<Subtask> overallPath;                 // path taken to execute past bundles
     private ArrayList<ArrayList<Double>> x_path;            // location of execution of each element in the bundle
+    private ArrayList<ArrayList<Double>> overallX_path;     // location of execution of each element in previous bundles
+    private ArrayList<ArrayList<SimulatedAgent>> omega;     // Coalition mate matrix of current bundle
+    private ArrayList<ArrayList<SimulatedAgent>> overallOmega; // Coalition mate matrix of previous bundle
     private double t_0;                                     // start time
 
 
@@ -109,11 +114,47 @@ public class SimulatedAgent extends AbstractAgent {
             ArrayList<SubtaskBid> bidList = this.localResults.calcBidList(this);
             Subtask j_chosen = null;
 
+            for(IterationDatum datum : localResults.getResultsData()){
+                // Calculate bid for subtask
+                SubtaskBid localBid = new SubtaskBid();
+                localBid.calcSubtaskBid(datum.getJ(), this);
+
+                bidList.add(localBid);
+
+                // Coalition & Mutex Tests
+                int h = datum.getH();
+                h = coalitionTest(localBid, datum.getJ()) ;
+                if(h == 1){
+                    h = mutexTest(localBid, datum.getJ());
+                }
+
+//                // Check if agent has enough resources to execute task
+//                double bundle_cost = 0.0;
+//                for(Subtask subtask : this.bundle){ // count costs of bundle
+//                    int i_j = localResults.getResultsData().indexOf(datum);
+//                    bundle_cost +=
+//                            localResults.getCost().get(i_j);
+//                }
+//                if( (localBid.getCost_aj() + bundle_cost) > this.resourcesRemaining){
+//                    // agent does NOT have enough resources
+//                    h = 0;
+//                }
+
+                datum.setH(h);
+            }
+
             break;
         }
 
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
+    }
+
+    private int coalitionTest(SubtaskBid localBid, Subtask j){
+        return 1;
+    }
+    private int mutexTest(SubtaskBid localBid, Subtask j){
+        return 1;
     }
 
     @SuppressWarnings("unused")
@@ -284,11 +325,21 @@ public class SimulatedAgent extends AbstractAgent {
      */
     public ArrayList<String> getSensorList(){ return this.sensorList; }
     public ArrayList<Subtask> getBundle(){ return this.bundle; }
+    public ArrayList<Subtask> getOverallBundle(){ return this.overallBundle; }
     public ArrayList<Subtask> getPath(){ return this.path; }
+    public ArrayList<Subtask> getOverallPath(){ return this.overallPath; }
     public ArrayList<ArrayList<Double>> getX_path(){ return this.x_path; }
+    public ArrayList<ArrayList<Double>> getOverallX_path(){ return this.overallX_path; }
     public int getMaxItersInViolation(){ return this.O_kq; }
     public ArrayList<Subtask> getWorldSubtasks(){ return this.worldSubtasks; }
     public int getW_solo(){ return this.w_solo; }
     public int getW_any(){ return this.w_any; }
     public IterationResults getLocalResults(){ return this.localResults; }
+    public ArrayList<Double> getPosition(){ return this.position; }
+    public double getT_0(){ return this.t_0; }
+    public Scenario getEnvironment(){ return this.environment; }
+    public double getSpeed(){ return this.speed; }
+    public AgentResources getResources(){return this.myResources; }
+    public ArrayList<ArrayList<SimulatedAgent>> getOmega(){ return this.omega; }
+    public ArrayList<ArrayList<SimulatedAgent>> getOverallOmega(){ return this.overallOmega; }
 }

@@ -1,5 +1,7 @@
 package CCBBA.lib;
 
+import java.util.ArrayList;
+
 public class IterationDatum {
     // Info used with other agents*********************
     private Subtask j;                      // subtask who the following results belong to
@@ -9,6 +11,7 @@ public class IterationDatum {
     private double tz;                      // arrival time list
     private double c;                       // self bid
     private int s;                          // iteration stamp vector
+    private ArrayList<Double> x;            // Location where the measurement will be taken
 
     // Info used by agent
     private int h;                          // availability
@@ -32,6 +35,7 @@ public class IterationDatum {
         this.v = 0;
         this.w_any = agent.getW_any();
         this.w_solo = agent.getW_solo();
+        this.x = new ArrayList<>(3);
     }
 
 
@@ -40,31 +44,15 @@ public class IterationDatum {
      */
     public int getI_q(){ return i_q; }
     public Subtask getJ(){ return j; }
-    public double getY() {
-        return y;
-    }
-    public SimulatedAgent getZ() {
-        return z;
-    }
-    public double getTz() {
-        return tz;
-    }
-    public double getC() {
-        return c;
-    }
-    public int getS() {
-        return s;
-    }
-    public int getH() {
-        return h;
-    }
-    public int getV() {
-        return v;
-    }
-    public int getW_solo() {
-        return w_solo;
-    }
-    public int getW_any() {
-        return w_any;
-    }
+    public double getY() { return y; }
+    public SimulatedAgent getZ() { return z; }
+    public double getTz() { return tz; }
+    public double getC() { return c; }
+    public int getS() { return s; }
+    public int getH() { return h;}
+    public int getV() {return v; }
+    public int getW_solo() { return w_solo; }
+    public int getW_any() { return w_any; }
+    public ArrayList<Double> getX(){ return this.x; }
+    public void setH(int h){ this.h = h; }
 }

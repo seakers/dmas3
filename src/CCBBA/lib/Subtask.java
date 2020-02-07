@@ -55,4 +55,5 @@ public class Subtask {
         this.completeness = true;
     }
     public boolean getCompleteness(){ return this.completeness; }
+    public int getK(){ return this.k; }
 }

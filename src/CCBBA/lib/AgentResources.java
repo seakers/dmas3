@@ -13,6 +13,7 @@ public class AgentResources {
     private double C_merge;
     private double C_split;
     private double value;
+    private double miu;
 
     // realistic values
     // NEEDS TO BE IMPLEMENTED
@@ -39,6 +40,12 @@ public class AgentResources {
             }
             else if(inputResourceData.get("SplitCost") == null){
                 throw new NullPointerException("INPUT ERROR: split cost not contained in input file.");
+            }
+            else if(inputResourceData.get("TravelCost") == null){
+                throw new NullPointerException("INPUT ERROR: Travel cost not contained in input file.");
+            }
+            else if(inputResourceData.get("TravelCostType") == null){
+                throw new NullPointerException("INPUT ERROR: Travel cost type not contained in input file.");
             }
             else if(inputResourceData.get("Value") == null){
                 if(inputResourceData.get("Dist") == null){
@@ -85,6 +92,12 @@ public class AgentResources {
                     throw new Exception("INPUT ERROR: agent resource distribution not supported.");
                 }
             }
+
+            if(inputResourceData.get("TravelCostType").toString().equals("Const")){
+                this.miu = (double) inputResourceData.get("TravelCost");
+            } else{
+                throw new Exception("INPUT ERROR: agent travel cost type not supported.");
+            }
         }
 //        else if(inputResourceData.get("Type").toString().equals("Real")){
 //            // values are physical
@@ -94,4 +107,9 @@ public class AgentResources {
             throw new Exception("INPUT ERROR: agent resource type not supported.");
         }
     }
+
+    public double getC_merge() { return C_merge; }
+    public double getC_split() { return C_split; }
+    public double getValue() { return value; }
+    public double getMiu() { return miu; }
 }

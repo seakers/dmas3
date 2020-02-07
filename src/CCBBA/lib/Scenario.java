@@ -19,6 +19,7 @@ public class Scenario extends Watcher {
     private ArrayList<Task> scenarioTasks = new ArrayList<>();
     private ArrayList<Subtask> scenarioSubtasks = new ArrayList<>();
     private Level loggerLevel;
+    private String worldType;
     private double t_0;
 
     // 2D or 3D grid world
@@ -46,7 +47,7 @@ public class Scenario extends Watcher {
             this.worldData = (JSONObject) scenarioData.get("World");
 
             // 2-Check what type of world it is
-            String worldType = this.worldData.get("Type").toString();
+            this.worldType = this.worldData.get("Type").toString();
             if( worldType.equals("2D_Grid") ){
                 // set up 2D world
                 JSONArray boundsData = (JSONArray) this.worldData.get("Bounds");
@@ -173,6 +174,7 @@ public class Scenario extends Watcher {
     public ArrayList<Task> getScenarioTasks(){ return this.scenarioTasks; }
     public ArrayList<Subtask> getScenarioSubtasks(){ return  this.scenarioSubtasks; }
     public double getT_0(){ return this.t_0; }
+    public String getWorldType(){ return this.worldType; }
 }
 
 

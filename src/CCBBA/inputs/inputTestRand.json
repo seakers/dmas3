@@ -21,7 +21,9 @@
 					"Type": "Const",
 					"MergeCost": 2.0,
 					"SplitCost": 1.0,
-					"Value": 100.0
+					"Value": 100.0,
+					"TravelCost": 1.0,
+					"TravelCostType": "Const"
 				}
 			}, 
 			{
@@ -39,9 +41,9 @@
 					"Type": "Const",
 					"MergeCost": 2.0,
 					"SplitCost": 1.0,
-					"Dist": "Linear",
-					"Max": 100.0,
-					"Min": 50.0
+					"Value": 100.0,
+					"TravelCost": 1.0,
+					"TravelCostType": "Const"
 				}
 			}			
 		]		

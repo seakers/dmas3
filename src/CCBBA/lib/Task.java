@@ -375,4 +375,12 @@ public class Task {
     public int[][] getD(){ return D; }
     public double[][] getT(){ return T; }
     public boolean getCompleteness(){ return this.completeness; }
+    public ArrayList<Double> getLocation(){ return this.location; }
+    public double getLambda(){ return this.lambda; }
+    public double getGamma(){ return this.gamma; }
+    public double getS_Max(){ return this.S_Max; }
+    public int getI(){ return this.I; }
+    public double getDuration(){ return this.duration; }
+    public String getCost_type(){ return this.cost_type; }
+    public double getCost(){ return this.cost; }
 }
