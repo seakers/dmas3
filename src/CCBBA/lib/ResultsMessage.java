@@ -1,6 +1,12 @@
 package CCBBA.lib;
 
-public class ResultsMessage {
+import madkit.kernel.Message;
 
-    public ResultsMessage(IterationResults results, )
+public class ResultsMessage extends Message {
+    private IterationResults myResults;
+
+    public ResultsMessage(IterationResults results, SimulatedAgent agent){
+        this.myResults = new IterationResults(results, agent);
+    }
+    public IterationResults getResults(){ return this.myResults; }
 }

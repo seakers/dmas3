@@ -42,6 +42,24 @@ public class IterationDatum {
         this.score = 0.0;
     }
 
+    public IterationDatum(IterationDatum newDatum){
+        this.j = newDatum.getJ();
+        this.i_q = j.getParentTask().getSubtaskList().indexOf(j);
+        this.y = newDatum.getY();
+        this.z = newDatum.getZ();
+        this.tz = newDatum.getTz();
+        this.c = newDatum.getC();
+        this.s = newDatum.getS();
+        this.h = newDatum.getH();
+        this.v = newDatum.getV();
+        this.w_any = newDatum.getW_any();
+        this.w_solo = newDatum.getW_solo();
+        this.x = new ArrayList<>();
+        this.x.addAll( newDatum.getX() );
+        this.cost = newDatum.getCost();
+        this.score = newDatum.getScore();
+    }
+
 
     /**
      * Getters and setters

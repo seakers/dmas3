@@ -10,6 +10,7 @@ import org.json.simple.JSONObject;
 import org.orekit.frames.ITRFVersion;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 public class SimulatedAgent extends AbstractAgent {
@@ -46,6 +47,7 @@ public class SimulatedAgent extends AbstractAgent {
     private ArrayList<ArrayList<SimulatedAgent>> omega;     // Coalition mate matrix of current bundle
     private ArrayList<ArrayList<SimulatedAgent>> overallOmega; // Coalition mate matrix of previous bundle
     private double t_0;                                     // start time
+    private ArrayList<IterationResults> receivedResults;    // list of received results from other agents
 
 
     public SimulatedAgent(JSONObject inputAgentData, JSONObject inputData) throws Exception {
@@ -115,7 +117,7 @@ public class SimulatedAgent extends AbstractAgent {
         // construct bundle
         getLogger().info("Constructing bundle...");
         while( (this.bundle.size() < this.M) && (this.localResults.checkAvailability()) && alive ){
-            getLogger().fine("Calculating bids for bundle item number " + this.bundle.size() + 1);
+            getLogger().fine("Calculating bids for bundle item number " + (this.bundle.size() + 1) + "...");
 
             // Calculate bid for every subtask
             ArrayList<SubtaskBid> bidList = this.localResults.calcBidList(this);
@@ -171,7 +173,7 @@ public class SimulatedAgent extends AbstractAgent {
         getLogger().fine(this.name + " results after bundle construction: \n" + this.localResults.toString() );
 
         // Broadcast my results
-        myMessage myResults = new myMessage( this.localResults, this );
+        ResultsMessage myResults = new ResultsMessage( this.localResults, this);
         broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1, myResults);
         broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, myResults);
         broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, myResults);
@@ -183,7 +185,192 @@ public class SimulatedAgent extends AbstractAgent {
 
     @SuppressWarnings("unused")
     public void thinkingPhaseTwo(){
+        int x = 1;
+        if( !isMessageBoxEmpty() ){ // results received
+            // Save current results
+//            IterationLists prevResults = new IterationLists( localResults, false, this);
 
+            // unpack results
+            List<Message> receivedMessages = nextMessages(null);
+
+            for(int i = 0; i < receivedMessages.size(); i++){
+                ResultsMessage message = (ResultsMessage) receivedMessages.get(i);
+                receivedResults.add(message.getResults());
+            }
+
+            // compare results
+            boolean changesMade = false;
+            for(IterationResults itsResult : this.receivedResults){
+                for(int i_j = 0; i_j < .getResults().size(); i_j++){
+                    // Load my results
+                    IterationDatum myDatum = localResults.getIterationDatum(i_j);
+                    double myY = myDatum.getY();
+                    String myZ;
+                    if(myDatum.getZ() == null){
+                        myZ = "";
+                    }
+                    else{ myZ = myDatum.getZ().getName(); }
+                    double myTz = myDatum.getTz();
+                    String me = this.getName();
+                    int myS = myDatum.getS();
+                    boolean myCompletion = myDatum.getJ().getCompleteness();
+
+                    // Load received results
+                    double itsY = result.getY().get(i_j);
+                    String itsZ;
+                    if(result.getZ().get(i_j) == null){
+                        itsZ = "";
+                    }
+                    else{ itsZ = result.getZ().get(i_j).getName(); }
+                    double itsTz = result.getTz().get(i_j);
+                    String it = result.getParentAgent().getName();
+                    int itsS = result.getS().get(i_j);
+                    boolean itsCompletion = result.getJ().get(i_j).getComplete();
+
+                    // Comparing bids. See Ref 40 Table 1
+                    if( itsZ == it ){
+                        if( myZ == me ){
+                            if( (itsCompletion) && (itsCompletion != myCompletion) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                            else if( itsY > myY ) {
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( myZ == it){
+                            // update
+                            localResults.updateResults(result, i_j);
+                        }
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
+                            if( (itsS > myS)||(itsY > myY) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // update
+                            localResults.updateResults(result, i_j);
+                        }
+                    }
+                    else if( itsZ == me ){
+                        if( myZ == me ){
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        }
+                        else if( myZ == it){
+                            // reset
+                            localResults.resetResults(i_j);
+                        }
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
+                            if(itsS > myS){
+                                // reset
+                                localResults.resetResults(i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        }
+                    }
+                    else if( (itsZ != it)&&( itsZ != me)&&(itsZ != "") ){
+                        if( myZ == me ){
+                            if( (itsCompletion) && (itsCompletion != myCompletion) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                            else if( (itsS > myS)&&(itsY > myY) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( myZ == it){
+                            if( itsS > myS ){
+                                //update
+                                localResults.updateResults(result, i_j);
+                            }
+                            else{
+                                // reset
+                                localResults.resetResults(i_j);
+                            }
+                        }
+                        else if( myZ == itsZ ){
+                            if(itsS > myS){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( (myZ != me)&&(myZ != it)&&(myZ != itsZ)&&(myZ != "") ){
+                            if( (itsS > myS)&&( itsY > myY ) ){
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        }
+                        else if( myZ == "" ){
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        }
+                    }
+                    else if( itsZ == "") {
+                        if (myZ == me) {
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        } else if (myZ == it) {
+                            // update
+                            localResults.updateResults(result, i_j);
+                        } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                            if (itsS > myS) {
+                                // update
+                                localResults.updateResults(result, i_j);
+                            }
+                        } else if (myZ == "") {
+                            // leave
+                            localResults.leaveResults(result, i_j);
+                        }
+                    }
+                }
+            }
+
+            int x = 1;
+
+            // constrain checks
+            for(Subtask j : localResults.getBundle()){
+                // create list of new coalition members
+                Vector<Vector<AbstractSimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
+                Vector<Vector<AbstractSimulatedAgent>> oldOmega = this.localResults.getOmega();
+
+                if (!mutexSat(j) || !timeSat(j) || !depSat(j) || !coalitionSat(j, oldOmega, newOmega) ){
+                    // subtask does not satisfy all constraints, release task
+                    int i_j =  this.localResults.getJ().indexOf(j);
+                    localResults.resetResults(i_j);
+                    break;
+                }
+            }
+            this.zeta++;
+
+            if(checkForChanges(prevResults)){
+                // changes were made, reconsider bids
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                this.convCounter = 0;
+            }
+            else{
+                // no changes were made, check convergence
+                this.convCounter++;
+                if(convCounter >= convIndicator){
+                    // convergence reached
+                    this.convCounter = 0;
+                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+                }
+                else {
+                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                }
+            }
+
+            // empty recieved results and exit phase 2
+            receivedResults = new Vector<>();
+            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+        }
     }
 
     @SuppressWarnings("unused")

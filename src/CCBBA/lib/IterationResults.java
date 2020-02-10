@@ -8,19 +8,26 @@ import java.util.List;
 
 public class IterationResults {
     private ArrayList<IterationDatum> results;
+    public SimulatedAgent parentAgent;
 
     /**
      * Constructor
      */
     public IterationResults(SimulatedAgent agent){
         this.results = new ArrayList<>();
+        this.parentAgent = agent;
         ArrayList<Subtask> subtaskList = agent.getWorldSubtasks();
 
         for(Subtask j : subtaskList){ addResult(j, agent); }
     }
 
-    public IterationResults(IterationResults newResults){
-
+    public IterationResults(IterationResults newResults, SimulatedAgent agent){
+        this.results = new ArrayList<>();
+        this.parentAgent = agent;
+        for(IterationDatum datum : newResults.getResults()){
+            IterationDatum tempDatum = new IterationDatum(datum);
+            this.results.add(tempDatum);
+        }
     }
 
     /**
@@ -327,20 +334,7 @@ public class IterationResults {
             }
         }
         return output.toString();
-
-//        this.j = j;
-//        this.i_q = j.getParentTask().getSubtaskList().indexOf(j);
-//        this.y = 0.0;
-//        this.z = null;
-//        this.tz = 0.0;
-//        this.c = 0.0;
-//        this.s = 0;
-//        this.h = 1;
-//        this.v = 0;
-//        this.w_any = agent.getW_any();
-//        this.w_solo = agent.getW_solo();
-//        this.x = new ArrayList<>(3);
-//        this.cost = 0.0;
-//        this.score = 0.0;
     }
+
+    public ArrayList<IterationDatum> getResults(){ return this.results; }
 }
