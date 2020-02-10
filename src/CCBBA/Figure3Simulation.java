@@ -48,7 +48,7 @@ public class Figure3Simulation extends AbstractAgent {
                 symType = name;
                 t_corr = time;
 
-                for(int i = 0; i < 100; i++) {
+                for(int i = 0; i < 128; i++) {
                     executeThisAgent(1, false);
                 }
 

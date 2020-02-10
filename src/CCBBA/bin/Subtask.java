@@ -75,7 +75,4 @@ public class Subtask {
     }
     public void setMain_num(int new_main){ main_num = new_main; }
     public void setDep_nums(Vector<Integer> newDep_nums) { dep_nums = newDep_nums; }
-
-
-
 }

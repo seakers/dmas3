@@ -1,8 +1,10 @@
 package CCBBA.lib;
 
 import com.lowagie.text.pdf.BidiLine;
+import madkit.kernel.AgentAddress;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class IterationResults {
     private ArrayList<IterationDatum> results;
@@ -74,9 +76,9 @@ public class IterationResults {
                 localBid.calcSubtaskBid(j, biddingAgent);
 
                 // coalition and mutex test
-                h = coalitionTest(localBid, datum.getJ()) ;
+                h = coalitionTest(localBid, datum.getJ(), biddingAgent) ;
                 if(h == 1){
-                    h = mutexTest(localBid, datum.getJ());
+                    h = mutexTest(localBid, datum.getJ(), biddingAgent);
                 }
 
                 // check if agent has enough resources to execute task
@@ -91,11 +93,86 @@ public class IterationResults {
         return bidList;
     }
 
-    private int coalitionTest(SubtaskBid localBid, Subtask j){
-        return 1;
+    private int coalitionTest(SubtaskBid localBid, Subtask j, SimulatedAgent agent) throws Exception {
+        IterationDatum testDatum = this.getIterationDatum(j);
+        Task parentTask = j.getParentTask();
+        int[][] D = j.getParentTask().getD();
+
+        double new_bid = 0.0;
+        double coalition_bid = 0.0;
+
+        for(IterationDatum datum : this.results){
+            // Check if j and q are in the same task
+            if(datum.getJ().getParentTask() == parentTask && datum.getJ() != j){
+                //Check if bid outmatches coalition bid
+                int i_j = j.getI_q();
+                boolean sameWinner = (datum.getZ() == testDatum.getZ());
+                boolean noConstraintsUQ = (D[testDatum.getI_q()][datum.getI_q()] == 0);
+                boolean constraintsQU = (D[datum.getI_q()][testDatum.getI_q()] >= 1);
+
+                if( sameWinner && (noConstraintsUQ || constraintsQU)){
+                    coalition_bid = coalition_bid + datum.getY();
+                }
+
+                if( D[testDatum.getI_q()][datum.getI_q()] == 1 ){
+                    if(datum.getZ() == agent){
+                        new_bid = new_bid + datum.getY();
+                    }
+                }
+            }
+        }
+        new_bid = new_bid + localBid.getC();;
+
+        if(new_bid > coalition_bid){ return 1; }
+        else{ return 0; }
     }
-    private int mutexTest(SubtaskBid localBid, Subtask j){
-        return 1;
+    private int mutexTest(SubtaskBid localBid, Subtask j, SimulatedAgent agent) throws Exception {
+        Task parentTask = j.getParentTask();
+        ArrayList<Subtask> J_parent = parentTask.getSubtaskList();
+        double c = localBid.getC();
+        int[][] D = j.getParentTask().getD();
+
+        double new_bid = 0.0;
+        for(int q = 0; q < J_parent.size(); q++) {
+            //if q != j and D(j,q) == 1, then add y_q to new bid
+            if( (J_parent.get(q) != j) && (D[J_parent.indexOf(j)][q] == 1) ){
+                new_bid = new_bid + this.getIterationDatum(J_parent.get(q)).getY();
+            }
+        }
+        new_bid = new_bid + c;
+
+        ArrayList<ArrayList<Integer>> coalitionMembers = new ArrayList<>();
+        for(int i_j = 0; i_j < J_parent.size(); i_j++){
+            ArrayList<Integer> Jv = new ArrayList<>();
+            for(int i_q = 0; i_q < J_parent.size(); i_q++){
+                if( (D[i_j][i_q] == 1) ){
+                    Jv.add(i_q);
+                }
+            }
+            Jv.add(J_parent.indexOf(j));
+
+            coalitionMembers.add(Jv);
+        }
+
+        double max_bid = 0.0;
+        double y_coalition;
+        ArrayList<Integer> Jv;
+        for(int i_c = 0; i_c < coalitionMembers.size(); i_c++) {
+            y_coalition = 0.0;
+            Jv = coalitionMembers.get(i_c);
+
+            for (int i = 0; i < Jv.size(); i++) {
+                y_coalition += this.getIterationDatum( parentTask.getSubtaskList().get(Jv.get(i)) ).getY();
+            }
+            y_coalition += this.getIterationDatum( parentTask.getSubtaskList().get(i_c) ).getY();
+
+            if (y_coalition > max_bid) {
+                max_bid = y_coalition;
+            }
+        }
+
+        if(new_bid > max_bid){ return 1; }
+        else{ return 0; }
     }
 
     private boolean canBid(Subtask j, SimulatedAgent biddingAgent) throws Exception {
@@ -199,5 +276,71 @@ public class IterationResults {
         datum.setCost( maxBid.getCost() );
         datum.setScore( maxBid.getScore() );
         datum.setX( maxBid.getX() );
+    }
+
+    public String toString(){
+        StringBuilder output = new StringBuilder(new String());
+        output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\th\tv\tw_any\tw_solo\tcost\tscore\n" +
+                                   "========================================================================================\n");
+        Task j_current = this.results.get(0).getJ().getParentTask();
+        for(IterationDatum datum : this.results){
+            if(datum.getJ().getParentTask() != j_current){
+                output.append("----------------------------------------------------------------------------------------\n");
+            }
+
+            String winnerName;
+            if(datum.getZ() == null){
+                winnerName = "-";
+                output.append( String.format("%d\t%.2f\t%s\t\t\t\t\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\n",
+                        this.results.indexOf(datum)+1,
+                        datum.getY(),
+                        winnerName,
+                        datum.getTz(),
+                        datum.getC(),
+                        datum.getS(),
+                        datum.getH(),
+                        datum.getV(),
+                        datum.getW_any(),
+                        datum.getW_solo(),
+                        datum.getCost(),
+                        datum.getScore()
+                        )
+                );
+            }
+            else{
+                winnerName = datum.getZ().getName();
+                output.append( String.format("%d\t%.2f\t%s\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\n",
+                        this.results.indexOf(datum)+1,
+                        datum.getY(),
+                        winnerName,
+                        datum.getTz(),
+                        datum.getC(),
+                        datum.getS(),
+                        datum.getH(),
+                        datum.getV(),
+                        datum.getW_any(),
+                        datum.getW_solo(),
+                        datum.getCost(),
+                        datum.getScore()
+                        )
+                );
+            }
+        }
+        return output.toString();
+
+//        this.j = j;
+//        this.i_q = j.getParentTask().getSubtaskList().indexOf(j);
+//        this.y = 0.0;
+//        this.z = null;
+//        this.tz = 0.0;
+//        this.c = 0.0;
+//        this.s = 0;
+//        this.h = 1;
+//        this.v = 0;
+//        this.w_any = agent.getW_any();
+//        this.w_solo = agent.getW_solo();
+//        this.x = new ArrayList<>(3);
+//        this.cost = 0.0;
+//        this.score = 0.0;
     }
 }

@@ -3,7 +3,7 @@
     "SimName": "AppendixBExample",
     "NumRuns": 10,
 	"Planner": "CCBBA",
-	"Logger": "CONFIG"
+	"Logger": "FINE"
 	"Agents": {
 		"AgentList": [
 			{
@@ -67,7 +67,6 @@
 				"lambda": 0.0,
 				"gamma" : "NEG_INF"
 			},
-			,
 			{ 
 				"Name": "Task2"
 				"Instances": 1,

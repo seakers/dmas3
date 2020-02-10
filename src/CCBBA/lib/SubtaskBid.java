@@ -25,6 +25,7 @@ public class SubtaskBid {
 
     public void calcSubtaskBid(Subtask j, SimulatedAgent agent) throws Exception {
         this.j_a = j;
+
         ArrayList<Subtask> oldBundle = agent.getBundle();
         ArrayList<Subtask> oldPath = agent.getPath();
         PathUtility oldUtility = calcPathUtility(oldPath, agent);

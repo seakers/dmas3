@@ -58,8 +58,10 @@ public class IterationDatum {
     public int getW_solo() { return w_solo; }
     public int getW_any() { return w_any; }
     public ArrayList<Double> getX(){ return this.x; }
-    public void setH(int h){ this.h = h; }
+    public double getCost(){ return this.cost; }
+    public double getScore(){ return this.score; }
 
+    public void setH(int h){ this.h = h; }
     public void setY(double y) { this.y = y; }
     public void setZ(SimulatedAgent z) { this.z = z; }
     public void setTz(double tz) { this.tz = tz; }

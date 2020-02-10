@@ -424,9 +424,9 @@ public class AbstractSimulatedAgent extends AbstractAgent {
         if(resourcesRem && this.alive) {
             // check agent status
             if (tasksAvailable) { // tasks are available and agent has resources
-                    getLogger().info("Tasks in bundle completed! " +
-                            "\n\t\t\t\t\t\t\t\tResources still available. " +
-                            "\n\t\t\t\t\t\t\t\tCreating a new plan...");
+                getLogger().info("Tasks in bundle completed! " +
+                        "\n\t\t\t\t\t\t\t\tResources still available. " +
+                        "\n\t\t\t\t\t\t\t\tCreating a new plan...");
             }
             else {
                 if(!myRoles.contains( CCBBASimulation.AGENT_DIE )){
@@ -663,7 +663,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
         }
 
         if ( isOptimistic(j) ) { // task has optimistic bidding strategy
-              if(v.get(i_j) == 0) {
+            if(v.get(i_j) == 0) {
                 if ( (n_sat == 0)  && (N_req > 0) ) {
                     // agent must be the first to win a bid for this tasks
                     w_solo.setElementAt((w_solo.get(i_j) - 1), i_j);

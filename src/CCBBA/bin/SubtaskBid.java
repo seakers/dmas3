@@ -124,7 +124,6 @@ public class SubtaskBid {
             // Add time of arrival to path
             pathUtility.addTz(t_a);
         }
-
         return pathUtility;
     }
 
@@ -471,6 +470,19 @@ public class SubtaskBid {
         else{
             return cost_const;
         }
+    }
+
+    private double calcStartTime(double local_bid, Subtask j, Vector<Subtask> path, SimulatedAbstractAgent agent){
+        double t_start = 0.0;
+
+        return t_start;
+    }
+
+    private Dimension calcLocation(double local_bid, Subtask j, Vector<Subtask> path, SimulatedAbstractAgent agent){
+        // Performs task at location of task.
+        // IMPROVEMENT OPPORTUNITY: decide where to do task using sigmoid function
+        Dimension location = j.getParentTask().getLocation();
+        return location;
     }
 
 

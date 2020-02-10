@@ -1,5 +1,7 @@
 package CCBBA.lib;
 
+import CCBBA.CCBBASimulation;
+import CCBBA.bin.myMessage;
 import jmetal.encodings.variable.Int;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Message;
@@ -96,7 +98,8 @@ public class SimulatedAgent extends AbstractAgent {
      */
     @SuppressWarnings("unused")
     public void thinkingPhaseOne() throws Exception {
-        getLogger().info("Starting phase one...");
+        getLogger().info("Starting phase one");
+        if(zeta != 0) zeta += 1;
 
         // check for new tasks
         getAvailableSubtasks();
@@ -105,16 +108,14 @@ public class SimulatedAgent extends AbstractAgent {
         emptyMailbox();
 
         // Check for life status
-        boolean alive = true;
+
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-        if(myRoles.contains( SimGroups.AGENT_DIE )){
-            alive = false;
-        }
+        boolean alive = !(myRoles.contains( SimGroups.AGENT_DIE ));
 
         // construct bundle
-        getLogger().info("Constructing bundle");
+        getLogger().info("Constructing bundle...");
         while( (this.bundle.size() < this.M) && (this.localResults.checkAvailability()) && alive ){
-            getLogger().fine("Calculating bids for every subtask");
+            getLogger().fine("Calculating bids for bundle item number " + this.bundle.size() + 1);
 
             // Calculate bid for every subtask
             ArrayList<SubtaskBid> bidList = this.localResults.calcBidList(this);
@@ -161,11 +162,21 @@ public class SimulatedAgent extends AbstractAgent {
                     localResults.getIterationDatum(j_chosen).setH(0);
                 }
             }
-
-
-            int x = 0;
         }
 
+        getLogger().info("Bundle constructed");
+        StringBuilder bundleList = new StringBuilder();
+        for(Subtask b : this.bundle){ bundleList.append(" " + b.getName()); }
+        getLogger().fine(this.name + " bundle: " + bundleList);
+        getLogger().fine(this.name + " results after bundle construction: \n" + this.localResults.toString() );
+
+        // Broadcast my results
+        myMessage myResults = new myMessage( this.localResults, this );
+        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1, myResults);
+        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, myResults);
+        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, myResults);
+
+        // leave phase one and start phase 2
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
     }
@@ -273,6 +284,9 @@ public class SimulatedAgent extends AbstractAgent {
 
     private void unpackInput(JSONObject inputAgentData) throws Exception{
         getLogger().config("Configuring agent...");
+
+        // -Name
+        this.name = inputAgentData.get("Name").toString();
 
         // -Sensor List
         this.sensorList = new ArrayList<>();

@@ -70,7 +70,7 @@ public class AbstractResultsCompiler extends AbstractAgent {
             printMetrics();
             printReport();
         }
-            printAllVectors( receivedResults );
+        printAllVectors( receivedResults );
     }
 
     private boolean compareResults( Vector<IterationLists> receivedResults ){
