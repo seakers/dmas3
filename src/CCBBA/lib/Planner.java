@@ -30,8 +30,6 @@ public class Planner extends Scheduler {
             addActivator(agents);
             agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, "thinkingPhaseTwo");
             addActivator(agents);
-            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_CONS, "consensusPhase");
-            addActivator(agents);
 
             //doing phase
             agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, "doingPhase");

@@ -340,8 +340,6 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                 }
             }
 
-            int x = 1;
-
             // constrain checks
             for(Subtask j : localResults.getBundle()){
                 // create list of new coalition members
@@ -628,8 +626,6 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                         break;
                     }
                 }
-
-
                 return (i_us > i_them);
             }
         }
@@ -701,9 +697,6 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                 return false;
             }
         }
-
-
-
         return true;
     }
 

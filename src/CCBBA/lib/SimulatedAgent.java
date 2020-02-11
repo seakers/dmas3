@@ -48,6 +48,8 @@ public class SimulatedAgent extends AbstractAgent {
     private ArrayList<ArrayList<SimulatedAgent>> overallOmega; // Coalition mate matrix of previous bundle
     private double t_0;                                     // start time
     private ArrayList<IterationResults> receivedResults;    // list of received results from other agents
+    private int convCounter;                                // convergence counter
+    private int convIndicator;                              // convergence indicator
 
 
     public SimulatedAgent(JSONObject inputAgentData, JSONObject inputData) throws Exception {
@@ -78,13 +80,15 @@ public class SimulatedAgent extends AbstractAgent {
         this.x_path = new ArrayList<>();
         this.overallX_path = new ArrayList<>();
         this.omega = new ArrayList<>();
+        for(int i = 0; i < M; i++){ omega.add(new ArrayList<>()); }
         this.overallOmega = new ArrayList<>();
         this.t_0 = this.environment.getT_0();
+        this.convCounter = 0;
 
         // Get world subtasks
         this.worldTasks = new ArrayList<>();
         this.worldSubtasks = new ArrayList<>();
-        for(Task J : this.environment.getScenarioTasks()){
+        for (Task J : this.environment.getScenarioTasks()) {
             this.worldTasks.add(J);
             this.worldSubtasks.addAll(J.getSubtaskList());
         }
@@ -92,7 +96,7 @@ public class SimulatedAgent extends AbstractAgent {
         getLogger().info(this.worldSubtasks.size() + " Subtasks found in world");
 
         // Initiate iteration results
-        this.localResults = new IterationResults( this );
+        this.localResults = new IterationResults(this);
     }
 
     /**
@@ -101,7 +105,7 @@ public class SimulatedAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     public void thinkingPhaseOne() throws Exception {
         getLogger().info("Starting phase one");
-        if(zeta != 0) zeta += 1;
+        if (zeta != 0) zeta += 1;
 
         // check for new tasks
         getAvailableSubtasks();
@@ -110,13 +114,15 @@ public class SimulatedAgent extends AbstractAgent {
         emptyMailbox();
 
         // Check for life status
-
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-        boolean alive = !(myRoles.contains( SimGroups.AGENT_DIE ));
+        boolean alive = !(myRoles.contains(SimGroups.AGENT_DIE));
+
+        // Check for new Coalition members
+        getNewCoalitionMemebers();
 
         // construct bundle
         getLogger().info("Constructing bundle...");
-        while( (this.bundle.size() < this.M) && (this.localResults.checkAvailability()) && alive ){
+        while ((this.bundle.size() < this.M) && (this.localResults.checkAvailability()) && alive) {
             getLogger().fine("Calculating bids for bundle item number " + (this.bundle.size() + 1) + "...");
 
             // Calculate bid for every subtask
@@ -128,17 +134,17 @@ public class SimulatedAgent extends AbstractAgent {
             int i_max = 0;
             SubtaskBid maxBid = new SubtaskBid(null);
 
-            for(int i = 0; i < bidList.size(); i++){
+            for (int i = 0; i < bidList.size(); i++) {
                 Subtask j_bid = bidList.get(i).getJ_a();
-                if( j_bid == null){
+                if (j_bid == null) {
                     continue;
                 }
 
                 double bidUtility = bidList.get(i).getC();
                 int h = localResults.getIterationDatum(j_bid).getH();
 
-                if( (bidUtility*h > currentMax) ){
-                    currentMax = bidUtility*h;
+                if ((bidUtility * h > currentMax)) {
+                    currentMax = bidUtility * h;
                     i_max = i;
                     maxBid = bidList.get(i);
                     j_chosen = j_bid;
@@ -147,16 +153,16 @@ public class SimulatedAgent extends AbstractAgent {
 
             // Check if bid already exists for that subtask in the bundle
             boolean bidExists = false;
-            for(int i = 0; i < bundle.size(); i ++){
-                if(j_chosen == bundle.get(i)){
+            for (int i = 0; i < bundle.size(); i++) {
+                if (j_chosen == bundle.get(i)) {
                     localResults.getIterationDatum(j_chosen).setH(0);
                     bidExists = true;
                 }
             }
 
             // Update results
-            if(!bidExists){
-                if( maxBid.getC() > 0 && localResults.getIterationDatum(j_chosen).getY() < maxBid.getC()) {
+            if (!bidExists) {
+                if (maxBid.getC() > 0 && localResults.getIterationDatum(j_chosen).getY() < maxBid.getC()) {
                     this.bundle.add(j_chosen);
                     this.path.add(maxBid.getI_opt(), j_chosen);
                     this.x_path.add(maxBid.getI_opt(), maxBid.getX());
@@ -168,12 +174,14 @@ public class SimulatedAgent extends AbstractAgent {
 
         getLogger().info("Bundle constructed");
         StringBuilder bundleList = new StringBuilder();
-        for(Subtask b : this.bundle){ bundleList.append(" " + b.getName()); }
+        for (Subtask b : this.bundle) {
+            bundleList.append(" " + b.getName());
+        }
         getLogger().fine(this.name + " bundle: " + bundleList);
-        getLogger().fine(this.name + " results after bundle construction: \n" + this.localResults.toString() );
+        getLogger().fine(this.name + " results after bundle construction: \n" + this.localResults.toString());
 
         // Broadcast my results
-        ResultsMessage myResults = new ResultsMessage( this.localResults, this);
+        ResultsMessage myResults = new ResultsMessage(this.localResults, this);
         broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1, myResults);
         broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, myResults);
         broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, myResults);
@@ -185,134 +193,120 @@ public class SimulatedAgent extends AbstractAgent {
 
     @SuppressWarnings("unused")
     public void thinkingPhaseTwo() throws Exception {
-        if( !isMessageBoxEmpty() ){ // results received
+        if (!isMessageBoxEmpty()) { // results received
             // Save current results
-            IterationResults prevResults = new IterationResults( localResults, this );
+            IterationResults prevResults = new IterationResults(localResults, this);
 
             // unpack results
             List<Message> receivedMessages = nextMessages(null);
             this.receivedResults = new ArrayList<>();
-            for(int i = 0; i < receivedMessages.size(); i++){
+            for (int i = 0; i < receivedMessages.size(); i++) {
                 ResultsMessage message = (ResultsMessage) receivedMessages.get(i);
                 receivedResults.add(message.getResults());
             }
 
             // compare results
             boolean changesMade = false;
-            for(IterationResults result : this.receivedResults){
-                for(int i_j = 0; i_j < result.getResults().size(); i_j++){
+            for (IterationResults result : this.receivedResults) {
+                for (int i_j = 0; i_j < result.getResults().size(); i_j++) {
                     // Load received results
                     IterationDatum itsDatum = result.getIterationDatum(i_j);
                     double itsY = itsDatum.getY();
                     String itsZ;
-                    if(itsDatum.getZ() == null){
+                    if (itsDatum.getZ() == null) {
                         itsZ = "";
+                    } else {
+                        itsZ = itsDatum.getZ().getName();
                     }
-                    else{ itsZ = itsDatum.getZ().getName(); }
                     double itsTz = itsDatum.getTz();
                     String it = result.getParentAgent().getName();
                     int itsS = itsDatum.getS();
                     boolean itsCompletion = itsDatum.getJ().getCompleteness();
 
                     // Load my results
-                    IterationDatum myDatum = localResults.getIterationDatum( itsDatum.getJ() );
+                    IterationDatum myDatum = localResults.getIterationDatum(itsDatum.getJ());
                     double myY = myDatum.getY();
                     String myZ;
-                    if(myDatum.getZ() == null){
+                    if (myDatum.getZ() == null) {
                         myZ = "";
+                    } else {
+                        myZ = myDatum.getZ().getName();
                     }
-                    else{ myZ = myDatum.getZ().getName(); }
                     double myTz = myDatum.getTz();
                     String me = this.getName();
                     int myS = myDatum.getS();
                     boolean myCompletion = myDatum.getJ().getCompleteness();
 
                     // Comparing bids. See Ref 40 Table 1
-                    if(itsZ.equals(it)){
-                        if(myZ.equals(me)){
-                            if( (itsCompletion) && (itsCompletion != myCompletion) ){
+                    if (itsZ.equals(it)) {
+                        if (myZ.equals(me)) {
+                            if ((itsCompletion) && (itsCompletion != myCompletion)) {
+                                // update
+                                localResults.updateResults(itsDatum);
+                            } else if (itsY > myY) {
                                 // update
                                 localResults.updateResults(itsDatum);
                             }
-                            else if( itsY > myY ) {
+                        } else if (myZ == it) {
+                            // update
+                            localResults.updateResults(itsDatum);
+                        } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                            if ((itsS > myS) || (itsY > myY)) {
                                 // update
                                 localResults.updateResults(itsDatum);
                             }
-                        }
-                        else if( myZ == it){
+                        } else if (myZ == "") {
                             // update
                             localResults.updateResults(itsDatum);
                         }
-                        else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
-                            if( (itsS > myS)||(itsY > myY) ){
-                                // update
-                                localResults.updateResults(itsDatum);
-                            }
-                        }
-                        else if( myZ == "" ){
-                            // update
-                            localResults.updateResults(itsDatum);
-                        }
-                    }
-                    else if( itsZ == me ){
-                        if( myZ == me ){
+                    } else if (itsZ == me) {
+                        if (myZ == me) {
                             // leave
                             localResults.leaveResults(itsDatum);
-                        }
-                        else if( myZ == it){
+                        } else if (myZ == it) {
                             // reset
                             localResults.resetResults(itsDatum);
-                        }
-                        else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
-                            if(itsS > myS){
+                        } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                            if (itsS > myS) {
                                 // reset
                                 localResults.resetResults(itsDatum);
                             }
-                        }
-                        else if( myZ == "" ){
+                        } else if (myZ == "") {
                             // leave
                             localResults.leaveResults(itsDatum);
                         }
-                    }
-                    else if( (itsZ != it)&&( itsZ != me)&&(itsZ != "") ){
-                        if( myZ == me ){
-                            if( (itsCompletion) && (itsCompletion != myCompletion) ){
+                    } else if ((itsZ != it) && (itsZ != me) && (itsZ != "")) {
+                        if (myZ == me) {
+                            if ((itsCompletion) && (itsCompletion != myCompletion)) {
+                                // update
+                                localResults.updateResults(itsDatum);
+                            } else if ((itsS > myS) && (itsY > myY)) {
                                 // update
                                 localResults.updateResults(itsDatum);
                             }
-                            else if( (itsS > myS)&&(itsY > myY) ){
-                                // update
-                                localResults.updateResults(itsDatum);
-                            }
-                        }
-                        else if( myZ == it){
-                            if( itsS > myS ){
+                        } else if (myZ == it) {
+                            if (itsS > myS) {
                                 //update
                                 localResults.updateResults(itsDatum);
-                            }
-                            else{
+                            } else {
                                 // reset
                                 localResults.resetResults(itsDatum);
                             }
-                        }
-                        else if( myZ == itsZ ){
-                            if(itsS > myS){
+                        } else if (myZ == itsZ) {
+                            if (itsS > myS) {
                                 // update
                                 localResults.updateResults(itsDatum);
                             }
-                        }
-                        else if( (myZ != me)&&(myZ != it)&&(myZ != itsZ)&&(myZ != "") ){
-                            if( (itsS > myS)&&( itsY > myY ) ){
+                        } else if ((myZ != me) && (myZ != it) && (myZ != itsZ) && (myZ != "")) {
+                            if ((itsS > myS) && (itsY > myY)) {
                                 // update
                                 localResults.updateResults(itsDatum);
                             }
-                        }
-                        else if( myZ == "" ){
+                        } else if (myZ == "") {
                             // leave
                             localResults.leaveResults(itsDatum);
                         }
-                    }
-                    else if( itsZ == "") {
+                    } else if (itsZ == "") {
                         if (myZ == me) {
                             // leave
                             localResults.leaveResults(itsDatum);
@@ -333,57 +327,64 @@ public class SimulatedAgent extends AbstractAgent {
             }
 
             getLogger().info("Results compared");
-            getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString() );
+            StringBuilder bundleList = new StringBuilder();
+            for (Subtask b : this.bundle) {
+                bundleList.append(" " + b.getName());
+            }
+            getLogger().fine(this.name + " bundle after comparison: " + bundleList);
+            getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString());
 
-            int x = 1;
 
-//            // constrain checks
-//            for(Subtask j : localResults.getBundle()){
-//                // create list of new coalition members
-//                Vector<Vector<AbstractSimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
-//                Vector<Vector<AbstractSimulatedAgent>> oldOmega = this.localResults.getOmega();
-//
-//                if (!mutexSat(j) || !timeSat(j) || !depSat(j) || !coalitionSat(j, oldOmega, newOmega) ){
-//                    // subtask does not satisfy all constraints, release task
-//                    int i_j =  this.localResults.getJ().indexOf(j);
-//                    localResults.resetResults(i_j);
-//                    break;
-//                }
-//            }
-//            this.zeta++;
-//
-//            if(checkForChanges(prevResults)){
-//                // changes were made, reconsider bids
-//                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
-//                this.convCounter = 0;
-//            }
-//            else{
-//                // no changes were made, check convergence
-//                this.convCounter++;
-//                if(convCounter >= convIndicator){
-//                    // convergence reached
-//                    this.convCounter = 0;
-//                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
-//                }
-//                else {
-//                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
-//                }
-//            }
-//
-//            // empty recieved results and exit phase 2
-//            receivedResults = new Vector<>();
-//            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+            // constrain checks
+            for(Subtask j : this.bundle){
+                // create list of new coalition members
+                ArrayList<ArrayList<SimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
+                ArrayList<ArrayList<SimulatedAgent>> oldOmega = this.omega;
+
+                if (!mutexSat(j) || !timeSat(j) || !depSat(j) || !coalitionSat(j, oldOmega, newOmega) ){
+                    // subtask does not satisfy all constraints, release task
+                    localResults.resetResults(localResults.getIterationDatum(j));
+                    this.releaseTask(localResults.getIterationDatum(j));
+                    break;
+                }
+            }
+            this.zeta++;
+
+            getLogger().info("Constrains checked");
+            bundleList = new StringBuilder();
+            for (Subtask b : this.bundle) {
+                bundleList.append(" " + b.getName());
+            }
+            getLogger().fine(this.name + " bundle after check: " + bundleList);
+            getLogger().fine(this.name + " results after check: \n" + this.localResults.toString() );
+
+            if(checkForChanges(prevResults)){
+                // changes were made, reconsider bids
+                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                this.convCounter = 0;
+            }
+            else{
+                // no changes were made, check convergence
+                this.convCounter++;
+                if(convCounter >= convIndicator){
+                    // convergence reached
+                    this.convCounter = 0;
+                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+                }
+                else {
+                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                }
+            }
+
+            // empty recieved results and exit phase 2
+            receivedResults = new ArrayList<>();
+            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
         }
     }
 
     @SuppressWarnings("unused")
-    public void consensusPhase(){
-
-    }
-
-    @SuppressWarnings("unused")
-    public void doingPhase(){
-
+    public void doingPhase() {
+        int x = 1;
     }
 
     /**
@@ -391,34 +392,25 @@ public class SimulatedAgent extends AbstractAgent {
      */
 
     private void setUpLogger(JSONObject inputData) throws Exception {
-        if(inputData.get("Logger").toString().equals("OFF")){
+        if (inputData.get("Logger").toString().equals("OFF")) {
             this.loggerLevel = Level.OFF;
-        }
-        else if(inputData.get("Logger").toString().equals("SEVERE")){
+        } else if (inputData.get("Logger").toString().equals("SEVERE")) {
             this.loggerLevel = Level.SEVERE;
-        }
-        else if(inputData.get("Logger").toString().equals("WARNING")){
+        } else if (inputData.get("Logger").toString().equals("WARNING")) {
             this.loggerLevel = Level.WARNING;
-        }
-        else if(inputData.get("Logger").toString().equals("INFO")){
+        } else if (inputData.get("Logger").toString().equals("INFO")) {
             this.loggerLevel = Level.INFO;
-        }
-        else if(inputData.get("Logger").toString().equals("CONFIG")){
+        } else if (inputData.get("Logger").toString().equals("CONFIG")) {
             this.loggerLevel = Level.CONFIG;
-        }
-        else if(inputData.get("Logger").toString().equals("FINE")){
+        } else if (inputData.get("Logger").toString().equals("FINE")) {
             this.loggerLevel = Level.FINE;
-        }
-        else if(inputData.get("Logger").toString().equals("FINER")){
+        } else if (inputData.get("Logger").toString().equals("FINER")) {
             this.loggerLevel = Level.FINER;
-        }
-        else if(inputData.get("Logger").toString().equals("FINEST")){
+        } else if (inputData.get("Logger").toString().equals("FINEST")) {
             this.loggerLevel = Level.FINEST;
-        }
-        else if(inputData.get("Logger").toString().equals("ALL")){
+        } else if (inputData.get("Logger").toString().equals("ALL")) {
             this.loggerLevel = Level.ALL;
-        }
-        else{
+        } else {
             throw new Exception("INPUT ERROR: Logger type not supported");
         }
 
@@ -426,53 +418,46 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     private void checkInputFormat(JSONObject inputAgentData, JSONObject inputData) throws Exception {
-        String worldType = ( (JSONObject) ( (JSONObject) inputData.get("Scenario")).get("World")).get("Type").toString();
+        String worldType = ((JSONObject) ((JSONObject) inputData.get("Scenario")).get("World")).get("Type").toString();
 
-        if(inputAgentData.get("Name") == null){
+        if (inputAgentData.get("Name") == null) {
             throw new NullPointerException("INPUT ERROR: Agent name not contained in input file");
-        }
-        else if(inputAgentData.get("SensorList") == null){
+        } else if (inputAgentData.get("SensorList") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " sensor list not contained in input file.");
-        }
-        else if(inputAgentData.get("Position") == null){
-            if(inputAgentData.get("Orbital Parameters") == null){
+        } else if (inputAgentData.get("Position") == null) {
+            if (inputAgentData.get("Orbital Parameters") == null) {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " starting position or orbit not contained in input file.");
-            }
-            else{
+            } else {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " starting position not contained in input file.");
             }
-        }
-        else if(worldType.equals("3D_Grid") || worldType.equals("2D_Grid")) {
+        } else if (worldType.equals("3D_Grid") || worldType.equals("2D_Grid")) {
             if (inputAgentData.get("Speed") == null) {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " speed not contained in input file.");
-            }
-            else if(inputAgentData.get("Velocity") != null){
+            } else if (inputAgentData.get("Velocity") != null) {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + "'s velocity does not match world type selected.");
             }
         }
 
-        if(inputAgentData.get("Mass") == null){
+        if (inputAgentData.get("Mass") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " mass not contained in input file.");
-        }
-        else if( inputAgentData.get("PlanningHorizon") == null ){
+        } else if (inputAgentData.get("PlanningHorizon") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " planning horizon not contained in input file.");
-        }
-        else if( inputAgentData.get("MaxConstraintViolations") == null ){
+        } else if (inputAgentData.get("MaxConstraintViolations") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " max number of constraint violation not contained in input file.");
-        }
-        else if( inputAgentData.get("MaxBidsSolo") == null ){
+        } else if (inputAgentData.get("MaxBidsSolo") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " max number of solo bids not contained in input file.");
-        }
-        else if( inputAgentData.get("MaxBidsAny") == null ){
+        } else if (inputAgentData.get("MaxBidsAny") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " max number of any bids not contained in input file.");
-        }
-        else if(inputAgentData.get("Resources") == null){
+        } else if (inputAgentData.get("Resources") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " resource information not contained in input file.");
+        }
+        else if (inputAgentData.get("ConvergenceIndicator") == null) {
+            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " convergence indicator information not contained in input file.");
         }
 
     }
 
-    private void unpackInput(JSONObject inputAgentData) throws Exception{
+    private void unpackInput(JSONObject inputAgentData) throws Exception {
         getLogger().config("Configuring agent...");
 
         // -Name
@@ -495,12 +480,11 @@ public class SimulatedAgent extends AbstractAgent {
         // -Speed or Velocity
         if (inputAgentData.get("Speed") != null) {
             this.speed = (double) inputAgentData.get("Speed");
-        }
-        else if(inputAgentData.get("Velocity") != null){
+        } else if (inputAgentData.get("Velocity") != null) {
             this.velocity = new ArrayList<>();
             JSONArray velocityData = (JSONArray) inputAgentData.get("Velocity");
-            for(Object velocityDatum : velocityData){
-                this.velocity.add( (double) velocityDatum );
+            for (Object velocityDatum : velocityData) {
+                this.velocity.add((double) velocityDatum);
             }
         }
 
@@ -508,33 +492,299 @@ public class SimulatedAgent extends AbstractAgent {
         this.mass = (double) inputAgentData.get("Mass");
 
         // -Coalition Restrictions
-        this.M = Integer.parseInt( inputAgentData.get("PlanningHorizon").toString() );
-        this.O_kq = Integer.parseInt( inputAgentData.get("MaxConstraintViolations").toString() );
-        this.w_solo = Integer.parseInt( inputAgentData.get("MaxBidsSolo").toString() );
-        this.w_any = Integer.parseInt( inputAgentData.get("MaxBidsAny").toString() );
+        this.M = Integer.parseInt(inputAgentData.get("PlanningHorizon").toString());
+        this.O_kq = Integer.parseInt(inputAgentData.get("MaxConstraintViolations").toString());
+        this.w_solo = Integer.parseInt(inputAgentData.get("MaxBidsSolo").toString());
+        this.w_any = Integer.parseInt(inputAgentData.get("MaxBidsAny").toString());
 
         // -Resources
         this.myResources = new AgentResources((JSONObject) inputAgentData.get("Resources"));
+
+        // -Convergence Indicator
+        this.convIndicator = Integer.parseInt(inputAgentData.get("ConvergenceIndicator").toString());
     }
 
-    private void getAvailableSubtasks(){
+    private void getAvailableSubtasks() {
         this.worldTasks = this.environment.getScenarioTasks();
         this.worldSubtasks = this.environment.getScenarioSubtasks();
 
-        if(this.worldSubtasks.size() > this.localResults.size()){
+        if (this.worldSubtasks.size() > this.localResults.size()) {
             // if new tasks have been added, create new results for them
-            for(Subtask j : this.worldSubtasks){
-                if(!this.localResults.contains(j)){
+            for (Subtask j : this.worldSubtasks) {
+                if (!this.localResults.contains(j)) {
                     this.localResults.addResult(j, this);
                 }
             }
         }
     }
 
-    private void emptyMailbox(){
-        while(!isMessageBoxEmpty()){
+    private void emptyMailbox() {
+        while (!isMessageBoxEmpty()) {
             Message tempMessage = nextMessage();
         }
+    }
+
+    private void getNewCoalitionMemebers(){
+        for(Subtask j_b :bundle) {
+            int i_b = bundle.indexOf(j_b);
+            ArrayList<ArrayList<SimulatedAgent>> newCoalitions = getNewCoalitionMemebers(j_b);
+            this.omega.set(i_b, newCoalitions.get(i_b));
+        }
+    }
+
+    public void releaseTask(IterationDatum itsDatum) throws Exception {
+        if(bundle.contains( itsDatum.getJ() )){
+//            for(int i_b = bundle.indexOf( J.get(i) ); i_b < bundle.size(); i_b++){
+            for(int i_b = bundle.indexOf( itsDatum.getJ() ); i_b < bundle.size(); i_b++ ){
+                this.localResults.resetResults(itsDatum.getJ());
+                this.omega.set(i_b, new ArrayList<>());
+            }
+            // remove subtask and all subsequent ones from bundle
+            this.bundle.remove(itsDatum.getJ());
+        }
+    }
+
+    private ArrayList<ArrayList<SimulatedAgent>> getNewCoalitionMemebers(Subtask j) {
+        ArrayList<ArrayList<SimulatedAgent>> newOmega = new ArrayList<>();
+        for(int i = 0; i < this.M; i++) {
+            ArrayList<SimulatedAgent> tempCoal = new ArrayList<>();
+
+            if( this.bundle.size() >= i+1 ) {
+                for (int i_o = 0; i_o < this.localResults.size(); i_o++) {
+                    if ((this.localResults.getIterationDatum(i_o).getZ() != this)             // if winner at i_o is not me
+                            && (this.localResults.getIterationDatum(i_o).getZ() != null)      // and if winner at i_o is not empty
+                            && (j.getParentTask() == localResults.getIterationDatum(i_o).getJ().getParentTask())) // and subtasks share a task
+                    {
+                        // then winner at i_o is a coalition partner
+                        tempCoal.add(this.localResults.getIterationDatum(i_o).getZ());
+                    }
+                }
+            }
+            newOmega.add(tempCoal);
+        }
+        return newOmega;
+    }
+
+    private boolean mutexSat(Subtask j) throws Exception {
+        Task parentTask = j.getParentTask();
+        int i_task = localResults.getIterationDatum(j).getI_q();
+        int[][] D = parentTask.getD();
+
+        double y_bid = 0.0;
+        double y_mutex = 0.0;
+
+        for (int i_j = 0; i_j < parentTask.getSubtaskList().size(); i_j++) {
+            if( (i_j != i_task) && (D[i_task][i_j] < 0) ){
+                y_mutex += localResults.getIterationDatum(parentTask.getSubtaskList().get(i_j)).getY();
+            } else if (D[i_task][i_j] >= 1) {
+                y_bid += localResults.getIterationDatum(parentTask.getSubtaskList().get(i_j)).getY();
+            }
+        }
+        y_bid += localResults.getIterationDatum(j).getY();
+
+        //if outbid by mutex, release task
+        if (y_mutex > y_bid){
+            return false;
+        }
+        else if(y_mutex < y_bid){
+            return true;
+        }
+        else{ // both coalition bid values are equal, compare costs
+            double c_bid = 0.0;
+            double c_mutex = 0.0;
+
+            for (int i_j = 0; i_j < parentTask.getSubtaskList().size(); i_j++) {
+                if( (i_j != i_task) && (D[i_task][i_j] < 0) ){
+                    c_mutex += localResults.getIterationDatum(parentTask.getSubtaskList().get(i_j)).getCost();
+                } else if (D[i_task][i_j] >= 1) {
+                    c_bid += localResults.getIterationDatum(parentTask.getSubtaskList().get(i_j)).getCost();
+                }
+            }
+            c_bid += localResults.getIterationDatum(j).getCost();
+
+            if(c_mutex > c_bid){
+                // opposing coalition has higher costs
+                return true;
+            }
+            else if(c_mutex < c_bid){
+                // your coalition has higher costs
+                return false;
+            }
+            else {
+                // if costs and bids are equal, the task highest on the list gets allocated
+                int i_them = 0;
+                int i_us = parentTask.getSubtaskList().indexOf(j);
+
+                for (int i_j = 0; i_j < parentTask.getSubtaskList().size(); i_j++) {
+                    if( (i_j != i_task) && (D[i_task][i_j] < 0) ){
+                        i_them = i_j;
+                        break;
+                    }
+                }
+                return (i_us > i_them);
+            }
+        }
+    }
+
+    private boolean timeSat(Subtask j) throws Exception {
+        boolean taskReleased = false;
+        Task parenTask = j.getParentTask();
+        int[][] D = parenTask.getD();
+        ArrayList<Subtask> tempViolations = tempSat(j);
+
+        for(Subtask j_u : tempViolations){ // if time constraint violations exist compare each time violation
+            int i_u = localResults.getIterationDatum(j_u).getI_q();
+            int i_j = localResults.getIterationDatum(j).getI_q();
+            if ((D[i_j][i_u] == 1) && (D[i_u][i_j] <= 0)) {
+                //release task
+                taskReleased = true;
+                break;
+            } else if ((D[i_j][i_u] == 1) && (D[i_u][i_j] == 1)) {
+                double tz_q = localResults.getIterationDatum(j).getTz();
+                double tz_u = localResults.getIterationDatum(j).getTz();
+                double t_start = t_0;
+                if (tz_q - t_start <= tz_u - t_start) {
+                    // release task
+                    taskReleased = true;
+                    break;
+                }
+
+            }
+        }
+
+        if (taskReleased) {
+            if(localResults.isOptimistic(j)) {
+                localResults.getIterationDatum(j).decreaseW_any();
+                localResults.getIterationDatum(j).decreaseW_solo();
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private ArrayList<Subtask> tempSat(Subtask j_q) throws Exception {
+        double[][] T = j_q.getParentTask().getT();
+        ArrayList<Subtask> J_parent = j_q.getParentTask().getSubtaskList();
+
+        ArrayList<Subtask> violationSubtasks = new ArrayList<>();
+
+        for(int u = 0; u < J_parent.size(); u++){
+            Subtask j_u = J_parent.get(u);
+            double tz_q = localResults.getIterationDatum(j_q).getTz();
+            double tz_u = localResults.getIterationDatum(J_parent.get(u)).getTz();
+            boolean req1 = true;
+            boolean req2 = true;
+
+            if( ( u != J_parent.indexOf(j_q) )&&( localResults.getIterationDatum(j_u).getZ() != null ) ){
+                // if not the same subtask and other subtask has a winner
+                req1 = tz_q <= tz_u +  T[J_parent.indexOf(j_q)][u];
+                req2 = tz_u <= tz_q + T[u][J_parent.indexOf(j_q)];
+            }
+
+            if( !(req1 && req2) ){
+                violationSubtasks.add(j_u);
+            }
+        }
+
+        return violationSubtasks;
+    }
+
+    private boolean depSat(Subtask j) throws Exception {
+        IterationDatum datum = localResults.getIterationDatum(j);
+        Task parentTask = j.getParentTask();
+        int i_task = parentTask.getSubtaskList().indexOf(j);
+        int[][] D = parentTask.getD();
+
+        // Count number of requirements and number of completed requirements
+        int N_req = 0;
+        int n_sat = 0;
+        for (int k = 0; k < parentTask.getSubtaskList().size(); k++) {
+            if (i_task == k) {
+                continue;
+            }
+            if (D[i_task][k] >= 1) {
+                N_req++;
+            }
+            if (localResults.getIterationDatum(parentTask.getSubtaskList().get(k)).getZ() != null
+                    && (D[i_task][k] == 1)) {
+                n_sat++;
+            }
+        }
+
+        if ( localResults.isOptimistic(j) ) { // task has optimistic bidding strategy
+            if( datum.getV() == 0) {
+                if ( (n_sat == 0)  && (N_req > 0) ) {
+                    // agent must be the first to win a bid for this tasks
+                    datum.decreaseW_solo();
+                }
+                else if( (N_req > n_sat)  && (N_req > 0) ){
+                    // agent bids on a task without all of its requirements met for the first time
+                    datum.decreaseW_any();
+                }
+            }
+
+            if ( (N_req != n_sat) && (N_req > 0) ) { //if not all dependencies are met, v_i++
+                datum.increaseV();
+            }
+            else if( (N_req == n_sat) && (N_req > 0)){ // if all dependencies are met, v_i = 0
+                datum.resetV();
+            }
+
+            if (datum.getV() > this.O_kq) { // if task has held on to task for too long, release task
+                datum.decreaseW_solo();
+                datum.decreaseW_any();
+                return false;
+            }
+        }
+        else { // task has pessimistic bidding strategy
+            //if not all dependencies are met
+            if( N_req > n_sat){
+                //release task
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean coalitionSat(Subtask j, ArrayList<ArrayList<SimulatedAgent>> oldOmega, ArrayList<ArrayList<SimulatedAgent>> newOmega){
+        // Check Coalition Member Constraints
+        int i_b = bundle.indexOf(j);
+
+        if (oldOmega.get(i_b).size() == 0) { // no coalition partners in original list
+            if(newOmega.get(i_b).size() > 0){ // new coalition partners in new list
+                // release task
+                return false;
+            }
+        }
+        else{ // coalition partners exist in original list, compare lists
+            if(newOmega.get(i_b).size() > 0){ // new list is not empty
+                // compare lists
+                if(oldOmega.get(i_b).size() != newOmega.get(i_b).size()){ // if different sizes, then lists are not the same
+                    // release task
+                    return false;
+                }
+                else{ // compare element by element
+                    boolean released = false;
+                    for(SimulatedAgent listMember : oldOmega.get(i_b)){
+                        if(!newOmega.get(i_b).contains(listMember)){ // if new list does not contain member of old list, then lists are not the same
+                            // release task
+                            released = true;
+                            break;
+                        }
+                    }
+                    if(released){
+                        // release task
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean checkForChanges(IterationResults prevResults) throws Exception {
+        return localResults.compareToList(prevResults);
     }
 
     /**

@@ -255,7 +255,7 @@ public class IterationResults {
         }
     }
 
-    private boolean isOptimistic(Subtask j){
+    public boolean isOptimistic(Subtask j){
         //check if pessimistic or optimistic strategy
         Task parentTask = j.getParentTask();
         int[][] D = parentTask.getD();
@@ -269,7 +269,6 @@ public class IterationResults {
                 dependentTasks.add( subtask );
             }
         }
-
         return dependentTasks.size() > 0;
     }
 
@@ -285,19 +284,29 @@ public class IterationResults {
         datum.setX( maxBid.getX() );
     }
 
-    public void updateResults(IterationDatum newDatum){
+    public void updateResults(IterationDatum newDatum) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(newDatum);
         int i = this.indexOf(newDatum.getJ());
         this.results.set(i, updatedDatum);
+
+        this.parentAgent.releaseTask(newDatum);
     }
 
     public void leaveResults(IterationDatum newDatum){
         // does nothing
     }
 
-    public void resetResults(IterationDatum newDatum){
+    public void resetResults(IterationDatum newDatum) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(newDatum.getJ(), this.parentAgent);
         int i = this.indexOf(newDatum.getJ());
+        this.results.set(i, updatedDatum);
+
+        this.parentAgent.releaseTask(newDatum);
+    }
+
+    public void resetResults(Subtask j){
+        IterationDatum updatedDatum = new IterationDatum(j, this.parentAgent);
+        int i = this.indexOf(j);
         this.results.set(i, updatedDatum);
     }
 
@@ -312,6 +321,44 @@ public class IterationResults {
 
         return i;
     }
+
+    public boolean compareToList(IterationResults prevResults) throws Exception {
+        if(prevResults.size() != this.size()){ return false; }
+        else{
+            boolean consistent = true;
+            boolean coalSat;
+            boolean match;
+
+            for(IterationDatum myDatum : this.results){
+                IterationDatum itsDatum = prevResults.getIterationDatum(myDatum);
+
+                double myY = myDatum.getY();
+                double itsY = itsDatum.getY();
+                double myTz = myDatum.getTz();
+                double itsTz = itsDatum.getTz();
+                int myS = myDatum.getS();
+                int itsS = itsDatum.getS();
+                int myV = myDatum.getV();
+                int itsV = itsDatum.getV();
+
+                coalSat = (myV == 0) && (itsV == 0);
+                match = (myY == itsY) && (myTz == itsTz) && (myS == itsS) && coalSat;
+
+                if (!match) {
+                    // inconsistency found
+                    consistent = false;
+                    break;
+                }
+            }
+
+            return consistent;
+        }
+    }
+
+    private IterationDatum getIterationDatum(IterationDatum datum) throws Exception {
+        return this.getIterationDatum(datum.getJ());
+    }
+
 
     public String toString(){
         StringBuilder output = new StringBuilder(new String());

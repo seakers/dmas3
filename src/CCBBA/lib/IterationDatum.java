@@ -89,4 +89,8 @@ public class IterationDatum {
     public void setV(int v) { this.v = v; }
     public void setCost(double cost){ this.cost = cost; }
     public void setScore(double score) { this.score = score; }
+    public void decreaseW_solo() { this.w_solo -= 1; }
+    public void decreaseW_any() { this.w_any -= 1; }
+    public void increaseV(){ this.v += 1; }
+    public void resetV(){ this.v = 0; }
 }
