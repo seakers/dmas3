@@ -184,15 +184,14 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     @SuppressWarnings("unused")
-    public void thinkingPhaseTwo(){
-        int x = 1;
+    public void thinkingPhaseTwo() throws Exception {
         if( !isMessageBoxEmpty() ){ // results received
             // Save current results
-//            IterationLists prevResults = new IterationLists( localResults, false, this);
+            IterationResults prevResults = new IterationResults( localResults, this );
 
             // unpack results
             List<Message> receivedMessages = nextMessages(null);
-
+            this.receivedResults = new ArrayList<>();
             for(int i = 0; i < receivedMessages.size(); i++){
                 ResultsMessage message = (ResultsMessage) receivedMessages.get(i);
                 receivedResults.add(message.getResults());
@@ -200,10 +199,23 @@ public class SimulatedAgent extends AbstractAgent {
 
             // compare results
             boolean changesMade = false;
-            for(IterationResults itsResult : this.receivedResults){
-                for(int i_j = 0; i_j < .getResults().size(); i_j++){
+            for(IterationResults result : this.receivedResults){
+                for(int i_j = 0; i_j < result.getResults().size(); i_j++){
+                    // Load received results
+                    IterationDatum itsDatum = result.getIterationDatum(i_j);
+                    double itsY = itsDatum.getY();
+                    String itsZ;
+                    if(itsDatum.getZ() == null){
+                        itsZ = "";
+                    }
+                    else{ itsZ = itsDatum.getZ().getName(); }
+                    double itsTz = itsDatum.getTz();
+                    String it = result.getParentAgent().getName();
+                    int itsS = itsDatum.getS();
+                    boolean itsCompletion = itsDatum.getJ().getCompleteness();
+
                     // Load my results
-                    IterationDatum myDatum = localResults.getIterationDatum(i_j);
+                    IterationDatum myDatum = localResults.getIterationDatum( itsDatum.getJ() );
                     double myY = myDatum.getY();
                     String myZ;
                     if(myDatum.getZ() == null){
@@ -215,161 +227,152 @@ public class SimulatedAgent extends AbstractAgent {
                     int myS = myDatum.getS();
                     boolean myCompletion = myDatum.getJ().getCompleteness();
 
-                    // Load received results
-                    double itsY = result.getY().get(i_j);
-                    String itsZ;
-                    if(result.getZ().get(i_j) == null){
-                        itsZ = "";
-                    }
-                    else{ itsZ = result.getZ().get(i_j).getName(); }
-                    double itsTz = result.getTz().get(i_j);
-                    String it = result.getParentAgent().getName();
-                    int itsS = result.getS().get(i_j);
-                    boolean itsCompletion = result.getJ().get(i_j).getComplete();
-
                     // Comparing bids. See Ref 40 Table 1
-                    if( itsZ == it ){
-                        if( myZ == me ){
+                    if(itsZ.equals(it)){
+                        if(myZ.equals(me)){
                             if( (itsCompletion) && (itsCompletion != myCompletion) ){
                                 // update
-                                localResults.updateResults(result, i_j);
+                                localResults.updateResults(itsDatum);
                             }
                             else if( itsY > myY ) {
                                 // update
-                                localResults.updateResults(result, i_j);
+                                localResults.updateResults(itsDatum);
                             }
                         }
                         else if( myZ == it){
                             // update
-                            localResults.updateResults(result, i_j);
+                            localResults.updateResults(itsDatum);
                         }
                         else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
                             if( (itsS > myS)||(itsY > myY) ){
                                 // update
-                                localResults.updateResults(result, i_j);
+                                localResults.updateResults(itsDatum);
                             }
                         }
                         else if( myZ == "" ){
                             // update
-                            localResults.updateResults(result, i_j);
+                            localResults.updateResults(itsDatum);
                         }
                     }
                     else if( itsZ == me ){
                         if( myZ == me ){
                             // leave
-                            localResults.leaveResults(result, i_j);
+                            localResults.leaveResults(itsDatum);
                         }
                         else if( myZ == it){
                             // reset
-                            localResults.resetResults(i_j);
+                            localResults.resetResults(itsDatum);
                         }
                         else if( (myZ != me)&&(myZ != it)&&(myZ != "") ){
                             if(itsS > myS){
                                 // reset
-                                localResults.resetResults(i_j);
+                                localResults.resetResults(itsDatum);
                             }
                         }
                         else if( myZ == "" ){
                             // leave
-                            localResults.leaveResults(result, i_j);
+                            localResults.leaveResults(itsDatum);
                         }
                     }
                     else if( (itsZ != it)&&( itsZ != me)&&(itsZ != "") ){
                         if( myZ == me ){
                             if( (itsCompletion) && (itsCompletion != myCompletion) ){
                                 // update
-                                localResults.updateResults(result, i_j);
+                                localResults.updateResults(itsDatum);
                             }
                             else if( (itsS > myS)&&(itsY > myY) ){
                                 // update
-                                localResults.updateResults(result, i_j);
+                                localResults.updateResults(itsDatum);
                             }
                         }
                         else if( myZ == it){
                             if( itsS > myS ){
                                 //update
-                                localResults.updateResults(result, i_j);
+                                localResults.updateResults(itsDatum);
                             }
                             else{
                                 // reset
-                                localResults.resetResults(i_j);
+                                localResults.resetResults(itsDatum);
                             }
                         }
                         else if( myZ == itsZ ){
                             if(itsS > myS){
                                 // update
-                                localResults.updateResults(result, i_j);
+                                localResults.updateResults(itsDatum);
                             }
                         }
                         else if( (myZ != me)&&(myZ != it)&&(myZ != itsZ)&&(myZ != "") ){
                             if( (itsS > myS)&&( itsY > myY ) ){
                                 // update
-                                localResults.updateResults(result, i_j);
+                                localResults.updateResults(itsDatum);
                             }
                         }
                         else if( myZ == "" ){
                             // leave
-                            localResults.leaveResults(result, i_j);
+                            localResults.leaveResults(itsDatum);
                         }
                     }
                     else if( itsZ == "") {
                         if (myZ == me) {
                             // leave
-                            localResults.leaveResults(result, i_j);
+                            localResults.leaveResults(itsDatum);
                         } else if (myZ == it) {
                             // update
-                            localResults.updateResults(result, i_j);
+                            localResults.updateResults(itsDatum);
                         } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
                             if (itsS > myS) {
                                 // update
-                                localResults.updateResults(result, i_j);
+                                localResults.updateResults(itsDatum);
                             }
                         } else if (myZ == "") {
                             // leave
-                            localResults.leaveResults(result, i_j);
+                            localResults.leaveResults(itsDatum);
                         }
                     }
                 }
             }
 
+            getLogger().info("Results compared");
+            getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString() );
+
             int x = 1;
 
-            // constrain checks
-            for(Subtask j : localResults.getBundle()){
-                // create list of new coalition members
-                Vector<Vector<AbstractSimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
-                Vector<Vector<AbstractSimulatedAgent>> oldOmega = this.localResults.getOmega();
-
-                if (!mutexSat(j) || !timeSat(j) || !depSat(j) || !coalitionSat(j, oldOmega, newOmega) ){
-                    // subtask does not satisfy all constraints, release task
-                    int i_j =  this.localResults.getJ().indexOf(j);
-                    localResults.resetResults(i_j);
-                    break;
-                }
-            }
-            this.zeta++;
-
-            if(checkForChanges(prevResults)){
-                // changes were made, reconsider bids
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
-                this.convCounter = 0;
-            }
-            else{
-                // no changes were made, check convergence
-                this.convCounter++;
-                if(convCounter >= convIndicator){
-                    // convergence reached
-                    this.convCounter = 0;
-                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
-                }
-                else {
-                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
-                }
-            }
-
-            // empty recieved results and exit phase 2
-            receivedResults = new Vector<>();
-            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+//            // constrain checks
+//            for(Subtask j : localResults.getBundle()){
+//                // create list of new coalition members
+//                Vector<Vector<AbstractSimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
+//                Vector<Vector<AbstractSimulatedAgent>> oldOmega = this.localResults.getOmega();
+//
+//                if (!mutexSat(j) || !timeSat(j) || !depSat(j) || !coalitionSat(j, oldOmega, newOmega) ){
+//                    // subtask does not satisfy all constraints, release task
+//                    int i_j =  this.localResults.getJ().indexOf(j);
+//                    localResults.resetResults(i_j);
+//                    break;
+//                }
+//            }
+//            this.zeta++;
+//
+//            if(checkForChanges(prevResults)){
+//                // changes were made, reconsider bids
+//                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+//                this.convCounter = 0;
+//            }
+//            else{
+//                // no changes were made, check convergence
+//                this.convCounter++;
+//                if(convCounter >= convIndicator){
+//                    // convergence reached
+//                    this.convCounter = 0;
+//                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+//                }
+//                else {
+//                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+//                }
+//            }
+//
+//            // empty recieved results and exit phase 2
+//            receivedResults = new Vector<>();
+//            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
         }
     }
 

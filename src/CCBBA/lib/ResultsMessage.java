@@ -7,6 +7,7 @@ public class ResultsMessage extends Message {
 
     public ResultsMessage(IterationResults results, SimulatedAgent agent){
         this.myResults = new IterationResults(results, agent);
+
     }
     public IterationResults getResults(){ return this.myResults; }
 }

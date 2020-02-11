@@ -8,7 +8,7 @@ import java.util.List;
 
 public class IterationResults {
     private ArrayList<IterationDatum> results;
-    public SimulatedAgent parentAgent;
+    private SimulatedAgent parentAgent;
 
     /**
      * Constructor
@@ -285,6 +285,34 @@ public class IterationResults {
         datum.setX( maxBid.getX() );
     }
 
+    public void updateResults(IterationDatum newDatum){
+        IterationDatum updatedDatum = new IterationDatum(newDatum);
+        int i = this.indexOf(newDatum.getJ());
+        this.results.set(i, updatedDatum);
+    }
+
+    public void leaveResults(IterationDatum newDatum){
+        // does nothing
+    }
+
+    public void resetResults(IterationDatum newDatum){
+        IterationDatum updatedDatum = new IterationDatum(newDatum.getJ(), this.parentAgent);
+        int i = this.indexOf(newDatum.getJ());
+        this.results.set(i, updatedDatum);
+    }
+
+    public int indexOf(Subtask j){
+        int i = -1;
+        for(IterationDatum datum : this.results){
+            if(datum.getJ() == j){
+                i = this.results.indexOf(datum);
+                break;
+            }
+        }
+
+        return i;
+    }
+
     public String toString(){
         StringBuilder output = new StringBuilder(new String());
         output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\th\tv\tw_any\tw_solo\tcost\tscore\n" +
@@ -337,4 +365,5 @@ public class IterationResults {
     }
 
     public ArrayList<IterationDatum> getResults(){ return this.results; }
+    public SimulatedAgent getParentAgent(){return this.parentAgent; }
 }
