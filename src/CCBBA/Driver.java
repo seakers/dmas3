@@ -24,6 +24,7 @@ public class Driver extends AbstractAgent {
     private Level loggerLevel;
     private int numAgents;
     private static int numRuns = 1;
+    private String output;
 
     /**
      * Sim Setup
@@ -42,7 +43,9 @@ public class Driver extends AbstractAgent {
             inputSimData("AppendixB.json");
 
             // 2 : create results directory
-            createFileDirectory();
+            if( !(this.output.equals("OFF") || this.output.equals("off") || this.output.equals("Off")) ){
+                createFileDirectory();
+            }
 
             // 3 : create the simulation group
             createGroup(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
@@ -76,6 +79,7 @@ public class Driver extends AbstractAgent {
         }
 
         numRuns = Integer.valueOf( this.inputData.get("NumRuns").toString() );
+        this.output = inputData.get("OutputSwitch").toString();
     }
 
     private void createFileDirectory(){

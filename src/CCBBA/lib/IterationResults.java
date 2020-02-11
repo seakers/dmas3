@@ -289,7 +289,7 @@ public class IterationResults {
         int i = this.indexOf(newDatum.getJ());
         this.results.set(i, updatedDatum);
 
-        this.parentAgent.releaseTask(newDatum);
+        this.parentAgent.releaseTaskFromBundle(newDatum);
     }
 
     public void leaveResults(IterationDatum newDatum){
@@ -301,7 +301,7 @@ public class IterationResults {
         int i = this.indexOf(newDatum.getJ());
         this.results.set(i, updatedDatum);
 
-        this.parentAgent.releaseTask(newDatum);
+        this.parentAgent.releaseTaskFromBundle(newDatum);
     }
 
     public void resetResults(Subtask j){
@@ -322,10 +322,12 @@ public class IterationResults {
         return i;
     }
 
-    public boolean compareToList(IterationResults prevResults) throws Exception {
-        if(prevResults.size() != this.size()){ return false; }
+    public int compareToList(IterationResults prevResults) throws Exception {
+        // -1 := same list
+        // <= 0 := index of discrepancy
+        if(prevResults.size() != this.size()){ return prevResults.size()-1; }
         else{
-            boolean consistent = true;
+            int consistent = -1;
             boolean coalSat;
             boolean match;
 
@@ -346,7 +348,7 @@ public class IterationResults {
 
                 if (!match) {
                     // inconsistency found
-                    consistent = false;
+                    consistent = this.results.indexOf(myDatum);
                     break;
                 }
             }
@@ -361,8 +363,7 @@ public class IterationResults {
 
 
     public String toString(){
-        StringBuilder output = new StringBuilder(new String());
-        output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\th\tv\tw_any\tw_solo\tcost\tscore\n" +
+        StringBuilder output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\th\tv\tw_any\tw_solo\tcost\tscore\n" +
                                    "========================================================================================\n");
         Task j_current = this.results.get(0).getJ().getParentTask();
         for(IterationDatum datum : this.results){
@@ -408,6 +409,29 @@ public class IterationResults {
                 );
             }
         }
+        return output.toString();
+    }
+
+    public String comparisonToString(int i_dif, IterationResults prevResults) throws Exception {
+        IterationDatum myDatum = this.getIterationDatum(i_dif);
+        IterationDatum itsDatum = prevResults.getIterationDatum(myDatum);
+
+        double myY = myDatum.getY();
+        double itsY = itsDatum.getY();
+        double myTz = myDatum.getTz();
+        double itsTz = itsDatum.getTz();
+        int myS = myDatum.getS();
+        int itsS = itsDatum.getS();
+        int myV = myDatum.getV();
+        int itsV = itsDatum.getV();
+
+        StringBuilder output = new StringBuilder("Results comparison:\n\tOld\t\tNew\n" +
+                                                 "===================\n");
+        output.append( String.format("Y:\t%.2f\t%.2f\n" +
+                                     "Tz:\t%.2f\t%.2f\n" +
+                                     "S:\t%d\t\t%d\n" +
+                                     "V:\t%d\t\t%d\n",
+                                    myY, itsY, myTz, itsTz, myS, itsS, myV, itsV));
         return output.toString();
     }
 

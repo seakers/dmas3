@@ -1,13 +1,9 @@
 package CCBBA.lib;
 
-import CCBBA.CCBBASimulation;
-import CCBBA.bin.myMessage;
-import jmetal.encodings.variable.Int;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Message;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.orekit.frames.ITRFVersion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -173,11 +169,7 @@ public class SimulatedAgent extends AbstractAgent {
         }
 
         getLogger().info("Bundle constructed");
-        StringBuilder bundleList = new StringBuilder();
-        for (Subtask b : this.bundle) {
-            bundleList.append(" " + b.getName());
-        }
-        getLogger().fine(this.name + " bundle: " + bundleList);
+        logBundle();
         getLogger().fine(this.name + " results after bundle construction: \n" + this.localResults.toString());
 
         // Broadcast my results
@@ -189,10 +181,16 @@ public class SimulatedAgent extends AbstractAgent {
         // leave phase one and start phase 2
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
+
+        // Check for new Coalition members
+        getNewCoalitionMemebers();
+
+        int x = 1;
     }
 
     @SuppressWarnings("unused")
     public void thinkingPhaseTwo() throws Exception {
+        getLogger().info("Starting phase two");
         if (!isMessageBoxEmpty()) { // results received
             // Save current results
             IterationResults prevResults = new IterationResults(localResults, this);
@@ -327,58 +325,82 @@ public class SimulatedAgent extends AbstractAgent {
             }
 
             getLogger().info("Results compared");
-            StringBuilder bundleList = new StringBuilder();
-            for (Subtask b : this.bundle) {
-                bundleList.append(" " + b.getName());
-            }
-            getLogger().fine(this.name + " bundle after comparison: " + bundleList);
+            logBundle();
             getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString());
 
 
             // constrain checks
+            getLogger().info("Constrains checked");
             for(Subtask j : this.bundle){
                 // create list of new coalition members
                 ArrayList<ArrayList<SimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
                 ArrayList<ArrayList<SimulatedAgent>> oldOmega = this.omega;
 
-                if (!mutexSat(j) || !timeSat(j) || !depSat(j) || !coalitionSat(j, oldOmega, newOmega) ){
+                boolean mutexSat = mutexSat(j);
+                boolean timeSat = timeSat(j);
+                boolean depSat = depSat(j);
+                boolean coalitionSat = coalitionSat(j, oldOmega, newOmega);
+
+                if (!mutexSat|| !timeSat|| !depSat || !coalitionSat ){
                     // subtask does not satisfy all constraints, release task
                     localResults.resetResults(localResults.getIterationDatum(j));
-                    this.releaseTask(localResults.getIterationDatum(j));
+                    this.releaseTaskFromBundle(localResults.getIterationDatum(j));
+                    getLogger().fine("Constraint check FAILED");
+                    if (!mutexSat) {
+                        getLogger().fine(this.name + " failed mutexSat on subtask " + j.getName());
+                    }
+                    if (!timeSat) {
+                        getLogger().fine(this.name + " failed timeSat on subtask " + j.getName());
+                    }
+                    if (!depSat) {
+                        getLogger().fine(this.name + " failed depSat on subtask " + j.getName());
+                    }
+                    if (!coalitionSat) {
+                        getLogger().fine(this.name + " failed coalitionSat on subtask " + j.getName());
+                    }
                     break;
+                }
+                else{
+                    getLogger().fine("Constraint check passed");
                 }
             }
             this.zeta++;
 
-            getLogger().info("Constrains checked");
-            bundleList = new StringBuilder();
-            for (Subtask b : this.bundle) {
-                bundleList.append(" " + b.getName());
-            }
-            getLogger().fine(this.name + " bundle after check: " + bundleList);
+            logBundle();
             getLogger().fine(this.name + " results after check: \n" + this.localResults.toString() );
 
-            if(checkForChanges(prevResults)){
+            getLogger().info("Checking for changes");
+            int i_dif = checkForChanges(prevResults);
+            if( i_dif >= 0){
                 // changes were made, reconsider bids
-                requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                getLogger().fine("Changes were made. Reconsidering bids");
+                getLogger().fine( this.localResults.comparisonToString(i_dif, prevResults) );
+                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                 this.convCounter = 0;
             }
             else{
+                getLogger().fine("No changes were made. Checking convergence");
                 // no changes were made, check convergence
                 this.convCounter++;
                 if(convCounter >= convIndicator){
+                    getLogger().info("Convergence reached. Plan determined!");
                     // convergence reached
                     this.convCounter = 0;
-                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DO);
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
                 }
                 else {
-                    requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK1);
+                    getLogger().fine("Convergence status: " + convCounter + "/" + convIndicator);
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                 }
             }
 
             // empty recieved results and exit phase 2
             receivedResults = new ArrayList<>();
-            leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
+            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
+            int x = 1;
+        }
+        else{
+            getLogger().info("No messages received. Waiting on other agents");
         }
     }
 
@@ -532,15 +554,18 @@ public class SimulatedAgent extends AbstractAgent {
         }
     }
 
-    public void releaseTask(IterationDatum itsDatum) throws Exception {
+    public void releaseTaskFromBundle(IterationDatum itsDatum) throws Exception {
         if(bundle.contains( itsDatum.getJ() )){
-//            for(int i_b = bundle.indexOf( J.get(i) ); i_b < bundle.size(); i_b++){
-            for(int i_b = bundle.indexOf( itsDatum.getJ() ); i_b < bundle.size(); i_b++ ){
-                this.localResults.resetResults(itsDatum.getJ());
+            for(int i_b = bundle.indexOf( itsDatum.getJ() ); i_b < bundle.size();  ){
+                Subtask j_b = bundle.get(i_b);
+                this.localResults.resetResults( j_b );
                 this.omega.set(i_b, new ArrayList<>());
+
+                // remove subtask and all subsequent ones from bundle and path
+                this.x_path.remove( path.indexOf( j_b ) );
+                this.path.remove( path.indexOf( j_b ) );
+                this.bundle.remove( i_b );
             }
-            // remove subtask and all subsequent ones from bundle
-            this.bundle.remove(itsDatum.getJ());
         }
     }
 
@@ -553,13 +578,14 @@ public class SimulatedAgent extends AbstractAgent {
                 for (int i_o = 0; i_o < this.localResults.size(); i_o++) {
                     if ((this.localResults.getIterationDatum(i_o).getZ() != this)             // if winner at i_o is not me
                             && (this.localResults.getIterationDatum(i_o).getZ() != null)      // and if winner at i_o is not empty
-                            && (j.getParentTask() == localResults.getIterationDatum(i_o).getJ().getParentTask())) // and subtasks share a task
+                            && (this.bundle.get(i).getParentTask() == localResults.getIterationDatum(i_o).getJ().getParentTask())) // and subtasks share a task
                     {
                         // then winner at i_o is a coalition partner
                         tempCoal.add(this.localResults.getIterationDatum(i_o).getZ());
                     }
                 }
             }
+
             newOmega.add(tempCoal);
         }
         return newOmega;
@@ -783,8 +809,24 @@ public class SimulatedAgent extends AbstractAgent {
         return true;
     }
 
-    private boolean checkForChanges(IterationResults prevResults) throws Exception {
+    private int checkForChanges(IterationResults prevResults) throws Exception {
         return localResults.compareToList(prevResults);
+    }
+
+    private void logBundle(){
+        StringBuilder bundleList = new StringBuilder();
+        bundleList.append("[");
+        if(this.bundle.size() == 0){
+            bundleList.append("Empty");
+        }
+        else for (Subtask b : this.bundle) {
+            bundleList.append(b.getName());
+            if(this.bundle.indexOf(b) != this.bundle.size()-1){
+                bundleList.append(", ");
+            }
+        }
+        bundleList.append("]");
+        getLogger().fine(this.name + " bundle: " + bundleList);
     }
 
     /**

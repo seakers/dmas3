@@ -4,6 +4,7 @@
     "NumRuns": 10,
 	"Planner": "CCBBA",
 	"Logger": "FINE"
+	"OutputSwitch": "OFF"
 	"Agents": {
 		"AgentList": [
 			{
@@ -25,7 +26,7 @@
 					"TravelCost": 1.0,
 					"TravelCostType": "Const"
 				},
-				"ConvergenceIndicator": 100
+				"ConvergenceIndicator": 10
 			}, 
 			{
 				"Name": "Sat2",
@@ -46,7 +47,7 @@
 					"TravelCost": 1.0,
 					"TravelCostType": "Const"
 				},
-				"ConvergenceIndicator": 100
+				"ConvergenceIndicator": 10
 			}			
 		]		
 	}

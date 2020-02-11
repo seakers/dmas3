@@ -283,7 +283,7 @@ public class Task {
 
             for (ArrayList<String> depTasks : combinations) {
                 int j = combinations.indexOf( depTasks );
-                Subtask mainSubtask = new Subtask(mainSensor, i + 1, this, (depTasks.size()+1), j);
+                Subtask mainSubtask = new Subtask(mainSensor, i + 1, this, (depTasks.size()+1), this.J.size());
 
                 for (String depTask : depTasks) {
                     if (depTask.length() > 0) {
