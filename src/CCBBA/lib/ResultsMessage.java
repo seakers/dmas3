@@ -3,14 +3,14 @@ package CCBBA.lib;
 import madkit.kernel.Message;
 
 public class ResultsMessage extends Message {
-    private IterationResults myResults;
+    private IterationResults results;
 
     public ResultsMessage(IterationResults results, SimulatedAgent agent){
-        this.myResults = new IterationResults(results, agent);
+        this.results = new IterationResults(results, agent);
 
     }
-    public IterationResults getResults(){ return this.myResults; }
+    public IterationResults getResults(){ return this.results; }
     public String getSenderName(){
-        return myResults.getParentAgent().getName();
+        return results.getParentAgent().getName();
     }
 }

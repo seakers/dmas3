@@ -79,7 +79,9 @@ public class SimulatedAgent extends AbstractAgent {
         this.x_path = new ArrayList<>();
         this.overallX_path = new ArrayList<>();
         this.omega = new ArrayList<>();
-        for(int i = 0; i < M; i++){ omega.add(new ArrayList<>()); }
+        for (int i = 0; i < M; i++) {
+            omega.add(new ArrayList<>());
+        }
         this.overallOmega = new ArrayList<>();
         this.t_0 = this.environment.getT_0();
         this.convCounter = 0;
@@ -334,7 +336,7 @@ public class SimulatedAgent extends AbstractAgent {
 
             // constrain checks
             getLogger().info("Constrains checked");
-            for(Subtask j : this.bundle){
+            for (Subtask j : this.bundle) {
                 // create list of new coalition members
                 ArrayList<ArrayList<SimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
                 ArrayList<ArrayList<SimulatedAgent>> oldOmega = this.omega;
@@ -344,7 +346,7 @@ public class SimulatedAgent extends AbstractAgent {
                 boolean depSat = depSat(j);
                 boolean coalitionSat = coalitionSat(j, oldOmega, newOmega);
 
-                if (!mutexSat|| !timeSat|| !depSat || !coalitionSat ){
+                if (!mutexSat || !timeSat || !depSat || !coalitionSat) {
                     // subtask does not satisfy all constraints, release task
                     localResults.resetResults(localResults.getIterationDatum(j));
                     this.releaseTaskFromBundle(localResults.getIterationDatum(j));
@@ -362,36 +364,33 @@ public class SimulatedAgent extends AbstractAgent {
                         getLogger().fine(this.name + " failed coalitionSat on subtask " + j.getName());
                     }
                     break;
-                }
-                else{
+                } else {
                     getLogger().fine("Constraint check passed");
                 }
             }
             this.zeta++;
 
             logBundle();
-            getLogger().fine(this.name + " results after check: \n" + this.localResults.toString() );
+            getLogger().fine(this.name + " results after check: \n" + this.localResults.toString());
 
             getLogger().info("Checking for changes");
             int i_dif = checkForChanges(prevResults);
-            if( i_dif >= 0){
+            if (i_dif >= 0) {
                 // changes were made, reconsider bids
                 getLogger().fine("Changes were made. Reconsidering bids");
-                getLogger().fine( this.localResults.comparisonToString(i_dif, prevResults) );
+                getLogger().fine(this.localResults.comparisonToString(i_dif, prevResults));
                 requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                 this.convCounter = 0;
-            }
-            else{
+            } else {
                 getLogger().fine("No changes were made. Checking convergence");
                 // no changes were made, check convergence
                 this.convCounter++;
-                if(convCounter >= convIndicator){
+                if (convCounter >= convIndicator) {
                     getLogger().info("Convergence reached. Plan determined!");
                     // convergence reached
                     this.convCounter = 0;
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-                }
-                else {
+                } else {
                     getLogger().fine("Convergence status: " + convCounter + "/" + convIndicator);
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                 }
@@ -401,8 +400,7 @@ public class SimulatedAgent extends AbstractAgent {
             receivedResults = new ArrayList<>();
             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
             int x = 1;
-        }
-        else{
+        } else {
             getLogger().info("No messages received. Waiting on other agents");
         }
     }
@@ -417,15 +415,15 @@ public class SimulatedAgent extends AbstractAgent {
 
         // do all tasks in path
         int i_done = -1;
-        for(int i = 0; i < this.path.size(); i++){
+        for (int i = 0; i < this.path.size(); i++) {
             Subtask j = path.get(i);
             ArrayList<Double> x = x_path.get(i);
 
-            completeTask(j,x);
+            completeTask(j, x);
             getLogger().fine("Performing task: " + j.getName());
 
             myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-            if(myRoles.contains(SimGroups.AGENT_DIE)){
+            if (myRoles.contains(SimGroups.AGENT_DIE)) {
                 alive = false;
                 break;
             }
@@ -433,16 +431,15 @@ public class SimulatedAgent extends AbstractAgent {
         }
 
         // save to overall bundle, path, and omega
-        if(i_done == bundle.size()-1){
+        if (i_done == bundle.size() - 1) {
             getLogger().fine("All tasks in bundle completed");
             logRemainingBundle(0);
-        }
-        else{
+        } else {
             getLogger().fine("Not all tasks in bundle completed");
             logRemainingBundle(i_done);
         }
         getLogger().fine("Saving tasks to overall bundle and path");
-        for(int i = 0; i < i_done + 1; i++){
+        for (int i = 0; i < i_done + 1; i++) {
             this.overallOmega.add(omega.get(i));
             this.overallX_path.add(x_path.get(i));
             this.overallPath.add(path.get(i));
@@ -461,7 +458,7 @@ public class SimulatedAgent extends AbstractAgent {
         // check for remaining tasks
         getLogger().fine("Checking for remaining tasks...");
         boolean tasksAvailable = tasksAvailable();
-        if(alive) {
+        if (alive) {
             if (checkResources()) {
                 // tasks are remaining and the agent is alive
                 if (tasksAvailable) {
@@ -480,12 +477,12 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     @SuppressWarnings("unused")
-    protected void dying(){ // send results to results compiler
+    protected void dying() { // send results to results compiler
         List<AgentAddress> agentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
         List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
-        if((agentsDead != null) && (agentsDead.size() ==  agentsEnvironment.size())){
+        if ((agentsDead != null) && (agentsDead.size() == agentsEnvironment.size())) {
             AgentAddress resultsAddress = getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE);
-            ResultsMessage myDeath = new ResultsMessage(this.localResults,this);
+            SimResultsMessage myDeath = new SimResultsMessage(this);
             sendMessage(resultsAddress, myDeath);
         }
     }
@@ -553,8 +550,7 @@ public class SimulatedAgent extends AbstractAgent {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " max number of any bids not contained in input file.");
         } else if (inputAgentData.get("Resources") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " resource information not contained in input file.");
-        }
-        else if (inputAgentData.get("ConvergenceIndicator") == null) {
+        } else if (inputAgentData.get("ConvergenceIndicator") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " convergence indicator information not contained in input file.");
         }
 
@@ -628,8 +624,8 @@ public class SimulatedAgent extends AbstractAgent {
         }
     }
 
-    private void getNewCoalitionMemebers(){
-        for(Subtask j_b :bundle) {
+    private void getNewCoalitionMemebers() {
+        for (Subtask j_b : bundle) {
             int i_b = bundle.indexOf(j_b);
             ArrayList<ArrayList<SimulatedAgent>> newCoalitions = getNewCoalitionMemebers(j_b);
             this.omega.set(i_b, newCoalitions.get(i_b));
@@ -637,26 +633,26 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     public void releaseTaskFromBundle(IterationDatum itsDatum) throws Exception {
-        if(bundle.contains( itsDatum.getJ() )){
-            for(int i_b = bundle.indexOf( itsDatum.getJ() ); i_b < bundle.size();  ){
+        if (bundle.contains(itsDatum.getJ())) {
+            for (int i_b = bundle.indexOf(itsDatum.getJ()); i_b < bundle.size(); ) {
                 Subtask j_b = bundle.get(i_b);
-                this.localResults.resetResults( j_b );
+                this.localResults.resetResults(j_b);
                 this.omega.set(i_b, new ArrayList<>());
 
                 // remove subtask and all subsequent ones from bundle and path
-                this.x_path.remove( path.indexOf( j_b ) );
-                this.path.remove( path.indexOf( j_b ) );
-                this.bundle.remove( i_b );
+                this.x_path.remove(path.indexOf(j_b));
+                this.path.remove(path.indexOf(j_b));
+                this.bundle.remove(i_b);
             }
         }
     }
 
     private ArrayList<ArrayList<SimulatedAgent>> getNewCoalitionMemebers(Subtask j) {
         ArrayList<ArrayList<SimulatedAgent>> newOmega = new ArrayList<>();
-        for(int i = 0; i < this.M; i++) {
+        for (int i = 0; i < this.M; i++) {
             ArrayList<SimulatedAgent> tempCoal = new ArrayList<>();
 
-            if( this.bundle.size() >= i+1 ) {
+            if (this.bundle.size() >= i + 1) {
                 for (int i_o = 0; i_o < this.localResults.size(); i_o++) {
                     if ((this.localResults.getIterationDatum(i_o).getZ() != this)             // if winner at i_o is not me
                             && (this.localResults.getIterationDatum(i_o).getZ() != null)      // and if winner at i_o is not empty
@@ -682,7 +678,7 @@ public class SimulatedAgent extends AbstractAgent {
         double y_mutex = 0.0;
 
         for (int i_j = 0; i_j < parentTask.getSubtaskList().size(); i_j++) {
-            if( (i_j != i_task) && (D[i_task][i_j] < 0) ){
+            if ((i_j != i_task) && (D[i_task][i_j] < 0)) {
                 y_mutex += localResults.getIterationDatum(parentTask.getSubtaskList().get(i_j)).getY();
             } else if (D[i_task][i_j] >= 1) {
                 y_bid += localResults.getIterationDatum(parentTask.getSubtaskList().get(i_j)).getY();
@@ -691,18 +687,16 @@ public class SimulatedAgent extends AbstractAgent {
         y_bid += localResults.getIterationDatum(j).getY();
 
         //if outbid by mutex, release task
-        if (y_mutex > y_bid){
+        if (y_mutex > y_bid) {
             return false;
-        }
-        else if(y_mutex < y_bid){
+        } else if (y_mutex < y_bid) {
             return true;
-        }
-        else{ // both coalition bid values are equal, compare costs
+        } else { // both coalition bid values are equal, compare costs
             double c_bid = 0.0;
             double c_mutex = 0.0;
 
             for (int i_j = 0; i_j < parentTask.getSubtaskList().size(); i_j++) {
-                if( (i_j != i_task) && (D[i_task][i_j] < 0) ){
+                if ((i_j != i_task) && (D[i_task][i_j] < 0)) {
                     c_mutex += localResults.getIterationDatum(parentTask.getSubtaskList().get(i_j)).getCost();
                 } else if (D[i_task][i_j] >= 1) {
                     c_bid += localResults.getIterationDatum(parentTask.getSubtaskList().get(i_j)).getCost();
@@ -710,21 +704,19 @@ public class SimulatedAgent extends AbstractAgent {
             }
             c_bid += localResults.getIterationDatum(j).getCost();
 
-            if(c_mutex > c_bid){
+            if (c_mutex > c_bid) {
                 // opposing coalition has higher costs
                 return true;
-            }
-            else if(c_mutex < c_bid){
+            } else if (c_mutex < c_bid) {
                 // your coalition has higher costs
                 return false;
-            }
-            else {
+            } else {
                 // if costs and bids are equal, the task highest on the list gets allocated
                 int i_them = 0;
                 int i_us = parentTask.getSubtaskList().indexOf(j);
 
                 for (int i_j = 0; i_j < parentTask.getSubtaskList().size(); i_j++) {
-                    if( (i_j != i_task) && (D[i_task][i_j] < 0) ){
+                    if ((i_j != i_task) && (D[i_task][i_j] < 0)) {
                         i_them = i_j;
                         break;
                     }
@@ -740,7 +732,7 @@ public class SimulatedAgent extends AbstractAgent {
         int[][] D = parenTask.getD();
         ArrayList<Subtask> tempViolations = tempSat(j);
 
-        for(Subtask j_u : tempViolations){ // if time constraint violations exist compare each time violation
+        for (Subtask j_u : tempViolations) { // if time constraint violations exist compare each time violation
             int i_u = localResults.getIterationDatum(j_u).getI_q();
             int i_j = localResults.getIterationDatum(j).getI_q();
             if ((D[i_j][i_u] == 1) && (D[i_u][i_j] <= 0)) {
@@ -761,7 +753,7 @@ public class SimulatedAgent extends AbstractAgent {
         }
 
         if (taskReleased) {
-            if(localResults.isOptimistic(j)) {
+            if (localResults.isOptimistic(j)) {
                 localResults.getIterationDatum(j).decreaseW_any();
                 localResults.getIterationDatum(j).decreaseW_solo();
             }
@@ -777,20 +769,20 @@ public class SimulatedAgent extends AbstractAgent {
 
         ArrayList<Subtask> violationSubtasks = new ArrayList<>();
 
-        for(int u = 0; u < J_parent.size(); u++){
+        for (int u = 0; u < J_parent.size(); u++) {
             Subtask j_u = J_parent.get(u);
             double tz_q = localResults.getIterationDatum(j_q).getTz();
             double tz_u = localResults.getIterationDatum(J_parent.get(u)).getTz();
             boolean req1 = true;
             boolean req2 = true;
 
-            if( ( u != J_parent.indexOf(j_q) )&&( localResults.getIterationDatum(j_u).getZ() != null ) ){
+            if ((u != J_parent.indexOf(j_q)) && (localResults.getIterationDatum(j_u).getZ() != null)) {
                 // if not the same subtask and other subtask has a winner
-                req1 = tz_q <= tz_u +  T[J_parent.indexOf(j_q)][u];
+                req1 = tz_q <= tz_u + T[J_parent.indexOf(j_q)][u];
                 req2 = tz_u <= tz_q + T[u][J_parent.indexOf(j_q)];
             }
 
-            if( !(req1 && req2) ){
+            if (!(req1 && req2)) {
                 violationSubtasks.add(j_u);
             }
         }
@@ -820,22 +812,20 @@ public class SimulatedAgent extends AbstractAgent {
             }
         }
 
-        if ( localResults.isOptimistic(j) ) { // task has optimistic bidding strategy
-            if( datum.getV() == 0) {
-                if ( (n_sat == 0)  && (N_req > 0) ) {
+        if (localResults.isOptimistic(j)) { // task has optimistic bidding strategy
+            if (datum.getV() == 0) {
+                if ((n_sat == 0) && (N_req > 0)) {
                     // agent must be the first to win a bid for this tasks
                     datum.decreaseW_solo();
-                }
-                else if( (N_req > n_sat)  && (N_req > 0) ){
+                } else if ((N_req > n_sat) && (N_req > 0)) {
                     // agent bids on a task without all of its requirements met for the first time
                     datum.decreaseW_any();
                 }
             }
 
-            if ( (N_req != n_sat) && (N_req > 0) ) { //if not all dependencies are met, v_i++
+            if ((N_req != n_sat) && (N_req > 0)) { //if not all dependencies are met, v_i++
                 datum.increaseV();
-            }
-            else if( (N_req == n_sat) && (N_req > 0)){ // if all dependencies are met, v_i = 0
+            } else if ((N_req == n_sat) && (N_req > 0)) { // if all dependencies are met, v_i = 0
                 datum.resetV();
             }
 
@@ -844,10 +834,9 @@ public class SimulatedAgent extends AbstractAgent {
                 datum.decreaseW_any();
                 return false;
             }
-        }
-        else { // task has pessimistic bidding strategy
+        } else { // task has pessimistic bidding strategy
             //if not all dependencies are met
-            if( N_req > n_sat){
+            if (N_req > n_sat) {
                 //release task
                 return false;
             }
@@ -855,33 +844,31 @@ public class SimulatedAgent extends AbstractAgent {
         return true;
     }
 
-    private boolean coalitionSat(Subtask j, ArrayList<ArrayList<SimulatedAgent>> oldOmega, ArrayList<ArrayList<SimulatedAgent>> newOmega){
+    private boolean coalitionSat(Subtask j, ArrayList<ArrayList<SimulatedAgent>> oldOmega, ArrayList<ArrayList<SimulatedAgent>> newOmega) {
         // Check Coalition Member Constraints
         int i_b = bundle.indexOf(j);
 
         if (oldOmega.get(i_b).size() == 0) { // no coalition partners in original list
-            if(newOmega.get(i_b).size() > 0){ // new coalition partners in new list
+            if (newOmega.get(i_b).size() > 0) { // new coalition partners in new list
                 // release task
                 return false;
             }
-        }
-        else{ // coalition partners exist in original list, compare lists
-            if(newOmega.get(i_b).size() > 0){ // new list is not empty
+        } else { // coalition partners exist in original list, compare lists
+            if (newOmega.get(i_b).size() > 0) { // new list is not empty
                 // compare lists
-                if(oldOmega.get(i_b).size() != newOmega.get(i_b).size()){ // if different sizes, then lists are not the same
+                if (oldOmega.get(i_b).size() != newOmega.get(i_b).size()) { // if different sizes, then lists are not the same
                     // release task
                     return false;
-                }
-                else{ // compare element by element
+                } else { // compare element by element
                     boolean released = false;
-                    for(SimulatedAgent listMember : oldOmega.get(i_b)){
-                        if(!newOmega.get(i_b).contains(listMember)){ // if new list does not contain member of old list, then lists are not the same
+                    for (SimulatedAgent listMember : oldOmega.get(i_b)) {
+                        if (!newOmega.get(i_b).contains(listMember)) { // if new list does not contain member of old list, then lists are not the same
                             // release task
                             released = true;
                             break;
                         }
                     }
-                    if(released){
+                    if (released) {
                         // release task
                         return false;
                     }
@@ -895,15 +882,14 @@ public class SimulatedAgent extends AbstractAgent {
         return localResults.compareToList(prevResults);
     }
 
-    private void logBundle(){
+    private void logBundle() {
         StringBuilder bundleList = new StringBuilder();
         bundleList.append("[");
-        if(this.bundle.size() == 0){
+        if (this.bundle.size() == 0) {
             bundleList.append("Empty");
-        }
-        else for (Subtask b : this.bundle) {
+        } else for (Subtask b : this.bundle) {
             bundleList.append(b.getName());
-            if(this.bundle.indexOf(b) != this.bundle.size()-1){
+            if (this.bundle.indexOf(b) != this.bundle.size() - 1) {
                 bundleList.append(", ");
             }
         }
@@ -911,16 +897,15 @@ public class SimulatedAgent extends AbstractAgent {
         getLogger().fine(this.name + " bundle: " + bundleList);
     }
 
-    private void logRemainingBundle(int i){
+    private void logRemainingBundle(int i) {
         StringBuilder bundleList = new StringBuilder();
         bundleList.append("[");
-        if(this.bundle.size() == 0){
+        if (this.bundle.size() == 0) {
             bundleList.append("Empty");
-        }
-        else for (int i_b = i + 1; i_b < bundle.size(); i_b++) {
+        } else for (int i_b = i + 1; i_b < bundle.size(); i_b++) {
             Subtask b = this.bundle.get(i_b);
             bundleList.append(b.getName());
-            if(this.bundle.indexOf(b) != this.bundle.size()-1){
+            if (this.bundle.indexOf(b) != this.bundle.size() - 1) {
                 bundleList.append(", ");
             }
         }
@@ -930,55 +915,53 @@ public class SimulatedAgent extends AbstractAgent {
 
     private void completeTask(Subtask j, ArrayList<Double> x_j) throws Exception {
         // check resources
-        if(checkResources()) {
+        if (checkResources()) {
             moveToTastk(x_j);
             deductCosts(j);
             setToComplete(j);
-        }
-        else{
+        } else {
             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
         }
     }
 
     private boolean checkResources() throws Exception {
-        return this.myResources.checkResources( environment.getWorldType() );
+        return this.myResources.checkResources(environment.getWorldType());
     }
 
     private void moveToTastk(ArrayList<Double> x_j) throws Exception {
-        if(environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")){
+        if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
             this.position = new ArrayList<>();
             this.position.addAll(x_j);
-        }
-        else{
+        } else {
             throw new Exception("World type not supported.");
         }
     }
 
     private void deductCosts(Subtask j) throws Exception {
-        if(this.myResources.getType().equals("Const")){
+        if (this.myResources.getType().equals("Const")) {
             IterationDatum datum = this.localResults.getIterationDatum(j);
             this.myResources.deductCost(datum, environment.getWorldType());
         }
     }
 
-    private void setToComplete(Subtask j){
+    private void setToComplete(Subtask j) {
         j.setToComplete();
     }
 
     private boolean tasksAvailable() throws Exception {
         boolean allComplete = true;
-        for(IterationDatum datum : localResults.getResults() ){
-            if(!datum.getJ().getCompleteness()){
+        for (IterationDatum datum : localResults.getResults()) {
+            if (!datum.getJ().getCompleteness()) {
                 allComplete = false;
                 break;
             }
         }
-        if(allComplete){
+        if (allComplete) {
             return false;
         }
 
-        for(IterationDatum datum : localResults.getResults() ){
-            ArrayList<SubtaskBid> bidList = this.localResults.calcBidList( this );
+        for (IterationDatum datum : localResults.getResults()) {
+            ArrayList<SubtaskBid> bidList = this.localResults.calcBidList(this);
             return (this.localResults.checkAvailability());
         }
 
@@ -988,24 +971,83 @@ public class SimulatedAgent extends AbstractAgent {
     /**
      * Getters and Setters
      */
-    public ArrayList<String> getSensorList(){ return this.sensorList; }
-    public ArrayList<Subtask> getBundle(){ return this.bundle; }
-    public ArrayList<Subtask> getOverallBundle(){ return this.overallBundle; }
-    public ArrayList<Subtask> getPath(){ return this.path; }
-    public ArrayList<Subtask> getOverallPath(){ return this.overallPath; }
-    public ArrayList<ArrayList<Double>> getX_path(){ return this.x_path; }
-    public ArrayList<ArrayList<Double>> getOverallX_path(){ return this.overallX_path; }
-    public int getMaxItersInViolation(){ return this.O_kq; }
-    public ArrayList<Subtask> getWorldSubtasks(){ return this.worldSubtasks; }
-    public int getW_solo(){ return this.w_solo; }
-    public int getW_any(){ return this.w_any; }
-    public IterationResults getLocalResults(){ return this.localResults; }
-    public ArrayList<Double> getPosition(){ return this.position; }
-    public double getT_0(){ return this.t_0; }
-    public Scenario getEnvironment(){ return this.environment; }
-    public double getSpeed(){ return this.speed; }
-    public AgentResources getResources(){return this.myResources; }
-    public ArrayList<ArrayList<SimulatedAgent>> getOmega(){ return this.omega; }
-    public ArrayList<ArrayList<SimulatedAgent>> getOverallOmega(){ return this.overallOmega; }
-    public int getIteration(){ return this.zeta; }
+    public ArrayList<String> getSensorList() {
+        return this.sensorList;
+    }
+
+    public ArrayList<Subtask> getBundle() {
+        return this.bundle;
+    }
+
+    public ArrayList<Subtask> getOverallBundle() {
+        return this.overallBundle;
+    }
+
+    public ArrayList<Subtask> getPath() {
+        return this.path;
+    }
+
+    public ArrayList<Subtask> getOverallPath() {
+        return this.overallPath;
+    }
+
+    public ArrayList<ArrayList<Double>> getX_path() {
+        return this.x_path;
+    }
+
+    public ArrayList<ArrayList<Double>> getOverallX_path() {
+        return this.overallX_path;
+    }
+
+    public int getMaxItersInViolation() {
+        return this.O_kq;
+    }
+
+    public ArrayList<Subtask> getWorldSubtasks() {
+        return this.worldSubtasks;
+    }
+
+    public int getW_solo() {
+        return this.w_solo;
+    }
+
+    public int getW_any() {
+        return this.w_any;
+    }
+
+    public IterationResults getLocalResults() {
+        return this.localResults;
+    }
+
+    public ArrayList<Double> getPosition() {
+        return this.position;
+    }
+
+    public double getT_0() {
+        return this.t_0;
+    }
+
+    public Scenario getEnvironment() {
+        return this.environment;
+    }
+
+    public double getSpeed() {
+        return this.speed;
+    }
+
+    public AgentResources getResources() {
+        return this.myResources;
+    }
+
+    public ArrayList<ArrayList<SimulatedAgent>> getOmega() {
+        return this.omega;
+    }
+
+    public ArrayList<ArrayList<SimulatedAgent>> getOverallOmega() {
+        return this.overallOmega;
+    }
+
+    public int getIteration() {
+        return this.zeta;
+    }
 }

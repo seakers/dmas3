@@ -17,7 +17,7 @@ public class Driver extends AbstractAgent {
      * Organizational parameters
      */
     private JSONObject inputData;
-    private String directoryAddress;
+    private String directoryAddress = null;
     private Level loggerLevel;
     private int numAgents;
     private static int numRuns = 1;
@@ -57,7 +57,7 @@ public class Driver extends AbstractAgent {
             launchAgent(new Planner("CCBBA"), false);
 
             // 7 : launch results compiler
-            launchAgent( new ResultsCompiler(), false );
+            launchAgent( new ResultsCompiler( this.directoryAddress ), false );
 
         } catch (Exception e) { e.printStackTrace(); }
     }

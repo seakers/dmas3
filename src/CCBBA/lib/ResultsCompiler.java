@@ -11,6 +11,11 @@ import java.util.List;
 
 public class ResultsCompiler extends AbstractAgent {
     private Scenario environment;                           // world environment
+    private String directoryAddress;
+
+    public ResultsCompiler(String directoryAddress){
+        this.directoryAddress = directoryAddress;
+    }
 
     @Override
     protected void activate(){
