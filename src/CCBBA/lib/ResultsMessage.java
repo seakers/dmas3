@@ -10,4 +10,7 @@ public class ResultsMessage extends Message {
 
     }
     public IterationResults getResults(){ return this.myResults; }
+    public String getSenderName(){
+        return myResults.getParentAgent().getName();
+    }
 }

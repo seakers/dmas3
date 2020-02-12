@@ -1,9 +1,6 @@
 package CCBBA;
 
-import CCBBA.lib.Planner;
-import CCBBA.lib.Scenario;
-import CCBBA.lib.SimGroups;
-import CCBBA.lib.SimulatedAgent;
+import CCBBA.lib.*;
 import madkit.kernel.AbstractAgent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -58,6 +55,9 @@ public class Driver extends AbstractAgent {
 
             // 6 : create task scheduler
             launchAgent(new Planner("CCBBA"), false);
+
+            // 7 : launch results compiler
+            launchAgent( new ResultsCompiler(), false );
 
         } catch (Exception e) { e.printStackTrace(); }
     }

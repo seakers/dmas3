@@ -66,6 +66,7 @@ public class SimulatedAgent extends AbstractAgent {
         getLogger().info("Initiating agent");
 
         // Request Role
+        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         getLogger().config("Assigned to " + getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP) + " role");
 
@@ -481,11 +482,12 @@ public class SimulatedAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     protected void dying(){ // send results to results compiler
         List<AgentAddress> agentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
-//        if((agentsDead != null) && (agentsDead.size() == environment. - 1)){
-//            AgentAddress resultsAddress = getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE);
-//            myMessage myDeath = new myMessage(this.localResults,this);
-//            sendMessage(resultsAddress, myDeath);
-//        }
+        List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
+        if((agentsDead != null) && (agentsDead.size() ==  agentsEnvironment.size())){
+            AgentAddress resultsAddress = getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE);
+            ResultsMessage myDeath = new ResultsMessage(this.localResults,this);
+            sendMessage(resultsAddress, myDeath);
+        }
     }
 
     /**

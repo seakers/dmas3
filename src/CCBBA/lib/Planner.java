@@ -34,16 +34,10 @@ public class Planner extends Scheduler {
             //doing phase
             agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, "doingPhase");
             addActivator(agents);
-//            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE, "dying");
-//            addActivator(agents);
 //
-//            //waiting phase
-//            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_WAIT_DO, "waitOnTaskDoing");
-//            addActivator(agents);
-//
-//            //dying phase
-//            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_WAIT_DIE, "die");
-//            addActivator(agents);
+            //dying phase
+            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE, "dying");
+            addActivator(agents);
         }
         else if(this.planner == "DEBUG_TASK"){  //Does not execute agents, just creates environment
             //thinking phase
