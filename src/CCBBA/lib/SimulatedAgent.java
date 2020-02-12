@@ -1,6 +1,7 @@
 package CCBBA.lib;
 
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -34,6 +35,7 @@ public class SimulatedAgent extends AbstractAgent {
     private int w_solo;                                     // permission to bid solo on a task
     private int w_any;                                      // permission to bid on a task
     private AgentResources myResources;                     // agent resources
+    private AgentResources initialResources;                // initial agent resources
     private ArrayList<Subtask> bundle;                      // list of tasks in agent's plan
     private ArrayList<Subtask> overallBundle;               // list of tasks in agent's past plans
     private ArrayList<Subtask> path;                        // path taken to execute bundle
@@ -405,8 +407,85 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     @SuppressWarnings("unused")
-    public void doingPhase() {
-        int x = 1;
+    public void doingPhase() throws Exception {
+        getLogger().info("Executing plan");
+
+        // check life status
+        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+        boolean alive = !(myRoles.contains(SimGroups.AGENT_DIE));
+
+        // do all tasks in path
+        int i_done = -1;
+        for(int i = 0; i < this.path.size(); i++){
+            Subtask j = path.get(i);
+            ArrayList<Double> x = x_path.get(i);
+
+            completeTask(j,x);
+            getLogger().fine("Performing task: " + j.getName());
+
+            myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+            if(myRoles.contains(SimGroups.AGENT_DIE)){
+                alive = false;
+                break;
+            }
+            i_done = i;
+        }
+
+        // save to overall bundle, path, and omega
+        if(i_done == bundle.size()-1){
+            getLogger().fine("All tasks in bundle completed");
+            logRemainingBundle(0);
+        }
+        else{
+            getLogger().fine("Not all tasks in bundle completed");
+            logRemainingBundle(i_done);
+        }
+        getLogger().fine("Saving tasks to overall bundle and path");
+        for(int i = 0; i < i_done + 1; i++){
+            this.overallOmega.add(omega.get(i));
+            this.overallX_path.add(x_path.get(i));
+            this.overallPath.add(path.get(i));
+            this.overallBundle.add(bundle.get(i));
+        }
+
+        // release tasks from path and bundle
+        getLogger().fine("Releasing all tasks from bundle");
+        this.omega = new ArrayList<>();
+        this.x_path = new ArrayList<>();
+        this.path = new ArrayList<>();
+        this.bundle = new ArrayList<>();
+
+        leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+
+        // check for remaining tasks
+        getLogger().fine("Checking for remaining tasks...");
+        boolean tasksAvailable = tasksAvailable();
+        if(alive) {
+            if (checkResources()) {
+                // tasks are remaining and the agent is alive
+                if (tasksAvailable) {
+                    getLogger().info("Resources still available. Creating new plan!");
+                } else {
+                    getLogger().info("No more tasks available. Killing agent");
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                }
+            } else {
+                // no sufficient resources left in agent
+                getLogger().info("No more resources available. Killing agent");
+                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+            }
+            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    protected void dying(){ // send results to results compiler
+        List<AgentAddress> agentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+//        if((agentsDead != null) && (agentsDead.size() == environment. - 1)){
+//            AgentAddress resultsAddress = getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE);
+//            myMessage myDeath = new myMessage(this.localResults,this);
+//            sendMessage(resultsAddress, myDeath);
+//        }
     }
 
     /**
@@ -521,6 +600,7 @@ public class SimulatedAgent extends AbstractAgent {
 
         // -Resources
         this.myResources = new AgentResources((JSONObject) inputAgentData.get("Resources"));
+        this.initialResources = new AgentResources((JSONObject) inputAgentData.get("Resources"));
 
         // -Convergence Indicator
         this.convIndicator = Integer.parseInt(inputAgentData.get("ConvergenceIndicator").toString());
@@ -827,6 +907,80 @@ public class SimulatedAgent extends AbstractAgent {
         }
         bundleList.append("]");
         getLogger().fine(this.name + " bundle: " + bundleList);
+    }
+
+    private void logRemainingBundle(int i){
+        StringBuilder bundleList = new StringBuilder();
+        bundleList.append("[");
+        if(this.bundle.size() == 0){
+            bundleList.append("Empty");
+        }
+        else for (int i_b = i + 1; i_b < bundle.size(); i_b++) {
+            Subtask b = this.bundle.get(i_b);
+            bundleList.append(b.getName());
+            if(this.bundle.indexOf(b) != this.bundle.size()-1){
+                bundleList.append(", ");
+            }
+        }
+        bundleList.append("]");
+        getLogger().fine(this.name + " remaining bundle: " + bundleList);
+    }
+
+    private void completeTask(Subtask j, ArrayList<Double> x_j) throws Exception {
+        // check resources
+        if(checkResources()) {
+            moveToTastk(x_j);
+            deductCosts(j);
+            setToComplete(j);
+        }
+        else{
+            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+        }
+    }
+
+    private boolean checkResources() throws Exception {
+        return this.myResources.checkResources( environment.getWorldType() );
+    }
+
+    private void moveToTastk(ArrayList<Double> x_j) throws Exception {
+        if(environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")){
+            this.position = new ArrayList<>();
+            this.position.addAll(x_j);
+        }
+        else{
+            throw new Exception("World type not supported.");
+        }
+    }
+
+    private void deductCosts(Subtask j) throws Exception {
+        if(this.myResources.getType().equals("Const")){
+            IterationDatum datum = this.localResults.getIterationDatum(j);
+            this.myResources.deductCost(datum, environment.getWorldType());
+        }
+    }
+
+    private void setToComplete(Subtask j){
+        j.setToComplete();
+    }
+
+    private boolean tasksAvailable() throws Exception {
+        boolean allComplete = true;
+        for(IterationDatum datum : localResults.getResults() ){
+            if(!datum.getJ().getCompleteness()){
+                allComplete = false;
+                break;
+            }
+        }
+        if(allComplete){
+            return false;
+        }
+
+        for(IterationDatum datum : localResults.getResults() ){
+            ArrayList<SubtaskBid> bidList = this.localResults.calcBidList( this );
+            return (this.localResults.checkAvailability());
+        }
+
+        return true;
     }
 
     /**

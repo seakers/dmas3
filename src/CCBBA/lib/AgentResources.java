@@ -108,8 +108,27 @@ public class AgentResources {
         }
     }
 
+    public boolean checkResources(String worldType) throws Exception {
+        if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")){
+            return (this.value > 0);
+        }
+        else{
+            throw new Exception("World type not supported.");
+        }
+    }
+
+    public void deductCost(IterationDatum datum, String worldType) throws Exception {
+        if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")){
+            this.value -= datum.getCost();
+        }
+        else{
+            throw new Exception("World type not supported.");
+        }
+    }
+
     public double getC_merge() { return C_merge; }
     public double getC_split() { return C_split; }
     public double getValue() { return value; }
     public double getMiu() { return miu; }
+    public String getType(){ return type;}
 }

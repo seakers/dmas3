@@ -46,14 +46,19 @@ public class Subtask {
         }
     }
 
+    public void setToComplete(){
+        this.parentTask.complete(this);
+    }
+
+    public void setToCompleteByTask(){
+        this.completeness = true;
+    }
+
     public String getMain_task(){ return main_task; }
     public ArrayList<Integer> getDep_nums(){ return dep_nums; }
     public int getMain_num(){ return main_num; }
     public Task getParentTask(){ return parentTask; }
     public int getI_q(){ return i_q; }
-    public void setToComplete(){
-        this.completeness = true;
-    }
     public boolean getCompleteness(){ return this.completeness; }
     public int getK(){ return this.k; }
     public String getName(){ return this.name; }

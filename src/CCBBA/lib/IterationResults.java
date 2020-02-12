@@ -72,6 +72,7 @@ public class IterationResults {
 
     public ArrayList<SubtaskBid> calcBidList(SimulatedAgent biddingAgent) throws Exception {
         ArrayList<SubtaskBid> bidList = new ArrayList<>( results.size() );
+        String worldType = biddingAgent.getEnvironment().getWorldType();
         for(IterationDatum datum : results){
             // calculate bid for each task
             Subtask j = datum.getJ();
@@ -89,7 +90,17 @@ public class IterationResults {
                 }
 
                 // check if agent has enough resources to execute task
-                // MISSING
+                if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")) {
+                    double bundle_cost = 0.0;
+                    for (Subtask j_bundle : biddingAgent.getBundle()) { // count costs of bundle
+                        IterationDatum bundleDatum = this.getIterationDatum(j_bundle);
+                        bundle_cost += bundleDatum.getCost();
+                    }
+                    bundle_cost += localBid.getCost();
+                    if( biddingAgent.getResources().getValue() < bundle_cost ){
+                        h = 0;
+                    }
+                }
             }
             else{
                 h = 0;

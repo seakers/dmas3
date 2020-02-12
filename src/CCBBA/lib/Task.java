@@ -263,6 +263,8 @@ public class Task {
         }
 
         this.I = req_sensors.size();
+
+        this.completeness = false;
     }
 
     private void createSensorList(){
@@ -365,6 +367,35 @@ public class Task {
                 "-Max Score: \t%f \n" +
                 "-Sensor List: \t%s \n" +
                 "-Location: \t\t%s \n", this.name, this.S_Max, this.req_sensors, this.location);
+    }
+
+    public void complete(Subtask j){
+        // set desired task to complete
+        j.setToCompleteByTask();
+
+        // set mutually exclusive tasks to complete
+        int i_q = j.getI_q();
+        for(Subtask j_u : this.getSubtaskList()){
+            int i_u = j_u.getI_q();
+            if(D[i_q][i_u] == -1){
+                j_u.setToCompleteByTask();
+            }
+        }
+
+        // check if complete
+        checkCompleteness();
+    }
+
+    private void checkCompleteness(){
+        for(Subtask j : this.J){
+            if(!j.getCompleteness()){
+                completeness = false;
+                break;
+            }
+            else{
+                completeness = true;
+            }
+        }
     }
 
     /**
