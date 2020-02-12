@@ -368,7 +368,7 @@ public class IterationResults {
         }
     }
 
-    private IterationDatum getIterationDatum(IterationDatum datum) throws Exception {
+    public IterationDatum getIterationDatum(IterationDatum datum) throws Exception {
         return this.getIterationDatum(datum.getJ());
     }
 

@@ -28,6 +28,7 @@ public class ResultsCompiler extends AbstractAgent {
         requestRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.RESULTS_ROLE);
     }
 
+    @SuppressWarnings("unused")
     private void checkResults() throws IOException {
         //Receive results
         List<AgentAddress> resultsAddress = getAgentsWithRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_DIE);

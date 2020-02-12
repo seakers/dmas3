@@ -55,6 +55,7 @@ public class Subtask {
     }
 
     public String getMain_task(){ return main_task; }
+    public ArrayList<String> getDep_tasks(){ return this.dep_tasks; }
     public ArrayList<Integer> getDep_nums(){ return dep_nums; }
     public int getMain_num(){ return main_num; }
     public Task getParentTask(){ return parentTask; }

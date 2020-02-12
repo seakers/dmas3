@@ -23,6 +23,7 @@ public class SimulatedAgent extends AbstractAgent {
     private String name;                                    // agent name
     private ArrayList<String> sensorList;                   // list of available sensors
     private ArrayList<Double> position;                     // agent position
+    private ArrayList<Double> initialPosition;              // initial agent position
     private ArrayList<Double> velocity;                     // agent velocity
     private double speed;                                   // agent speed
     private double mass;                                    // agent mass
@@ -571,9 +572,11 @@ public class SimulatedAgent extends AbstractAgent {
 
         // -Position
         this.position = new ArrayList<>();
+        this.initialPosition = new ArrayList<>();
         JSONArray positionData = (JSONArray) inputAgentData.get("Position");
         for (Object positionDatum : positionData) {
             this.position.add((double) positionDatum);
+            this.initialPosition.add((double) positionDatum);
         }
 
         // -Speed or Velocity
@@ -971,83 +974,27 @@ public class SimulatedAgent extends AbstractAgent {
     /**
      * Getters and Setters
      */
-    public ArrayList<String> getSensorList() {
-        return this.sensorList;
-    }
-
-    public ArrayList<Subtask> getBundle() {
-        return this.bundle;
-    }
-
-    public ArrayList<Subtask> getOverallBundle() {
-        return this.overallBundle;
-    }
-
-    public ArrayList<Subtask> getPath() {
-        return this.path;
-    }
-
-    public ArrayList<Subtask> getOverallPath() {
-        return this.overallPath;
-    }
-
-    public ArrayList<ArrayList<Double>> getX_path() {
-        return this.x_path;
-    }
-
-    public ArrayList<ArrayList<Double>> getOverallX_path() {
-        return this.overallX_path;
-    }
-
-    public int getMaxItersInViolation() {
-        return this.O_kq;
-    }
-
-    public ArrayList<Subtask> getWorldSubtasks() {
-        return this.worldSubtasks;
-    }
-
-    public int getW_solo() {
-        return this.w_solo;
-    }
-
-    public int getW_any() {
-        return this.w_any;
-    }
-
-    public IterationResults getLocalResults() {
-        return this.localResults;
-    }
-
-    public ArrayList<Double> getPosition() {
-        return this.position;
-    }
-
-    public double getT_0() {
-        return this.t_0;
-    }
-
-    public Scenario getEnvironment() {
-        return this.environment;
-    }
-
-    public double getSpeed() {
-        return this.speed;
-    }
-
-    public AgentResources getResources() {
-        return this.myResources;
-    }
-
-    public ArrayList<ArrayList<SimulatedAgent>> getOmega() {
-        return this.omega;
-    }
-
-    public ArrayList<ArrayList<SimulatedAgent>> getOverallOmega() {
-        return this.overallOmega;
-    }
-
-    public int getIteration() {
-        return this.zeta;
-    }
+    public ArrayList<String> getSensorList() { return this.sensorList; }
+    public ArrayList<Subtask> getBundle() { return this.bundle; }
+    public ArrayList<Subtask> getOverallBundle() { return this.overallBundle; }
+    public ArrayList<Subtask> getPath() { return this.path; }
+    public ArrayList<Subtask> getOverallPath() { return this.overallPath; }
+    public ArrayList<ArrayList<Double>> getX_path() { return this.x_path; }
+    public ArrayList<ArrayList<Double>> getOverallX_path() { return this.overallX_path; }
+    public int getMaxItersInViolation() { return this.O_kq; }
+    public ArrayList<Subtask> getWorldSubtasks() { return this.worldSubtasks; }
+    public int getW_solo() { return this.w_solo; }
+    public int getW_any() { return this.w_any; }
+    public IterationResults getLocalResults() { return this.localResults; }
+    public ArrayList<Double> getPosition() { return this.position; }
+    public double getT_0() { return this.t_0; }
+    public Scenario getEnvironment() { return this.environment; }
+    public double getSpeed() { return this.speed; }
+    public AgentResources getResources() { return this.myResources; }
+    public ArrayList<ArrayList<SimulatedAgent>> getOmega() { return this.omega; }
+    public ArrayList<ArrayList<SimulatedAgent>> getOverallOmega() { return this.overallOmega; }
+    public int getIteration() { return this.zeta; }
+    public int getM(){ return this.M; }
+    public ArrayList<Double> getInitialPosition(){ return this.initialPosition; }
+    public int getZeta(){return this.zeta; }
 }

@@ -411,7 +411,12 @@ public class Task {
     public double getGamma(){ return this.gamma; }
     public double getS_Max(){ return this.S_Max; }
     public int getI(){ return this.I; }
-    public double getDuration(){ return this.duration; }
     public String getCost_type(){ return this.cost_type; }
     public double getCost(){ return this.cost; }
+    public ArrayList<String> getReq_sensors(){ return this.req_sensors; }
+
+    public double getT_start() { return t_start; }
+    public double getT_end() { return t_end; }
+    public double getT_corr() { return t_corr; }
+    public double getDuration(){ return this.duration; }
 }

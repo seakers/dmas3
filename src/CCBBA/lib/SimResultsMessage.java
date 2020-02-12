@@ -30,4 +30,7 @@ public class SimResultsMessage extends Message {
     public ArrayList<ArrayList<Double>> getOverallX_path() { return overallX_path; }
     public ArrayList<ArrayList<SimulatedAgent>> getOverallOmega() { return overallOmega; }
     public IterationResults getResults() { return results; }
+    public String getSenderName(){
+        return results.getParentAgent().getName();
+    }
 }
