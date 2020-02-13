@@ -14,6 +14,7 @@ public class AgentResources {
     private double C_split;
     private double value;
     private double miu;
+    private SimulatedAgent parentAgent;
 
     // realistic values
     // NEEDS TO BE IMPLEMENTED
@@ -95,7 +96,12 @@ public class AgentResources {
 
             if(inputResourceData.get("TravelCostType").toString().equals("Const")){
                 this.miu = (double) inputResourceData.get("TravelCost");
-            } else{
+            }
+            else if(inputResourceData.get("TravelCostType").toString().equals("Proportional")){
+                this.miu = (double) inputResourceData.get("TravelCost");
+                this.miu = this.miu * this.value;
+            }
+            else{
                 throw new Exception("INPUT ERROR: agent travel cost type not supported.");
             }
         }

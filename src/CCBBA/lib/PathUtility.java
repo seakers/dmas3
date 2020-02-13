@@ -372,8 +372,8 @@ public class PathUtility{
         if(j.getParentTask().getCost_type().equals("Const")){
             return j.getParentTask().getCost();
         }
-        else if(j.getParentTask().getCost_type().equals("Const")){
-            return j.getParentTask().getCost() * (agent.getResources().getValue() - g - p);
+        else if(j.getParentTask().getCost_type().equals("Proportional")){
+            return j.getParentTask().getCost() * (agent.getInitialResources().getValue());
         }
         else{
             throw new Exception("INPUT ERROR: task cost type not supported");

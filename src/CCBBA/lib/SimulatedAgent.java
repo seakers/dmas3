@@ -59,7 +59,8 @@ public class SimulatedAgent extends AbstractAgent {
         checkInputFormat(inputAgentData, inputData);
 
         // Unpack input data
-        unpackInput(inputAgentData);
+        JSONObject worldData = (JSONObject) ((JSONObject) inputData.get("Scenario")).get("World");
+        unpackInput(inputAgentData, worldData);
     }
 
     @Override
@@ -107,6 +108,7 @@ public class SimulatedAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     public void thinkingPhaseOne() throws Exception {
         getLogger().info("Starting phase one");
+
         if (zeta != 0) zeta += 1;
 
         // check for new tasks
@@ -121,6 +123,10 @@ public class SimulatedAgent extends AbstractAgent {
 
         // Check for new Coalition members
         getNewCoalitionMemebers();
+
+        // Reset task availability indicators
+        this.localResults.resetAvailability();
+        getLogger().fine(this.name + " results before bundle construction: \n" + this.localResults.toString());
 
         // construct bundle
         getLogger().info("Constructing bundle...");
@@ -557,7 +563,7 @@ public class SimulatedAgent extends AbstractAgent {
 
     }
 
-    private void unpackInput(JSONObject inputAgentData) throws Exception {
+    private void unpackInput(JSONObject inputAgentData, JSONObject worldData) throws Exception {
         getLogger().config("Configuring agent...");
 
         // -Name
@@ -573,11 +579,74 @@ public class SimulatedAgent extends AbstractAgent {
         // -Position
         this.position = new ArrayList<>();
         this.initialPosition = new ArrayList<>();
-        JSONArray positionData = (JSONArray) inputAgentData.get("Position");
-        for (Object positionDatum : positionData) {
-            this.position.add((double) positionDatum);
-            this.initialPosition.add((double) positionDatum);
+        if(inputAgentData.get("Position").getClass().equals(inputAgentData.get("Resources").getClass())){
+            // random position
+            JSONObject positionData = (JSONObject) inputAgentData.get("Position");
+            String worldType = worldData.get("Type").toString();
+
+            if(positionData.get("Dist").toString().equals("Linear")){
+                // ---Linear distribution
+                if( worldType.equals("2D_Grid") ){
+                    // ---Task is in a 2D grid world
+                    JSONArray boundsData = (JSONArray) worldData.get("Bounds");
+                    double x_max = (double) boundsData.get(0);
+                    double y_max = (double) boundsData.get(1);
+
+                    double x = x_max * Math.random();
+                    double y = y_max * Math.random();
+
+                    this.position.add(x);
+                    this.position.add(y);
+                    this.position.add(0.0);
+                    this.initialPosition.add(x);
+                    this.initialPosition.add(y);
+                    this.initialPosition.add(0.0);
+                }
+                else if(worldType.equals("3D_Grid")){
+                    // ---Task is in a 3D grid world
+                    JSONArray boundsData = (JSONArray) worldData.get("Bounds");
+                    double x_max = (double) boundsData.get(0);
+                    double y_max = (double) boundsData.get(1);
+                    double z_max = (double) boundsData.get(2);
+
+                    double x = x_max * Math.random();
+                    double y = y_max * Math.random();
+                    double z = z_max * Math.random();
+
+                    this.position.add(x);
+                    this.position.add(y);
+                    this.position.add(z);
+                    this.initialPosition.add(x);
+                    this.initialPosition.add(y);
+                    this.initialPosition.add(z);
+                }
+//                else if(worldType.equals("3D_Earth")){
+//                    // ---Task is on earth's surface
+//                    // IMPLEMENTATION NEEDED
+//                }
+                else{
+                    throw new Exception("INPUT ERROR:" + this.name + " world not supported.");
+                }
+
+            }
+//            else if(locationDist.equals("Normal")){
+//                // ---Normal distribution
+//                // NEEDS IMPLEMENTATION
+//            }
+            else{
+                throw new Exception("INPUT ERROR:" + this.name + " location distribution not supported.");
+            }
         }
+        else{
+            // predermined position
+            JSONArray positionData = (JSONArray) inputAgentData.get("Position");
+            for (Object positionDatum : positionData) {
+                this.position.add((double) positionDatum);
+                this.initialPosition.add((double) positionDatum);
+            }
+        }
+
+
 
         // -Speed or Velocity
         if (inputAgentData.get("Speed") != null) {
@@ -997,4 +1066,5 @@ public class SimulatedAgent extends AbstractAgent {
     public int getM(){ return this.M; }
     public ArrayList<Double> getInitialPosition(){ return this.initialPosition; }
     public int getZeta(){return this.zeta; }
+    public AgentResources getInitialResources(){ return this.initialResources; }
 }

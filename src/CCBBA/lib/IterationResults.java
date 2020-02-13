@@ -70,6 +70,12 @@ public class IterationResults {
         return false;
     }
 
+    public void resetAvailability(){
+        for(IterationDatum datum : results){
+            datum.setH(1);
+        }
+    }
+
     public ArrayList<SubtaskBid> calcBidList(SimulatedAgent biddingAgent) throws Exception {
         ArrayList<SubtaskBid> bidList = new ArrayList<>( results.size() );
         String worldType = biddingAgent.getEnvironment().getWorldType();

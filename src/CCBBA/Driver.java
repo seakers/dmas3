@@ -16,18 +16,21 @@ public class Driver extends AbstractAgent {
     /**
      * Organizational parameters
      */
-    private JSONObject inputData;
+    private static JSONObject inputData;
     private String directoryAddress = null;
     private Level loggerLevel;
     private int numAgents;
     private static int numRuns = 1;
-    private String output;
+    private static String output;
 
     /**
      * Sim Setup
      */
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
+        // 1 : load sim inputs
+        inputSimData("figure3.json");
+
         for(int i = 0; i < numRuns; i++){
             executeThisAgent(1, false);
         }
@@ -36,8 +39,7 @@ public class Driver extends AbstractAgent {
     @Override
     protected void activate(){
         try {
-            // 1 : load sim inputs
-            inputSimData("AppendixB.json");
+
 
             // 2 : create results directory
             if( !(this.output.equals("OFF") || this.output.equals("off") || this.output.equals("Off")) ){
@@ -66,20 +68,20 @@ public class Driver extends AbstractAgent {
     /**
      * Helping functions
      */
-    private void inputSimData(String fileName){
+    private static void inputSimData(String fileName){
         // reads intput json file
         JSONParser parser = new JSONParser();
         try {
             Object obj = parser.parse(new FileReader(
                     "src/CCBBA/inputs/" + fileName));
-            this.inputData = (JSONObject) obj;
+            inputData = (JSONObject) obj;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        numRuns = Integer.valueOf( this.inputData.get("NumRuns").toString() );
-        this.output = inputData.get("OutputSwitch").toString();
+        numRuns = Integer.valueOf( inputData.get("NumRuns").toString() );
+        output = inputData.get("OutputSwitch").toString();
     }
 
     private void createFileDirectory(){
@@ -87,7 +89,7 @@ public class Driver extends AbstractAgent {
         LocalDateTime now = LocalDateTime.now();
 
         String simName = (String) inputData.get("SimName");
-        this.directoryAddress = "src/CCBBA/results/results-" + simName + "-"+ dtf.format(now);
+        this.directoryAddress = "src/CCBBA/outputs/results-" + simName + "-"+ dtf.format(now);
         new File( this.directoryAddress ).mkdir();
     }
 
