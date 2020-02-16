@@ -93,4 +93,6 @@ public class IterationDatum {
     public void decreaseW_any() { this.w_any -= 1; }
     public void increaseV(){ this.v += 1; }
     public void resetV(){ this.v = 0; }
+    public void setW_any(int w_any) { this.w_any = w_any;}
+    public void setW_solo(int w_solo) { this.w_solo = w_solo;}
 }

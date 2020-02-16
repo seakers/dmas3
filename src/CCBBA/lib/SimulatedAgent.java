@@ -126,7 +126,7 @@ public class SimulatedAgent extends AbstractAgent {
 
         // Reset task availability indicators
         this.localResults.resetAvailability();
-        getLogger().fine(this.name + " results before bundle construction: \n" + this.localResults.toString());
+//        getLogger().fine(this.name + " results before bundle construction: \n" + this.localResults.toString());
 
         // construct bundle
         getLogger().info("Constructing bundle...");
@@ -342,7 +342,7 @@ public class SimulatedAgent extends AbstractAgent {
 
 
             // constrain checks
-            getLogger().info("Constrains checked");
+            getLogger().info("Checking constraints...");
             for (Subtask j : this.bundle) {
                 // create list of new coalition members
                 ArrayList<ArrayList<SimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
@@ -357,22 +357,30 @@ public class SimulatedAgent extends AbstractAgent {
                     // subtask does not satisfy all constraints, release task
                     localResults.resetResults(localResults.getIterationDatum(j));
                     this.releaseTaskFromBundle(localResults.getIterationDatum(j));
-                    getLogger().fine("Constraint check FAILED");
+                    String constraintsFailed = this.name + " FAILED ";
+
                     if (!mutexSat) {
-                        getLogger().fine(this.name + " failed mutexSat on subtask " + j.getName());
+//                        getLogger().fine(this.name + "mutexSat");
+                        constraintsFailed += "mutexSat, ";
                     }
                     if (!timeSat) {
-                        getLogger().fine(this.name + " failed timeSat on subtask " + j.getName());
+//                        getLogger().fine(this.name + " failed timeSat on subtask " + j.getName() + " #" + localResults.getIndexOf(j));
+                        constraintsFailed += "timeSat, ";
                     }
                     if (!depSat) {
-                        getLogger().fine(this.name + " failed depSat on subtask " + j.getName());
+//                        getLogger().fine(this.name + " failed depSat on subtask " + j.getName() + " #" + localResults.getIndexOf(j));
+                        constraintsFailed += "depSat, ";
                     }
                     if (!coalitionSat) {
-                        getLogger().fine(this.name + " failed coalitionSat on subtask " + j.getName());
+//                        getLogger().fine(this.name + " failed coalitionSat on subtask " + j.getName() + " #" + localResults.getIndexOf(j));
+                        constraintsFailed += "coalitionSat, ";
                     }
+
+                    constraintsFailed += "on subtask " + j.getName() + " #" + localResults.getIndexOf(j);
+                    getLogger().fine(constraintsFailed);
                     break;
                 } else {
-                    getLogger().fine("Constraint check passed");
+                    getLogger().fine("Constraint check for bunde task #" + (bundle.indexOf(j) + 1) + " passed");
                 }
             }
             this.zeta++;
@@ -393,7 +401,7 @@ public class SimulatedAgent extends AbstractAgent {
                 // no changes were made, check convergence
                 this.convCounter++;
                 if (convCounter >= convIndicator) {
-                    getLogger().info("Convergence reached. Plan determined!");
+                    getLogger().config("Convergence reached. Plan determined!");
                     // convergence reached
                     this.convCounter = 0;
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
@@ -455,10 +463,14 @@ public class SimulatedAgent extends AbstractAgent {
 
         // release tasks from path and bundle
         getLogger().fine("Releasing all tasks from bundle");
-        this.omega = new ArrayList<>();
         this.x_path = new ArrayList<>();
         this.path = new ArrayList<>();
         this.bundle = new ArrayList<>();
+        this.omega = new ArrayList<>();
+        for (int i = 0; i < M; i++) {
+            omega.add(new ArrayList<>());
+        }
+
 
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
 
@@ -471,12 +483,12 @@ public class SimulatedAgent extends AbstractAgent {
                 if (tasksAvailable) {
                     getLogger().info("Resources still available. Creating new plan!");
                 } else {
-                    getLogger().info("No more tasks available. Killing agent");
+                    getLogger().config("No more tasks available. Killing agent");
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
                 }
             } else {
                 // no sufficient resources left in agent
-                getLogger().info("No more resources available. Killing agent");
+                getLogger().config("No more resources available. Killing agent");
                 requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
             }
             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
@@ -638,7 +650,7 @@ public class SimulatedAgent extends AbstractAgent {
             }
         }
         else{
-            // predermined position
+            // predetermined position
             JSONArray positionData = (JSONArray) inputAgentData.get("Position");
             for (Object positionDatum : positionData) {
                 this.position.add((double) positionDatum);
@@ -805,18 +817,19 @@ public class SimulatedAgent extends AbstractAgent {
         ArrayList<Subtask> tempViolations = tempSat(j);
 
         for (Subtask j_u : tempViolations) { // if time constraint violations exist compare each time violation
-            int i_u = localResults.getIterationDatum(j_u).getI_q();
             int i_j = localResults.getIterationDatum(j).getI_q();
-            if ((D[i_j][i_u] == 1) && (D[i_u][i_j] <= 0)) {
-                //release task
+            int i_u = localResults.getIterationDatum(j_u).getI_q();
+            if ((D[i_j][i_u] >= 1) && (D[i_u][i_j] <= 0)) {
+                // if j depends on u but u does not depend on j, release task
                 taskReleased = true;
                 break;
-            } else if ((D[i_j][i_u] == 1) && (D[i_u][i_j] == 1)) {
-                double tz_q = localResults.getIterationDatum(j).getTz();
+            } else if ((D[i_j][i_u] >= 1) && (D[i_u][i_j] >= 1)) {
+                // if j and u are mutually dependent, check for latest arrival time
+                double tz_j = localResults.getIterationDatum(j).getTz();
                 double tz_u = localResults.getIterationDatum(j).getTz();
                 double t_start = t_0;
-                if (tz_q - t_start <= tz_u - t_start) {
-                    // release task
+                if (tz_j - t_start <= tz_u - t_start) {
+                    // if u has a higher arrival time than j, release task
                     taskReleased = true;
                     break;
                 }
@@ -954,13 +967,13 @@ public class SimulatedAgent extends AbstractAgent {
         return localResults.compareToList(prevResults);
     }
 
-    private void logBundle() {
+    private void logBundle() throws Exception {
         StringBuilder bundleList = new StringBuilder();
         bundleList.append("[");
         if (this.bundle.size() == 0) {
             bundleList.append("Empty");
         } else for (Subtask b : this.bundle) {
-            bundleList.append(b.getName());
+            bundleList.append(this.localResults.getIndexOf(b));
             if (this.bundle.indexOf(b) != this.bundle.size() - 1) {
                 bundleList.append(", ");
             }

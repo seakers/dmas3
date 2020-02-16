@@ -315,14 +315,20 @@ public class IterationResults {
 
     public void resetResults(IterationDatum newDatum) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(newDatum.getJ(), this.parentAgent);
+        updatedDatum.setW_any(this.getIterationDatum(newDatum).getW_any());
+        updatedDatum.setW_solo(this.getIterationDatum(newDatum).getW_solo());
+
         int i = this.indexOf(newDatum.getJ());
         this.results.set(i, updatedDatum);
 
         this.parentAgent.releaseTaskFromBundle(newDatum);
     }
 
-    public void resetResults(Subtask j){
+    public void resetResults(Subtask j) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(j, this.parentAgent);
+        updatedDatum.setW_any(this.getIterationDatum(j).getW_any());
+        updatedDatum.setW_solo(this.getIterationDatum(j).getW_solo());
+
         int i = this.indexOf(j);
         this.results.set(i, updatedDatum);
     }
@@ -382,10 +388,11 @@ public class IterationResults {
     public String toString(){
         StringBuilder output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\th\tv\tw_any\tw_solo\tcost\tscore\n" +
                                    "========================================================================================\n");
-        Task j_current = this.results.get(0).getJ().getParentTask();
+        Task J_current = this.results.get(0).getJ().getParentTask();
         for(IterationDatum datum : this.results){
-            if(datum.getJ().getParentTask() != j_current){
+            if(datum.getJ().getParentTask() != J_current){
                 output.append("----------------------------------------------------------------------------------------\n");
+                 J_current = datum.getJ().getParentTask();
             }
 
             String winnerName;
@@ -429,6 +436,10 @@ public class IterationResults {
         return output.toString();
     }
 
+    public int getIndexOf(Subtask j) throws Exception {
+        return this.results.indexOf(getIterationDatum(j)) + 1;
+    }
+
     public String comparisonToString(int i_dif, IterationResults prevResults) throws Exception {
         IterationDatum myDatum = this.getIterationDatum(i_dif);
         IterationDatum itsDatum = prevResults.getIterationDatum(myDatum);
@@ -442,7 +453,8 @@ public class IterationResults {
         int myV = myDatum.getV();
         int itsV = itsDatum.getV();
 
-        StringBuilder output = new StringBuilder("Results comparison:\n\tOld\t\tNew\n" +
+        StringBuilder output = new StringBuilder("\nResults comparison for subtask #" + (i_dif+1) +":\n\tOld\t\tNew" +
+                "\n" +
                                                  "===================\n");
         output.append( String.format("Y:\t%.2f\t%.2f\n" +
                                      "Tz:\t%.2f\t%.2f\n" +

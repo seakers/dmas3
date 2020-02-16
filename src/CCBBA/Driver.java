@@ -29,7 +29,7 @@ public class Driver extends AbstractAgent {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         // 1 : load sim inputs
-        inputSimData("figure3.json");
+        inputSimData("figure3_mod.json");
 
         for(int i = 0; i < numRuns; i++){
             executeThisAgent(1, false);
