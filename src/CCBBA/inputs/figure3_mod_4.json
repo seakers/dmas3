@@ -1,0 +1,124 @@
+
+{
+    "SimName": "Figure3-Mod-4",
+    "NumRuns": 128,
+	"Planner": "CCBBA",
+	"Logger": "WARNING"
+	"OutputSwitch": "ON"
+	"Agents": {
+		"AgentList": [
+			{
+				"Name": "Sat1",
+				"Instances": 1,
+				"SensorList": [ "IR" ],
+				"Position": {
+					"Dist": "Linear",
+				},
+				"Speed": 1.0,
+				"Mass": 1.0,
+				"PlanningHorizon": 5,
+				"MaxConstraintViolations": 2,
+				"MaxBidsSolo": 5,
+				"MaxBidsAny": 10,
+				"Resources": {
+					"Type": "Const",
+					"MergeCost": 0.0,
+					"SplitCost": 0.0,
+					"Value": 100.0,
+					"TravelCost": 0.0057,
+					"TravelCostType": "Proportional"
+				},
+				"ConvergenceIndicator": 100
+			}, 
+			{
+				"Name": "Sat2",
+				"Instances": 1,
+				"SensorList": [ "MW" ],
+				"Position": {
+					"Dist": "Linear",
+				},
+				"Speed": 1.0,
+				"Mass": 1.0,
+				"PlanningHorizon": 5,
+				"MaxConstraintViolations": 2,
+				"MaxBidsSolo": 5,
+				"MaxBidsAny": 10,
+				"Resources": {
+					"Type": "Const",
+					"MergeCost": 0.0,
+					"SplitCost": 0.0,
+					"Value": 100.0,
+					"TravelCost": 0.0057,
+					"TravelCostType": "Proportional"
+				},
+				"ConvergenceIndicator": 100
+			}			
+		]		
+	}
+	"Scenario": {
+		"TaskList": [
+			{ 
+				"Name": "DualSensorTask"
+				"Instances": 15,
+				"MaxScore": 100.0,
+				"Cost": {
+					"Value": 0.0114,
+					"Type": "Proportional"
+				},
+				"SensorList": [ "IR", "MW" ],
+				"Location": {
+					"Dist": "Linear",
+				},
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 0.0,
+				"t_corr": 4.0,
+				"lambda": 0.007,
+				"gamma" : "NEG_INF"
+			},
+			{ 
+				"Name": "SingleSensorTask1"
+				"Instances": 8,
+				"MaxScore": 30.0,
+				"Cost": {
+					"Value": 0.0114,
+					"Type": "Proportional"
+				},
+				"SensorList": [ "MW" ],
+				"Location": {
+					"Dist": "Linear",
+				},
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 0.0,
+				"t_corr": 4.0,
+				"lambda": 0.007,
+				"gamma" : "NEG_INF"
+			},
+			{ 
+				"Name": "SingleSensorTask2"
+				"Instances": 7,
+				"MaxScore": 30.0,
+				"Cost": {
+					"Value": 0.0114,
+					"Type": "Proportional"
+				},
+				"SensorList": [ "MW" ],
+				"Location": {
+					"Dist": "Linear",
+				},
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 0.0,
+				"t_corr": 4.0,
+				"lambda": 0.007,
+				"gamma" : "NEG_INF"
+			}
+		],
+		"World": {
+			"Type": "2D_Grid",
+			"Bounds": [ 25.0, 25.0 ],
+			"t_0": 0.0
+		}
+	}
+}

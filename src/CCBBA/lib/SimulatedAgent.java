@@ -354,23 +354,18 @@ public class SimulatedAgent extends AbstractAgent {
                 if (!mutexSat || !timeSat || !depSat || !coalitionSat) {
                     // subtask does not satisfy all constraints, release task
                     localResults.resetResults(localResults.getIterationDatum(j));
-//                    this.releaseTaskFromBundle(localResults.getIterationDatum(j));
                     String constraintsFailed = this.name + " FAILED ";
 
                     if (!mutexSat) {
-//                        getLogger().fine(this.name + "mutexSat");
                         constraintsFailed += "mutexSat, ";
                     }
                     if (!timeSat) {
-//                        getLogger().fine(this.name + " failed timeSat on subtask " + j.getName() + " #" + localResults.getIndexOf(j));
                         constraintsFailed += "timeSat, ";
                     }
                     if (!depSat) {
-//                        getLogger().fine(this.name + " failed depSat on subtask " + j.getName() + " #" + localResults.getIndexOf(j));
                         constraintsFailed += "depSat, ";
                     }
                     if (!coalitionSat) {
-//                        getLogger().fine(this.name + " failed coalitionSat on subtask " + j.getName() + " #" + localResults.getIndexOf(j));
                         constraintsFailed += "coalitionSat ";
                     }
 
@@ -886,7 +881,7 @@ public class SimulatedAgent extends AbstractAgent {
             } else if ((D[i_j][i_u] >= 1) && (D[i_u][i_j] >= 1)) {
                 // if j and u are mutually dependent, check for latest arrival time
                 double tz_j = localResults.getIterationDatum(j).getTz();
-                double tz_u = localResults.getIterationDatum(j).getTz();
+                double tz_u = localResults.getIterationDatum(j_u).getTz();
                 double t_start = t_0;
                 if (tz_j - t_start <= tz_u - t_start) {
                     // if u has a higher arrival time than j, release task
