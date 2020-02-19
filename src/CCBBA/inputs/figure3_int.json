@@ -1,9 +1,9 @@
 
 {
     "SimName": "Figure3-Mod",
-    "NumRuns": 128,
+    "NumRuns": 1,
 	"Planner": "CCBBA",
-	"Logger": "WARNING"
+	"Logger": "FINE"
 	"OutputSwitch": "ON"
 	"Agents": {
 		"AgentList": [
@@ -16,7 +16,7 @@
 				},
 				"Speed": 1.0,
 				"Mass": 1.0,
-				"PlanningHorizon": 5,
+				"PlanningHorizon": 6,
 				"MaxConstraintViolations": 2,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
@@ -28,7 +28,7 @@
 					"TravelCost": 0.0057,
 					"TravelCostType": "Proportional"
 				},
-				"ConvergenceIndicator": 100
+				"ConvergenceIndicator": 10
 			}, 
 			{
 				"Name": "Sat2",
@@ -39,7 +39,7 @@
 				},
 				"Speed": 1.0,
 				"Mass": 1.0,
-				"PlanningHorizon": 5,
+				"PlanningHorizon": 6,
 				"MaxConstraintViolations": 2,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
@@ -51,7 +51,7 @@
 					"TravelCost": 0.0057,
 					"TravelCostType": "Proportional"
 				},
-				"ConvergenceIndicator": 100
+				"ConvergenceIndicator": 10
 			}			
 		]		
 	}
@@ -59,7 +59,7 @@
 		"TaskList": [
 			{ 
 				"Name": "DualSensorTask"
-				"Instances": 15,
+				"Instances": 10,
 				"MaxScore": 100.0,
 				"Cost": {
 					"Value": 0.0114,
@@ -78,7 +78,7 @@
 			},
 			{ 
 				"Name": "SingleSensorTask1"
-				"Instances": 8,
+				"Instances": 0,
 				"MaxScore": 30.0,
 				"Cost": {
 					"Value": 0.0114,
@@ -97,7 +97,7 @@
 			},
 			{ 
 				"Name": "SingleSensorTask2"
-				"Instances": 7,
+				"Instances": 0,
 				"MaxScore": 30.0,
 				"Cost": {
 					"Value": 0.0114,

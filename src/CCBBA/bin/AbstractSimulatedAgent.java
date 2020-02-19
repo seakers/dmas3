@@ -373,7 +373,7 @@ public class AbstractSimulatedAgent extends AbstractAgent {
                 }
             }
 
-            // empty recieved results and exit phase 2
+            // empty received results and exit phase 2
             receivedResults = new Vector<>();
             leaveRole(CCBBASimulation.MY_COMMUNITY, CCBBASimulation.SIMU_GROUP, CCBBASimulation.AGENT_THINK2);
         }

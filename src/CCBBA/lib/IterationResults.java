@@ -303,6 +303,8 @@ public class IterationResults {
 
     public void updateResults(IterationDatum newDatum) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(newDatum);
+        updatedDatum.setC(this.getIterationDatum(newDatum).getC());
+
         int i = this.indexOf(newDatum.getJ());
         this.results.set(i, updatedDatum);
 
@@ -315,8 +317,10 @@ public class IterationResults {
 
     public void resetResults(IterationDatum newDatum) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(newDatum.getJ(), this.parentAgent);
+//        updatedDatum.setV(this.getIterationDatum(newDatum).getV());
         updatedDatum.setW_any(this.getIterationDatum(newDatum).getW_any());
         updatedDatum.setW_solo(this.getIterationDatum(newDatum).getW_solo());
+        updatedDatum.setC(this.getIterationDatum(newDatum).getC());
 
         int i = this.indexOf(newDatum.getJ());
         this.results.set(i, updatedDatum);
@@ -326,8 +330,10 @@ public class IterationResults {
 
     public void resetResults(Subtask j) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(j, this.parentAgent);
+//        updatedDatum.setV(this.getIterationDatum(j).getV());
         updatedDatum.setW_any(this.getIterationDatum(j).getW_any());
         updatedDatum.setW_solo(this.getIterationDatum(j).getW_solo());
+        updatedDatum.setC(this.getIterationDatum(j).getC());
 
         int i = this.indexOf(j);
         this.results.set(i, updatedDatum);
@@ -444,14 +450,14 @@ public class IterationResults {
         IterationDatum myDatum = this.getIterationDatum(i_dif);
         IterationDatum itsDatum = prevResults.getIterationDatum(myDatum);
 
-        double myY = myDatum.getY();
-        double itsY = itsDatum.getY();
-        double myTz = myDatum.getTz();
-        double itsTz = itsDatum.getTz();
-        int myS = myDatum.getS();
-        int itsS = itsDatum.getS();
-        int myV = myDatum.getV();
-        int itsV = itsDatum.getV();
+        double newY = myDatum.getY();
+        double oldY = itsDatum.getY();
+        double newTz = myDatum.getTz();
+        double oldTz = itsDatum.getTz();
+        int newS = myDatum.getS();
+        int oldS = itsDatum.getS();
+        int newV = myDatum.getV();
+        int oldV = itsDatum.getV();
 
         StringBuilder output = new StringBuilder("\nResults comparison for subtask #" + (i_dif+1) +":\n\tOld\t\tNew" +
                 "\n" +
@@ -460,7 +466,7 @@ public class IterationResults {
                                      "Tz:\t%.2f\t%.2f\n" +
                                      "S:\t%d\t\t%d\n" +
                                      "V:\t%d\t\t%d\n",
-                                    myY, itsY, myTz, itsTz, myS, itsS, myV, itsV));
+                                    oldY, newY, oldTz, newTz, oldS, newS, oldV, newV));
         return output.toString();
     }
 

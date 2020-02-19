@@ -6,6 +6,7 @@ import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.SchedulingMessage;
 
+import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -92,8 +93,8 @@ public class ResultsCompiler extends AbstractAgent {
                     break;
                 }
 
-                int e_i = result.compareToList(comparedResult);
-                if(e_i > -1) {
+                i_e = result.compareToList(comparedResult);
+                if(i_e > -1) {
                     consistent = false;
                     break;
                 }
@@ -312,9 +313,8 @@ public class ResultsCompiler extends AbstractAgent {
 
     private double calcScoreAvailable(){
         double count = 0;
-        ArrayList<Task> V = environment.getScenarioTasks();
-        for(int i = 0; i < V.size(); i++){
-            count = count + V.get(i).getS_Max();
+        for(Task V : environment.getScenarioTasks()){
+            count += V.getS_Max() * V.getI();
         }
         return count;
     }
@@ -345,7 +345,7 @@ public class ResultsCompiler extends AbstractAgent {
         }
 
         for(int i = 0; i < agentList.size(); i++){
-            costPerAgent.set( i, costPerAgent.get(i)/agentList.get(i).getResources().getValue());
+            costPerAgent.set( i, costPerAgent.get(i)/agentList.get(i).getInitialResources().getValue());
             costPerAgent.set( i, costPerAgent.get(i)/ (double) bidsPerAgent.get(i));
         }
         for(int i = 0; i < agentList.size(); i++){
@@ -705,6 +705,14 @@ public class ResultsCompiler extends AbstractAgent {
                         printWriter.printf("\t\t");
                     }
                 }
+            }
+            printWriter.printf("]\n");
+            printWriter.printf("X-Path:\n[\t");
+            for(int j = 0; j < localAgent.getOverallX_path().size(); j++){
+                if( j != 0){ printWriter.printf("\t"); }
+                ArrayList<Double> taskLocation = localAgent.getOverallX_path().get(j);
+                printWriter.printf("%.3f\t%.3f\t%.3f,", taskLocation.get(0), taskLocation.get(1), taskLocation.get(2));
+                if( j != localAgent.getOverallX_path().size()-1 ){ printWriter.printf("\n"); }
             }
             printWriter.printf("]\n");
             printWriter.printf("Time Assignments:\t\t[");
