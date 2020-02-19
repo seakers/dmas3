@@ -314,7 +314,7 @@ public class ResultsCompiler extends AbstractAgent {
     private double calcScoreAvailable(){
         double count = 0;
         for(Task V : environment.getScenarioTasks()){
-            count += V.getS_Max() * V.getI();
+            count += (V.getS_Max() * V.getReq_sensors().size());
         }
         return count;
     }
@@ -346,7 +346,7 @@ public class ResultsCompiler extends AbstractAgent {
 
         for(int i = 0; i < agentList.size(); i++){
             costPerAgent.set( i, costPerAgent.get(i)/agentList.get(i).getInitialResources().getValue());
-            costPerAgent.set( i, costPerAgent.get(i)/ (double) bidsPerAgent.get(i));
+//            costPerAgent.set( i, costPerAgent.get(i)/ (double) bidsPerAgent.get(i));
         }
         for(int i = 0; i < agentList.size(); i++){
             avg += costPerAgent.get(i);

@@ -43,7 +43,7 @@ function [] = figureThree( results )
     ylabel({'Coalitions Formed /'; 'Coalitions Available (%)'})
     title("Constraint/Moduar")
     set(gca, 'YGrid', 'on', 'XGrid', 'off')
-    ylim([0 100])
+%     ylim([0 100])
     
     %- Plot 2
     subplot(3,1,2)
@@ -52,7 +52,7 @@ function [] = figureThree( results )
     boxplot( yPlot2, xPlots )
     ylabel({'Score Achieved /'; 'Score of the Scenario'})
     set(gca, 'YGrid', 'on', 'XGrid', 'off')
-    ylim([0.2 0.8])
+    ylim([0 1])
     
     %- Plot 3
     subplot(3,1,3)
@@ -62,5 +62,5 @@ function [] = figureThree( results )
     ylabel({'Total Cost /'; 'Resources per Agent'})
     xlabel("Allowed Waiting Time [t_{corr}(s)]")
     set(gca, 'YGrid', 'on', 'XGrid', 'off')
-    ylim([0 1])
+    ylim([0.0 1])
 end

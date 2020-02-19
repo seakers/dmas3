@@ -40,12 +40,13 @@ public class PathUtility{
         }
 
         double S = calcSubtaskScore(path, j, t_a, x_a, agent);
+        double sigmoid = calcSigmoid(path, j, agent, x_a);
         double g = calcTravelCost(path, j, x_a, agent);
         double p = calcMergePenalty(path, j, agent, omega);
         double c_v = calcSubtaskCost(j, g, p, agent);
 
-        this.utility += S - g - p - c_v;
-        this.cost += g + p + c_v;
+        this.utility += (S/sigmoid - g - p - c_v);
+        this.cost += (g + p + c_v);
         this.score += S;
         this.tz.add(t_a);
         this.x.add(x_a);
@@ -89,7 +90,8 @@ public class PathUtility{
             t_corr = T[j.getI_q()][ i_max ];
             t_a = maxTz - t_corr;
 
-            if(t_a < t_quickest){ // if the
+            if(t_a < t_quickest){ // if the agreed arrival time is less than the fastest time of arrival
+                // I am the slowest in the coalition, they must adjust to my time
                 t_a = t_quickest;
             }
         }
@@ -166,9 +168,9 @@ public class PathUtility{
         double K = j.getK();
         double e = calcUrgency(j, t_a, agent);
         double alpha = calcAlpha(j.getK(), j.getParentTask().getI());
-        double sigmoid = calcSigmoid(path, j, agent, x_a);
 
-        return (S_max/K)*e*alpha*sigmoid;
+
+        return (S_max/K)*e*alpha;
     }
 
     private double calcUrgency(Subtask j, double t_a, SimulatedAgent agent){
@@ -197,24 +199,28 @@ public class PathUtility{
         double gamma = j.getParentTask().getGamma();
         double e;
 
-        if(i == 0){ // task is at the beginning of the path
-            if(agent.getOverallPath().size() > 0){ // there exists a path before new path
-                x_i = agent.getOverallX_path().get( agent.getOverallX_path().size() - 1 ); // last location in previous path
-            }
-            else{ // there was no previous path
-                x_i = agent.getPosition();
-            }
-        } else{ // there is a task before the current task
-            x_i = this.x.get(i-1);
+        if( gamma == Double.NEGATIVE_INFINITY ) {
+            return 1;
         }
+        else {
+            if(i == 0){ // task is at the beginning of the path
+                if(agent.getOverallPath().size() > 0){ // there exists a path before new path
+                    x_i = agent.getOverallX_path().get( agent.getOverallX_path().size() - 1 ); // last location in previous path
+                }
+                else{ // there was no previous path
+                    x_i = agent.getPosition();
+                }
+            } else{ // there is a task before the current task
+                x_i = this.x.get(i-1);
+            }
 
-        for(int i_x = 0; i_x < x_a.size(); i_x++){
-            delta_x += pow( x_a.get(i_x) - x_i.get(i_x), 2);
+            for(int i_x = 0; i_x < x_a.size(); i_x++){
+                delta_x += pow( x_a.get(i_x) - x_i.get(i_x), 2);
+            }
+
+            double distance =  sqrt(delta_x);
+            e = exp(gamma * distance);
         }
-
-        double distance =  sqrt(delta_x);
-        if( gamma == Double.NEGATIVE_INFINITY ) { e = 0.0; }
-        else { e = exp(gamma * distance); }
 
         return 1.0/( 1.0 + e);
     }
@@ -241,7 +247,7 @@ public class PathUtility{
 
         double distance =  sqrt(delta_x);
 
-        return distance*agent.getResources().getMiu();
+        return distance*agent.getInitialResources().getMiu();
     }
 
     private double calcMergePenalty(ArrayList<Subtask> path, Subtask j, SimulatedAgent agent, ArrayList<ArrayList<SimulatedAgent>> pathOmega){

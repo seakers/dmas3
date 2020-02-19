@@ -114,9 +114,6 @@ public class SimulatedAgent extends AbstractAgent {
         // check for new tasks
         getAvailableSubtasks();
 
-        // Empty mailbox
-        emptyMailbox();
-
         // Check for life status
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
         boolean alive = !(myRoles.contains(SimGroups.AGENT_DIE));
@@ -126,7 +123,7 @@ public class SimulatedAgent extends AbstractAgent {
 
         // Reset task availability indicators
         this.localResults.resetAvailability();
-//        getLogger().fine(this.name + " results before bundle construction: \n" + this.localResults.toString());
+        getLogger().fine(this.name + " results before bundle construction: \n" + this.localResults.toString());
 
         // construct bundle
         getLogger().info("Constructing bundle...");
@@ -182,6 +179,7 @@ public class SimulatedAgent extends AbstractAgent {
 
         getLogger().info("Bundle constructed");
         logBundle();
+        logPath();
         getLogger().fine(this.name + " results after bundle construction: \n" + this.localResults.toString());
 
         // Broadcast my results
@@ -336,6 +334,7 @@ public class SimulatedAgent extends AbstractAgent {
 
             getLogger().info("Results compared");
             logBundle();
+            logPath();
             getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString());
 
 
@@ -379,6 +378,7 @@ public class SimulatedAgent extends AbstractAgent {
             this.zeta++;
 
             logBundle();
+            logPath();
             getLogger().fine(this.name + " results after constraint check: \n" + this.localResults.toString());
 
             getLogger().info("Checking for changes");
@@ -403,6 +403,12 @@ public class SimulatedAgent extends AbstractAgent {
                     getLogger().config("Convergence reached. Plan determined!");
                     this.convCounter = 0;
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+
+                    // Broadcast my results
+                    ResultsMessage myResults = new ResultsMessage(this.localResults, this);
+                    broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1, myResults);
+                    broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, myResults);
+                    broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, myResults);
                 }
             }
 
@@ -475,6 +481,7 @@ public class SimulatedAgent extends AbstractAgent {
             }
 
             logBundle();
+            logPath();
             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
 
             // check for remaining tasks
@@ -1034,7 +1041,22 @@ public class SimulatedAgent extends AbstractAgent {
             }
         }
         bundleList.append("]");
-        getLogger().fine(this.name + " bundle: " + bundleList);
+        getLogger().fine(this.name + " bundle:\t" + bundleList);
+    }
+
+    private void logPath() throws Exception {
+        StringBuilder bundleList = new StringBuilder();
+        bundleList.append("[");
+        if (this.path.size() == 0) {
+            bundleList.append("Empty");
+        } else for (Subtask p : this.path) {
+            bundleList.append(this.localResults.getIndexOf(p));
+            if (this.path.indexOf(p) != this.path.size() - 1) {
+                bundleList.append(", ");
+            }
+        }
+        bundleList.append("]");
+        getLogger().fine(this.name + " path:\t" + bundleList);
     }
 
     private void logRemainingBundle(int i_done) {

@@ -16,6 +16,8 @@ public class Driver extends AbstractAgent {
     /**
      * Organizational parameters
      */
+
+    private static JSONArray inputBatch;
     private static JSONObject inputData;
     private String directoryAddress = null;
     private Level loggerLevel;
@@ -28,19 +30,22 @@ public class Driver extends AbstractAgent {
      */
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
-        // 1 : load sim inputs
-        inputSimData("figure3_int.json");
+        // 0: load batch file
+        inputSimBatch("figure3_batch.json");
 
-        for(int i = 0; i < numRuns; i++){
-            executeThisAgent(1, false);
+        for(int i = 0; i < inputBatch.size(); i++){
+            // 1 : load sim inputs
+            inputSimData(inputBatch.get(i).toString());
+
+            for(int j = 0; j < numRuns; j++){
+                executeThisAgent(1, false);
+            }
         }
     }
 
     @Override
     protected void activate(){
         try {
-
-
             // 2 : create results directory
             if( !(this.output.equals("OFF") || this.output.equals("off") || this.output.equals("Off")) ){
                 createFileDirectory();
@@ -68,6 +73,19 @@ public class Driver extends AbstractAgent {
     /**
      * Helping functions
      */
+    private static void inputSimBatch(String batchName){
+        // reads intput json file
+        JSONParser parser = new JSONParser();
+        try {
+            Object obj = parser.parse(new FileReader(
+                    "src/CCBBA/inputs/" + batchName));
+            inputBatch = (JSONArray) ((JSONObject) obj).get("SimList");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void inputSimData(String fileName){
         // reads intput json file
         JSONParser parser = new JSONParser();
@@ -89,7 +107,9 @@ public class Driver extends AbstractAgent {
         LocalDateTime now = LocalDateTime.now();
 
         String simName = (String) inputData.get("SimName");
-        this.directoryAddress = "src/CCBBA/outputs/results-" + simName + "-"+ dtf.format(now);
+        this.directoryAddress = "src/CCBBA/outputs/" + simName;
+        new File( this.directoryAddress ).mkdir();
+        this.directoryAddress += "/results-" + simName + "-"+ dtf.format(now);
         new File( this.directoryAddress ).mkdir();
     }
 

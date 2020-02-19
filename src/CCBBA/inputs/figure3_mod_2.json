@@ -9,14 +9,14 @@
 		"AgentList": [
 			{
 				"Name": "Sat1",
-				"Instances": 1,
+				"Instances": 2,
 				"SensorList": [ "IR" ],
 				"Position": {
 					"Dist": "Linear",
 				},
 				"Speed": 1.0,
 				"Mass": 1.0,
-				"PlanningHorizon": 5,
+				"PlanningHorizon": 3,
 				"MaxConstraintViolations": 2,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
@@ -32,14 +32,14 @@
 			}, 
 			{
 				"Name": "Sat2",
-				"Instances": 1,
+				"Instances": 2,
 				"SensorList": [ "MW" ],
 				"Position": {
 					"Dist": "Linear",
 				},
 				"Speed": 1.0,
 				"Mass": 1.0,
-				"PlanningHorizon": 5,
+				"PlanningHorizon": 3,
 				"MaxConstraintViolations": 2,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
@@ -60,7 +60,11 @@
 			{ 
 				"Name": "DualSensorTask"
 				"Instances": 15,
-				"MaxScore": 100.0,
+				"MaxScore": {
+					"Dist": "Linear",
+					"MaxValue": 100.0,
+					"MinValue": 0.0
+				}
 				"Cost": {
 					"Value": 0.0114,
 					"Type": "Proportional"
@@ -73,18 +77,22 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": 2.0,
-				"lambda": 0.007,
+				"lambda": 0.015,
 				"gamma" : "NEG_INF"
 			},
 			{ 
 				"Name": "SingleSensorTask1"
 				"Instances": 8,
-				"MaxScore": 30.0,
+				"MaxScore": {
+					"Dist": "Linear",
+					"MaxValue": 100.0,
+					"MinValue": 0.0
+				}
 				"Cost": {
 					"Value": 0.0114,
 					"Type": "Proportional"
 				},
-				"SensorList": [ "MW" ],
+				"SensorList": [ "IR" ],
 				"Location": {
 					"Dist": "Linear",
 				},
@@ -92,13 +100,17 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": 2.0,
-				"lambda": 0.007,
+				"lambda": 0.015,
 				"gamma" : "NEG_INF"
 			},
 			{ 
 				"Name": "SingleSensorTask2"
 				"Instances": 7,
-				"MaxScore": 30.0,
+				"MaxScore": {
+					"Dist": "Linear",
+					"MaxValue": 100.0,
+					"MinValue": 0.0
+				}
 				"Cost": {
 					"Value": 0.0114,
 					"Type": "Proportional"
@@ -111,13 +123,13 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": 2.0,
-				"lambda": 0.007,
+				"lambda": 0.015,
 				"gamma" : "NEG_INF"
 			}
 		],
 		"World": {
 			"Type": "2D_Grid",
-			"Bounds": [ 25.0, 25.0 ],
+			"Bounds": [ 50.0, 50.0 ],
 			"t_0": 0.0
 		}
 	}
