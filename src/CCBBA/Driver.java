@@ -31,13 +31,21 @@ public class Driver extends AbstractAgent {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         // 0: load batch file
-        inputSimBatch("figure3_batch.json");
+//        inputSimBatch("figure3_batch.json");
+        inputSimBatch("figure3_int.json");
 
-        for(int i = 0; i < inputBatch.size(); i++){
-            // 1 : load sim inputs
-            inputSimData(inputBatch.get(i).toString());
+        if(inputBatch != null) {
+            for (int i = 0; i < inputBatch.size(); i++) {
+                // 1 : load sim inputs
+                inputSimData(inputBatch.get(i).toString());
 
-            for(int j = 0; j < numRuns; j++){
+                for (int j = 0; j < numRuns; j++) {
+                    executeThisAgent(1, false);
+                }
+            }
+        }
+        else{
+            for (int j = 0; j < numRuns; j++) {
                 executeThisAgent(1, false);
             }
         }
@@ -79,7 +87,14 @@ public class Driver extends AbstractAgent {
         try {
             Object obj = parser.parse(new FileReader(
                     "src/CCBBA/inputs/" + batchName));
-            inputBatch = (JSONArray) ((JSONObject) obj).get("SimList");
+            if(((JSONObject) obj).get("SimList") == null){
+                if(((JSONObject) obj).get("SimName") != null){
+                    inputSimData(batchName);
+                }
+            }
+            else {
+                inputBatch = (JSONArray) ((JSONObject) obj).get("SimList");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

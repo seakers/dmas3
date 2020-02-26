@@ -247,11 +247,12 @@ public class PathUtility{
 
         double distance =  sqrt(delta_x);
 
-        return distance*agent.getInitialResources().getMiu();
+        return distance * agent.getInitialResources().getMiu();
     }
 
     private double calcMergePenalty(ArrayList<Subtask> path, Subtask j, SimulatedAgent agent, ArrayList<ArrayList<SimulatedAgent>> pathOmega){
         int i = path.indexOf(j);
+
         double C_split;
         double C_merge;
 
@@ -261,7 +262,7 @@ public class PathUtility{
         ArrayList<ArrayList<SimulatedAgent>> overallOmega = agent.getOverallOmega();
 
         if( i == 0 ){ // j is at beginning of new path
-            if( overallOmega.size() == 0) { // no previous coalitions, no split cost
+            if( overallOmega.size() <= 0) { // no previous coalitions, no split cost
                 if (pathOmega.get(i).size() > 0) { // Is there a coalition at i_bundle?
                     C_merge = agent.getResources().getC_merge();
                 } else {

@@ -32,16 +32,18 @@ public class Task {
     private int N_sub;                          // Number of subtasks in task
     private int I;                              // Number of sensors needed
     private boolean completeness;               // Completeness of task
+    private int iterationNum;
 
     /**
      * Constructor
      * @param taskData - Data received from JSON input file
      */
-    Task(JSONObject taskData, JSONObject worldData) throws Exception {
+    Task(JSONObject taskData, JSONObject worldData, int i) throws Exception {
         // Check if all required information is contained in the input file
         checkInputFormat(taskData);
 
         // Unpack data from JSON input file
+        this.iterationNum = i;
         unpackInput(taskData, worldData);
 
         // Create subtask list from sensor list
@@ -92,7 +94,7 @@ public class Task {
 
     private void unpackInput(JSONObject taskData, JSONObject worldData) throws Exception {
         // -Task Name
-        this.name = taskData.get("Name").toString();
+        this.name = taskData.get("Name").toString() + "-" + this.iterationNum;
 
         // -Max Score
         if(taskData.get("MaxScore").getClass().equals( Double.valueOf("1.0").getClass() ) ){

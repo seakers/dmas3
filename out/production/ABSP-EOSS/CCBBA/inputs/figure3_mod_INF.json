@@ -59,7 +59,7 @@
 		"TaskList": [
 			{ 
 				"Name": "DualSensorTask"
-				"Instances": 10,
+				"Instances": 15,
 				"MaxScore": {
 					"Dist": "Linear",
 					"MaxValue": 100.0,
@@ -77,15 +77,15 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": "INF",
-				"lambda": 0.015,
+				"lambda": 0.035,
 				"gamma" : "NEG_INF"
 			},
 			{ 
 				"Name": "SingleSensorTask1"
-				"Instances": 3,
+				"Instances": 8,
 				"MaxScore": {
 					"Dist": "Linear",
-					"MaxValue": 100.0,
+					"MaxValue": 30.0,
 					"MinValue": 0.0
 				}
 				"Cost": {
@@ -100,15 +100,15 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": "INF",
-				"lambda": 0.015,
+				"lambda": 0.035,
 				"gamma" : "NEG_INF"
 			},
 			{ 
 				"Name": "SingleSensorTask2"
-				"Instances": 2,
+				"Instances": 7,
 				"MaxScore": {
 					"Dist": "Linear",
-					"MaxValue": 100.0,
+					"MaxValue": 30.0,
 					"MinValue": 0.0
 				}
 				"Cost": {
@@ -123,7 +123,7 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": "INF",
-				"lambda": 0.015,
+				"lambda": 0.035,
 				"gamma" : "NEG_INF"
 			}
 		],

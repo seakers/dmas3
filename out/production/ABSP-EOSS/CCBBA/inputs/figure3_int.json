@@ -1,9 +1,9 @@
 
 {
     "SimName": "Figure3-Int",
-    "NumRuns": 128,
+    "NumRuns": 1,
 	"Planner": "CCBBA",
-	"Logger": "WARNING"
+	"Logger": "FINER"
 	"OutputSwitch": "ON"
 	"Agents": {
 		"AgentList": [
@@ -16,8 +16,8 @@
 				},
 				"Speed": 1.0,
 				"Mass": 1.0,
-				"PlanningHorizon": 6,
-				"MaxConstraintViolations": 2,
+				"PlanningHorizon": 5,
+				"MaxConstraintViolations": 20,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
 				"Resources": {
@@ -25,7 +25,7 @@
 					"MergeCost": 0.0,
 					"SplitCost": 0.0,
 					"Value": 100.0,
-					"TravelCost": 0.0057,
+					"TravelCost": 0.00057,
 					"TravelCostType": "Proportional"
 				},
 				"ConvergenceIndicator": 100
@@ -39,8 +39,8 @@
 				},
 				"Speed": 1.0,
 				"Mass": 1.0,
-				"PlanningHorizon": 6,
-				"MaxConstraintViolations": 2,
+				"PlanningHorizon": 5,
+				"MaxConstraintViolations": 20,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
 				"Resources": {
@@ -48,7 +48,7 @@
 					"MergeCost": 0.0,
 					"SplitCost": 0.0,
 					"Value": 100.0,
-					"TravelCost": 0.0057,
+					"TravelCost": 0.00057,
 					"TravelCostType": "Proportional"
 				},
 				"ConvergenceIndicator": 100
@@ -59,7 +59,7 @@
 		"TaskList": [
 			{ 
 				"Name": "DualSensorTask"
-				"Instances": 15,
+				"Instances": 5,
 				"MaxScore": {
 					"Dist": "Linear",
 					"MaxValue": 100.0,
@@ -77,15 +77,15 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": "INF",
-				"lambda": 0.015,
+				"lambda": 0.035,
 				"gamma" : "NEG_INF"
 			},
 			{ 
 				"Name": "SingleSensorTask1"
-				"Instances": 8,
+				"Instances": 3,
 				"MaxScore": {
 					"Dist": "Linear",
-					"MaxValue": 100.0,
+					"MaxValue": 30.0,
 					"MinValue": 0.0
 				}
 				"Cost": {
@@ -100,15 +100,15 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": "INF",
-				"lambda": 0.015,
+				"lambda": 0.035,
 				"gamma" : "NEG_INF"
 			},
 			{ 
 				"Name": "SingleSensorTask2"
-				"Instances": 7,
+				"Instances": 2,
 				"MaxScore": {
 					"Dist": "Linear",
-					"MaxValue": 100.0,
+					"MaxValue": 30.0,
 					"MinValue": 0.0
 				}
 				"Cost": {
@@ -123,7 +123,7 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": "INF",
-				"lambda": 0.015,
+				"lambda": 0.035,
 				"gamma" : "NEG_INF"
 			}
 		],

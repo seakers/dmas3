@@ -60,6 +60,12 @@ public class IterationDatum {
         this.score = newDatum.getScore();
     }
 
+    public void resetCoalitionCounters(SimulatedAgent agent){
+        this.h = 1;
+        this.v = 0;
+        this.w_any = agent.getW_any();
+        this.w_solo = agent.getW_solo();
+    }
 
     /**
      * Getters and setters

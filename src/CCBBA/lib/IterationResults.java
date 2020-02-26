@@ -77,10 +77,11 @@ public class IterationResults {
     }
 
     public ArrayList<SubtaskBid> calcBidList(SimulatedAgent biddingAgent) throws Exception {
-        ArrayList<SubtaskBid> bidList = new ArrayList<>( results.size() );
+        ArrayList<SubtaskBid> bidList = new ArrayList<>();
         String worldType = biddingAgent.getEnvironment().getWorldType();
-        for(IterationDatum datum : results){
+        for(int i = 0; i < results.size(); i++){
             // calculate bid for each task
+            IterationDatum datum = results.get(i);
             Subtask j = datum.getJ();
             SubtaskBid localBid = new SubtaskBid(j);
             int h;
@@ -386,6 +387,12 @@ public class IterationResults {
         }
     }
 
+    public void resetCoalitionCounters(){
+        for(IterationDatum datum : this.results){
+            datum.resetCoalitionCounters(this.parentAgent);
+        }
+    }
+
     public IterationDatum getIterationDatum(IterationDatum datum) throws Exception {
         return this.getIterationDatum(datum.getJ());
     }
@@ -443,7 +450,7 @@ public class IterationResults {
     }
 
     public int getIndexOf(Subtask j) throws Exception {
-        return this.results.indexOf(getIterationDatum(j)) + 1;
+        return this.results.indexOf(getIterationDatum(j));
     }
 
     public String comparisonToString(int i_dif, IterationResults prevResults) throws Exception {

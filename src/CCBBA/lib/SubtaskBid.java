@@ -56,8 +56,8 @@ public class SubtaskBid {
                 this.tz = newPathUtility.getTz().get( newPath.indexOf(j) );
                 this.x = newPathUtility.getX().get( newPath.indexOf(j) );
                 this.i_opt = newPath.indexOf(j);
-                this.cost = newPathUtility.getCost();
-                this.score = newPathUtility.getScore();
+                this.cost = newPathUtility.getCost() - oldUtility.getCost();
+                this.score = newPathUtility.getScore() - oldUtility.getScore();
             }
         }
     }

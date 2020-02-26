@@ -90,15 +90,20 @@ public class Scenario extends Watcher {
             // 1-Unpack task list
             this.scenarioTaskData = (JSONArray) scenarioData.get("TaskList");
 
+            int instances = 0;
+            int totalIntances = 0;
             // 2-Create the required instances of each task on the list
             for(int i = 0; i < scenarioTaskData.size(); i++){
                 JSONObject taskData = (JSONObject) scenarioTaskData.get(i);
-                int instances = Integer.parseInt( taskData.get("Instances").toString() );
+                instances = Integer.parseInt( taskData.get("Instances").toString() );
+
 
                 for(int j = 0; j < instances; j++){
-                    scenarioTasks.add( new Task((JSONObject) scenarioTaskData.get(i), this.worldData) );
-                    getLogger().config("Task created\n" + scenarioTasks.get(i).toString());
+                    Task newTask = new Task( taskData, this.worldData, j);
+                    scenarioTasks.add( newTask );
+                    getLogger().config("Task created\n" + scenarioTasks.get( totalIntances + j).toString());
                 }
+                totalIntances += instances - 1;
             }
 
             for(Task J : this.scenarioTasks){

@@ -63,4 +63,33 @@ function [] = figureThree( results )
     xlabel("Allowed Waiting Time [t_{corr}(s)]")
     set(gca, 'YGrid', 'on', 'XGrid', 'off')
     ylim([0.0 1])
+    
+    % Additional plots
+    %- Data for subplot 1
+    plot4.name = {};
+    plot4.data = {};
+    
+    for i = 1:length(results.name)
+        plot4.name{i} = results.name{i};        
+        tasksDone = results.values{i}(:,10:12);
+        totalTasks = results.values{i}(:,8);   
+        
+        plot4.data{i,1} = mean( tasksDone(:,1)./totalTasks );
+        plot4.data{i,2} = mean( tasksDone(:,2)./totalTasks );
+        plot4.data{i,3} = mean( tasksDone(:,3)./totalTasks );
+    end
+    
+    x =1;
+    
+    figure
+%     subplot(3,1,1)
+    yPlots4 = [ [plot4.data{2,:}]; [plot4.data{3,:}]; [plot4.data{4,:}]; [plot4.data{5,:}]; [plot4.data{6,:}]; [plot4.data{7,:}]; [plot4.data{1,:}]];
+%     xPlots4 = ["0.0", "2.0", "4.0", "6.0", "8.0", "inf", "unrestricted"];
+    xPlots4 = [0.0, 2.0, 4.0, 6.0, 8.0, 10, 12];
+    bar( xPlots4, yPlots4 )
+%     bar( yPlots4 )
+    ylabel({"Average task done with n sensor/";"total tasks done"});
+    xlabel("Allowed Waiting Time [t_{corr}(s)]")
+    legend("Tasks done with 1 sensor","Tasks done with 2 sensor","Tasks done with 3 sensor")
+    set(gca, 'YGrid', 'on', 'XGrid', 'off')
 end
