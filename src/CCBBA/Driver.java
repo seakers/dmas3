@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.logging.Level;
 
 public class Driver extends AbstractAgent {
     /**
@@ -20,8 +19,6 @@ public class Driver extends AbstractAgent {
     private static JSONArray inputBatch;
     private static JSONObject inputData;
     private String directoryAddress = null;
-    private Level loggerLevel;
-    private int numAgents;
     private static int numRuns = 1;
     private static String output;
 
@@ -31,8 +28,10 @@ public class Driver extends AbstractAgent {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         // 0: load batch file
-//        inputSimBatch("figure3_batch.json");
-        inputSimBatch("figure3_int.json");
+        inputSimBatch("figure3_batch.json");
+//        inputSimBatch("figure3_int_debug.json");
+//        inputSimBatch("figure3_int.json");
+//        inputSimBatch("figure3_mod_0.json");
 
         if(inputBatch != null) {
             for (int i = 0; i < inputBatch.size(); i++) {
@@ -139,6 +138,6 @@ public class Driver extends AbstractAgent {
                 launchAgent(new SimulatedAgent(agentSpecs, this.inputData));
             }
         }
-        this.numAgents = agentList.size();
+//        this.numAgents = agentList.size();
     }
 }

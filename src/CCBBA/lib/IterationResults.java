@@ -96,18 +96,23 @@ public class IterationResults {
                     h = mutexTest(localBid, datum.getJ(), biddingAgent);
                 }
 
-                // check if agent has enough resources to execute task
-                if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")) {
-                    double bundle_cost = 0.0;
-                    for (Subtask j_bundle : biddingAgent.getBundle()) { // count costs of bundle
-                        IterationDatum bundleDatum = this.getIterationDatum(j_bundle);
-                        bundle_cost += bundleDatum.getCost();
-                    }
-                    bundle_cost += localBid.getCost();
-                    if( biddingAgent.getResources().getValue() < bundle_cost ){
-                        h = 0;
-                    }
-                }
+//                // check if agent has enough resources to execute task
+//                if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")) {
+//                    double bundle_cost = 0.0;
+//                    for (Subtask j_bundle : biddingAgent.getBundle()) { // count costs of bundle
+//                        IterationDatum bundleDatum = this.getIterationDatum(j_bundle);
+//                        bundle_cost += bundleDatum.getCost();
+//                    }
+//                    bundle_cost += localBid.getCost();
+//                    if( biddingAgent.getResources().getValue() < bundle_cost ){
+//                        // agent does not have enough resources for adding subtask to bundle
+//                        h = -1;
+//                    }
+//                    else if(localBid.getC() <= 0.0){
+//                        // agent does not have enough resources for adding subtask to bundle
+//                        h = -1;
+//                    }
+//                }
             }
             else{
                 h = 0;
@@ -223,16 +228,15 @@ public class IterationResults {
         Task parentTask = j.getParentTask();
         int[][] D = parentTask.getD();
         int i_q = j.getI_q();
-
-        // check if subtask in question is mutually exclusive with a bid already in the bundle
-        for(Subtask bundleSubtask : agentBundle){
-            if(bundleSubtask.getParentTask() == parentTask) {
-                int i_b = bundleSubtask.getI_q();
-                if (D[i_q][i_b] == -1) { // if subtask j has a mutually exclusive task in bundle, you cannot bid
-                    return false;
+            // check if subtask in question is mutually exclusive with a bid already in the bundle
+            for(Subtask bundleSubtask : agentBundle){
+                if(bundleSubtask.getParentTask() == parentTask) {
+                    int i_b = bundleSubtask.getI_q();
+                    if (D[i_q][i_b] == -1) { // if subtask j has a mutually exclusive task in bundle, you cannot bid
+                        return false;
+                    }
                 }
             }
-        }
 
         // check if dependent task is about to reach coalition violation timeout
         for(Subtask subtask : parentTask.getSubtaskList()){
@@ -399,51 +403,98 @@ public class IterationResults {
 
 
     public String toString(){
-        StringBuilder output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\th\tv\tw_any\tw_solo\tcost\tscore\n" +
-                                   "========================================================================================\n");
+        StringBuilder output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\t\th\tv\tw_any\tw_solo\tscore\tcost\tcomplete\n" +
+                                   "====================================================================================================\n");
         Task J_current = this.results.get(0).getJ().getParentTask();
         for(IterationDatum datum : this.results){
             if(datum.getJ().getParentTask() != J_current){
-                output.append("----------------------------------------------------------------------------------------\n");
+                output.append("----------------------------------------------------------------------------------------------------\n");
                  J_current = datum.getJ().getParentTask();
             }
 
             String winnerName;
-            if(datum.getZ() == null){
-                winnerName = "-";
-                output.append( String.format("%d\t%.2f\t%s\t\t\t\t\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\n",
-                        this.results.indexOf(datum)+1,
-                        datum.getY(),
-                        winnerName,
-                        datum.getTz(),
-                        datum.getC(),
-                        datum.getS(),
-                        datum.getH(),
-                        datum.getV(),
-                        datum.getW_any(),
-                        datum.getW_solo(),
-                        datum.getCost(),
-                        datum.getScore()
-                        )
-                );
+            int complete = 0;
+            if(datum.getJ().getCompleteness()){
+                complete = 1;
+            }
+            if(datum.getS() >= 1000) {
+                if (datum.getZ() == null) {
+                    winnerName = "-";
+                    output.append(String.format("%d\t%.2f\t%s\t\t\t\t\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
+                            this.results.indexOf(datum) + 1,
+                            datum.getY(),
+                            winnerName,
+                            datum.getTz(),
+                            datum.getC(),
+                            datum.getS(),
+                            datum.getH(),
+                            datum.getV(),
+                            datum.getW_any(),
+                            datum.getW_solo(),
+                            datum.getScore(),
+                            datum.getCost(),
+                            complete
+                            )
+                    );
+                } else {
+                    winnerName = datum.getZ().getName();
+                    output.append(String.format("%d\t%.2f\t%s\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
+                            this.results.indexOf(datum) + 1,
+                            datum.getY(),
+                            winnerName,
+                            datum.getTz(),
+                            datum.getC(),
+                            datum.getS(),
+                            datum.getH(),
+                            datum.getV(),
+                            datum.getW_any(),
+                            datum.getW_solo(),
+                            datum.getScore(),
+                            datum.getCost(),
+                            complete
+                            )
+                    );
+                }
             }
             else{
-                winnerName = datum.getZ().getName();
-                output.append( String.format("%d\t%.2f\t%s\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\n",
-                        this.results.indexOf(datum)+1,
-                        datum.getY(),
-                        winnerName,
-                        datum.getTz(),
-                        datum.getC(),
-                        datum.getS(),
-                        datum.getH(),
-                        datum.getV(),
-                        datum.getW_any(),
-                        datum.getW_solo(),
-                        datum.getCost(),
-                        datum.getScore()
-                        )
-                );
+                if(datum.getZ() == null){
+                    winnerName = "-";
+                    output.append( String.format("%d\t%.2f\t%s\t\t\t\t\t%.2f\t%.2f\t%d\t\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
+                            this.results.indexOf(datum)+1,
+                            datum.getY(),
+                            winnerName,
+                            datum.getTz(),
+                            datum.getC(),
+                            datum.getS(),
+                            datum.getH(),
+                            datum.getV(),
+                            datum.getW_any(),
+                            datum.getW_solo(),
+                            datum.getCost(),
+                            datum.getScore(),
+                            complete
+                            )
+                    );
+                }
+                else {
+                    winnerName = datum.getZ().getName();
+                    output.append(String.format("%d\t%.2f\t%s\t%.2f\t%.2f\t%d\t\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
+                            this.results.indexOf(datum) + 1,
+                            datum.getY(),
+                            winnerName,
+                            datum.getTz(),
+                            datum.getC(),
+                            datum.getS(),
+                            datum.getH(),
+                            datum.getV(),
+                            datum.getW_any(),
+                            datum.getW_solo(),
+                            datum.getCost(),
+                            datum.getScore(),
+                            complete
+                            )
+                    );
+                }
             }
         }
         return output.toString();

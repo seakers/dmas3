@@ -122,7 +122,7 @@ public class PathUtility{
         }
         else{ // there is a task before the current task
             x_0 = this.x.get(i - 1);
-            t_0 = this.tz.get(i - 1);
+            t_0 = this.tz.get(i - 1) + path.get(i-1).getParentTask().getDuration();
         }
 
         if(agent.getEnvironment().getWorldType().equals("2D_Grid") || agent.getEnvironment().getWorldType().equals("3D_Grid")){

@@ -149,7 +149,7 @@ public class SimulatedAgent extends AbstractAgent {
                 double bidUtility = bidList.get(i).getC();
                 int h = localResults.getIterationDatum(j_bid).getH();
 
-                if ((bidUtility * h > currentMax)) {
+                if ( (h >= 0) && (bidUtility * h > currentMax)) {
                     currentMax = bidUtility * h;
                     i_max = i;
                     maxBid = bidList.get(i);
@@ -477,12 +477,13 @@ public class SimulatedAgent extends AbstractAgent {
 
             logBundle();
             logPath();
-            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+            getLogger().finer(this.name + " results after task was performed: \n" + this.localResults.toString());
 
             // check for remaining tasks
             getLogger().fine("Checking for remaining tasks...");
             boolean tasksAvailable = tasksAvailable();
             if(bundle.size() == 0) {
+                // agent has completed all planned tasks
                 if (checkResources()) {
                     if (tasksAvailable) {
                         // tasks are remaining and the agent is alive
@@ -505,6 +506,7 @@ public class SimulatedAgent extends AbstractAgent {
         else{
             getLogger().info("Agent is dead and has no plan to perform");
         }
+        leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         int x =2;
     }
@@ -519,6 +521,8 @@ public class SimulatedAgent extends AbstractAgent {
             AgentAddress resultsAddress = getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE);
             SimResultsMessage myDeath = new SimResultsMessage(this);
             sendMessage(resultsAddress, myDeath);
+
+            logResources();
         }
     }
 
@@ -1039,6 +1043,7 @@ public class SimulatedAgent extends AbstractAgent {
             moveToTastk(x_j);
             deductCosts(j);
             setToComplete(j);
+//            updateTime(j);
         } else {
             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
             getLogger().fine("Not enough resources to fulfill task. Killing Agent.");
@@ -1069,6 +1074,10 @@ public class SimulatedAgent extends AbstractAgent {
         j.setToComplete();
     }
 
+    private void updateTime(Subtask j) throws Exception{
+        this.t_0 = this.localResults.getIterationDatum(j).getTz();
+    }
+
     private boolean tasksAvailable() throws Exception {
         boolean allComplete = true;
         for (IterationDatum datum : localResults.getResults()) {
@@ -1084,12 +1093,8 @@ public class SimulatedAgent extends AbstractAgent {
         getLogger().finest(this.name + " results before availability check: \n" + this.localResults.toString());
         ArrayList<SubtaskBid> bidList = this.localResults.calcBidList(this);
         getLogger().finest(this.name + " results after availability check: \n" + this.localResults.toString());
-        for (IterationDatum datum : localResults.getResults()) {
-            boolean availableBids = this.localResults.checkAvailability();
-            return (availableBids);
-        }
-
-        return true;
+        boolean availableBids = this.localResults.checkAvailability();
+        return (availableBids);
     }
 
     private void logBidList(ArrayList<SubtaskBid> bidList) throws Exception {
@@ -1120,6 +1125,22 @@ public class SimulatedAgent extends AbstractAgent {
         }
 
         getLogger().finest(String.valueOf(output));
+    }
+
+
+    private void logResources(){
+        StringBuilder output = new StringBuilder(
+                String.format(
+                        "\nResources at the end of simulation: \n" +
+                        "\tOriginal resources:  \t%.2f\n" +
+                        "\tFinal resources:     \t%.2f\n" +
+                        "\tSpent resource ratio:\t%.2f\n",
+                        this.initialResources.getValue(),
+                        this.myResources.getValue(),
+                        1 - this.myResources.getValue()/this.initialResources.getValue()
+                )
+        );
+        getLogger().finer(String.valueOf(output));
     }
 
     public String toString(){

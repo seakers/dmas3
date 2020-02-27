@@ -671,7 +671,7 @@ public class ResultsCompiler extends AbstractAgent {
             printWriter.printf("Max Solo Bids:\t\t\t%d\n",localAgent.getW_solo());
             printWriter.printf("Max Any Bids:\t\t\t%d\n",localAgent.getW_any());
             printWriter.printf("Iteration Counter:\t\t%d\n",localAgent.getZeta());
-            printWriter.printf("Final Resources:\t\t\t%f\n\n",localAgent.getResources().getValue());
+            printWriter.printf("Final Resources:\t\t%f\n\n",localAgent.getResources().getValue());
 
 
 
