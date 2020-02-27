@@ -33,8 +33,8 @@ public class SubtaskBid {
         ArrayList<ArrayList<Subtask>> possiblePaths = generateNewPaths(oldPath, j);
 
         // find optimal placement in path
-//        double maxPathBid = 0.0;
-        double maxPathBid = Double.NEGATIVE_INFINITY;
+        double maxPathBid = 0.0;
+//        double maxPathBid = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < possiblePaths.size(); i++) { // Calculate utility for each new path
             // get new path and calc utility

@@ -28,9 +28,10 @@ public class Driver extends AbstractAgent {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         // 0: load batch file
-        inputSimBatch("figure3_batch.json");
+//        inputSimBatch("figure3_batch.json");
 //        inputSimBatch("figure3_int_debug.json");
 //        inputSimBatch("figure3_int.json");
+        inputSimBatch("figure3_mod_debug.json");
 //        inputSimBatch("figure3_mod_0.json");
 
         if(inputBatch != null) {
