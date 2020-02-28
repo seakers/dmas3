@@ -388,7 +388,10 @@ public class SimulatedAgent extends AbstractAgent {
                         // Save current results
                         IterationResults prevResults = new IterationResults(localResults, this);
 
-                        // check for changes
+                        // Compare with received Results
+                        compareResults();
+
+                        // Check for changes
                         getLogger().info("Checking for changes");
                         int i_dif = checkForChanges(prevResults);
                         if (i_dif >= 0) {
@@ -408,15 +411,13 @@ public class SimulatedAgent extends AbstractAgent {
                 leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
                 requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
             }
-
+            this.t_curr += this.del_t;
         }
         else{
             getLogger().info("Agent is dead and has no plan to perform");
             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         }
-
-        this.t_curr += this.del_t;
     }
 
     @SuppressWarnings("unused")
