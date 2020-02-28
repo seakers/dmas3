@@ -4,7 +4,8 @@
     "NumRuns": 1,
 	"Planner": "CCBBA",
 	"Logger": "FINEST"
-	"OutputSwitch": "ON"
+	"OutputSwitch": "ON",
+	"TimeStep": 0.1,
 	"Agents": {
 		"AgentList": [
 			{
@@ -47,7 +48,7 @@
 					"TravelCost": 0.0,
 					"TravelCostType": "Proportional"
 				},
-				"ConvergenceIndicator": 100
+				"ConvergenceIndicator": 10
 			}			
 		]		
 	}
@@ -66,8 +67,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -83,8 +84,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -100,8 +101,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -117,8 +118,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -134,8 +135,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -151,8 +152,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -168,8 +169,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -185,8 +186,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -202,8 +203,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -219,8 +220,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 1.0,
-				"lambda": 0.3,
+				"t_corr": 0.0,
+				"lambda": 1.0986,
 				"gamma" : "NEG_INF"
 			},
 		],

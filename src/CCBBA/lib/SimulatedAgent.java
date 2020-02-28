@@ -46,6 +46,8 @@ public class SimulatedAgent extends AbstractAgent {
     private ArrayList<ArrayList<SimulatedAgent>> omega;     // Coalition mate matrix of current bundle
     private ArrayList<ArrayList<SimulatedAgent>> overallOmega; // Coalition mate matrix of previous bundle
     private double t_0;                                     // start time
+    private double t_curr;                                  // current simulation time
+    private double del_t;                                   // simulation time step
     private ArrayList<IterationResults> receivedResults;    // list of received results from other agents
     private int convCounter;                                // convergence counter
     private int convIndicator;                              // convergence indicator
@@ -60,7 +62,7 @@ public class SimulatedAgent extends AbstractAgent {
 
         // Unpack input data
         JSONObject worldData = (JSONObject) ((JSONObject) inputData.get("Scenario")).get("World");
-        unpackInput(inputAgentData, worldData);
+        unpackInput(inputAgentData, worldData, inputData);
     }
 
     @Override
@@ -86,6 +88,7 @@ public class SimulatedAgent extends AbstractAgent {
         }
         this.overallOmega = new ArrayList<>();
         this.t_0 = this.environment.getT_0();
+        this.t_curr = t_0;
         this.convCounter = 0;
 
         // Get world subtasks
@@ -208,140 +211,8 @@ public class SimulatedAgent extends AbstractAgent {
             // Save current results
             IterationResults prevResults = new IterationResults(localResults, this);
 
-            // unpack results
-            List<Message> receivedMessages = nextMessages(null);
-            this.receivedResults = new ArrayList<>();
-            for (int i = 0; i < receivedMessages.size(); i++) {
-                ResultsMessage message = (ResultsMessage) receivedMessages.get(i);
-                receivedResults.add(message.getResults());
-            }
-
-            // compare results
-            boolean changesMade = false;
-            for (IterationResults result : this.receivedResults) {
-                for (int i_j = 0; i_j < result.getResults().size(); i_j++) {
-                    // Load received results
-                    IterationDatum itsDatum = result.getIterationDatum(i_j);
-                    double itsY = itsDatum.getY();
-                    String itsZ;
-                    if (itsDatum.getZ() == null) {
-                        itsZ = "";
-                    } else {
-                        itsZ = itsDatum.getZ().getName();
-                    }
-                    double itsTz = itsDatum.getTz();
-                    String it = result.getParentAgent().getName();
-                    int itsS = itsDatum.getS();
-                    boolean itsCompletion = itsDatum.getJ().getCompleteness();
-
-                    // Load my results
-                    IterationDatum myDatum = localResults.getIterationDatum(itsDatum.getJ());
-                    double myY = myDatum.getY();
-                    String myZ;
-                    if (myDatum.getZ() == null) {
-                        myZ = "";
-                    } else {
-                        myZ = myDatum.getZ().getName();
-                    }
-                    double myTz = myDatum.getTz();
-                    String me = this.getName();
-                    int myS = myDatum.getS();
-                    boolean myCompletion = myDatum.getJ().getCompleteness();
-
-                    // Comparing bids. See Ref 40 Table 1
-                    if (itsZ.equals(it)) {
-                        if (myZ.equals(me)) {
-                            if ((itsCompletion) && (itsCompletion != myCompletion)) {
-                                // update
-                                localResults.updateResults(itsDatum);
-                            } else if (itsY > myY) {
-                                // update
-                                localResults.updateResults(itsDatum);
-                            }
-                        } else if (myZ == it) {
-                            // update
-                            localResults.updateResults(itsDatum);
-                        } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
-                            if ((itsS > myS) || (itsY > myY)) {
-                                // update
-                                localResults.updateResults(itsDatum);
-                            }
-                        } else if (myZ == "") {
-                            // update
-                            localResults.updateResults(itsDatum);
-                        }
-                    } else if (itsZ == me) {
-                        if (myZ == me) {
-                            // leave
-                            localResults.leaveResults(itsDatum);
-                        } else if (myZ == it) {
-                            // reset
-                            localResults.resetResults(itsDatum);
-                        } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
-                            if (itsS > myS) {
-                                // reset
-                                localResults.resetResults(itsDatum);
-                            }
-                        } else if (myZ == "") {
-                            // leave
-                            localResults.leaveResults(itsDatum);
-                        }
-                    } else if ((itsZ != it) && (itsZ != me) && (itsZ != "")) {
-                        if (myZ == me) {
-                            if ((itsCompletion) && (itsCompletion != myCompletion)) {
-                                // update
-                                localResults.updateResults(itsDatum);
-                            } else if ((itsS > myS) && (itsY > myY)) {
-                                // update
-                                localResults.updateResults(itsDatum);
-                            }
-                        } else if (myZ == it) {
-                            if (itsS > myS) {
-                                //update
-                                localResults.updateResults(itsDatum);
-                            } else {
-                                // reset
-                                localResults.resetResults(itsDatum);
-                            }
-                        } else if (myZ == itsZ) {
-                            if (itsS > myS) {
-                                // update
-                                localResults.updateResults(itsDatum);
-                            }
-                        } else if ((myZ != me) && (myZ != it) && (myZ != itsZ) && (myZ != "")) {
-                            if ((itsS > myS) && (itsY > myY)) {
-                                // update
-                                localResults.updateResults(itsDatum);
-                            }
-                        } else if (myZ == "") {
-                            // leave
-                            localResults.leaveResults(itsDatum);
-                        }
-                    } else if (itsZ == "") {
-                        if (myZ == me) {
-                            // leave
-                            localResults.leaveResults(itsDatum);
-                        } else if (myZ == it) {
-                            // update
-                            localResults.updateResults(itsDatum);
-                        } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
-                            if (itsS > myS) {
-                                // update
-                                localResults.updateResults(itsDatum);
-                            }
-                        } else if (myZ == "") {
-                            // leave
-                            localResults.leaveResults(itsDatum);
-                        }
-                    }
-                }
-            }
-
-            getLogger().info("Results compared");
-            logBundle();
-            logPath();
-            getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString());
-
+            // Compare with received Results
+            compareResults();
 
             // constrain checks
             getLogger().info("Checking constraints...");
@@ -440,75 +311,112 @@ public class SimulatedAgent extends AbstractAgent {
         boolean alive = !(myRoles.contains(SimGroups.AGENT_DIE));
 
         if(alive) {
-            getLogger().info("Executing one task from plan");
             if(path.size() > 0) {
-                // do all tasks in path
                 Subtask j = path.get(0);
-                ArrayList<Double> x = x_path.get(0);
-                getLogger().fine("Performing task: " + j.getName() + " #" + (this.localResults.indexOf(j) + 1));
-                completeTask(j, x);
+                if( Math.abs( t_curr - this.localResults.getIterationDatum(j).getTz() ) <= this.del_t ) {
+                    // if time of arrival has been reached and I'm still the winner of task j, do task
+                    getLogger().info("Executing one task from plan");
 
-                myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-                if (myRoles.contains(SimGroups.AGENT_DIE)) {
-                    alive = false;
-                }
+                    // do earliest tasks in path
+                    ArrayList<Double> x = x_path.get(0);
+                    getLogger().fine("Performing task: " + j.getName() + " #" + (this.localResults.indexOf(j) + 1));
+                    completeTask(j, x);
 
-                if (alive) {
-                    // save to overall bundle, path, and omega
-                    getLogger().fine("Saving performed task to overall bundle and path");
-                    int i_path = bundle.indexOf(path.get(0));
-                    this.overallOmega.add(omega.get(i_path));
-                    this.overallX_path.add(x_path.get(0));
-                    this.overallPath.add(path.get(0));
-                    this.overallBundle.add(bundle.get(i_path));
-
-                    // release performed task from path an bundle
-                    getLogger().fine("Releasing performed task from bundle");
-                    path.remove(0);
-                    x_path.remove(0);
-                    bundle.remove(i_path);
-                    omega.set(i_path, new ArrayList<>());
-
-                    localResults.resetCoalitionCounters();
-                } else {
-                    getLogger().fine(this.name + " did not perform any task");
-                }
-            }
-
-            logBundle();
-            logPath();
-            getLogger().finer(this.name + " results after task was performed: \n" + this.localResults.toString());
-
-            // check for remaining tasks
-            getLogger().fine("Checking for remaining tasks...");
-            boolean tasksAvailable = tasksAvailable();
-            if(bundle.size() == 0) {
-                // agent has completed all planned tasks
-                if (checkResources()) {
-                    if (tasksAvailable) {
-                        // tasks are remaining and the agent is alive
-                        getLogger().info("Resources still available. Creating new plan!");
-                    } else {
-                        // no tasks are remaining
-                        getLogger().config("No more tasks available. Killing agent");
-                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                    myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+                    if (myRoles.contains(SimGroups.AGENT_DIE)) {
+                        alive = false;
                     }
-                } else {
-                    // no sufficient resources left in agent
-                    getLogger().config("No more resources available. Killing agent");
-                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+
+                    if (alive) {
+                        // save to overall bundle, path, and omega
+                        getLogger().fine("Saving performed task to overall bundle and path");
+                        int i_path = bundle.indexOf(path.get(0));
+                        this.overallOmega.add(omega.get(i_path));
+                        this.overallX_path.add(x_path.get(0));
+                        this.overallPath.add(path.get(0));
+                        this.overallBundle.add(bundle.get(i_path));
+
+                        // release performed task from path an bundle
+                        getLogger().fine("Releasing performed task from bundle");
+                        path.remove(0);
+                        x_path.remove(0);
+                        bundle.remove(i_path);
+                        omega.set(i_path, new ArrayList<>());
+
+                        localResults.resetCoalitionCounters();
+                    } else {
+                        getLogger().fine(this.name + " did not perform any task");
+                    }
+
+                    logBundle();
+                    logPath();
+                    getLogger().finer(this.name + " results after task was performed: \n" + this.localResults.toString());
+
+                    // check for remaining tasks
+                    getLogger().fine("Checking for remaining tasks...");
+                    boolean tasksAvailable = tasksAvailable();
+                    if(bundle.size() == 0) {
+                        // agent has completed all planned tasks
+                        if (checkResources()) {
+                            if (tasksAvailable) {
+                                // tasks are remaining and the agent is alive
+                                getLogger().info("Resources still available. Creating new plan!");
+                            } else {
+                                // no tasks are remaining
+                                getLogger().config("No more tasks available. Killing agent");
+                                leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                            }
+                        } else {
+                            // no sufficient resources left in agent
+                            getLogger().config("No more resources available. Killing agent");
+                            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                        }
+                    }
+                    else{
+                        getLogger().fine("Agent still contains tasks in plan");
+                        leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+                    }
+                }
+                else{
+                    // Agent is on the way to performing task
+                    getLogger().info("Agent is on its way to latest task in the plan");
+
+                    if (!isMessageBoxEmpty()) { // check if anyone has a more resent bid for this task
+                        // Save current results
+                        IterationResults prevResults = new IterationResults(localResults, this);
+
+                        // check for changes
+                        getLogger().info("Checking for changes");
+                        int i_dif = checkForChanges(prevResults);
+                        if (i_dif >= 0) {
+                            // changes were made, reconsider bids
+                            getLogger().fine("Changes were made. Reconsidering bids");
+                            getLogger().fine(this.localResults.comparisonToString(i_dif, prevResults));
+                            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+                            this.convCounter = 0;
+                        }
+                    }
+                    int x = 1;
                 }
             }
             else{
-                getLogger().fine("Agent contains tasks in plan");
+                getLogger().info("Agent has no plan to perform");
+                leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
             }
+
         }
         else{
             getLogger().info("Agent is dead and has no plan to perform");
+            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         }
-        leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
-        int x =2;
+
+        this.t_curr += this.del_t;
     }
 
     @SuppressWarnings("unused")
@@ -559,7 +467,11 @@ public class SimulatedAgent extends AbstractAgent {
     private void checkInputFormat(JSONObject inputAgentData, JSONObject inputData) throws Exception {
         String worldType = ((JSONObject) ((JSONObject) inputData.get("Scenario")).get("World")).get("Type").toString();
 
-        if (inputAgentData.get("Name") == null) {
+
+        if (inputData.get("TimeStep") == null) {
+            throw new NullPointerException("INPUT ERROR: Sim time-step not contained in input file");
+        }
+        else if (inputAgentData.get("Name") == null) {
             throw new NullPointerException("INPUT ERROR: Agent name not contained in input file");
         } else if (inputAgentData.get("SensorList") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " sensor list not contained in input file.");
@@ -595,8 +507,10 @@ public class SimulatedAgent extends AbstractAgent {
 
     }
 
-    private void unpackInput(JSONObject inputAgentData, JSONObject worldData) throws Exception {
+    private void unpackInput(JSONObject inputAgentData, JSONObject worldData, JSONObject inputData) throws Exception {
         getLogger().config("Configuring agent...");
+        // -Time
+        this.del_t = (double) inputData.get("TimeStep");
 
         // -Name
         this.name = inputAgentData.get("Name").toString();
@@ -708,7 +622,143 @@ public class SimulatedAgent extends AbstractAgent {
         this.convIndicator = Integer.parseInt(inputAgentData.get("ConvergenceIndicator").toString());
     }
 
-    private void getAvailableSubtasks() {
+    private void compareResults() throws Exception {
+        // unpack results
+        List<Message> receivedMessages = nextMessages(null);
+        this.receivedResults = new ArrayList<>();
+        for (int i = 0; i < receivedMessages.size(); i++) {
+            ResultsMessage message = (ResultsMessage) receivedMessages.get(i);
+            receivedResults.add(message.getResults());
+        }
+
+        // compare results
+        boolean changesMade = false;
+        for (IterationResults result : this.receivedResults) {
+            for (int i_j = 0; i_j < result.getResults().size(); i_j++) {
+                // Load received results
+                IterationDatum itsDatum = result.getIterationDatum(i_j);
+                double itsY = itsDatum.getY();
+                String itsZ;
+                if (itsDatum.getZ() == null) {
+                    itsZ = "";
+                } else {
+                    itsZ = itsDatum.getZ().getName();
+                }
+                double itsTz = itsDatum.getTz();
+                String it = result.getParentAgent().getName();
+                int itsS = itsDatum.getS();
+                boolean itsCompletion = itsDatum.getJ().getCompleteness();
+
+                // Load my results
+                IterationDatum myDatum = localResults.getIterationDatum(itsDatum.getJ());
+                double myY = myDatum.getY();
+                String myZ;
+                if (myDatum.getZ() == null) {
+                    myZ = "";
+                } else {
+                    myZ = myDatum.getZ().getName();
+                }
+                double myTz = myDatum.getTz();
+                String me = this.getName();
+                int myS = myDatum.getS();
+                boolean myCompletion = myDatum.getJ().getCompleteness();
+
+                // Comparing bids. See Ref 40 Table 1
+                if (itsZ.equals(it)) {
+                    if (myZ.equals(me)) {
+                        if ((itsCompletion) && (itsCompletion != myCompletion)) {
+                            // update
+                            localResults.updateResults(itsDatum);
+                        } else if (itsY > myY) {
+                            // update
+                            localResults.updateResults(itsDatum);
+                        }
+                    } else if (myZ == it) {
+                        // update
+                        localResults.updateResults(itsDatum);
+                    } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                        if ((itsS > myS) || (itsY > myY)) {
+                            // update
+                            localResults.updateResults(itsDatum);
+                        }
+                    } else if (myZ == "") {
+                        // update
+                        localResults.updateResults(itsDatum);
+                    }
+                } else if (itsZ == me) {
+                    if (myZ == me) {
+                        // leave
+                        localResults.leaveResults(itsDatum);
+                    } else if (myZ == it) {
+                        // reset
+                        localResults.resetResults(itsDatum);
+                    } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                        if (itsS > myS) {
+                            // reset
+                            localResults.resetResults(itsDatum);
+                        }
+                    } else if (myZ == "") {
+                        // leave
+                        localResults.leaveResults(itsDatum);
+                    }
+                } else if ((itsZ != it) && (itsZ != me) && (itsZ != "")) {
+                    if (myZ == me) {
+                        if ((itsCompletion) && (itsCompletion != myCompletion)) {
+                            // update
+                            localResults.updateResults(itsDatum);
+                        } else if ((itsS > myS) && (itsY > myY)) {
+                            // update
+                            localResults.updateResults(itsDatum);
+                        }
+                    } else if (myZ == it) {
+                        if (itsS > myS) {
+                            //update
+                            localResults.updateResults(itsDatum);
+                        } else {
+                            // reset
+                            localResults.resetResults(itsDatum);
+                        }
+                    } else if (myZ == itsZ) {
+                        if (itsS > myS) {
+                            // update
+                            localResults.updateResults(itsDatum);
+                        }
+                    } else if ((myZ != me) && (myZ != it) && (myZ != itsZ) && (myZ != "")) {
+                        if ((itsS > myS) && (itsY > myY)) {
+                            // update
+                            localResults.updateResults(itsDatum);
+                        }
+                    } else if (myZ == "") {
+                        // leave
+                        localResults.leaveResults(itsDatum);
+                    }
+                } else if (itsZ == "") {
+                    if (myZ == me) {
+                        // leave
+                        localResults.leaveResults(itsDatum);
+                    } else if (myZ == it) {
+                        // update
+                        localResults.updateResults(itsDatum);
+                    } else if ((myZ != me) && (myZ != it) && (myZ != "")) {
+                        if (itsS > myS) {
+                            // update
+                            localResults.updateResults(itsDatum);
+                        }
+                    } else if (myZ == "") {
+                        // leave
+                        localResults.leaveResults(itsDatum);
+                    }
+                }
+            }
+        }
+
+        getLogger().info("Results compared");
+        logBundle();
+        logPath();
+        getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString());
+    }
+
+    private void getAvailableSubtasks() throws Exception{
         this.worldTasks = this.environment.getScenarioTasks();
         this.worldSubtasks = this.environment.getScenarioSubtasks();
 
@@ -718,6 +768,27 @@ public class SimulatedAgent extends AbstractAgent {
                 if (!this.localResults.contains(j)) {
                     this.localResults.addResult(j, this);
                 }
+            }
+        }
+
+        // check for remaining tasks
+        getLogger().fine("Checking for remaining tasks...");
+        boolean tasksAvailable = tasksAvailable();
+        if(bundle.size() == 0) {
+            // agent has completed all planned tasks
+            if (checkResources()) {
+                if (tasksAvailable) {
+                    // tasks are remaining and the agent is alive
+                    getLogger().info("Resources still available. Creating new plan!");
+                } else {
+                    // no tasks are remaining
+                    getLogger().config("No more tasks available. Killing agent");
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                }
+            } else {
+                // no sufficient resources left in agent
+                getLogger().config("No more resources available. Killing agent");
+                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
             }
         }
     }
@@ -1043,7 +1114,7 @@ public class SimulatedAgent extends AbstractAgent {
             moveToTastk(x_j);
             deductCosts(j);
             setToComplete(j);
-//            updateTime(j);
+            updateTime(j);
         } else {
             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
             getLogger().fine("Not enough resources to fulfill task. Killing Agent.");
@@ -1075,7 +1146,10 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     private void updateTime(Subtask j) throws Exception{
-        this.t_0 = this.localResults.getIterationDatum(j).getTz();
+        while( Math.abs( this.t_curr - (this.localResults.getIterationDatum(j).getTz() + j.getParentTask().getDuration()) ) > this.del_t ){
+            this.t_curr += this.del_t;
+        }
+//        this.t_curr = this.localResults.getIterationDatum(j).getTz() + j.getParentTask().getDuration();
     }
 
     private boolean tasksAvailable() throws Exception {

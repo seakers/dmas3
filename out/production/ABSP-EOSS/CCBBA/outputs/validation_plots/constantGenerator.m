@@ -7,6 +7,7 @@ t_corr = [0 1 2 3 4 5 6 7 8 9];
 
 t_2f = (x - x0)./v2;
 t_1f = zeros(1,10);
+lambda = zeros(1,10);
 for i = 1:length(t_1f)
     if(i == 1)
         t_1f(i) = (x(i) - x0)/v1;
@@ -19,7 +20,11 @@ for i = 1:length(t_1f)
             t_1f(i) = t_quickest;
         end
     end
+    
+    syms L;
+    lambda(i) = vpasolve( exp(L*(t_1f(i)))*( exp(-L*(t_2f(i))) + exp(-L*(t_2f(i) - t_corr(i))) ) - 2/3 == 0 , L);
 end
-disp([x', t_corr', t_1f', t_2f'])
 
-lambda = log(3/2)./( t_2f - t_1f )'
+fprintf("\t\t x\t  t_corr\t  t_1f\t\tt_2f\tlambda\n");
+disp([x', t_corr', t_1f', t_2f', lambda'])
+
