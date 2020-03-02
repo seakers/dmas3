@@ -356,6 +356,10 @@ public class IterationResults {
         return i;
     }
 
+    public int indexOf(IterationDatum datum){
+        return indexOf(datum.getJ());
+    }
+
     public int compareToList(IterationResults prevResults) throws Exception {
         // -1 := same list
         // <= 0 := index of discrepancy
@@ -389,6 +393,40 @@ public class IterationResults {
 
             return consistent;
         }
+    }
+
+    public ArrayList<Integer> compareToList(IterationResults prevResults, boolean list) throws Exception {
+        // -1 := same list
+        // <= 0 := index of discrepancy
+        ArrayList<Integer> consistent = new ArrayList<>();
+
+        if(prevResults.size() == this.size()){
+            boolean coalSat;
+            boolean match;
+
+            for(IterationDatum myDatum : this.results){
+                IterationDatum itsDatum = prevResults.getIterationDatum(myDatum);
+
+                double myY = myDatum.getY();
+                double itsY = itsDatum.getY();
+                double myTz = myDatum.getTz();
+                double itsTz = itsDatum.getTz();
+                int myS = myDatum.getS();
+                int itsS = itsDatum.getS();
+                int myV = myDatum.getV();
+                int itsV = itsDatum.getV();
+
+                coalSat = (myV == 0) && (itsV == 0);
+                match = (myY == itsY) && (myTz == itsTz) && (myS == itsS) && coalSat;
+
+                if (!match) {
+                    // inconsistency found
+                    consistent.add(this.indexOf(myDatum));
+                }
+            }
+        }
+
+        return consistent;
     }
 
     public void resetCoalitionCounters(){

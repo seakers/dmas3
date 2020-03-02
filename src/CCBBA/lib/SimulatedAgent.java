@@ -207,7 +207,10 @@ public class SimulatedAgent extends AbstractAgent {
     @SuppressWarnings("unused")
     public void thinkingPhaseTwo() throws Exception {
         getLogger().info("Starting phase two");
-        if (!isMessageBoxEmpty()) { // results received
+        List<AgentAddress> agentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+        List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
+
+        if (!isMessageBoxEmpty() || ((agentsDead != null) && (agentsDead.size() == agentsEnvironment.size())) ) { // results received
             // Save current results
             IterationResults prevResults = new IterationResults(localResults, this);
 
@@ -384,7 +387,11 @@ public class SimulatedAgent extends AbstractAgent {
                     // Agent is on the way to performing task
                     getLogger().info("Agent is on its way to latest task in the plan");
 
-                    if (!isMessageBoxEmpty()) { // check if anyone has a more resent bid for this task
+                    List<AgentAddress> agentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                    List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
+
+                    // check if anyone has a more resent bid for this task
+                    if (!isMessageBoxEmpty() || ((agentsDead != null) && (agentsDead.size() == agentsEnvironment.size())) ) {
                         // Save current results
                         IterationResults prevResults = new IterationResults(localResults, this);
 
@@ -393,14 +400,31 @@ public class SimulatedAgent extends AbstractAgent {
 
                         // Check for changes
                         getLogger().info("Checking for changes");
-                        int i_dif = checkForChanges(prevResults);
-                        if (i_dif >= 0) {
-                            // changes were made, reconsider bids
-                            getLogger().fine("Changes were made. Reconsidering bids");
-                            getLogger().fine(this.localResults.comparisonToString(i_dif, prevResults));
-                            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-                            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
-                            this.convCounter = 0;
+                        ArrayList<Integer> i_dif = checkForChanges(prevResults, false);
+                        if (i_dif.size() > 0) {
+                            // changes were made, check if I need to reconsider bids
+                            getLogger().fine("Changes were made. Checking if bids need to be reconsidered...");
+                            boolean changesMade = false;
+                            for(int i : i_dif){
+                                getLogger().fine(this.localResults.comparisonToString(i, prevResults));
+                                for(Subtask j_p : this.path) {
+                                    if (this.localResults.getIterationDatum(i).getJ().getParentTask() == j_p.getParentTask()) {
+                                        // changes were made to parent task of a subtask in the path
+                                        getLogger().fine("Parent task to a subtask in the path has changes. Reconsidering bids.");
+                                        leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+                                        this.convCounter = 0;
+                                        changesMade = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(!changesMade){
+                                getLogger().fine("No changes to parent task of a path subtask. Continuing with plan.");
+                            }
+                        }
+                        else{
+                            getLogger().fine("No changes to parent task of a path subtask. Continuing with plan.");
                         }
                     }
                     int x = 1;
@@ -1063,6 +1087,9 @@ public class SimulatedAgent extends AbstractAgent {
         return localResults.compareToList(prevResults);
     }
 
+    private ArrayList<Integer> checkForChanges(IterationResults prevResults, boolean list) throws Exception {
+        return localResults.compareToList(prevResults, false);
+    }
     private void logBundle() throws Exception {
         StringBuilder bundleList = new StringBuilder();
         bundleList.append("[");
@@ -1115,7 +1142,7 @@ public class SimulatedAgent extends AbstractAgent {
             moveToTastk(x_j);
             deductCosts(j);
             setToComplete(j);
-            updateTime(j);
+//            updateTime(j);
         } else {
             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
             getLogger().fine("Not enough resources to fulfill task. Killing Agent.");
