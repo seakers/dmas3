@@ -26,7 +26,7 @@
 					"MergeCost": 0.0,
 					"SplitCost": 0.0,
 					"Value": 100.0,
-					"TravelCost": 0.0,
+					"TravelCost": 0.0001,
 					"TravelCostType": "Proportional"
 				},
 				"ConvergenceIndicator": 20
@@ -54,7 +54,7 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 0.0,
+				"t_corr": "INF",
 				"lambda": 0.0,
 				"gamma" : "NEG_INF"
 			},
@@ -77,7 +77,7 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 0.0,
+				"t_corr": "INF",
 				"lambda": 0.0,
 				"gamma" : "NEG_INF"
 			},
@@ -100,7 +100,7 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 0.0,
+				"t_corr": "INF",
 				"lambda": 0.0,
 				"gamma" : "NEG_INF"
 			}
