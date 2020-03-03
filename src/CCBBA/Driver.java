@@ -30,9 +30,9 @@ public class Driver extends AbstractAgent {
         // 0: load batch file
 //        inputSimBatch("figure3_batch.json");
 //        inputSimBatch("figure3_int_debug.json");
-//        inputSimBatch("figure3_int.json");
-        inputSimBatch("figure3_mod_debug.json");
-//        inputSimBatch("figure3_mod_0.json");
+        inputSimBatch("figure3_int.json");
+//        inputSimBatch("figure3_mod_debug.json");
+//        inputSimBatch("figure3_mod_4.json");
 
         if(inputBatch != null) {
             for (int i = 0; i < inputBatch.size(); i++) {
@@ -136,7 +136,7 @@ public class Driver extends AbstractAgent {
             JSONObject agentSpecs = (JSONObject) agentList.get(i);
             int instances = Integer.valueOf( agentSpecs.get("Instances").toString() );
             for(int j = 0; j < instances; j++) {
-                launchAgent(new SimulatedAgent(agentSpecs, this.inputData));
+                launchAgent(new SimulatedAgent(agentSpecs, this.inputData, j+1));
             }
         }
 //        this.numAgents = agentList.size();

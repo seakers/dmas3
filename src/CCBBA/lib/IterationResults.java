@@ -96,8 +96,8 @@ public class IterationResults {
                     h = mutexTest(localBid, datum.getJ(), biddingAgent);
                 }
 
-//                // check if agent has enough resources to execute task
-//                if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")) {
+                // check if agent has enough resources to execute task
+                if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")) {
 //                    double bundle_cost = 0.0;
 //                    for (Subtask j_bundle : biddingAgent.getBundle()) { // count costs of bundle
 //                        IterationDatum bundleDatum = this.getIterationDatum(j_bundle);
@@ -106,13 +106,14 @@ public class IterationResults {
 //                    bundle_cost += localBid.getCost();
 //                    if( biddingAgent.getResources().getValue() < bundle_cost ){
 //                        // agent does not have enough resources for adding subtask to bundle
-//                        h = -1;
+//                        h = 0;
 //                    }
-//                    else if(localBid.getC() <= 0.0){
-//                        // agent does not have enough resources for adding subtask to bundle
-//                        h = -1;
-//                    }
-//                }
+//                    else
+                    if(localBid.getC() <= 0.0){
+                        // agent does not have enough resources for adding subtask to bundle
+                        h = -1;
+                    }
+                }
             }
             else{
                 h = 0;
@@ -294,16 +295,20 @@ public class IterationResults {
         return dependentTasks.size() > 0;
     }
 
-    public void updateResults(SubtaskBid maxBid, SimulatedAgent agent) throws Exception {
-        IterationDatum datum = this.getIterationDatum(maxBid.getJ_a());
-        datum.setY( maxBid.getC() );
-        datum.setZ( agent );
-        datum.setTz(maxBid.getTz());
-        datum.setC( maxBid.getC() );
-        datum.setS( agent.getIteration() );
-        datum.setCost( maxBid.getCost() );
-        datum.setScore( maxBid.getScore() );
-        datum.setX( maxBid.getX() );
+    public void updateResults(SubtaskBid maxBid, Subtask j_chosen, SimulatedAgent agent) throws Exception {
+        for(Subtask j_p : maxBid.getWinnerPath()){
+            IterationDatum datum = this.getIterationDatum(j_p);
+            int i = maxBid.getWinnerPath().indexOf(j_p);
+
+            datum.setY( maxBid.getWinnerPathUtility().getUtilityList().get(i) );
+            datum.setZ( agent );
+            datum.setTz( maxBid.getWinnerPathUtility().getTz().get(i) );
+            datum.setC( maxBid.getWinnerPathUtility().getUtilityList().get(i) );
+            if(j_p == j_chosen) datum.setS( agent.getIteration() );
+            datum.setCost( maxBid.getWinnerPathUtility().getCostList().get(i) );
+            datum.setScore( maxBid.getWinnerPathUtility().getScoreList().get(i) );
+            datum.setX( maxBid.getWinnerPathUtility().getX().get(i) );
+        }
     }
 
     public void updateResults(IterationDatum newDatum) throws Exception {
@@ -322,7 +327,6 @@ public class IterationResults {
 
     public void resetResults(IterationDatum newDatum) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(newDatum.getJ(), this.parentAgent);
-//        updatedDatum.setV(this.getIterationDatum(newDatum).getV());
         updatedDatum.setW_any(this.getIterationDatum(newDatum).getW_any());
         updatedDatum.setW_solo(this.getIterationDatum(newDatum).getW_solo());
         updatedDatum.setC(this.getIterationDatum(newDatum).getC());

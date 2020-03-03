@@ -51,9 +51,10 @@ public class SimulatedAgent extends AbstractAgent {
     private ArrayList<IterationResults> receivedResults;    // list of received results from other agents
     private int convCounter;                                // convergence counter
     private int convIndicator;                              // convergence indicator
+    private int deathcounter = 0;
 
 
-    public SimulatedAgent(JSONObject inputAgentData, JSONObject inputData) throws Exception {
+    public SimulatedAgent(JSONObject inputAgentData, JSONObject inputData, int j) throws Exception {
         // Set up logger level
         setUpLogger(inputData);
 
@@ -62,7 +63,7 @@ public class SimulatedAgent extends AbstractAgent {
 
         // Unpack input data
         JSONObject worldData = (JSONObject) ((JSONObject) inputData.get("Scenario")).get("World");
-        unpackInput(inputAgentData, worldData, inputData);
+        unpackInput(inputAgentData, worldData, inputData, j);
     }
 
     @Override
@@ -129,7 +130,6 @@ public class SimulatedAgent extends AbstractAgent {
 
         // Reset task availability indicators
         this.localResults.resetAvailability();
-//        getLogger().fine(this.name + " results before bundle construction: \n" + this.localResults.toString());
 
         // construct bundle
         getLogger().info("Constructing bundle...");
@@ -142,7 +142,6 @@ public class SimulatedAgent extends AbstractAgent {
 
             // Choose max bid
             double currentMax = 0.0;
-            int i_max = 0;
             SubtaskBid maxBid = new SubtaskBid(null);
 
             for (int i = 0; i < bidList.size(); i++) {
@@ -154,7 +153,6 @@ public class SimulatedAgent extends AbstractAgent {
 
                 if ( (h >= 0) && (bidUtility * h > currentMax)) {
                     currentMax = bidUtility * h;
-                    i_max = i;
                     maxBid = bidList.get(i);
                     j_chosen = j_bid;
                 }
@@ -174,9 +172,11 @@ public class SimulatedAgent extends AbstractAgent {
             if (!bidExists) {
                 if (maxBid.getC() > 0 && localResults.getIterationDatum(j_chosen).getY() < maxBid.getC()) {
                     this.bundle.add(j_chosen);
-                    this.path.add(maxBid.getI_opt(), j_chosen);
-                    this.x_path.add(maxBid.getI_opt(), maxBid.getX());
-                    localResults.updateResults(maxBid, this);
+
+                    this.path = new ArrayList<>();      this.path.addAll(maxBid.getWinnerPath());
+                    this.x_path = new ArrayList<>();    this.x_path.addAll(maxBid.getWinnerPathUtility().getX());
+
+                    localResults.updateResults(maxBid, j_chosen, this);
                     localResults.getIterationDatum(j_chosen).setH(0);
 
                     getLogger().finest("Task chosen for bundle: #" + (localResults.getIndexOf(j_chosen) + 1) );
@@ -186,15 +186,12 @@ public class SimulatedAgent extends AbstractAgent {
         }
 
         getLogger().info("Bundle constructed");
+        getLogger().fine(this.name + " results after bundle construction: \n" + this.localResults.toString());
         logBundle();
         logPath();
-        getLogger().fine(this.name + " results after bundle construction: \n" + this.localResults.toString());
 
         // Broadcast my results
-        ResultsMessage myResults = new ResultsMessage(this.localResults, this);
-        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1, myResults);
-        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, myResults);
-        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, myResults);
+        broadcastResults();
 
         // leave phase one and start phase 2
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
@@ -208,9 +205,11 @@ public class SimulatedAgent extends AbstractAgent {
     public void thinkingPhaseTwo() throws Exception {
         getLogger().info("Starting phase two");
         List<AgentAddress> agentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+        List<AgentAddress> agentsDoing = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
         List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
 
-        if (!isMessageBoxEmpty() || ((agentsDead != null) && (agentsDead.size() == agentsEnvironment.size())) ) { // results received
+        if (!isMessageBoxEmpty() || ((agentsDead != null) && (agentsDoing != null)
+                && (agentsDead.size() + agentsDoing.size() == agentsEnvironment.size())) ) { // results received
             // Save current results
             IterationResults prevResults = new IterationResults(localResults, this);
 
@@ -218,48 +217,10 @@ public class SimulatedAgent extends AbstractAgent {
             compareResults();
 
             // constrain checks
-            getLogger().info("Checking constraints...");
-            for (Subtask j : this.bundle) {
-                // create list of new coalition members
-                ArrayList<ArrayList<SimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
-                ArrayList<ArrayList<SimulatedAgent>> oldOmega = this.omega;
-
-                boolean mutexSat = mutexSat(j);
-                boolean timeSat = timeSat(j);
-                boolean depSat = depSat(j);
-                boolean coalitionSat = coalitionSat(j, oldOmega, newOmega);
-
-                if (!mutexSat || !timeSat || !depSat || !coalitionSat) {
-                    // subtask does not satisfy all constraints, release task
-                    localResults.resetResults(localResults.getIterationDatum(j));
-                    String constraintsFailed = this.name + " FAILED ";
-
-                    if (!mutexSat) {
-                        constraintsFailed += "mutexSat, ";
-                    }
-                    if (!timeSat) {
-                        constraintsFailed += "timeSat, ";
-                    }
-                    if (!depSat) {
-                        constraintsFailed += "depSat, ";
-                    }
-                    if (!coalitionSat) {
-                        constraintsFailed += "coalitionSat ";
-                    }
-
-                    constraintsFailed += "on subtask " + j.getName() + " #" + localResults.getIndexOf(j);
-                    getLogger().fine(constraintsFailed);
-                    break;
-                } else {
-                    getLogger().fine("Constraint check for bunde task #" + (bundle.indexOf(j) + 1) + " passed");
-                }
-            }
+            constraintCheck();
             this.zeta++;
 
-            logBundle();
-            logPath();
-            getLogger().fine(this.name + " results after constraint check: \n" + this.localResults.toString());
-
+            // check for changes in results
             getLogger().info("Checking for changes");
             int i_dif = checkForChanges(prevResults);
             if (i_dif >= 0) {
@@ -284,10 +245,7 @@ public class SimulatedAgent extends AbstractAgent {
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
 
                     // Broadcast my results
-                    ResultsMessage myResults = new ResultsMessage(this.localResults, this);
-                    broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1, myResults);
-                    broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, myResults);
-                    broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, myResults);
+                    broadcastResults();
                 }
             }
 
@@ -299,24 +257,42 @@ public class SimulatedAgent extends AbstractAgent {
         }
         if(this.zeta >= 100000){
             getLogger().warning("Timeout reached. No consensus reached");
+            getLogger().fine(this.name + " results after timeout: \n" + this.localResults.toString());
+            logBundle();
+            logPath();
+
+            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
         }
     }
 
     @SuppressWarnings("unused")
     public void doingPhase() throws Exception {
+        getLogger().fine(this.name + " results after plan was determined: \n" + this.localResults.toString());
         logBundle();
         logPath();
-        getLogger().fine(this.name + " results after plan was determined: \n" + this.localResults.toString());
 
         // check life status
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
         boolean alive = !(myRoles.contains(SimGroups.AGENT_DIE));
 
+        // Save current results
+        IterationResults prevResults = new IterationResults(localResults, this);
+
+        // Compare with received Results
+        compareResults();
+        constraintCheck();
+
+        // Check for changes
+        getLogger().info("Checking for changes");
+        ArrayList<Integer> i_dif = checkForChanges(prevResults, true);
+
         if(alive) {
             if(path.size() > 0) {
+                // agent is alive and has a plan to perform
                 Subtask j = path.get(0);
-                if( Math.abs( t_curr - this.localResults.getIterationDatum(j).getTz() ) <= this.del_t ) {
+
+                if( t_curr >= this.localResults.getIterationDatum(j).getTz() ) {
                     // if time of arrival has been reached and I'm still the winner of task j, do task
                     getLogger().info("Executing one task from plan");
 
@@ -325,10 +301,9 @@ public class SimulatedAgent extends AbstractAgent {
                     getLogger().fine("Performing task: " + j.getName() + " #" + (this.localResults.indexOf(j) + 1));
                     completeTask(j, x);
 
+                    // check if agent is still alive after performing task
                     myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-                    if (myRoles.contains(SimGroups.AGENT_DIE)) {
-                        alive = false;
-                    }
+                    alive = !myRoles.contains(SimGroups.AGENT_DIE);
 
                     if (alive) {
                         // save to overall bundle, path, and omega
@@ -348,100 +323,108 @@ public class SimulatedAgent extends AbstractAgent {
 
                         localResults.resetCoalitionCounters();
                     } else {
-                        getLogger().fine(this.name + " did not perform any task");
+                        getLogger().fine(this.name + " did not perform any tasks.");
                     }
 
+                    getLogger().finer(this.name + " results after task was performed: \n" + this.localResults.toString());
                     logBundle();
                     logPath();
-                    getLogger().finer(this.name + " results after task was performed: \n" + this.localResults.toString());
 
                     // check for remaining tasks
                     getLogger().fine("Checking for remaining tasks...");
                     boolean tasksAvailable = tasksAvailable();
-                    if(bundle.size() == 0) {
-                        // agent has completed all planned tasks
-                        if (checkResources()) {
-                            if (tasksAvailable) {
-                                // tasks are remaining and the agent is alive
-                                getLogger().info("Resources still available. Creating new plan!");
+                    if(alive) {
+                        // agent is still alive after performing task
+                        if (path.size() == 0) {
+                            // agent has completed all planned tasks
+                            if (checkResources()) {
+                                if (tasksAvailable) {
+                                    // tasks are remaining and the agent is still alive
+                                    getLogger().info("Resources still available. Creating new plan!");
+                                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+                                } else {
+                                    // no tasks are remaining
+                                    getLogger().config("No more tasks available. Killing agent");
+                                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                                }
                             } else {
-                                // no tasks are remaining
-                                getLogger().config("No more tasks available. Killing agent");
-                                leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                                // no sufficient resources left in agent
+                                getLogger().config("Agent has no more resources available. Killing agent");
                                 requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
                             }
                         } else {
-                            // no sufficient resources left in agent
-                            getLogger().config("No more resources available. Killing agent");
-                            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-                            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                            getLogger().fine("Agent still contains tasks in plan");
+                            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                         }
                     }
                     else{
-                        getLogger().fine("Agent still contains tasks in plan");
-                        leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                        // agent is dead after performing task
+                        getLogger().info("Agent is dead and has no plan to perform");
                         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                     }
+                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
                 }
                 else{
                     // Agent is on the way to performing task
                     getLogger().info("Agent is on its way to latest task in the plan");
 
-                    List<AgentAddress> agentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
-                    List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
+                    // check if anyone has a more resent bid for a path subtask
+                    if (i_dif.size() > 0) {
+                        // changes were made, check if I need to reconsider bids
+                        getLogger().fine("Changes were made. Checking if bids need to be reconsidered...");
+                        boolean changesMade = false;
 
-                    // check if anyone has a more resent bid for this task
-                    if (!isMessageBoxEmpty() || ((agentsDead != null) && (agentsDead.size() == agentsEnvironment.size())) ) {
-                        // Save current results
-                        IterationResults prevResults = new IterationResults(localResults, this);
-
-                        // Compare with received Results
-                        compareResults();
-
-                        // Check for changes
-                        getLogger().info("Checking for changes");
-                        ArrayList<Integer> i_dif = checkForChanges(prevResults, false);
-                        if (i_dif.size() > 0) {
-                            // changes were made, check if I need to reconsider bids
-                            getLogger().fine("Changes were made. Checking if bids need to be reconsidered...");
-                            boolean changesMade = false;
-                            for(int i : i_dif){
-                                getLogger().fine(this.localResults.comparisonToString(i, prevResults));
-                                for(Subtask j_p : this.path) {
-                                    if (this.localResults.getIterationDatum(i).getJ().getParentTask() == j_p.getParentTask()) {
-                                        // changes were made to parent task of a subtask in the path
-                                        getLogger().fine("Parent task to a subtask in the path has changes. Reconsidering bids.");
-                                        leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-                                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
-                                        this.convCounter = 0;
-                                        changesMade = true;
-                                        break;
-                                    }
+                        for(int i : i_dif){
+                            getLogger().fine(this.localResults.comparisonToString(i, prevResults));
+                            for(Subtask j_p : this.path) {
+                                if (this.localResults.getIterationDatum(i).getJ().getParentTask() == j_p.getParentTask()) {
+                                    // changes were made to parent task of a subtask in the path
+                                    getLogger().fine("Parent task to a subtask in the path has changes. Reconsidering bids.");
+                                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+                                    changesMade = true;
+                                    break;
                                 }
                             }
-                            if(!changesMade){
-                                getLogger().fine("No changes to parent task of a path subtask. Continuing with plan.");
-                            }
                         }
-                        else{
+
+                        if(!changesMade){
                             getLogger().fine("No changes to parent task of a path subtask. Continuing with plan.");
                         }
                     }
-                    int x = 1;
+                    else{
+                        getLogger().fine("No changes to parent task of a path subtask. Continuing with plan.");
+                    }
                 }
             }
             else{
+                // agent has no plan to perform
                 getLogger().info("Agent has no plan to perform");
+
+                boolean tasksAvailable = tasksAvailable();
+                if (checkResources()) {
+                    if (tasksAvailable) {
+                        // tasks are remaining and the agent is still alive
+                        getLogger().info("Resources still available. Creating new plan!");
+                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+                    } else {
+                        // no tasks are remaining
+                        getLogger().config("No more tasks available. Killing agent");
+                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                    }
+                } else {
+                    // no sufficient resources left in agent
+                    getLogger().config("No more resources available. Killing agent");
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                }
                 leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
             }
-            this.t_curr += this.del_t;
         }
         else{
             getLogger().info("Agent is dead and has no plan to perform");
             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         }
+        this.t_curr += this.del_t;
     }
 
     @SuppressWarnings("unused")
@@ -449,13 +432,35 @@ public class SimulatedAgent extends AbstractAgent {
         List<AgentAddress> agentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
         List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
 
-        if ((agentsDead != null) && (agentsDead.size() == agentsEnvironment.size())) {
-            getLogger().info("Sending results to results compiler");
-            AgentAddress resultsAddress = getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE);
-            SimResultsMessage myDeath = new SimResultsMessage(this);
-            sendMessage(resultsAddress, myDeath);
+        // Broadcast my results
+        broadcastResults();
 
-            logResources();
+        // Save current results
+        IterationResults prevResults = new IterationResults(localResults, this);
+
+        if(!isMessageBoxEmpty()) {
+            // Compare with received Results
+            compareResults();
+            constraintCheck();
+
+            // Check for changes
+            getLogger().info("Checking for changes");
+            ArrayList<Integer> i_dif = checkForChanges(prevResults, true);
+
+            if ((agentsDead != null) && (agentsDead.size() == agentsEnvironment.size())) {
+                if (i_dif.size() == 0) {
+                    // results are the same
+                    getLogger().info("Sending results to results compiler");
+                    AgentAddress resultsAddress = getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE);
+                    SimResultsMessage myDeath = new SimResultsMessage(this);
+                    sendMessage(resultsAddress, myDeath);
+
+                    logResources();
+                } else {
+                    // results are not the same. Share and match results
+                    getLogger().info("Changes were made. Sharing and matching results with other agents");
+                }
+            }
         }
     }
 
@@ -532,13 +537,13 @@ public class SimulatedAgent extends AbstractAgent {
 
     }
 
-    private void unpackInput(JSONObject inputAgentData, JSONObject worldData, JSONObject inputData) throws Exception {
+    private void unpackInput(JSONObject inputAgentData, JSONObject worldData, JSONObject inputData, int j) throws Exception {
         getLogger().config("Configuring agent...");
         // -Time
         this.del_t = (double) inputData.get("TimeStep");
 
         // -Name
-        this.name = inputAgentData.get("Name").toString();
+        this.name = inputAgentData.get("Name").toString() + "-" + j;
 
         // -Sensor List
         this.sensorList = new ArrayList<>();
@@ -657,7 +662,6 @@ public class SimulatedAgent extends AbstractAgent {
         }
 
         // compare results
-        boolean changesMade = false;
         for (IterationResults result : this.receivedResults) {
             for (int i_j = 0; i_j < result.getResults().size(); i_j++) {
                 // Load received results
@@ -778,9 +782,51 @@ public class SimulatedAgent extends AbstractAgent {
         }
 
         getLogger().info("Results compared");
+        getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString());
         logBundle();
         logPath();
-        getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString());
+    }
+
+    private void constraintCheck() throws Exception{
+        getLogger().info("Checking constraints...");
+        for (Subtask j : this.bundle) {
+            // create list of new coalition members
+            ArrayList<ArrayList<SimulatedAgent>> newOmega = getNewCoalitionMemebers(j);
+            ArrayList<ArrayList<SimulatedAgent>> oldOmega = this.omega;
+
+            boolean mutexSat = mutexSat(j);
+            boolean timeSat = timeSat(j);
+            boolean depSat = depSat(j);
+            boolean coalitionSat = coalitionSat(j, oldOmega, newOmega);
+
+            if (!mutexSat || !timeSat || !depSat || !coalitionSat) {
+                // subtask does not satisfy all constraints, release task
+                localResults.resetResults(localResults.getIterationDatum(j));
+                String constraintsFailed = this.name + " FAILED ";
+
+                if (!mutexSat) {
+                    constraintsFailed += "mutexSat, ";
+                }
+                if (!timeSat) {
+                    constraintsFailed += "timeSat, ";
+                }
+                if (!depSat) {
+                    constraintsFailed += "depSat, ";
+                }
+                if (!coalitionSat) {
+                    constraintsFailed += "coalitionSat ";
+                }
+
+                constraintsFailed += "on subtask " + j.getName() + " #" + localResults.getIndexOf(j);
+                getLogger().fine(constraintsFailed);
+                break;
+            } else {
+                getLogger().fine("Constraint check for bunde task #" + (bundle.indexOf(j) + 1) + " passed");
+            }
+        }
+        getLogger().fine(this.name + " results after constraint check: \n" + this.localResults.toString());
+        logBundle();
+        logPath();
     }
 
     private void getAvailableSubtasks() throws Exception{
@@ -1142,15 +1188,29 @@ public class SimulatedAgent extends AbstractAgent {
             moveToTastk(x_j);
             deductCosts(j);
             setToComplete(j);
-//            updateTime(j);
         } else {
-            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+            // agent does not have enough resources to complete task
             getLogger().fine("Not enough resources to fulfill task. Killing Agent.");
+
+            // release tasks from plan
+            logBundle();
+            logPath();
+            IterationDatum datum = this.localResults.getIterationDatum(j);
+            localResults.resetResults(datum);
+            logBundle();
+            logPath();
+
+            // kill agent
+            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
         }
     }
 
     private boolean checkResources() throws Exception {
-        return this.myResources.checkResources(environment.getWorldType());
+        double subtaskCost = 0.0;
+        if(path.size() > 0) {
+            subtaskCost = localResults.getIterationDatum(path.get(0)).getCost();
+        }
+        return this.myResources.checkResources(environment.getWorldType()) && (this.myResources.getValue() > subtaskCost);
     }
 
     private void moveToTastk(ArrayList<Double> x_j) throws Exception {
@@ -1199,6 +1259,14 @@ public class SimulatedAgent extends AbstractAgent {
         return (availableBids);
     }
 
+    private void broadcastResults(){
+        ResultsMessage myResults = new ResultsMessage(this.localResults, this);
+        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1, myResults);
+        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, myResults);
+        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE, myResults);
+        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, myResults);
+    }
+
     private void logBidList(ArrayList<SubtaskBid> bidList) throws Exception {
         StringBuilder output = new StringBuilder( String.format("\nCurrent Agent Location: \t%s", this.position) );
 
@@ -1239,7 +1307,7 @@ public class SimulatedAgent extends AbstractAgent {
                         "\tSpent resource ratio:\t%.2f\n",
                         this.initialResources.getValue(),
                         this.myResources.getValue(),
-                        1 - this.myResources.getValue()/this.initialResources.getValue()
+                        (1 - this.myResources.getValue()/this.initialResources.getValue())
                 )
         );
         getLogger().finer(String.valueOf(output));

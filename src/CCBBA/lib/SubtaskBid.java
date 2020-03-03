@@ -12,6 +12,8 @@ public class SubtaskBid {
     private int i_opt;                  // index of optimal path
     private double cost;                // cost of task
     private double score;               // score of a task
+    private PathUtility winnerPathUtility;
+    private ArrayList<Subtask> winnerPath;
 
     public SubtaskBid(Subtask j){
         this.j_a = j;
@@ -21,12 +23,13 @@ public class SubtaskBid {
         this.i_opt = 0;
         this.cost = 0.0;
         this.score = 0.0;
+        this.winnerPathUtility = new PathUtility();
+        this.winnerPath = new ArrayList<>();
     }
 
     public void calcSubtaskBid(Subtask j, SimulatedAgent agent) throws Exception {
         this.j_a = j;
 
-        ArrayList<Subtask> oldBundle = agent.getBundle();
         ArrayList<Subtask> oldPath = agent.getPath();
         PathUtility oldUtility = calcPathUtility(oldPath, agent);
 
@@ -34,7 +37,6 @@ public class SubtaskBid {
 
         // find optimal placement in path
         double maxPathBid = 0.0;
-//        double maxPathBid = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < possiblePaths.size(); i++) { // Calculate utility for each new path
             // get new path and calc utility
@@ -44,11 +46,11 @@ public class SubtaskBid {
             // substract path utilities to obtain subtask utility
             double newPathBid = newPathUtility.getUtility() - oldUtility.getUtility();
             if(i != possiblePaths.size()-1){  // if path modifies previously agreed order, deduct points
-                newPathBid = newPathBid - 5.0;
+                newPathBid = newPathBid - 10.0;
             }
 
             //get max bid from all new paths
-            if(newPathBid > maxPathBid){
+            if(newPathBid >= maxPathBid){
                 maxPathBid = newPathBid;
                 this.c = newPathBid;
                 this.tz = newPathUtility.getTz().get( newPath.indexOf(j) );
@@ -56,6 +58,8 @@ public class SubtaskBid {
                 this.i_opt = newPath.indexOf(j);
                 this.cost = newPathUtility.getCost() - oldUtility.getCost();
                 this.score = newPathUtility.getScore() - oldUtility.getScore();
+                this.winnerPathUtility = new PathUtility(newPathUtility);
+                this.winnerPath = new ArrayList<>(); this.winnerPath.addAll(newPath);
             }
         }
     }
@@ -114,4 +118,6 @@ public class SubtaskBid {
     public int getI_opt() { return i_opt; }
     public double getCost() { return cost; }
     public double getScore() { return score; }
+    public ArrayList<Subtask> getWinnerPath() { return this.winnerPath; }
+    public PathUtility getWinnerPathUtility() { return this.winnerPathUtility; }
 }

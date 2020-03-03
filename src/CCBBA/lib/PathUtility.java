@@ -1,5 +1,6 @@
 package CCBBA.lib;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 import static java.lang.Math.*;
@@ -9,15 +10,38 @@ public class PathUtility{
     private double utility;                     // path total utility
     private double cost;                        // path total cost
     private double score;                       // path total score
+    private ArrayList<Double> utilityList;
+    private ArrayList<Double> costList;
+    private ArrayList<Double> scoreList;
     private ArrayList<Double> tz;               // list of arrival times
     private ArrayList<ArrayList<Double>> x;     // list of measurement locations
 
-    PathUtility(){
+    public PathUtility(){
         this.utility = 0.0;
         this.cost = 0.0;
         this.score = 0.0;
+        this.utilityList = new ArrayList<>();
+        this.costList = new ArrayList<>();
+        this.scoreList = new ArrayList<>();
         this.tz = new ArrayList<>();
         this.x = new ArrayList<>();
+    }
+
+    public PathUtility(PathUtility oldPathUtility){
+        this.utility = oldPathUtility.getUtility();
+        this.cost = oldPathUtility.getCost();
+        this.score = oldPathUtility.getScore();
+        this.utilityList = new ArrayList<>();
+        this.costList = new ArrayList<>();
+        this.scoreList = new ArrayList<>();
+        this.tz = new ArrayList<>();
+        this.x = new ArrayList<>();
+
+        this.utilityList.addAll(oldPathUtility.getUtilityList());
+        this.costList.addAll(oldPathUtility.getCostList());
+        this.scoreList.addAll(oldPathUtility.getScoreList());
+        this.tz.addAll(oldPathUtility.getTz());
+        this.x.addAll(oldPathUtility.getX());
     }
 
     void calcPathUtility(ArrayList<Subtask> path, ArrayList<ArrayList<SimulatedAgent>> omega, SimulatedAgent agent) throws Exception {
@@ -28,8 +52,8 @@ public class PathUtility{
     }
 
     void calcSubtaskUtility(Subtask j, ArrayList<Subtask> path, ArrayList<ArrayList<SimulatedAgent>> omega, SimulatedAgent agent) throws Exception {
-        double t_a = Double.NEGATIVE_INFINITY;
-        ArrayList<Double> x_a = new ArrayList<>();
+        double t_a;
+        ArrayList<Double> x_a;
 
         if(j.getParentTask().getGamma() == Double.NEGATIVE_INFINITY){
             x_a = j.getParentTask().getLocation();
@@ -48,6 +72,10 @@ public class PathUtility{
         this.utility += (S/sigmoid - g - p - c_v);
         this.cost += (g + p + c_v);
         this.score += S;
+
+        this.utilityList.add(S/sigmoid - g - p - c_v);
+        this.costList.add(g + p + c_v);
+        this.scoreList.add(S);
         this.tz.add(t_a);
         this.x.add(x_a);
     }
@@ -86,7 +114,7 @@ public class PathUtility{
                 }
             }
 
-            // looks to maximize utility by getting there as quick as possible
+            // looks to maximize utility by getting there as quickly as correlation time will allow
             t_corr = T[j.getI_q()][ i_max ];
             t_a = maxTz - t_corr;
 
@@ -392,6 +420,9 @@ public class PathUtility{
     public double getScore(){ return this.score; }
     public ArrayList<Double> getTz(){ return this.tz; }
     public ArrayList<ArrayList<Double>> getX(){ return this.x; }
+    public ArrayList<Double> getUtilityList() { return this.utilityList; }
+    public ArrayList<Double> getScoreList() { return this.scoreList; }
+    public ArrayList<Double> getCostList() { return this.costList; }
 
     public void setUtility(double utility){ this.utility = utility; }
     public void setCost(double cost){ this.cost = cost; }

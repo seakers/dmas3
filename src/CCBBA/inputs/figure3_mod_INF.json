@@ -1,10 +1,11 @@
 
 {
     "SimName": "Figure3-Mod-inf",
-    "NumRuns": 128,
+    "NumRuns": 30,
 	"Planner": "CCBBA",
 	"Logger": "WARNING"
 	"OutputSwitch": "ON"
+	"TimeStep": 0.01,
 	"Agents": {
 		"AgentList": [
 			{
@@ -63,7 +64,7 @@
 				"MaxScore": {
 					"Dist": "Linear",
 					"MaxValue": 100.0,
-					"MinValue": 50.0
+					"MinValue": 0.0
 				}
 				"Cost": {
 					"Value": 0.0114,
