@@ -1,0 +1,98 @@
+
+{
+    "SimName": "AppendixBExample",
+    "NumRuns": 1,
+	"Planner": "CCBBA",
+	"Logger": "FINEST",
+	"OutputSwitch": "ON",
+	"TimeStep": 0.01,
+	"Agents": {
+		"AgentList": [
+			{
+				"Name": "Sat1",
+				"Instances": 1,
+				"SensorList": [ "IR" ],
+				"Position": [ 0.0, 0.0, 0.0],
+				"Speed": 1.0,
+				"Mass": 1.0,
+				"PlanningHorizon": 2,
+				"MaxConstraintViolations": 2,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 10,
+				"Resources": {
+					"Type": "Const",
+					"MergeCost": 2.0,
+					"SplitCost": 1.0,
+					"Value": 100.0,
+					"TravelCost": 1.0,
+					"TravelCostType": "Const"
+				},
+				"ConvergenceIndicator": 10
+			}, 
+			{
+				"Name": "Sat2",
+				"Instances": 1,
+				"SensorList": [ "MW" ],
+				"Position": [ 4.0, 0.0, 0.0],
+				"Speed": 1.0,
+				"Mass": 1.0,
+				"PlanningHorizon": 2,
+				"MaxConstraintViolations": 2,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 10,
+				"Resources": {
+					"Type": "Const",
+					"MergeCost": 2.0,
+					"SplitCost": 1.0,
+					"Value": 100.0,
+					"TravelCost": 1.0,
+					"TravelCostType": "Const"
+				},
+				"ConvergenceIndicator": 10
+			}			
+		]		
+	}
+	"Scenario": {
+		"TaskList": [
+			{ 
+				"Name": "Task1"
+				"Instances": 1,
+				"MaxScore": 100.0,
+				"Cost": {
+					"Value": 2.0,
+					"Type": "Const"
+				},
+				"SensorList": [ "IR", "MW" ],
+				"Location": [ 0.0, 3.0, 0.0],
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 0.0,
+				"t_corr": 1.0,
+				"lambda": 0.0,
+				"gamma" : "NEG_INF"
+			},
+			{ 
+				"Name": "Task2"
+				"Instances": 1,
+				"MaxScore": 30.0,
+				"Cost": {
+					"Value": 2.0,
+					"Type": "Const"
+				},
+				"SensorList": [ "MW" ],
+				"Location": [ 4.0, 3.0, 0.0],
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 0.0,
+				"t_corr": 1.0,
+				"lambda": 0.0,
+				"gamma" : "NEG_INF"
+			}
+		],
+		"World": {
+			"Type": "2D_Grid",
+			"Bounds": [ 10.0, 10.0 ],
+			"t_0": 0.0
+		}
+	}
+}

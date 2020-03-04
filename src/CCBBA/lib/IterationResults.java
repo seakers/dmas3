@@ -225,21 +225,10 @@ public class IterationResults {
             return false;
         }
 
-        // check if bid for a subtask of the same task is in the bundle
+        // check if dependent task is about to reach coalition violation timeout
         Task parentTask = j.getParentTask();
         int[][] D = parentTask.getD();
         int i_q = j.getI_q();
-            // check if subtask in question is mutually exclusive with a bid already in the bundle
-            for(Subtask bundleSubtask : agentBundle){
-                if(bundleSubtask.getParentTask() == parentTask) {
-                    int i_b = bundleSubtask.getI_q();
-                    if (D[i_q][i_b] == -1) { // if subtask j has a mutually exclusive task in bundle, you cannot bid
-                        return false;
-                    }
-                }
-            }
-
-        // check if dependent task is about to reach coalition violation timeout
         for(Subtask subtask : parentTask.getSubtaskList()){
             int i_j = subtask.getI_q();
 
@@ -249,6 +238,17 @@ public class IterationResults {
                 return false;
             }
         }
+
+//        // check if bid for a subtask of the same task is in the bundle
+//            // check if subtask in question is mutually exclusive with a bid already in the bundle
+//            for(Subtask bundleSubtask : agentBundle){
+//                if(bundleSubtask.getParentTask() == parentTask) {
+//                    int i_b = bundleSubtask.getI_q();
+//                    if (D[i_q][i_b] == -1) { // if subtask j has a mutually exclusive task in bundle, you cannot bid
+//                        return false;
+//                    }
+//                }
+//            }
 
         //check if pessimistic or optimistic strategy -> if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
         // Count number of requirements and number of completed requirements
@@ -313,6 +313,8 @@ public class IterationResults {
 
     public void updateResults(IterationDatum newDatum) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(newDatum);
+        updatedDatum.setW_any(this.getIterationDatum(newDatum).getW_any());
+        updatedDatum.setW_solo(this.getIterationDatum(newDatum).getW_solo());
         updatedDatum.setC(this.getIterationDatum(newDatum).getC());
 
         int i = this.indexOf(newDatum.getJ());
@@ -451,7 +453,7 @@ public class IterationResults {
         for(IterationDatum datum : this.results){
             if(datum.getJ().getParentTask() != J_current){
                 output.append("----------------------------------------------------------------------------------------------------\n");
-                 J_current = datum.getJ().getParentTask();
+                J_current = datum.getJ().getParentTask();
             }
 
             String winnerName;
@@ -512,8 +514,8 @@ public class IterationResults {
                             datum.getV(),
                             datum.getW_any(),
                             datum.getW_solo(),
-                            datum.getCost(),
                             datum.getScore(),
+                            datum.getCost(),
                             complete
                             )
                     );
@@ -531,8 +533,8 @@ public class IterationResults {
                             datum.getV(),
                             datum.getW_any(),
                             datum.getW_solo(),
-                            datum.getCost(),
                             datum.getScore(),
+                            datum.getCost(),
                             complete
                             )
                     );

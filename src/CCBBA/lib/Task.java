@@ -16,6 +16,7 @@ public class Task {
     private double S_Max;                       // Maximum score
     private double cost;                        // Inherent cost of executing the task
     private String cost_type;                   // Describes if the cost is constant or not
+    private double noise;                       // Max noise cost as a percentage of maximum score
     private ArrayList<String> req_sensors;      // List of required sensors for task
     private ArrayList<Double> location;         // Location of the task
     private String locationType;                // How the location of the task is expressed
@@ -65,6 +66,9 @@ public class Task {
         }
         else if( ((JSONObject) taskData.get("Cost")).get("Type") == null){
             throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " cost type not contained in input file.");
+        }
+        else if( ((JSONObject) taskData.get("Cost")).get("Noise") == null){
+            throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " cost noise not contained in input file.");
         }
         else if(taskData.get("SensorList") == null){
             throw new NullPointerException("INPUT ERROR:" + taskData.get("Name").toString() + " Sensor List not contained in input file.");
@@ -127,6 +131,12 @@ public class Task {
             if(!this.cost_type.equals("Proportional")){
                 throw new Exception("INPUT ERROR:" + this.name + " cost type not supported.");
             }
+        }
+        if(this.cost > 0.0) {
+            this.noise = (double) costData.get("Noise");
+        }
+        else{
+            this.noise = 0.0;
         }
 
         // -Sensor List
@@ -416,6 +426,7 @@ public class Task {
     public String getCost_type(){ return this.cost_type; }
     public double getCost(){ return this.cost; }
     public ArrayList<String> getReq_sensors(){ return this.req_sensors; }
+    public double getNoise(){ return this.noise; }
 
     public double getT_start() { return t_start; }
     public double getT_end() { return t_end; }

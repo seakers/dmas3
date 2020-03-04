@@ -2,12 +2,12 @@ clc;
 v1 = 1;
 v2 = 0.5;
 x0 = -1;
-x = [0 1 2 3 4 5 6 7 8 9];
-t_corr = [0 1 2 3 4 5 6 7 8 9];
+x = [0 1 2 3 4 5 6 7 8 9 10];
+t_corr = [0 1 2 3 4 5 6 7 8 9 10];
 
 t_2f = (x - x0)./v2;
-t_1f = zeros(1,10);
-lambda = zeros(1,10);
+t_1f = zeros(1,length(x));
+lambda = zeros(1,length(x));
 for i = 1:length(t_1f)
     if(i == 1)
         t_1f(i) = (x(i) - x0)/v1;

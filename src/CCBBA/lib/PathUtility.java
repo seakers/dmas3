@@ -68,16 +68,28 @@ public class PathUtility{
         double g = calcTravelCost(path, j, x_a, agent);
         double p = calcMergePenalty(path, j, agent, omega);
         double c_v = calcSubtaskCost(j, g, p, agent);
+        double n = calcCostNoise(j);
 
-        this.utility += (S/sigmoid - g - p - c_v);
+        this.utility += (S/sigmoid - g - p - c_v - n);
         this.cost += (g + p + c_v);
         this.score += S;
 
-        this.utilityList.add(S/sigmoid - g - p - c_v);
-        this.costList.add(g + p + c_v);
+        this.utilityList.add(S/sigmoid - g - p - c_v - n);
+        this.costList.add(g + p + c_v + n);
         this.scoreList.add(S);
         this.tz.add(t_a);
         this.x.add(x_a);
+    }
+
+    private double calcCostNoise(Subtask j){
+        Task parentTask = j.getParentTask();
+        double noise = (parentTask.getS_Max()/100) * parentTask.getNoise() * Math.random();
+        if(Math.random() > 5.0){
+            return noise;
+        }
+        else{
+            return -noise;
+        }
     }
 
     private double calcTimeOfArrival(ArrayList<Subtask> path, Subtask j, SimulatedAgent agent, ArrayList<Double> x_a) throws Exception {
