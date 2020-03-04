@@ -209,6 +209,7 @@ public class SimulatedAgent extends AbstractAgent {
         if (!isMessageBoxEmpty()
                 || ( (agentsDoing != null) && (agentsDoing.size() == agentsEnvironment.size()))
                 || ((agentsDead != null) && (agentsDoing != null) && (agentsDead.size() + agentsDoing.size() == agentsEnvironment.size()))
+                || (agentsEnvironment == null)
            ) { // results received
             // Save current results
             IterationResults prevResults = new IterationResults(localResults, this);
@@ -370,11 +371,8 @@ public class SimulatedAgent extends AbstractAgent {
                     // Agent is on the way to performing task
                     getLogger().info("Agent is on its way to latest task in the plan");
 
-                    // check if anyone has a more resent bid for a path subtask
                     // check if I need to reconsider bids
-                    boolean changesMade = currentBundleSize > newBundleSize;
-
-                    if(changesMade){
+                    if(currentBundleSize > newBundleSize){
                         // changes were made to parent task of a subtask in the path
                         getLogger().fine("Parent task to a subtask in the path has changes. Reconsidering bids.");
                         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
@@ -460,6 +458,15 @@ public class SimulatedAgent extends AbstractAgent {
                     getLogger().info("Changes were made. Sharing and matching results with other agents");
                 }
             }
+        }
+        else if(agentsEnvironment == null){
+            // I'm the only agent in the environment
+            getLogger().info("Sending results to results compiler");
+            AgentAddress resultsAddress = getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE);
+            SimResultsMessage myDeath = new SimResultsMessage(this);
+            sendMessage(resultsAddress, myDeath);
+
+            logResources();
         }
     }
 
