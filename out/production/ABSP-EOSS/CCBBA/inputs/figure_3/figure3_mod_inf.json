@@ -1,7 +1,7 @@
 
 {
     "SimName": "Figure3-Mod-inf",
-    "NumRuns": 30,
+    "NumRuns": 128,
 	"Planner": "CCBBA",
 	"Logger": "WARNING"
 	"OutputSwitch": "ON"
@@ -19,8 +19,8 @@
 				"Mass": 1.0,
 				"PlanningHorizon": 3,
 				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 5,
-				"MaxBidsAny": 10,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 5,
 				"Resources": {
 					"Type": "Const",
 					"MergeCost": 0.0,
@@ -42,8 +42,8 @@
 				"Mass": 1.0,
 				"PlanningHorizon": 3,
 				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 5,
-				"MaxBidsAny": 10,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 5,
 				"Resources": {
 					"Type": "Const",
 					"MergeCost": 0.0,
@@ -67,7 +67,7 @@
 					"MinValue": 0.0
 				}
 				"Cost": {
-					"Value": 0.0057,
+					"Value": 0.0114,
 					"Type": "Proportional",
 					"Noise": 2.5
 				},
@@ -87,11 +87,11 @@
 				"Instances": 8,
 				"MaxScore": {
 					"Dist": "Linear",
-					"MaxValue": 100.0,
-					"MinValue": 50.0
+					"MaxValue": 50.0,
+					"MinValue": 0.0
 				}
 				"Cost": {
-					"Value": 0.0057,
+					"Value": 0.0114,
 					"Type": "Proportional",
 					"Noise": 2.5
 				},
@@ -111,13 +111,13 @@
 				"Instances": 7,
 				"MaxScore": {
 					"Dist": "Linear",
-					"MaxValue": 100.0,
-					"MinValue": 50.0,
-					"Noise": 2.5
+					"MaxValue": 50.0,
+					"MinValue": 0.0
 				}
 				"Cost": {
-					"Value": 0.0057,
-					"Type": "Proportional"
+					"Value": 0.0114,
+					"Type": "Proportional",
+					"Noise": 2.5
 				},
 				"SensorList": [ "MW" ],
 				"Location": {

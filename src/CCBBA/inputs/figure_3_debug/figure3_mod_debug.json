@@ -9,7 +9,7 @@
 		"AgentList": [
 			{
 				"Name": "Sat1",
-				"Instances": 0,
+				"Instances": 1,
 				"SensorList": [ "IR" ],
 				"Position": [ -1.0, 0.0, 0.0 ],
 				"Speed": 1.0,
@@ -30,7 +30,7 @@
 			}, 
 			{
 				"Name": "Sat2",
-				"Instances": 0,
+				"Instances": 1,
 				"SensorList": [ "MW" ],
 				"Position": [ -1.0, 0.0, 0.0 ],
 				"Speed": 0.5,
@@ -51,7 +51,7 @@
 			},
 			{
 				"Name": "SatAllSensors",
-				"Instances": 1,
+				"Instances": 0,
 				"SensorList": [ "IR", "MW" ],
 				"Position": [-1.0, 0.0, 0.0],
 				"Speed": 1.0,
@@ -69,28 +69,7 @@
 					"TravelCostType": "Proportional"
 				},
 				"ConvergenceIndicator": 10
-			},
-			{
-				"Name": "DummyAgent",
-				"Instances": 0,
-				"SensorList": [ ],
-				"Position": [-1.0, 0.0, 0.0],
-				"Speed": 1.0,
-				"Mass": 1.0,
-				"PlanningHorizon": 4,
-				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 5,
-				"MaxBidsAny": 10,
-				"Resources": {
-					"Type": "Const",
-					"MergeCost": 0.0,
-					"SplitCost": 0.0,
-					"Value": 0.0,
-					"TravelCost": 0.0,
-					"TravelCostType": "Proportional"
-				},
-				"ConvergenceIndicator": 10
-			}			
+			}	
 		]		
 	}
 	"Scenario": {

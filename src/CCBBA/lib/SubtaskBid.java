@@ -27,7 +27,7 @@ public class SubtaskBid {
         this.winnerPath = new ArrayList<>();
     }
 
-    public void calcSubtaskBid(Subtask j, SimulatedAgent agent) throws Exception {
+    public void calcSubtaskBid(Subtask j, SimulatedAgent agent, double pathPenalty) throws Exception {
         this.j_a = j;
 
         ArrayList<Subtask> oldPath = agent.getPath();
@@ -46,11 +46,11 @@ public class SubtaskBid {
             // substract path utilities to obtain subtask utility
             double newPathBid = newPathUtility.getUtility() - oldUtility.getUtility();
             if(i != possiblePaths.size()-1){  // if path modifies previously agreed order, deduct points
-                newPathBid = newPathBid - 10.0;
+                newPathBid = newPathBid - pathPenalty;
             }
 
             //get max bid from all new paths
-            if(newPathBid >= maxPathBid){
+            if(newPathBid > maxPathBid){
                 maxPathBid = newPathBid;
                 this.c = newPathBid;
                 this.tz = newPathUtility.getTz().get( newPath.indexOf(j) );

@@ -296,7 +296,6 @@ public class PathUtility{
         double C_split;
         double C_merge;
 
-        IterationResults localResults = agent.getLocalResults();
         ArrayList<Subtask> overallBundle = agent.getOverallBundle();
         ArrayList<Subtask> overallPath = agent.getOverallPath();
         ArrayList<ArrayList<SimulatedAgent>> overallOmega = agent.getOverallOmega();

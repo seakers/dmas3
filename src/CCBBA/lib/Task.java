@@ -212,6 +212,43 @@ public class Task {
                 }
 
             }
+            else if(locationDist.equals("Grid")){
+                if( worldType.equals("2D_Grid") ) {
+                    JSONArray boundsData = (JSONArray) worldData.get("Bounds");
+                    double x_max = (double) boundsData.get(0);
+                    double y_max = (double) boundsData.get(1);
+
+                    int i_j = this.iterationNum;
+                    int N_x = Integer.parseInt(((JSONObject) taskData.get("Location")).get("N_x").toString());
+                    int N_y = Integer.parseInt(((JSONObject) taskData.get("Location")).get("N_y").toString());
+
+                    int x = 0;
+                    int y = 0;
+
+                    boolean done = false;
+                    int counter = 0;
+                    for(int j = 0; j < N_y; j++) {
+                        for (int i = 0; i < N_x; i++) {
+                            x = i;
+                            if(counter == i_j){
+                                done = true;
+                                break;
+                            }
+                            counter++;
+                        }
+                        y = j;
+                        if(done) break;
+                    }
+
+                    this.location.add( ((double) x) * (x_max/(N_x - 1)) );
+                    this.location.add( ((double) y) * (y_max/(N_y - 1)) );
+                    this.location.add(0.0);
+                    this.locationType = "vector";
+                }
+                else{
+                    throw new Exception("INPUT ERROR:" + this.name + " world type does not support task location distribution.");
+                }
+            }
 //            else if(locationDist.equals("Normal")){
 //                // ---Normal distribution
 //                // NEEDS IMPLEMENTATION

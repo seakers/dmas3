@@ -1,8 +1,8 @@
 {
     "SimName": "Figure3-Mod-4",
-    "NumRuns": 1,
+    "NumRuns": 128,
 	"Planner": "CCBBA",
-	"Logger": "FINER"
+	"Logger": "WARNING"
 	"OutputSwitch": "ON"
 	"TimeStep": 0.01,
 	"Agents": {
@@ -18,8 +18,8 @@
 				"Mass": 1.0,
 				"PlanningHorizon": 3,
 				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 5,
-				"MaxBidsAny": 10,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 5,
 				"Resources": {
 					"Type": "Const",
 					"MergeCost": 0.0,
@@ -41,8 +41,8 @@
 				"Mass": 1.0,
 				"PlanningHorizon": 3,
 				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 5,
-				"MaxBidsAny": 10,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 5,
 				"Resources": {
 					"Type": "Const",
 					"MergeCost": 0.0,
@@ -66,7 +66,7 @@
 					"MinValue": 50.0
 				}
 				"Cost": {
-					"Value": 0.0057,
+					"Value": 0.0114,
 					"Type": "Proportional",
 					"Noise": 0.5
 				},
@@ -78,7 +78,7 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": 4.0,
-				"lambda": 0.009242,
+				"lambda": 0.015,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -87,10 +87,10 @@
 				"MaxScore": {
 					"Dist": "Linear",
 					"MaxValue": 50.0,
-					"MinValue": 20.0
+					"MinValue": 0.0
 				}
 				"Cost": {
-					"Value": 0.0057,
+					"Value": 0.0114,
 					"Type": "Proportional",
 					"Noise": 0.5
 				},
@@ -102,7 +102,7 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": 4.0,
-				"lambda": 0.009242,
+				"lambda": 0.015,
 				"gamma" : "NEG_INF"
 			},
 			{ 
@@ -111,10 +111,10 @@
 				"MaxScore": {
 					"Dist": "Linear",
 					"MaxValue": 50.0,
-					"MinValue": 20.0
+					"MinValue": 0.0
 				}
 				"Cost": {
-					"Value": 0.0057,
+					"Value": 0.0114,
 					"Type": "Proportional",
 					"Noise": 0.5
 				},
@@ -126,7 +126,7 @@
 				"t_end": "INF",
 				"duration": 0.0,
 				"t_corr": 4.0,
-				"lambda": 0.009242,
+				"lambda": 0.015,
 				"gamma" : "NEG_INF"
 			}
 		],

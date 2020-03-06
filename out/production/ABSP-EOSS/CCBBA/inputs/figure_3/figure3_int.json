@@ -1,6 +1,6 @@
 {
     "SimName": "Figure3-Int",
-    "NumRuns": 30,
+    "NumRuns": 128,
 	"Planner": "CCBBA",
 	"Logger": "WARNING"
 	"OutputSwitch": "ON"
@@ -18,8 +18,8 @@
 				"Mass": 1.0,
 				"PlanningHorizon": 3,
 				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 5,
-				"MaxBidsAny": 10,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 5,
 				"Resources": {
 					"Type": "Const",
 					"MergeCost": 0.0,
@@ -40,10 +40,10 @@
 				"MaxScore": {
 					"Dist": "Linear",
 					"MaxValue": 100.0,
-					"MinValue": 50.0
+					"MinValue": 0.0
 				}
 				"Cost": {
-					"Value": 0.0114,
+					"Value": 0.0114,,
 					"Type": "Proportional",
 					"Noise": 2.5
 				},
@@ -63,11 +63,11 @@
 				"Instances": 8,
 				"MaxScore": {
 					"Dist": "Linear",
-					"MaxValue": 100.0,
-					"MinValue": 50.0
+					"MaxValue": 50.0,
+					"MinValue": 0.0
 				}
 				"Cost": {
-					"Value": 0.0114,
+					"Value": 0.0114,,
 					"Type": "Proportional",
 					"Noise": 2.5
 				},
@@ -87,11 +87,11 @@
 				"Instances": 7,
 				"MaxScore": {
 					"Dist": "Linear",
-					"MaxValue": 100.0,
-					"MinValue": 50.0
+					"MaxValue": 50.0,
+					"MinValue": 0.0
 				}
 				"Cost": {
-					"Value": 0.0114,
+					"Value": 0.0114,,
 					"Type": "Proportional",
 					"Noise": 2.5
 				},

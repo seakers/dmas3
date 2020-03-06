@@ -314,7 +314,8 @@ public class ResultsCompiler extends AbstractAgent {
     private double calcScoreAvailable(){
         double count = 0;
         for(Task V : environment.getScenarioTasks()){
-            count += (V.getS_Max() * V.getReq_sensors().size());
+//            count += (V.getS_Max() * V.getReq_sensors().size());
+            count += (V.getS_Max());
         }
         return count;
     }

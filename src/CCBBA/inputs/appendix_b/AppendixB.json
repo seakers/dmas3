@@ -60,7 +60,8 @@
 				"MaxScore": 100.0,
 				"Cost": {
 					"Value": 2.0,
-					"Type": "Const"
+					"Type": "Const",
+					"Noise": 0.0
 				},
 				"SensorList": [ "IR", "MW" ],
 				"Location": [ 0.0, 3.0, 0.0],
@@ -77,7 +78,8 @@
 				"MaxScore": 30.0,
 				"Cost": {
 					"Value": 2.0,
-					"Type": "Const"
+					"Type": "Const",
+					"Noise": 0.0
 				},
 				"SensorList": [ "MW" ],
 				"Location": [ 4.0, 3.0, 0.0],
