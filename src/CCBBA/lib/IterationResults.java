@@ -142,14 +142,14 @@ public class IterationResults {
                     coalition_bid = coalition_bid + datum.getY();
                 }
 
-                if( D[testDatum.getI_q()][datum.getI_q()] == 1 ){
+                if( D[testDatum.getI_q()][datum.getI_q()] >= 1 ){
                     if(datum.getZ() == agent){
                         new_bid = new_bid + datum.getY();
                     }
                 }
             }
         }
-        new_bid = new_bid + localBid.getC();;
+        new_bid = new_bid + localBid.getC();
 
         if(new_bid > coalition_bid){ return 1; }
         else{ return 0; }
@@ -171,45 +171,55 @@ public class IterationResults {
         }
         new_bid += c;
 
-
-        ArrayList<ArrayList<Integer>> coalitionMembers = new ArrayList<>();
-        int i_j = J_parent.indexOf(j);
-        ArrayList<Integer> Jv = new ArrayList<>();
-        for(int i_q = 0; i_q < J_parent.size(); i_q++){
-            if( (D[i_j][i_q] >= 1) ){
-                Jv.add(i_q);
-            }
-        }
-        Jv.add(J_parent.indexOf(j));
-//
-//        double max_bid = 0.0;
-//        double y_coalition;
-//        ArrayList<Integer> Jv;
-//        for(int i_c = 0; i_c < coalitionMembers.size(); i_c++) {
-//            y_coalition = 0.0;
-//            Jv = coalitionMembers.get(i_c);
-//            Subtask j_jv;
-//
-//            for (int i = 0; i < Jv.size(); i++) {
-//                j_jv = parentTask.getSubtaskList().get(Jv.get(i));
-////                if( bidList.get(this.indexOf(j_jv)).getC() > 0.0
-////                    && bidList.get(this.indexOf(j_jv)).getC() > this.getIterationDatum(j_jv).getY()
-////                    && (this.getIterationDatum(j_jv).getZ() == biddingAgent || this.getIterationDatum(j_jv).getZ() == null)
-////                ){
-////                    y_coalition += bidList.get(this.indexOf(j_jv)).getC();
-////                }
-////                else {
-////                    y_coalition += this.getIterationDatum(j_jv).getY();
-////                }
-//                y_coalition += this.getIterationDatum(j_jv).getY();
+//        ArrayList<ArrayList<Integer>> coalitionMembers = new ArrayList<>();
+//        for(int i_j = 0; i_j < J_parent.size(); i_j++){
+//            ArrayList<Integer> Jv = new ArrayList<>();
+//            for(int i_q = 0; i_q < J_parent.size(); i_q++){
+//                if( (D[i_j][i_q] >= 1) ){
+//                    Jv.add(i_q);
+//                }
 //            }
-//            y_coalition += this.getIterationDatum( parentTask.getSubtaskList().get(i_c) ).getY();
-//
-//            if (y_coalition > max_bid) {
-//                max_bid = y_coalition;
-//            }
+//            Jv.add(J_parent.indexOf(j));
 //        }
 
+        ArrayList<ArrayList<Integer>> coalitionMembers = new ArrayList<>();
+        for(int i_j = 0; i_j < J_parent.size(); i_j++){
+            ArrayList<Integer> Jv = new ArrayList<>();
+            for(int i_q = 0; i_q < J_parent.size(); i_q++){
+                if( (D[i_j][i_q] >= 1) ){
+                    Jv.add(i_q);
+                }
+            }
+            coalitionMembers.add(Jv);
+        }
+
+        double max_bid = 0.0;
+        double y_coalition;
+        ArrayList<Integer> Jv;
+        for(int i_c = 0; i_c < coalitionMembers.size(); i_c++) {
+            y_coalition = 0.0;
+            Jv = coalitionMembers.get(i_c);
+            Subtask j_jv;
+
+            for (int i = 0; i < Jv.size(); i++) {
+                j_jv = parentTask.getSubtaskList().get(Jv.get(i));
+//                if( bidList.get(this.indexOf(j_jv)).getC() > 0.0
+//                    && bidList.get(this.indexOf(j_jv)).getC() > this.getIterationDatum(j_jv).getY()
+//                    && (this.getIterationDatum(j_jv).getZ() == biddingAgent || this.getIterationDatum(j_jv).getZ() == null)
+//                ){
+//                    y_coalition += bidList.get(this.indexOf(j_jv)).getC();
+//                }
+//                else {
+//                    y_coalition += this.getIterationDatum(j_jv).getY();
+//                }
+                y_coalition += this.getIterationDatum(j_jv).getY();
+            }
+            y_coalition += this.getIterationDatum( parentTask.getSubtaskList().get(i_c) ).getY();
+
+            if (y_coalition > max_bid) {
+                max_bid = y_coalition;
+            }
+        }
 
         if(new_bid > max_bid){ return 1; }
         else{ return 0; }
@@ -233,10 +243,10 @@ public class IterationResults {
             // if subtask is completed, I can't bid
             return false;
         }
-        else if(agentBundle.contains(j)) {
-            // if I have already bid for this subtask, I can't bid
-            return false;
-        }
+//        else if(agentBundle.contains(j)) {
+//            // if I have already bid for this subtask, I can't bid
+//            return false;
+//        }
         else {
             // if dependent tasks have been completed, check if j meets time requirements
             ArrayList<Subtask> completedSubtasks = new ArrayList<>();
