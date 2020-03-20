@@ -14,7 +14,7 @@
 				"Position": [ -1.0, 0.0, 0.0 ],
 				"Speed": 1.0,
 				"Mass": 1.0,
-				"PlanningHorizon": 3,
+				"PlanningHorizon": 5,
 				"MaxConstraintViolations": 2,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
@@ -35,7 +35,7 @@
 				"Position": [ -1.0, 0.0, 0.0 ],
 				"Speed": 0.5,
 				"Mass": 1.0,
-				"PlanningHorizon": 3,
+				"PlanningHorizon": 5,
 				"MaxConstraintViolations": 2,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
@@ -92,8 +92,8 @@
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": "INF",
-				"lambda": 0.015,
+				"t_corr": 0.0,
+				"lambda": 0.025,
 				"gamma" : "NEG_INF"
 			}
 		],

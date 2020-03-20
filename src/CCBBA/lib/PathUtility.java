@@ -147,6 +147,7 @@ public class PathUtility{
         ArrayList<Double> x_0;
         int i = path.indexOf(j);
         double t_0;
+        int[][] D = j.getParentTask().getD();
 
         if(i == 0){ // task is at the beginning of the path
             if(agent.getOverallPath().size() > 0){ // there exists a path before new path
@@ -161,8 +162,45 @@ public class PathUtility{
             }
         }
         else{ // there is a task before the current task
-            x_0 = this.x.get(i - 1);
-            t_0 = this.tz.get(i - 1) + path.get(i-1).getParentTask().getDuration();
+            // check if any previous tasks are mutually exclusive with j
+            ArrayList<Integer> exclusivePathSubtasks = new ArrayList<>();
+            for(int i_p = i; i_p >= 0; i_p--){
+                if(path.get(i_p).getParentTask() != j.getParentTask()){
+                    break;
+                }
+                else{
+                    int i_q = path.get(i_p).getI_q();
+                    int i_j = j.getI_q();
+                    if(D[i_j][i_q] <= - 1) {
+                        exclusivePathSubtasks.add(i_p);
+                    }
+                }
+            }
+
+            if(exclusivePathSubtasks.size() > 0){
+                // if there are mutually exclusive subtasks in bundle, chose most recent nonexclusive task as the initial position
+                int i_p = exclusivePathSubtasks.get(exclusivePathSubtasks.size() - 1) - 1;
+                if(i_p > 0){
+                    x_0 = this.x.get(i_p);
+                    t_0 = this.tz.get(i_p) + path.get(i_p).getParentTask().getDuration();
+                }
+                else{
+                    if(agent.getOverallPath().size() > 0){ // there exists a path before new path
+                        Subtask j_p = agent.getOverallPath().get( agent.getOverallPath().size() - 1 ); // last task in previous path
+
+                        x_0 = j_p.getParentTask().getLocation();
+                        t_0 = agent.getLocalResults().getIterationDatum(j_p).getTz() + j_p.getParentTask().getDuration();
+                    }
+                    else{ // there was no previous path
+                        x_0 = agent.getPosition();
+                        t_0 = agent.getT_0();
+                    }
+                }
+            }
+            else {
+                x_0 = this.x.get(i - 1);
+                t_0 = this.tz.get(i - 1) + path.get(i - 1).getParentTask().getDuration();
+            }
         }
 
         if(agent.getEnvironment().getWorldType().equals("2D_Grid") || agent.getEnvironment().getWorldType().equals("3D_Grid")){
@@ -243,6 +281,7 @@ public class PathUtility{
         ArrayList<Double> x_i;
         double gamma = j.getParentTask().getGamma();
         double e;
+        int[][] D = j.getParentTask().getD();
 
         if( gamma == Double.NEGATIVE_INFINITY ) {
             return 1;
@@ -255,8 +294,41 @@ public class PathUtility{
                 else{ // there was no previous path
                     x_i = agent.getPosition();
                 }
-            } else{ // there is a task before the current task
-                x_i = this.x.get(i-1);
+            }
+            else{ // there is a task before the current task
+                // check if any previous tasks are mutually exclusive with j
+                ArrayList<Integer> exclusivePathSubtasks = new ArrayList<>();
+                for(int i_p = i; i_p >= 0; i_p--){
+                    if(path.get(i_p).getParentTask() != j.getParentTask()){
+                        break;
+                    }
+                    else{
+                        int i_q = path.get(i_p).getI_q();
+                        int i_j = j.getI_q();
+                        if(D[i_j][i_q] <= - 1) {
+                            exclusivePathSubtasks.add(i_p);
+                        }
+                    }
+                }
+
+                if(exclusivePathSubtasks.size() > 0){
+                    // if there are mutually exclusive subtasks in bundle, chose most recent nonexclusive task as the initial position
+                    int i_p = exclusivePathSubtasks.get(exclusivePathSubtasks.size() - 1) - 1;
+                    if(i_p > 0){
+                        x_i = this.x.get(i_p);
+                    }
+                    else{
+                        if(agent.getOverallPath().size() > 0){ // there exists a path before new path
+                            x_i = agent.getOverallX_path().get( agent.getOverallX_path().size() - 1 ); // last location in previous path
+                        }
+                        else{ // there was no previous path
+                            x_i = agent.getPosition();
+                        }
+                    }
+                }
+                else {
+                    x_i = this.x.get(i - 1);
+                }
             }
 
             for(int i_x = 0; i_x < x_a.size(); i_x++){
@@ -274,6 +346,7 @@ public class PathUtility{
         int i = path.indexOf(j);
         double delta_x = 0.0;
         ArrayList<Double> x_i;
+        int[][] D = j.getParentTask().getD();
 
         if(i == 0){ // task is at the beginning of the path
             if(agent.getOverallPath().size() > 0){ // there exists a path before new path
@@ -283,7 +356,39 @@ public class PathUtility{
                 x_i = agent.getPosition();
             }
         } else{ // there is a task before the current task
-            x_i = this.x.get(i-1);
+            // check if any previous tasks are mutually exclusive with j
+            ArrayList<Integer> exclusivePathSubtasks = new ArrayList<>();
+            for(int i_p = i; i_p >= 0; i_p--){
+                if(path.get(i_p).getParentTask() != j.getParentTask()){
+                    break;
+                }
+                else{
+                    int i_q = path.get(i_p).getI_q();
+                    int i_j = j.getI_q();
+                    if(D[i_j][i_q] <= - 1) {
+                        exclusivePathSubtasks.add(i_p);
+                    }
+                }
+            }
+
+            if(exclusivePathSubtasks.size() > 0){
+                // if there are mutually exclusive subtasks in bundle, chose most recent nonexclusive task as the initial position
+                int i_p = exclusivePathSubtasks.get(exclusivePathSubtasks.size() - 1) - 1;
+                if(i_p > 0){
+                    x_i = this.x.get(i_p);
+                }
+                else{
+                    if(agent.getOverallPath().size() > 0){ // there exists a path before new path
+                        x_i = agent.getOverallX_path().get( agent.getOverallX_path().size() - 1 ); // last location in previous path
+                    }
+                    else{ // there was no previous path
+                        x_i = agent.getPosition();
+                    }
+                }
+            }
+            else {
+                x_i = this.x.get(i - 1);
+            }
         }
 
         for(int i_x = 0; i_x < x_a.size(); i_x++){

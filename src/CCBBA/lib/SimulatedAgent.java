@@ -136,6 +136,9 @@ public class SimulatedAgent extends AbstractAgent {
 
         // construct bundle
         getLogger().info("Constructing bundle...");
+        logBundle();
+        logPath();
+
         while ((this.bundle.size() < this.M) && (this.localResults.checkAvailability()) && alive) {
             getLogger().fine("Calculating bids for bundle item number " + (this.bundle.size() + 1) + "...");
 
