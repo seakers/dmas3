@@ -328,32 +328,38 @@ public class ResultsCompiler extends AbstractAgent {
         double localCost;
         double avg = 0.0;
 
-        for (int i = 0; i < receivedResults.get(0).size(); i++) {
-            localZ = receivedResults.get(0).getIterationDatum(i).getZ();
-            localCost = receivedResults.get(0).getIterationDatum(i).getCost();
-            if ((localZ != null) && (!agentList.contains(localZ))) {
-                // add agent to list of averages
-                agentList.add(localZ);
-                costPerAgent.add( localCost );
-                bidsPerAgent.add(1);
-            }
-            else if( (localZ != null) && (agentList.contains(localZ)) ){
-                // agent exists in list, add its cost
-                int i_list = agentList.indexOf(localZ);
-                costPerAgent.set(i_list, costPerAgent.get(i_list) + localCost);
-                bidsPerAgent.set(i_list, bidsPerAgent.get(i_list) + 1);
-            }
-        }
+//        for (int i = 0; i < receivedResults.get(0).size(); i++) {
+//            localZ = receivedResults.get(0).getIterationDatum(i).getZ();
+//            localCost = receivedResults.get(0).getIterationDatum(i).getCost();
+//            if ((localZ != null) && (!agentList.contains(localZ))) {
+//                // add agent to list of averages
+//                agentList.add(localZ);
+//                costPerAgent.add( localCost );
+//                bidsPerAgent.add(1);
+//            }
+//            else if( (localZ != null) && (agentList.contains(localZ)) ){
+//                // agent exists in list, add its cost
+//                int i_list = agentList.indexOf(localZ);
+//                costPerAgent.set(i_list, costPerAgent.get(i_list) + localCost);
+//                bidsPerAgent.set(i_list, bidsPerAgent.get(i_list) + 1);
+//            }
+//        }
+//
+//        for(int i = 0; i < agentList.size(); i++){
+//            costPerAgent.set( i, costPerAgent.get(i)/agentList.get(i).getInitialResources().getValue());
+////            costPerAgent.set( i, costPerAgent.get(i)/ (double) bidsPerAgent.get(i));
+//        }
+//        for(int i = 0; i < agentList.size(); i++){
+//            avg += costPerAgent.get(i);
+//        }
+//
+//        return avg / agentList.size();
 
-        for(int i = 0; i < agentList.size(); i++){
-            costPerAgent.set( i, costPerAgent.get(i)/agentList.get(i).getInitialResources().getValue());
-//            costPerAgent.set( i, costPerAgent.get(i)/ (double) bidsPerAgent.get(i));
+        for(IterationResults results : this.receivedResults){
+            SimulatedAgent agent = results.getParentAgent();
+            avg += (1 - agent.getResources().getValue()/agent.getInitialResources().getValue());
         }
-        for(int i = 0; i < agentList.size(); i++){
-            avg += costPerAgent.get(i);
-        }
-
-        return avg / agentList.size();
+        return avg / (double) receivedResults.size();
     }
 
     private int countTasksAvailable(){

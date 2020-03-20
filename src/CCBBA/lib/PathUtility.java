@@ -221,7 +221,12 @@ public class PathUtility{
             return 1.0;
         }
         else{
-            return exp(- lambda * (t_a - t_start) );
+            if(t_a == Double.POSITIVE_INFINITY){
+                return 0.0;
+            }
+            else {
+                return exp(-lambda * (t_a - t_start));
+            }
         }
     }
 

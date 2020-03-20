@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import static java.lang.StrictMath.sqrt;
+
 public class SimulatedAgent extends AbstractAgent {
     /**
      * Input parameters from file
@@ -52,6 +54,7 @@ public class SimulatedAgent extends AbstractAgent {
     private int convCounter;                                // convergence counter
     private int convIndicator;                              // convergence indicator
     private int deathcounter = 0;
+    private double currentTravelCost;
 
 
     public SimulatedAgent(JSONObject inputAgentData, JSONObject inputData, int j) throws Exception {
@@ -89,8 +92,9 @@ public class SimulatedAgent extends AbstractAgent {
         }
         this.overallOmega = new ArrayList<>();
         this.t_0 = this.environment.getT_0();
-        this.t_curr = t_0;
+        this.t_curr = this.environment.getGVT();
         this.convCounter = 0;
+        this.currentTravelCost = 0.0;
 
         // Get world subtasks
         this.worldTasks = new ArrayList<>();
@@ -147,13 +151,19 @@ public class SimulatedAgent extends AbstractAgent {
             for (SubtaskBid localBid : bidList) {
                 Subtask j_bid = localBid.getJ_a();
                 int i_bid = localResults.getIndexOf(j_bid);
-//                boolean newPathAllowable = pathOutbidsResults(localBid, j_bid);
-                boolean newPathAllowable = true;
 
                 double bidUtility = localBid.getC();
                 int h = localResults.getIterationDatum(j_bid).getH();
 
-                if (newPathAllowable && (h >= 0) && (bidUtility * h > currentMax)) {
+                if(h == 1
+                   && localResults.getIterationDatum(j_bid).getY() == bidUtility
+                   && localResults.getIterationDatum(j_bid).getZ() == this){
+
+                    localResults.getIterationDatum(j_bid).setH(0);
+                    h = 0;
+                }
+
+                if ( (h >= 0) && (bidUtility * h > currentMax)) {
                     currentMax = bidUtility * h;
                     maxBid = localBid;
                     j_chosen = j_bid;
@@ -174,6 +184,10 @@ public class SimulatedAgent extends AbstractAgent {
 
                 getLogger().finest("Task chosen for bundle: #" + (localResults.getIndexOf(j_chosen) + 1) );
             }
+            else if(j_chosen != null){
+                localResults.getIterationDatum(j_chosen).setH(0);
+            }
+
         }
 
         getLogger().info("Bundle constructed");
@@ -191,25 +205,7 @@ public class SimulatedAgent extends AbstractAgent {
         // Check for new Coalition members
         getNewCoalitionMemebers();
     }
-//
-//    private boolean pathOutbidsResults(SubtaskBid localBid, Subtask j_bid) throws Exception {
-//        for(Subtask j_b : localBid.getWinnerPath()){
-//            if(j_b == j_bid) continue;
-//
-//            int i_b = localBid.getWinnerPath().indexOf(j_b);
-//            double u_j = 0.0;
-//            double u_jm = 0.0;
-//            for(int i = 0; i <= i_b; i++){
-//                u_j += localBid.getWinnerPathUtility().getUtilityList().get(i);
-//                if(i != i_b) u_jm += localBid.getWinnerPathUtility().getUtilityList().get(i);
-//            }
-//
-//            if( 0.0 > (u_j - u_jm) ){
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
+
 
     @SuppressWarnings("unused")
     public void thinkingPhaseTwo() throws Exception {
@@ -308,8 +304,8 @@ public class SimulatedAgent extends AbstractAgent {
                 // agent is alive and has a plan to perform
                 Subtask j = path.get(0);
 
-                if( t_curr >= this.localResults.getIterationDatum(j).getTz() ) {
-                    // if time of arrival has been reached and I'm still the winner of task j, do task
+                if( taskPositionReached() ){
+                    // if my position is the same as the task, perform task
                     getLogger().info("Executing one task from plan");
 
                     // do earliest tasks in path
@@ -369,6 +365,7 @@ public class SimulatedAgent extends AbstractAgent {
                                 requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
                             }
                         } else {
+                            // agent still contains tasks in its plan
                             getLogger().fine("Agent still contains tasks in plan");
                             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                         }
@@ -378,11 +375,25 @@ public class SimulatedAgent extends AbstractAgent {
                         getLogger().info("Agent is dead and has no plan to perform");
                         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                     }
+
+                    // leave doing phase
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+
+                    // restore current travel cost counter
+                    if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
+                        this.currentTravelCost = 0.0;
+                    }
+                    else{
+                        throw new Exception("Travel Cost type not yet supported");
+                    }
                 }
                 else{
-                    // Agent is on the way to performing task
+                    // I'm still on the way to performing task
                     getLogger().info("Agent is on its way to latest task in the plan");
+
+                    // Advance to task
+                    ArrayList<Double> x = x_path.get(0);
+                    moveTowardsTastk(x);
 
                     // check if I need to reconsider bids
                     if(currentBundleSize > newBundleSize){
@@ -390,6 +401,14 @@ public class SimulatedAgent extends AbstractAgent {
                         getLogger().fine("Parent task to a subtask in the path has changes. Reconsidering bids.");
                         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
                         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+
+                        // restore current travel cost counter
+                        if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
+                            this.currentTravelCost = 0.0;
+                        }
+                        else{
+                            throw new Exception("Travel Cost type not yet supported");
+                        }
                     }
                     else{
                         getLogger().fine("No changes to parent task of a path subtask. Continuing with plan.");
@@ -423,7 +442,9 @@ public class SimulatedAgent extends AbstractAgent {
             getLogger().info("Agent is dead and has no plan to perform");
             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
         }
-        this.t_curr += this.del_t;
+
+        // update time
+        this.t_curr = this.environment.getGVT();
     }
 
     @SuppressWarnings("unused")
@@ -487,6 +508,9 @@ public class SimulatedAgent extends AbstractAgent {
             logResources();
             killAgent(this);
         }
+
+        // update time
+        this.t_curr = this.environment.getGVT();
     }
 
     /**
@@ -1277,10 +1301,74 @@ public class SimulatedAgent extends AbstractAgent {
         }
     }
 
+    private void moveTowardsTastk(ArrayList<Double> x_j) throws Exception {
+        if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
+            ArrayList<Double> deltaX = new ArrayList<>();
+            ArrayList<Double> dir = new ArrayList<>();
+
+            // calculate direction
+            double magnitude = 0.0;
+            for(int i = 0; i < this.position.size(); i++){
+                double delta = x_j.get(i) - this.position.get(i);
+                dir.add(i, delta);
+                magnitude += Math.pow(delta,2);
+            }
+            magnitude = Math.sqrt(magnitude);
+
+            // move one time step towards task
+            for(int i = 0; i < this.position.size(); i++){
+                dir.set(i, dir.get(i)/magnitude);
+                deltaX.add(this.speed*dir.get(i)*del_t);
+                this.position.set(i, this.position.get(i) + deltaX.get(i));
+            }
+
+            // calculate and deduct travel cost
+            double travelCost = this.speed * this.del_t * this.myResources.getMiu();
+            this.currentTravelCost += travelCost;
+            deductTravelCost(travelCost);
+
+        } else {
+            throw new Exception("World type not supported.");
+        }
+    }
+
     private void deductCosts(Subtask j) throws Exception {
         if (this.myResources.getType().equals("Const")) {
             IterationDatum datum = this.localResults.getIterationDatum(j);
-            this.myResources.deductCost(datum, environment.getWorldType());
+            this.myResources.deductCost(datum, environment.getWorldType(), this.currentTravelCost);
+        }
+        else{
+            throw new Exception("Resource type not supported");
+        }
+    }
+
+    private void deductTravelCost(double travelCost) throws Exception{
+        if (this.myResources.getType().equals("Const")) {
+            this.myResources.deductTravelCost(travelCost, environment.getWorldType());
+        }
+        else{
+            throw new Exception("Resource type not supported");
+        }
+    }
+
+    private boolean taskPositionReached() throws Exception{
+        if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
+            double delta_min = this.speed * this.del_t;
+            if(x_path.size() > 0) {
+                ArrayList<Double> taskPosition = x_path.get(0);
+                double distance = 0.0;
+
+                for(int i = 0; i < position.size(); i++){
+                    distance += Math.pow(position.get(i) - x_path.get(0).get(i), 2);
+                }
+                distance = sqrt(distance);
+
+                return distance <= delta_min;
+            }
+            else return false;
+        }
+        else{
+            throw new Exception("Travel Cost type not yet supported");
         }
     }
 
@@ -1403,4 +1491,5 @@ public class SimulatedAgent extends AbstractAgent {
     public ArrayList<Double> getInitialPosition(){ return this.initialPosition; }
     public int getZeta(){return this.zeta; }
     public AgentResources getInitialResources(){ return this.initialResources; }
+    public double getDel_t(){ return this.del_t; };
 }

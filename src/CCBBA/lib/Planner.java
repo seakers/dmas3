@@ -3,6 +3,7 @@ package CCBBA.lib;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Scheduler;
 import madkit.simulation.activator.GenericBehaviorActivator;
+import madkit.simulation.probe.PropertyProbe;
 
 public class Planner extends Scheduler {
     protected GenericBehaviorActivator<AbstractAgent> agents;
@@ -14,6 +15,7 @@ public class Planner extends Scheduler {
     public Planner(String planner){
         this.planner = planner;
     }
+    private Scenario environment;
 
     /**
      * Planners
@@ -55,5 +57,22 @@ public class Planner extends Scheduler {
 
         // 4 : start the simulation
         setSimulationState(SimulationState.RUNNING);
+
+        // 5 : send time to Scenario
+        agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE,
+                "updateTime");
+        addActivator(agents);
+        agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE,
+                "updateTime");
+        addActivator(agents);
+    }
+
+    private void updateTime(){
+        double time = this.getGVT();
+        TimeMessage updatedTime = new TimeMessage(time);
+        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE, updatedTime);
+
+        this.setGVT(environment.getGVT());
     }
 }
+

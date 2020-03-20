@@ -123,9 +123,27 @@ public class AgentResources {
         }
     }
 
-    public void deductCost(IterationDatum datum, String worldType) throws Exception {
+    public void deductCost(IterationDatum datum, String worldType, double currentTravelCost) throws Exception {
         if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")){
-            this.value -= datum.getCost();
+            this.value -= datum.getCost() - currentTravelCost;
+        }
+        else{
+            throw new Exception("World type not supported.");
+        }
+    }
+
+    public void deductTravelCost(double travelCost, String worldType) throws Exception{
+        if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")){
+            this.value -= travelCost;
+        }
+        else{
+            throw new Exception("World type not supported.");
+        }
+    }
+
+    public void restoreTravelCost(double travelCost, String worldType)throws Exception{
+        if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")){
+            this.value += travelCost;
         }
         else{
             throw new Exception("World type not supported.");

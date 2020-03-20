@@ -32,10 +32,12 @@ public class Driver extends AbstractAgent {
 //        inputSimBatch("figure_3/figure3_int.json");
 //        inputSimBatch("figure_3/figure3_mod_0.json");
 //        inputSimBatch("figure_3/figure3_mod_4.json");
-//        inputSimBatch("figure_3_debug/figure3_int_debug.json");
+//        inputSimBatch("figure_3/figure3_mod_inf.json");
+        inputSimBatch("figure_3_debug/figure3_int_debug.json");
 //        inputSimBatch("figure_3_debug/figure3_mod_debug.json");
 //        inputSimBatch("figure_3_debug/figure3_grid_debug.json");
-        inputSimBatch("appendix_b/AppendixB_batch.json");
+//        inputSimBatch("figure_3_debug/figure3_travel_debug.json");
+//        inputSimBatch("appendix_b/AppendixB_batch.json");
 
         if(inputBatch != null) {
             for (int i = 0; i < inputBatch.size(); i++) {

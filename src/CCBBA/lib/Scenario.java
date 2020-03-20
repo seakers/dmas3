@@ -1,18 +1,21 @@
 package CCBBA.lib;
 
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.Message;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 public class Scenario extends Watcher {
     /**
      * environment's description
      */
+    private JSONObject simData;
     private JSONObject scenarioData;
     private JSONArray scenarioTaskData;
     private JSONObject worldData;
@@ -21,6 +24,8 @@ public class Scenario extends Watcher {
     private Level loggerLevel;
     private String worldType;
     private double t_0;
+    private double del_t;
+    private double GVT;
 
     // 2D or 3D grid world
     private ArrayList<Double> bounds = new ArrayList<>();
@@ -34,6 +39,7 @@ public class Scenario extends Watcher {
     public Scenario(JSONObject inputData) throws Exception {
         // Load Scenario data
         this.scenarioData = (JSONObject) inputData.get("Scenario");
+        this.simData = inputData;
 
         // Set up logger level
         setUpLogger(inputData);
@@ -85,6 +91,8 @@ public class Scenario extends Watcher {
 
             // Start time
             this.t_0 = (double) this.worldData.get("t_0");
+            this.GVT = this.t_0;
+            this.del_t = (double) simData.get("TimeStep");
 
             // Create tasks
             // 1-Unpack task list
@@ -123,6 +131,19 @@ public class Scenario extends Watcher {
         addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1, "environment"));
         addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2, "environment"));
         addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.RESULTS_ROLE, "environment"));
+        addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE, "environment"));
+    }
+
+    private void updateTime(){
+//        List<Message> receivedTimes = nextMessages(null);
+//
+//        for(int i = 0; i < receivedTimes.size(); i++){
+//            TimeMessage time = (TimeMessage) receivedTimes.get(i);
+//            if(time.getTime() > this.GVT){
+//                this.GVT = time.getTime();
+//            }
+//        }
+        this.GVT += this.del_t;
     }
 
     class AgentsProbe extends PropertyProbe<AbstractAgent, Scenario> {
@@ -179,6 +200,7 @@ public class Scenario extends Watcher {
     public ArrayList<Task> getScenarioTasks(){ return this.scenarioTasks; }
     public ArrayList<Subtask> getScenarioSubtasks(){ return  this.scenarioSubtasks; }
     public double getT_0(){ return this.t_0; }
+    public double getGVT(){ return this.GVT; }
     public String getWorldType(){ return this.worldType; }
 }
 

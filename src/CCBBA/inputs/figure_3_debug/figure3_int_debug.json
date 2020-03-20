@@ -1,5 +1,5 @@
 {
-    "SimName": "Figure3-Mod-debug",
+    "SimName": "Figure3-Int-debug",
     "NumRuns": 1,
 	"Planner": "CCBBA",
 	"Logger": "FINEST"
@@ -14,7 +14,7 @@
 				"Position": [ -1.0, 0.0, 0.0 ],
 				"Speed": 1.0,
 				"Mass": 1.0,
-				"PlanningHorizon": 2,
+				"PlanningHorizon": 3,
 				"MaxConstraintViolations": 2,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
@@ -23,7 +23,7 @@
 					"MergeCost": 0.0,
 					"SplitCost": 0.0,
 					"Value": 100.0,
-					"TravelCost": 0.0,
+					"TravelCost": 0.015,
 					"TravelCostType": "Proportional"
 				},
 				"ConvergenceIndicator": 10
@@ -35,7 +35,7 @@
 				"Position": [ -1.0, 0.0, 0.0 ],
 				"Speed": 0.5,
 				"Mass": 1.0,
-				"PlanningHorizon": 2,
+				"PlanningHorizon": 3,
 				"MaxConstraintViolations": 2,
 				"MaxBidsSolo": 5,
 				"MaxBidsAny": 10,
@@ -44,49 +44,7 @@
 					"MergeCost": 0.0,
 					"SplitCost": 0.0,
 					"Value": 100.0,
-					"TravelCost": 0.0,
-					"TravelCostType": "Proportional"
-				},
-				"ConvergenceIndicator": 10
-			},
-			{
-				"Name": "Sat12",
-				"Instances": 0,
-				"SensorList": [ "IR" ],
-				"Position": [ 10.0, 0.0, 0.0 ],
-				"Speed": 1.0,
-				"Mass": 1.0,
-				"PlanningHorizon": 2,
-				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 5,
-				"MaxBidsAny": 10,
-				"Resources": {
-					"Type": "Const",
-					"MergeCost": 0.0,
-					"SplitCost": 0.0,
-					"Value": 100.0,
-					"TravelCost": 0.0,
-					"TravelCostType": "Proportional"
-				},
-				"ConvergenceIndicator": 10
-			}, 
-			{
-				"Name": "Sat22",
-				"Instances": 0,
-				"SensorList": [ "MW" ],
-				"Position": [ 10.0, 0.0, 0.0 ],
-				"Speed": 0.5,
-				"Mass": 1.0,
-				"PlanningHorizon": 2,
-				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 5,
-				"MaxBidsAny": 10,
-				"Resources": {
-					"Type": "Const",
-					"MergeCost": 0.0,
-					"SplitCost": 0.0,
-					"Value": 100.0,
-					"TravelCost": 0.0,
+					"TravelCost": 0.015,
 					"TravelCostType": "Proportional"
 				},
 				"ConvergenceIndicator": 10
@@ -111,216 +69,37 @@
 					"TravelCostType": "Proportional"
 				},
 				"ConvergenceIndicator": 10
-			},
-			{
-				"Name": "SatInt12",
-				"Instances": 0,
-				"SensorList": [ "IR", "MW" ],
-				"Position": [10.0, 0.0, 0.0],
-				"Speed": 1.0,
-				"Mass": 1.0,
-				"PlanningHorizon": 4,
-				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 5,
-				"MaxBidsAny": 10,
-				"Resources": {
-					"Type": "Const",
-					"MergeCost": 0.0,
-					"SplitCost": 0.0,
-					"Value": 100.0,
-					"TravelCost": 0.0,
-					"TravelCostType": "Proportional"
-				},
-				"ConvergenceIndicator": 10
-			}	
+			}
 		]		
 	}
 	"Scenario": {
 		"TaskList": [
 			{ 
 				"Name": "DualSensorTask"
-				"Instances": 1,
+				"Instances": 10,
 				"MaxScore": 100.0,
 				"Cost": {
-					"Value": 0.0,
+					"Value": 0.0114,
 					"Type": "Proportional",
-					"Noise": 5.0,
+					"Noise": 0.0,
 				},
 				"SensorList": [ "IR", "MW" ],
-				"Location": [ 0.0, 0.0, 0.0 ],
+				"Location": {
+					"Dist": "Grid",
+					"N_x": 10,
+					"N_y": 2
+				},
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
+				"t_corr": "INF",
+				"lambda": 0.015,
 				"gamma" : "NEG_INF"
-			},
-			{ 
-				"Name": "DualSensorTask"
-				"Instances": 1,
-				"MaxScore": 100.0,
-				"Cost": {
-					"Value": 0.0,
-					"Type": "Proportional",
-					"Noise": 2.5,
-				},
-				"SensorList": [ "IR", "MW" ],
-				"Location": [ 1.0, 0.0, 0.0 ],
-				"t_start": 0.0,
-				"t_end": "INF",
-				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
-				"gamma" : "NEG_INF"
-			},
-			{ 
-				"Name": "DualSensorTask"
-				"Instances": 1,
-				"MaxScore": 100.0,
-				"Cost": {
-					"Value": 0.0,
-					"Type": "Proportional",
-					"Noise": 5.0,
-				},
-				"SensorList": [ "IR", "MW" ],
-				"Location": [ 2.0, 0.0, 0.0 ],
-				"t_start": 0.0,
-				"t_end": "INF",
-				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
-				"gamma" : "NEG_INF"
-			},
-			{ 
-				"Name": "DualSensorTask"
-				"Instances": 1,
-				"MaxScore": 100.0,
-				"Cost": {
-					"Value": 0.0,
-					"Type": "Proportional",
-					"Noise": 5.0,
-				},
-				"SensorList": [ "IR", "MW" ],
-				"Location": [ 3.0, 0.0, 0.0 ],
-				"t_start": 0.0,
-				"t_end": "INF",
-				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
-				"gamma" : "NEG_INF"
-			},
-			{ 
-				"Name": "DualSensorTask"
-				"Instances": 1,
-				"MaxScore": 100.0,
-				"Cost": {
-					"Value": 0.0,
-					"Type": "Proportional",
-					"Noise": 5.0,
-				},
-				"SensorList": [ "IR", "MW" ],
-				"Location": [ 4.0, 0.0, 0.0 ],
-				"t_start": 0.0,
-				"t_end": "INF",
-				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
-				"gamma" : "NEG_INF"
-			},
-			{ 
-				"Name": "DualSensorTask"
-				"Instances": 1,
-				"MaxScore": 100.0,
-				"Cost": {
-					"Value": 0.0,
-					"Type": "Proportional",
-					"Noise": 5.0,
-				},
-				"SensorList": [ "IR", "MW" ],
-				"Location": [ 5.0, 0.0, 0.0 ],
-				"t_start": 0.0,
-				"t_end": "INF",
-				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
-				"gamma" : "NEG_INF"
-			},
-			{ 
-				"Name": "DualSensorTask"
-				"Instances": 1,
-				"MaxScore": 100.0,
-				"Cost": {
-					"Value": 0.0,
-					"Type": "Proportional",
-					"Noise": 5.0,
-				},
-				"SensorList": [ "IR", "MW" ],
-				"Location": [ 6.0, 0.0, 0.0 ],
-				"t_start": 0.0,
-				"t_end": "INF",
-				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
-				"gamma" : "NEG_INF"
-			},
-			{ 
-				"Name": "DualSensorTask"
-				"Instances": 1,
-				"MaxScore": 100.0,
-				"Cost": {
-					"Value": 0.0,
-					"Type": "Proportional",
-					"Noise": 5.0,
-				},
-				"SensorList": [ "IR", "MW" ],
-				"Location": [ 7.0, 0.0, 0.0 ],
-				"t_start": 0.0,
-				"t_end": "INF",
-				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
-				"gamma" : "NEG_INF"
-			},
-			{ 
-				"Name": "DualSensorTask"
-				"Instances": 1,
-				"MaxScore": 100.0,
-				"Cost": {
-					"Value": 0.0,
-					"Type": "Proportional",
-					"Noise": 5.0,
-				},
-				"SensorList": [ "IR", "MW" ],
-				"Location": [ 8.0, 0.0, 0.0 ],
-				"t_start": 0.0,
-				"t_end": "INF",
-				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
-				"gamma" : "NEG_INF"
-			},
-			{ 
-				"Name": "DualSensorTask"
-				"Instances": 1,
-				"MaxScore": 100.0,
-				"Cost": {
-					"Value": 0.0,
-					"Type": "Proportional",
-					"Noise": 5.0,
-				},
-				"SensorList": [ "IR", "MW" ],
-				"Location": [ 9.0, 0.0, 0.0 ],
-				"t_start": 0.0,
-				"t_end": "INF",
-				"duration": 0.0,
-				"t_corr": 0.0,
-				"lambda": 0.5712,
-				"gamma" : "NEG_INF"
-			},
+			}
 		],
 		"World": {
 			"Type": "2D_Grid",
-			"Bounds": [ 50.0, 50.0 ],
+			"Bounds": [ 40.0, 10.0 ],
 			"t_0": 0.0
 		}
 	}

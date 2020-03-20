@@ -139,7 +139,7 @@
 		"TaskList": [
 			{ 
 				"Name": "DualSensorTask"
-				"Instances": 49,
+				"Instances": 36,
 				"MaxScore": 100.0,
 				"Cost": {
 					"Value": 0.0114,
@@ -149,13 +149,13 @@
 				"SensorList": [ "IR", "MW" ],
 				"Location": {
 					"Dist": "Grid",
-					"N_x": 7,
-					"N_y": 7
+					"N_x": 6,
+					"N_y": 6
 				},
 				"t_start": 0.0,
 				"t_end": "INF",
 				"duration": 0.0,
-				"t_corr": 0.0,
+				"t_corr": "INF",
 				"lambda": 0.015,
 				"gamma" : "NEG_INF"
 			}

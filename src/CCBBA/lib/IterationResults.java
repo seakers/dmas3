@@ -133,19 +133,16 @@ public class IterationResults {
             // Check if j and q are in the same task
             if(datum.getJ().getParentTask() == parentTask && datum.getJ() != j){
                 //Check if bid outmatches coalition bid
-                int i_j = j.getI_q();
                 boolean sameWinner = (datum.getZ() == testDatum.getZ());
                 boolean noConstraintsUQ = (D[testDatum.getI_q()][datum.getI_q()] == 0);
-                boolean constraintsQU = (D[datum.getI_q()][testDatum.getI_q()] >= 1);
+                boolean constraintsUQ =   (D[testDatum.getI_q()][datum.getI_q()] >= 1);
 
-                if( sameWinner && (noConstraintsUQ || constraintsQU)){
+                if( sameWinner && (noConstraintsUQ || constraintsUQ)){
                     coalition_bid = coalition_bid + datum.getY();
                 }
 
-                if( D[testDatum.getI_q()][datum.getI_q()] >= 1 ){
-                    if(datum.getZ() == agent){
-                        new_bid = new_bid + datum.getY();
-                    }
+                if( D[testDatum.getI_q()][datum.getI_q()] >= 1 && datum.getZ() == agent){
+                    new_bid = new_bid + datum.getY();
                 }
             }
         }
@@ -160,27 +157,14 @@ public class IterationResults {
         double c = localBid.getC();
         int[][] D = j.getParentTask().getD();
 
-        ArrayList<Integer> dependantSubtasks = new ArrayList<>();
         double new_bid = 0.0;
         for(int q = 0; q < J_parent.size(); q++) {
             //if q != j and D(j,q) == 1, then add y_q to new bid
             if( (J_parent.get(q) != j) && (D[J_parent.indexOf(j)][q] >= 1) ){
-                dependantSubtasks.add(q);
                 new_bid += this.getIterationDatum(J_parent.get(q)).getY();
             }
         }
         new_bid += c;
-
-//        ArrayList<ArrayList<Integer>> coalitionMembers = new ArrayList<>();
-//        for(int i_j = 0; i_j < J_parent.size(); i_j++){
-//            ArrayList<Integer> Jv = new ArrayList<>();
-//            for(int i_q = 0; i_q < J_parent.size(); i_q++){
-//                if( (D[i_j][i_q] >= 1) ){
-//                    Jv.add(i_q);
-//                }
-//            }
-//            Jv.add(J_parent.indexOf(j));
-//        }
 
         ArrayList<ArrayList<Integer>> coalitionMembers = new ArrayList<>();
         for(int i_j = 0; i_j < J_parent.size(); i_j++){
@@ -190,31 +174,31 @@ public class IterationResults {
                     Jv.add(i_q);
                 }
             }
+            Jv.add(i_j);
             coalitionMembers.add(Jv);
+        }
+
+        ArrayList<ArrayList<Integer>> exclusiveCoalitionMembers = new ArrayList<>();
+        for(ArrayList<Integer> Jv : coalitionMembers){
+            ArrayList<Integer> Jv_p = new ArrayList<>();
+            for(Integer i_j : Jv){
+                for(int i_k = 0; i_k < J_parent.size(); i_k++){
+                    if( (D[i_k][i_j] <= -1) && !Jv_p.contains(i_k) ){
+                        Jv_p.add(i_k);
+                    }
+                }
+            }
+            exclusiveCoalitionMembers.add(Jv_p);
         }
 
         double max_bid = 0.0;
         double y_coalition;
-        ArrayList<Integer> Jv;
-        for(int i_c = 0; i_c < coalitionMembers.size(); i_c++) {
+        for(ArrayList<Integer> Jv_p : exclusiveCoalitionMembers){
             y_coalition = 0.0;
-            Jv = coalitionMembers.get(i_c);
-            Subtask j_jv;
-
-            for (int i = 0; i < Jv.size(); i++) {
-                j_jv = parentTask.getSubtaskList().get(Jv.get(i));
-//                if( bidList.get(this.indexOf(j_jv)).getC() > 0.0
-//                    && bidList.get(this.indexOf(j_jv)).getC() > this.getIterationDatum(j_jv).getY()
-//                    && (this.getIterationDatum(j_jv).getZ() == biddingAgent || this.getIterationDatum(j_jv).getZ() == null)
-//                ){
-//                    y_coalition += bidList.get(this.indexOf(j_jv)).getC();
-//                }
-//                else {
-//                    y_coalition += this.getIterationDatum(j_jv).getY();
-//                }
-                y_coalition += this.getIterationDatum(j_jv).getY();
+            for(Integer i_k : Jv_p){
+                Subtask j_k = parentTask.getSubtaskList().get(i_k);
+                y_coalition += this.getIterationDatum(j_k).getY();
             }
-            y_coalition += this.getIterationDatum( parentTask.getSubtaskList().get(i_c) ).getY();
 
             if (y_coalition > max_bid) {
                 max_bid = y_coalition;
@@ -243,10 +227,10 @@ public class IterationResults {
             // if subtask is completed, I can't bid
             return false;
         }
-//        else if(agentBundle.contains(j)) {
-//            // if I have already bid for this subtask, I can't bid
-//            return false;
-//        }
+        else if(agentBundle.contains(j)){
+            // if I have already bid on a task on my bundle, I can't bid
+            return false;
+        }
         else {
             // if dependent tasks have been completed, check if j meets time requirements
             ArrayList<Subtask> completedSubtasks = new ArrayList<>();
@@ -290,17 +274,6 @@ public class IterationResults {
             }
         }
 
-//        // check if bid for a subtask of the same task is in the bundle
-//            // check if subtask in question is mutually exclusive with a bid already in the bundle
-//            for(Subtask bundleSubtask : agentBundle){
-//                if(bundleSubtask.getParentTask() == parentTask) {
-//                    int i_b = bundleSubtask.getI_q();
-//                    if (D[i_q][i_b] == -1) { // if subtask j has a mutually exclusive task in bundle, you cannot bid
-//                        return false;
-//                    }
-//                }
-//            }
-
         //check if pessimistic or optimistic strategy -> if w_solo(i_j) = 0 & w_any(i_j) = 0, then PBS. Else OBS.
         // Count number of requirements and number of completed requirements
         int N_req = 0;
@@ -314,6 +287,9 @@ public class IterationResults {
             if( (this.getIterationDatum(subtask).getZ() != null) && ( D[i_q][i_j] >= 1)){ n_sat++; }
         }
 
+        int w_any_j = this.getIterationDatum(j).getW_any();
+        int w_solo_j = this.getIterationDatum(j).getW_solo();
+
         if(!isOptimistic(j)){
             // Agent has spent all possible tries biding on this task with dependencies
             // Pessimistic Bidding Strategy to be used
@@ -322,16 +298,8 @@ public class IterationResults {
         else{
             // Agent has NOT spent all possible tries biding on this task with dependencies
             // Optimistic Bidding Strategy to be used
-            int w_any_j = this.getIterationDatum(j).getW_any();
-            int w_solo_j = this.getIterationDatum(j).getW_solo();
-
             return ((w_any_j > 0)&&(n_sat> 0)) || (w_solo_j > 0) || (n_sat == N_req);
         }
-
-//        int w_any_j = this.getIterationDatum(j).getW_any();
-//        int w_solo_j = this.getIterationDatum(j).getW_solo();
-//
-//        return ((w_any_j > 0)&&(n_sat> 0)) || (w_solo_j > 0) || (n_sat == N_req);
     }
 
     public boolean isOptimistic(Subtask j){
@@ -364,14 +332,6 @@ public class IterationResults {
             datum.setCost( maxBid.getWinnerPathUtility().getCostList().get(i) );
             datum.setScore( maxBid.getWinnerPathUtility().getScoreList().get(i) );
             datum.setX( maxBid.getWinnerPathUtility().getX().get(i) );
-
-            if(maxBid.getWinnerPathUtility().getUtilityList().get(i) < 0){
-                boolean hola12;
-            }
-        }
-
-        if(maxBid.getC() < 0.0){
-            boolean hola11;
         }
     }
 
