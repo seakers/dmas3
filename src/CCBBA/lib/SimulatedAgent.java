@@ -159,9 +159,7 @@ public class SimulatedAgent extends AbstractAgent {
                 int h = localResults.getIterationDatum(j_bid).getH();
 
                 if(h == 1
-                   && localResults.getIterationDatum(j_bid).getY() == bidUtility
-                   && localResults.getIterationDatum(j_bid).getZ() == this){
-
+                   && localResults.getIterationDatum(j_bid).getY() > bidUtility){
                     localResults.getIterationDatum(j_bid).setH(0);
                     h = 0;
                 }
