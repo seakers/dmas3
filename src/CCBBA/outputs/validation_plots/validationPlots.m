@@ -1,10 +1,10 @@
 function [] = validationPlots()
     clc; close all; clear all;
     addpath("./figure_3");
-    addpath("./figure_5");
+%     addpath("./figure_5");
     
     % Figure 3
-    results3 = readData("figure_3", 20); 
+    results3 = readData("figure_3", 35); 
     figureThree(results3);
     
 %     % Figure 5
