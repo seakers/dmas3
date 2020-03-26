@@ -1,9 +1,8 @@
-
 {
     "SimName": "Figure3-Mod-inf",
-    "NumRuns": 30,
+    "NumRuns": 10,
 	"Planner": "CCBBA",
-	"Logger": "WARNING"
+	"Logger": "FINEST"
 	"OutputSwitch": "ON"
 	"TimeStep": 0.1,
 	"Agents": {
@@ -69,7 +68,7 @@
 				"Cost": {
 					"Value": 0.0114,
 					"Type": "Proportional",
-					"Noise": 2.5
+					"Noise": 0.0
 				},
 				"SensorList": [ "IR", "MW" ],
 				"Location": {
@@ -93,7 +92,7 @@
 				"Cost": {
 					"Value": 0.0114,
 					"Type": "Proportional",
-					"Noise": 2.5
+					"Noise": 0.0
 				},
 				"SensorList": [ "IR" ],
 				"Location": {
@@ -117,7 +116,7 @@
 				"Cost": {
 					"Value": 0.0114,
 					"Type": "Proportional",
-					"Noise": 2.5
+					"Noise": 0.0
 				},
 				"SensorList": [ "MW" ],
 				"Location": {

@@ -336,6 +336,8 @@ public class IterationResults {
     }
 
     public void updateResults(IterationDatum newDatum) throws Exception {
+        this.parentAgent.releaseTaskFromBundle(newDatum);
+
         IterationDatum updatedDatum = new IterationDatum(newDatum);
         updatedDatum.setW_any(this.getIterationDatum(newDatum).getW_any());
         updatedDatum.setW_solo(this.getIterationDatum(newDatum).getW_solo());
@@ -343,8 +345,6 @@ public class IterationResults {
 
         int i = this.indexOf(newDatum.getJ());
         this.results.set(i, updatedDatum);
-
-        this.parentAgent.releaseTaskFromBundle(newDatum);
     }
 
     public void leaveResults(IterationDatum newDatum){
@@ -352,6 +352,8 @@ public class IterationResults {
     }
 
     public void resetResults(IterationDatum newDatum) throws Exception {
+        this.parentAgent.releaseTaskFromBundle(newDatum);
+
         IterationDatum updatedDatum = new IterationDatum(newDatum.getJ(), this.parentAgent);
         updatedDatum.setW_any(this.getIterationDatum(newDatum).getW_any());
         updatedDatum.setW_solo(this.getIterationDatum(newDatum).getW_solo());
@@ -359,8 +361,6 @@ public class IterationResults {
 
         int i = this.indexOf(newDatum.getJ());
         this.results.set(i, updatedDatum);
-
-        this.parentAgent.releaseTaskFromBundle(newDatum);
     }
 
     public void resetResults(Subtask j) throws Exception {

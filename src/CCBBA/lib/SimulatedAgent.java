@@ -133,6 +133,7 @@ public class SimulatedAgent extends AbstractAgent {
 
         // Reset task availability indicators
         this.localResults.resetAvailability();
+        IterationResults prevResults = new IterationResults(localResults, this);
 
         // construct bundle
         getLogger().info("Constructing bundle...");
@@ -145,7 +146,6 @@ public class SimulatedAgent extends AbstractAgent {
             // Calculate bid for every subtask
             ArrayList<SubtaskBid> bidList = this.localResults.calcBidList(this);
             Subtask j_chosen = null;
-            IterationResults prevResults = new IterationResults(localResults, this);
 
             // Choose max bid
             double currentMax = 0.0;
@@ -158,11 +158,17 @@ public class SimulatedAgent extends AbstractAgent {
                 double bidUtility = localBid.getC();
                 int h = localResults.getIterationDatum(j_bid).getH();
 
-                if(h == 1
-                   && localResults.getIterationDatum(j_bid).getY() > bidUtility){
-                    localResults.getIterationDatum(j_bid).setH(0);
-                    h = 0;
+                if(h == 1){
+                   if(localResults.getIterationDatum(j_bid).getY() > bidUtility) {
+                       localResults.getIterationDatum(j_bid).setH(0);
+                       h = 0;
+                   }
+                   else if(!pathAvailability(localBid, prevResults)){
+                       localResults.getIterationDatum(j_bid).setH(0);
+                       h = 0;
+                   }
                 }
+
 
                 if ( (h >= 0) && (bidUtility * h > currentMax)) {
                     currentMax = bidUtility * h;
@@ -181,7 +187,7 @@ public class SimulatedAgent extends AbstractAgent {
                 this.x_path = new ArrayList<>();    this.x_path.addAll(maxBid.getWinnerPathUtility().getX());
 
                 localResults.updateResults(maxBid, j_chosen, this);
-                localResults.getIterationDatum(j_chosen).setH(0);
+//                localResults.getIterationDatum(j_chosen).setH(0);
 
                 getLogger().finest("Task chosen for bundle: #" + (localResults.getIndexOf(j_chosen) + 1) );
             }
@@ -279,9 +285,13 @@ public class SimulatedAgent extends AbstractAgent {
 
     @SuppressWarnings("unused")
     public void doingPhase() throws Exception {
+        // Log status
         getLogger().fine(this.name + " results after plan was determined: \n" + this.localResults.toString());
         logBundle();
         logPath();
+
+        logPosition();
+        logResources();
 
         // check life status
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
@@ -672,8 +682,6 @@ public class SimulatedAgent extends AbstractAgent {
             }
         }
 
-
-
         // -Speed or Velocity
         if (inputAgentData.get("Speed") != null) {
             this.speed = (double) inputAgentData.get("Speed");
@@ -700,6 +708,22 @@ public class SimulatedAgent extends AbstractAgent {
 
         // -Convergence Indicator
         this.convIndicator = Integer.parseInt(inputAgentData.get("ConvergenceIndicator").toString());
+    }
+
+    private boolean pathAvailability(SubtaskBid bid, IterationResults prevResults) throws Exception {
+        // checks if new proposed path does not have bids lower than those previously won
+        ArrayList<Subtask> bidPath = bid.getWinnerPath();
+        ArrayList<Double> pathUtility = bid.getWinnerPathUtility().getUtilityList();
+        for(Subtask j_p : bidPath){
+            int i_p = bidPath.indexOf(j_p);
+            double prevUtility = prevResults.getIterationDatum(j_p).getY();
+            double newUtility = pathUtility.get(i_p);
+
+            if(prevUtility > newUtility){
+                return false;
+            }
+        }
+        return true;
     }
 
     private void compareResults() throws Exception {
@@ -934,11 +958,15 @@ public class SimulatedAgent extends AbstractAgent {
             int counter = 0;
             int i_b = bundle.indexOf(itsDatum.getJ());
             int i_p = path.indexOf(itsDatum.getJ());
+
             if(i_b <= i_p) {
                 for ( ; i_b < bundle.size(); ) {
                     Subtask j_b = bundle.get(i_b);
                     if (counter > 0) {
-                        this.localResults.resetResults(j_b);
+                        SimulatedAgent updatedWinner = this.localResults.getIterationDatum(j_b).getZ();
+                        if(updatedWinner == this) {
+                            this.localResults.resetResults(j_b);
+                        }
                     }
                     this.omega.set(i_b, new ArrayList<>());
 
@@ -953,7 +981,10 @@ public class SimulatedAgent extends AbstractAgent {
                 for ( ; i_p < path.size(); ) {
                     Subtask j_p = path.get(i_p);
                     if (counter > 0) {
-                        this.localResults.resetResults(j_p);
+                        SimulatedAgent updatedWinner = this.localResults.getIterationDatum(j_p).getZ();
+                        if(updatedWinner == this) {
+                            this.localResults.resetResults(j_p);
+                        }
                     }
                     i_b = bundle.indexOf(j_p);
                     this.omega.set(i_b, new ArrayList<>());
@@ -1454,6 +1485,29 @@ public class SimulatedAgent extends AbstractAgent {
                         (1 - this.myResources.getValue()/this.initialResources.getValue())
                 )
         );
+        getLogger().finer(String.valueOf(output));
+    }
+
+    private void logPosition(){
+        StringBuilder output;
+        if(this.x_path.size() > 0) {
+            output = new StringBuilder(
+                    String.format(
+                            "\nCurrent Position: \t%s" +
+                                    "\nTarget Position: \t%s\n",
+                            this.position, this.x_path.get(0)
+                    )
+            );
+        }
+        else{
+            output = new StringBuilder(
+                    String.format(
+                            "\nCurrent Position: \t%s" +
+                                    "\nTarget Position: \t[ - ]\n",
+                            this.position
+                    )
+            );
+        }
         getLogger().finer(String.valueOf(output));
     }
 
