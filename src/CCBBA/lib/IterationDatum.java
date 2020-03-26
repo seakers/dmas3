@@ -20,6 +20,7 @@ public class IterationDatum {
     private int v;                          // number of iterations in coalition constraint violation
     private int w_solo;                     // permission to bid solo
     private int w_any;                      // permission to bid any
+    private int w_all;                      // total permissions to bid on a task
 
     /**
      * Constructors
@@ -37,6 +38,7 @@ public class IterationDatum {
         this.v = 0;
         this.w_any = agent.getW_any();
         this.w_solo = agent.getW_solo();
+        this.w_all = 100;
         this.x = new ArrayList<>(3);
         this.cost = 0.0;
         this.score = 0.0;
@@ -54,6 +56,7 @@ public class IterationDatum {
         this.v = newDatum.getV();
         this.w_any = newDatum.getW_any();
         this.w_solo = newDatum.getW_solo();
+        this.w_all = newDatum.getW_all();
         this.x = new ArrayList<>();
         this.x.addAll( newDatum.getX() );
         this.cost = newDatum.getCost();
@@ -81,6 +84,7 @@ public class IterationDatum {
     public int getV() {return v; }
     public int getW_solo() { return w_solo; }
     public int getW_any() { return w_any; }
+    public int getW_all(){ return w_all; }
     public ArrayList<Double> getX(){ return this.x; }
     public double getCost(){ return this.cost; }
     public double getScore(){ return this.score; }
@@ -97,8 +101,10 @@ public class IterationDatum {
     public void setScore(double score) { this.score = score; }
     public void decreaseW_solo() { this.w_solo -= 1; }
     public void decreaseW_any() { this.w_any -= 1; }
+    public void decreaseW_all(){ this.w_all -= 1; }
     public void increaseV(){ this.v += 1; }
     public void resetV(){ this.v = 0; }
     public void setW_any(int w_any) { this.w_any = w_any;}
     public void setW_solo(int w_solo) { this.w_solo = w_solo;}
+    public void setW_all(int w_all) { this.w_all = w_all;}
 }

@@ -775,6 +775,7 @@ public class SimulatedAgent extends AbstractAgent {
                         } else if (itsY > myY) {
                             // update
                             localResults.updateResults(itsDatum);
+                            localResults.getIterationDatum(itsDatum).decreaseW_all();
                         }
                     } else if (myZ == it) {
                         // update
@@ -812,6 +813,7 @@ public class SimulatedAgent extends AbstractAgent {
                         } else if ((itsS > myS) && (itsY > myY)) {
                             // update
                             localResults.updateResults(itsDatum);
+                            localResults.getIterationDatum(itsDatum).decreaseW_all();
                         }
                     } else if (myZ == it) {
                         if (itsS > myS) {
@@ -875,6 +877,7 @@ public class SimulatedAgent extends AbstractAgent {
 
             if (!mutexSat || !timeSat || !depSat || !coalitionSat) {
                 // subtask does not satisfy all constraints, release task
+                localResults.getIterationDatum(j).decreaseW_all();
                 localResults.resetResults(localResults.getIterationDatum(j));
                 String constraintsFailed = this.name + " FAILED ";
 
@@ -1187,7 +1190,8 @@ public class SimulatedAgent extends AbstractAgent {
                 datum.resetV();
             }
 
-            if (datum.getV() > this.O_kq) { // if task has held on to task for too long, release task
+            if (datum.getV() > this.O_kq) { // if task has held on to task for too long
+                // release task
                 datum.decreaseW_solo();
                 datum.decreaseW_any();
                 return false;
@@ -1198,15 +1202,11 @@ public class SimulatedAgent extends AbstractAgent {
                 //release task
                 return false;
             }
-//            if(n_sat == 0){
-//                datum.decreaseW_solo();
-//            }
-//            datum.decreaseW_any();
         }
         return true;
     }
 
-    private boolean coalitionSat(Subtask j, ArrayList<ArrayList<SimulatedAgent>> oldOmega, ArrayList<ArrayList<SimulatedAgent>> newOmega) {
+    private boolean coalitionSat(Subtask j, ArrayList<ArrayList<SimulatedAgent>> oldOmega, ArrayList<ArrayList<SimulatedAgent>> newOmega) throws Exception {
         // Check Coalition Member Constraints
         int i_b = bundle.indexOf(j);
 

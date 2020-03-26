@@ -289,16 +289,21 @@ public class IterationResults {
 
         int w_any_j = this.getIterationDatum(j).getW_any();
         int w_solo_j = this.getIterationDatum(j).getW_solo();
+        int w_all_j = this.getIterationDatum(j).getW_all();
+
+        if(w_all_j <= 0 ){
+            int x = 1;
+        }
 
         if(!isOptimistic(j)){
             // Agent has spent all possible tries biding on this task with dependencies
             // Pessimistic Bidding Strategy to be used
-            return (N_req == n_sat);
+            return (N_req == n_sat)&&(w_all_j > 0);
         }
         else{
             // Agent has NOT spent all possible tries biding on this task with dependencies
             // Optimistic Bidding Strategy to be used
-            return ((w_any_j > 0)&&(n_sat> 0)) || (w_solo_j > 0) || (n_sat == N_req);
+            return (((w_any_j > 0)&&(n_sat> 0)) || (w_solo_j > 0) || (n_sat == N_req)) && (w_all_j > 0);
         }
     }
 
@@ -341,6 +346,7 @@ public class IterationResults {
         IterationDatum updatedDatum = new IterationDatum(newDatum);
         updatedDatum.setW_any(this.getIterationDatum(newDatum).getW_any());
         updatedDatum.setW_solo(this.getIterationDatum(newDatum).getW_solo());
+        updatedDatum.setW_all(this.getIterationDatum(newDatum).getW_all());
         updatedDatum.setC(this.getIterationDatum(newDatum).getC());
 
         int i = this.indexOf(newDatum.getJ());
@@ -357,6 +363,7 @@ public class IterationResults {
         IterationDatum updatedDatum = new IterationDatum(newDatum.getJ(), this.parentAgent);
         updatedDatum.setW_any(this.getIterationDatum(newDatum).getW_any());
         updatedDatum.setW_solo(this.getIterationDatum(newDatum).getW_solo());
+        updatedDatum.setW_all(this.getIterationDatum(newDatum).getW_all());
         updatedDatum.setC(this.getIterationDatum(newDatum).getC());
 
         int i = this.indexOf(newDatum.getJ());
@@ -365,9 +372,9 @@ public class IterationResults {
 
     public void resetResults(Subtask j) throws Exception {
         IterationDatum updatedDatum = new IterationDatum(j, this.parentAgent);
-//        updatedDatum.setV(this.getIterationDatum(j).getV());
         updatedDatum.setW_any(this.getIterationDatum(j).getW_any());
         updatedDatum.setW_solo(this.getIterationDatum(j).getW_solo());
+        updatedDatum.setW_all(this.getIterationDatum(j).getW_all());
         updatedDatum.setC(this.getIterationDatum(j).getC());
 
         int i = this.indexOf(j);
@@ -471,12 +478,12 @@ public class IterationResults {
 
 
     public String toString(){
-        StringBuilder output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\t\th\tv\tw_any\tw_solo\tscore\tcost\tcomplete\n" +
-                                   "====================================================================================================\n");
+        StringBuilder output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\t\th\tv\tw_any\tw_solo\tw_all\tscore\tcost\tcomp\n" +
+                                   "========================================================================================================\n");
         Task J_current = this.results.get(0).getJ().getParentTask();
         for(IterationDatum datum : this.results){
             if(datum.getJ().getParentTask() != J_current){
-                output.append("----------------------------------------------------------------------------------------------------\n");
+                output.append("--------------------------------------------------------------------------------------------------------\n");
                 J_current = datum.getJ().getParentTask();
             }
 
@@ -488,7 +495,7 @@ public class IterationResults {
             if(datum.getS() >= 1000) {
                 if (datum.getZ() == null) {
                     winnerName = "-";
-                    output.append(String.format("%d\t%.2f\t%s\t\t\t\t\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
+                    output.append(String.format("%d\t%.2f\t%s\t\t\t\t\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
                             this.results.indexOf(datum) + 1,
                             datum.getY(),
                             winnerName,
@@ -499,6 +506,7 @@ public class IterationResults {
                             datum.getV(),
                             datum.getW_any(),
                             datum.getW_solo(),
+                            datum.getW_all(),
                             datum.getScore(),
                             datum.getCost(),
                             complete
@@ -506,7 +514,7 @@ public class IterationResults {
                     );
                 } else {
                     winnerName = datum.getZ().getName();
-                    output.append(String.format("%d\t%.2f\t%s\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
+                    output.append(String.format("%d\t%.2f\t%s\t%.2f\t%.2f\t%d\t%d\t%d\t%d\t\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
                             this.results.indexOf(datum) + 1,
                             datum.getY(),
                             winnerName,
@@ -517,6 +525,7 @@ public class IterationResults {
                             datum.getV(),
                             datum.getW_any(),
                             datum.getW_solo(),
+                            datum.getW_all(),
                             datum.getScore(),
                             datum.getCost(),
                             complete
@@ -527,7 +536,7 @@ public class IterationResults {
             else{
                 if(datum.getZ() == null){
                     winnerName = "-";
-                    output.append( String.format("%d\t%.2f\t%s\t\t\t\t\t%.2f\t%.2f\t%d\t\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
+                    output.append( String.format("%d\t%.2f\t%s\t\t\t\t\t%.2f\t%.2f\t%d\t\t%d\t%d\t%d\t\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
                             this.results.indexOf(datum)+1,
                             datum.getY(),
                             winnerName,
@@ -538,6 +547,7 @@ public class IterationResults {
                             datum.getV(),
                             datum.getW_any(),
                             datum.getW_solo(),
+                            datum.getW_all(),
                             datum.getScore(),
                             datum.getCost(),
                             complete
@@ -546,7 +556,7 @@ public class IterationResults {
                 }
                 else {
                     winnerName = datum.getZ().getName();
-                    output.append(String.format("%d\t%.2f\t%s\t%.2f\t%.2f\t%d\t\t%d\t%d\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
+                    output.append(String.format("%d\t%.2f\t%s\t%.2f\t%.2f\t%d\t\t%d\t%d\t%d\t\t%d\t\t%d\t\t%.2f\t%.2f\t%d\n",
                             this.results.indexOf(datum) + 1,
                             datum.getY(),
                             winnerName,
@@ -557,6 +567,7 @@ public class IterationResults {
                             datum.getV(),
                             datum.getW_any(),
                             datum.getW_solo(),
+                            datum.getW_all(),
                             datum.getScore(),
                             datum.getCost(),
                             complete
