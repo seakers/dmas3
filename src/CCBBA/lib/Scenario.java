@@ -82,9 +82,11 @@ public class Scenario extends Watcher {
                 bounds.add(z_max);
                 getLogger().config("3D grid world configured with bounds (" + x_max + ", " + y_max + ", " + z_max +")");
             }
-//            else if( worldType.toString().equals("3D_Earth") ){
-//                // set up Orekit 3D world
-//            }
+            else if( worldType.toString().equals("3D_Earth") ){
+                // set up Orekit 3D world
+                
+
+            }
             else{
                 throw new Exception("INPUT ERROR: World type not supported.");
             }
