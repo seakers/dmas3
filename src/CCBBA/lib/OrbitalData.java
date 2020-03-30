@@ -72,7 +72,7 @@ public class OrbitalData {
         int e_mm = endComp.getTime().getMinute();
         double e_ss = endComp.getTime().getSecond();
 
-        dataFileName = String.format("a%.0f_e%.0f_i%.0f_w%.0f_om%.0f_v%.0f_s%s_%d-%d-%.0f_e%s_%d-%d-%.0f.dat" ,
+        dataFileName = String.format("a%.0f_e%.0f_i%.0f_w%.0f_om%.0f_v%.0f_s%s_%d-%d-%.0f_e%s_%d-%d-%.0f.csv" ,
                                                                         a, e, i, w, Om, v,
                                                                         start_date, s_hh, s_mm, s_ss,
                                                                         end_date, e_hh, e_mm, e_ss );
@@ -84,7 +84,7 @@ public class OrbitalData {
             double lon = parentTask.getLon();
             double alt = parentTask.getAlt();
 
-            String taskDataName = String.format("%s_lat%.0f_lon%.0f_alt%.0f_s%s_%d-%d-%.0f_e%s_%d-%d-%.0f.dat", name, lat, lon, alt,
+            String taskDataName = String.format("%s_lat%.0f_lon%.0f_alt%.0f_s%s_%d-%d-%.0f_e%s_%d-%d-%.0f.csv", name, lat, lon, alt,
                                                                         start_date, s_hh, s_mm, s_ss,
                                                                         end_date, e_hh, e_mm, e_ss);
 
@@ -149,17 +149,17 @@ public class OrbitalData {
             while (extrapDate.compareTo(endDate) <= 0)  {
                 // package data
                 PVCoordinates pvSat = kepler.propagate(extrapDate).getPVCoordinates();
-                String position = String.format("%f\t%f\t%f\t", pvSat.getPosition().getX(), pvSat.getPosition().getY(), pvSat.getPosition().getZ() );
-                String velocity = String.format("%f\t%f\t%f\t", pvSat.getVelocity().getX(), pvSat.getVelocity().getY(), pvSat.getVelocity().getZ() );
-                String acceleration = String.format("%f\t%f\t%f", pvSat.getAcceleration().getX(), pvSat.getAcceleration().getY(), pvSat.getAcceleration().getZ() );
+                String position = String.format("%f,%f,%f", pvSat.getPosition().getX(), pvSat.getPosition().getY(), pvSat.getPosition().getZ() );
+                String velocity = String.format("%f,%f,%f", pvSat.getVelocity().getX(), pvSat.getVelocity().getY(), pvSat.getVelocity().getZ() );
+                String acceleration = String.format("%f,%f,%f", pvSat.getAcceleration().getX(), pvSat.getAcceleration().getY(), pvSat.getAcceleration().getZ() );
 
                 // print to text file
                 String stepData;
                 if(extrapDate == startDate){
-                    stepData = String.format(Locale.US, "%s\t%s\t%s\t%s", extrapDate, position, velocity, acceleration);
+                    stepData = String.format(Locale.US, "%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
                 }
                 else{
-                    stepData = String.format(Locale.US, "\n%s\t%s\t%s\t%s", extrapDate, position, velocity, acceleration);
+                    stepData = String.format(Locale.US, "\n%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
                 }
                 printWriter.print(stepData);
 
@@ -176,15 +176,25 @@ public class OrbitalData {
         }
         else{
             // unpackage existing files
-            File file = new File(dataAddress);
-            Scanner sc = new Scanner(file);
+            File csvFile = new File(dataAddress);
+            BufferedReader sc = new BufferedReader(new FileReader(csvFile));
 
             //define the start and end date of the simulation
             TimeScale utc = TimeScalesFactory.getUTC();
+            String line = null;
 
-            while (sc.hasNextLine()) {
+            while (true) {
+                try {
+                    if ( (line =sc.readLine()) == null) break;
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
                 // -unpack date
-                String dateString = sc.next();
+                String[] data = line.split(",");
+
+                String dateString = data[0];
+
                 int year = Integer.parseInt( String.format("%c%c%c%c", dateString.charAt(0), dateString.charAt(1), dateString.charAt(2), dateString.charAt(3)) );
                 int month = Integer.parseInt( String.format("%c%c", dateString.charAt(5), dateString.charAt(6)) );
                 int day = Integer.parseInt( String.format("%c%c", dateString.charAt(8), dateString.charAt(9)) );
@@ -195,15 +205,15 @@ public class OrbitalData {
                 AbsoluteDate date = new AbsoluteDate(year, month, day, hour, minute, second, utc);
 
                 // unpack position vector
-                double x_pos = sc.nextDouble();
-                double y_pos = sc.nextDouble();
-                double z_pos = sc.nextDouble();
-                double x_vel = sc.nextDouble();
-                double y_vel = sc.nextDouble();
-                double z_vel = sc.nextDouble();
-                double x_acc = sc.nextDouble();
-                double y_acc = sc.nextDouble();
-                double z_acc = sc.nextDouble();
+                double x_pos = Double.parseDouble( data[1] );
+                double y_pos = Double.parseDouble( data[2] );
+                double z_pos = Double.parseDouble( data[3] );
+                double x_vel = Double.parseDouble( data[4] );
+                double y_vel = Double.parseDouble( data[5] );
+                double z_vel = Double.parseDouble( data[6] );
+                double x_acc = Double.parseDouble( data[7] );
+                double y_acc = Double.parseDouble( data[8] );
+                double z_acc = Double.parseDouble( data[9] );
 
                 Vector3D position = new Vector3D(x_pos, y_pos, z_pos);
                 Vector3D velocity = new Vector3D(x_vel, y_vel, z_vel);
@@ -213,9 +223,6 @@ public class OrbitalData {
                 dateData.add(date);
                 pvData.put(date, pvSat);
             }
-
-            //close file
-            sc.close();
         }
     }
 
@@ -269,17 +276,17 @@ public class OrbitalData {
             while (extrapDate.compareTo(endDate) <= 0)  {
                 // package data
                 PVCoordinates pvStation = staF.getPVCoordinates(extrapDate, inertialFrame);
-                String position = String.format("%f\t%f\t%f\t", pvStation.getPosition().getX(), pvStation.getPosition().getY(), pvStation.getPosition().getZ() );
-                String velocity = String.format("%f\t%f\t%f\t", pvStation.getVelocity().getX(), pvStation.getVelocity().getY(), pvStation.getVelocity().getZ() );
-                String acceleration = String.format("%f\t%f\t%f", pvStation.getAcceleration().getX(), pvStation.getAcceleration().getY(), pvStation.getAcceleration().getZ() );
+                String position = String.format("%f,%f,%f", pvStation.getPosition().getX(), pvStation.getPosition().getY(), pvStation.getPosition().getZ() );
+                String velocity = String.format("%f,%f,%f", pvStation.getVelocity().getX(), pvStation.getVelocity().getY(), pvStation.getVelocity().getZ() );
+                String acceleration = String.format("%f,%f,%f", pvStation.getAcceleration().getX(), pvStation.getAcceleration().getY(), pvStation.getAcceleration().getZ() );
 
                 // print to text file
                 String stepData;
                 if(extrapDate == startDate){
-                    stepData = String.format(Locale.US, "%s\t%s\t%s\t%s", extrapDate, position, velocity, acceleration);
+                    stepData = String.format(Locale.US, "%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
                 }
                 else{
-                    stepData = String.format(Locale.US, "\n%s\t%s\t%s\t%s", extrapDate, position, velocity, acceleration);
+                    stepData = String.format(Locale.US, "\n%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
                 }
                 printWriter.print(stepData);
 
@@ -296,17 +303,25 @@ public class OrbitalData {
             //save data to iteration results
             datum.setTaskOrbitData(taskOrbitData);
         }
-        else{
-            // unpackage existing files
-            File file = new File(dataAddress);
-            Scanner sc = new Scanner(file);
+        else{// unpackage existing files
+            File csvFile = new File(dataAddress);
+            BufferedReader sc = new BufferedReader(new FileReader(csvFile));
 
             //define the start and end date of the simulation
             TimeScale utc = TimeScalesFactory.getUTC();
+            String line = null;
 
-            while (sc.hasNextLine()) {
+            while (true) {
+                try {
+                    if ( (line =sc.readLine()) == null) break;
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
                 // -unpack date
-                String dateString = sc.next();
+                String[] data = line.split(",");
+                String dateString = data[0];
+
                 int year = Integer.parseInt( String.format("%c%c%c%c", dateString.charAt(0), dateString.charAt(1), dateString.charAt(2), dateString.charAt(3)) );
                 int month = Integer.parseInt( String.format("%c%c", dateString.charAt(5), dateString.charAt(6)) );
                 int day = Integer.parseInt( String.format("%c%c", dateString.charAt(8), dateString.charAt(9)) );
@@ -317,15 +332,15 @@ public class OrbitalData {
                 AbsoluteDate date = new AbsoluteDate(year, month, day, hour, minute, second, utc);
 
                 // unpack position vector
-                double x_pos = sc.nextDouble();
-                double y_pos = sc.nextDouble();
-                double z_pos = sc.nextDouble();
-                double x_vel = sc.nextDouble();
-                double y_vel = sc.nextDouble();
-                double z_vel = sc.nextDouble();
-                double x_acc = sc.nextDouble();
-                double y_acc = sc.nextDouble();
-                double z_acc = sc.nextDouble();
+                double x_pos = Double.parseDouble( data[1] );
+                double y_pos = Double.parseDouble( data[2] );
+                double z_pos = Double.parseDouble( data[3] );
+                double x_vel = Double.parseDouble( data[4] );
+                double y_vel = Double.parseDouble( data[5] );
+                double z_vel = Double.parseDouble( data[6] );
+                double x_acc = Double.parseDouble( data[7] );
+                double y_acc = Double.parseDouble( data[8] );
+                double z_acc = Double.parseDouble( data[9] );
 
                 Vector3D position = new Vector3D(x_pos, y_pos, z_pos);
                 Vector3D velocity = new Vector3D(x_vel, y_vel, z_vel);
@@ -335,9 +350,6 @@ public class OrbitalData {
                 // save to position vector datum
                 taskOrbitData.put(date, pvStation);
             }
-
-            //close file
-            sc.close();
 
             //save data to iteration results
             datum.setTaskOrbitData(taskOrbitData);
