@@ -2,8 +2,13 @@ package CCBBA.lib;
 
 import jmetal.encodings.variable.Int;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -34,6 +39,7 @@ public class Task {
     private int I;                              // Number of sensors needed
     private boolean completeness;               // Completeness of task
     private int iterationNum;
+    private JSONObject worldData;
 
     /**
      * Constructor
@@ -44,6 +50,7 @@ public class Task {
         checkInputFormat(taskData);
 
         // Unpack data from JSON input file
+        this.worldData = worldData;
         this.iterationNum = i;
         unpackInput(taskData, worldData);
 
@@ -167,109 +174,178 @@ public class Task {
             }
         }
         else if( taskData.get("Location").getClass().equals(costData.getClass()) ){
-            // --Location is random
-            String locationDist = ((JSONObject) taskData.get("Location")).get("Dist").toString();
-            String worldType = worldData.get("Type").toString();
-
-            if(locationDist.equals("Linear")){
-                // ---Linear distribution
-                if( worldType.equals("2D_Grid") ){
-                    // ---Task is in a 2D grid world
-                    JSONArray boundsData = (JSONArray) worldData.get("Bounds");
-                    double x_max = (double) boundsData.get(0);
-                    double y_max = (double) boundsData.get(1);
-
-                    double x = x_max * Math.random();
-                    double y = y_max * Math.random();
-
-                    this.location.add(x);
-                    this.location.add(y);
-                    this.location.add(0.0);
-                    this.locationType = "vector";
+            if(worldData.get("Type").equals("3D_Earth")){
+                // --Location is in Lat-Long-Alt
+                if(( (JSONObject) taskData.get("Location")).get("Lat") == null){
+                    throw new Exception("INPUT ERROR:" + this.name + " latitude not included in input file.");
                 }
-                else if(worldType.equals("3D_Grid")){
-                    // ---Task is in a 3D grid world
-                    JSONArray boundsData = (JSONArray) worldData.get("Bounds");
-                    double x_max = (double) boundsData.get(0);
-                    double y_max = (double) boundsData.get(1);
-                    double z_max = (double) boundsData.get(2);
-
-                    double x = x_max * Math.random();
-                    double y = y_max * Math.random();
-                    double z = z_max * Math.random();
-
-                    this.location.add(x);
-                    this.location.add(y);
-                    this.location.add(z);
-                    this.locationType = "vector";
+                else if(( (JSONObject) taskData.get("Location")).get("Lon") == null){
+                    throw new Exception("INPUT ERROR:" + this.name + " longitude not included in input file.");
                 }
-//                else if(worldType.equals("3D_Earth")){
-//                    // ---Task is on earth's surface
-//                    // IMPLEMENTATION NEEDED
-//                }
-                else{
-                    throw new Exception("INPUT ERROR:" + this.name + " world not supported.");
+                else if(( (JSONObject) taskData.get("Location")).get("Alt") == null){
+                    throw new Exception("INPUT ERROR:" + this.name + " altitude not included in input file.");
                 }
 
+                double lat = (double) ( (JSONObject) taskData.get("Location")).get("Lat");
+                double lon = (double) ( (JSONObject) taskData.get("Location")).get("Lon");
+                double alt = (double) ( (JSONObject) taskData.get("Location")).get("Alt");
+
+                this.location.add(FastMath.toRadians(lat));
+                this.location.add(FastMath.toRadians(lon));
+                this.location.add(FastMath.toRadians(alt));
+
+                this.locationType = "lat-lon";
             }
-            else if(locationDist.equals("Grid")){
-                if( worldType.equals("2D_Grid") ) {
-                    JSONArray boundsData = (JSONArray) worldData.get("Bounds");
-                    double x_max = (double) boundsData.get(0);
-                    double y_max = (double) boundsData.get(1);
+            else {
+                // --Location is random
+                String locationDist = ((JSONObject) taskData.get("Location")).get("Dist").toString();
+                String worldType = worldData.get("Type").toString();
 
-                    int i_j = this.iterationNum;
-                    int N_x = Integer.parseInt(((JSONObject) taskData.get("Location")).get("N_x").toString());
-                    int N_y = Integer.parseInt(((JSONObject) taskData.get("Location")).get("N_y").toString());
+                if (locationDist.equals("Linear")) {
+                    // ---Linear distribution
+                    if (worldType.equals("2D_Grid")) {
+                        // ---Task is in a 2D grid world
+                        JSONArray boundsData = (JSONArray) worldData.get("Bounds");
+                        double x_max = (double) boundsData.get(0);
+                        double y_max = (double) boundsData.get(1);
 
-                    int x = 0;
-                    int y = 0;
+                        double x = x_max * Math.random();
+                        double y = y_max * Math.random();
 
-                    boolean done = false;
-                    int counter = 0;
-                    for(int j = 0; j < N_y; j++) {
-                        for (int i = 0; i < N_x; i++) {
-                            x = i;
-                            if(counter == i_j){
-                                done = true;
-                                break;
-                            }
-                            counter++;
-                        }
-                        y = j;
-                        if(done) break;
+                        this.location.add(x);
+                        this.location.add(y);
+                        this.location.add(0.0);
+                        this.locationType = "vector";
+                    } else if (worldType.equals("3D_Grid")) {
+                        // ---Task is in a 3D grid world
+                        JSONArray boundsData = (JSONArray) worldData.get("Bounds");
+                        double x_max = (double) boundsData.get(0);
+                        double y_max = (double) boundsData.get(1);
+                        double z_max = (double) boundsData.get(2);
+
+                        double x = x_max * Math.random();
+                        double y = y_max * Math.random();
+                        double z = z_max * Math.random();
+
+                        this.location.add(x);
+                        this.location.add(y);
+                        this.location.add(z);
+                        this.locationType = "vector";
+                    }
+                    else if(worldType.equals("3D_Earth")){
+                        // ---Task is on earth's surface
+                        double latSign;
+                        double lonSign;
+
+                        if( Math.random() > 0.5){ latSign = -1.0; }
+                        else{ latSign = 1.0;}
+                        if( Math.random() > 0.5){ lonSign = -1.0; }
+                        else{ lonSign = 1.0;}
+
+                        double lat = Math.PI/2 * Math.random() * latSign;
+                        double lon = Math.PI * Math.random() * lonSign;
+                        double alt = Math.random() * 8848;
+
+                        this.location.add(lat);
+                        this.location.add(lon);
+                        this.location.add(alt);
+                        this.locationType = "lat-lon";
+                    }
+                    else {
+                        throw new Exception("INPUT ERROR:" + this.name + " world not supported.");
                     }
 
-                    this.location.add( ((double) x) * (x_max/(N_x - 1)) );
-                    this.location.add( ((double) y) * (y_max/(N_y - 1)) );
-                    this.location.add(0.0);
-                    this.locationType = "vector";
+                } else if (locationDist.equals("Grid")) {
+                    if (worldType.equals("2D_Grid")) {
+                        JSONArray boundsData = (JSONArray) worldData.get("Bounds");
+                        double x_max = (double) boundsData.get(0);
+                        double y_max = (double) boundsData.get(1);
+
+                        int i_j = this.iterationNum;
+                        int N_x = Integer.parseInt(((JSONObject) taskData.get("Location")).get("N_x").toString());
+                        int N_y = Integer.parseInt(((JSONObject) taskData.get("Location")).get("N_y").toString());
+
+                        int x = 0;
+                        int y = 0;
+
+                        boolean done = false;
+                        int counter = 0;
+                        for (int j = 0; j < N_y; j++) {
+                            for (int i = 0; i < N_x; i++) {
+                                x = i;
+                                if (counter == i_j) {
+                                    done = true;
+                                    break;
+                                }
+                                counter++;
+                            }
+                            y = j;
+                            if (done) break;
+                        }
+
+                        this.location.add(((double) x) * (x_max / (N_x - 1)));
+                        this.location.add(((double) y) * (y_max / (N_y - 1)));
+                        this.location.add(0.0);
+                        this.locationType = "vector";
+                    } else {
+                        throw new Exception("INPUT ERROR:" + this.name + " world type does not support task location distribution.");
+                    }
                 }
-                else{
-                    throw new Exception("INPUT ERROR:" + this.name + " world type does not support task location distribution.");
-                }
-            }
 //            else if(locationDist.equals("Normal")){
 //                // ---Normal distribution
 //                // NEEDS IMPLEMENTATION
 //            }
-            else{
-                throw new Exception("INPUT ERROR:" + this.name + " location distribution not supported.");
+                else {
+                    throw new Exception("INPUT ERROR:" + this.name + " location distribution not supported.");
+                }
             }
         }
 
         // -Time Constraints
-        this.t_start = (double) taskData.get("t_start");
+        // --start time
+        if( taskData.get("t_start").getClass().equals(costData.getClass()) ){
+            // start time is written as an Absolute Date
+            AbsoluteDate scenarioStartDate = getDate((JSONObject) worldData.get("StartDate"));
+            AbsoluteDate taskStartDate = getDate((JSONObject) taskData.get("t_start"));
+
+            this.t_start = taskStartDate.durationFrom(scenarioStartDate);
+        }
+        else {
+            // start time is written in seconds
+            this.t_start = (double) taskData.get("t_start");
+
+            double t_0_world = (double) worldData.get("t_0");
+            if(t_0_world > t_start){
+                throw new Exception("INPUT ERROR:" + this.name + " start time is set before sim start time.");
+            }
+        }
+
+
+        // --duration
         this.duration = (double) taskData.get("duration");
-        if( taskData.get("t_end").toString().equals("INF") ){
-            this.t_end = Double.POSITIVE_INFINITY;
+
+        // --end time
+        if( taskData.get("t_end").getClass().equals(costData.getClass()) ){
+            // end time is written as an Absolute Date
+            AbsoluteDate scenarioStartDate = getDate((JSONObject) worldData.get("StartDate"));
+            AbsoluteDate taskStartDate = getDate((JSONObject) taskData.get("t_end"));
+
+            this.t_end = taskStartDate.durationFrom(scenarioStartDate);
         }
-        else if( taskData.get("t_end").getClass().equals(Double.valueOf(1.0).getClass()) ){
-            this.t_end = (double) taskData.get("t_end");
+        else {
+            // end time is written in seconds
+            if( taskData.get("t_end").toString().equals("INF") ){
+                this.t_end = Double.POSITIVE_INFINITY;
+            }
+            else if( taskData.get("t_end").getClass().equals(Double.valueOf(1.0).getClass()) ){
+                this.t_end = (double) taskData.get("t_end");
+            }
+            else{
+                throw new Exception("INPUT ERROR:" + this.name + " end time entry not supported.");
+            }
         }
-        else{
-            throw new Exception("INPUT ERROR:" + this.name + " end time entry not supported.");
-        }
+
+        // --correlation time
         if( taskData.get("t_corr").toString().equals("INF") ){
             this.t_corr = Double.POSITIVE_INFINITY;
         }
@@ -279,9 +355,6 @@ public class Task {
         else{
             throw new Exception("INPUT ERROR:" + this.name + " correlation time entry not supported.");
         }
-
-        this.t_start += (double) worldData.get("t_0");
-        this.t_end += (double) worldData.get("t_0");
 
         // -Score time decay parameter
         if( taskData.get("lambda").toString().equals("INF") ){
@@ -411,11 +484,27 @@ public class Task {
 
     @Override
     public String toString() {
-        return String.format(
-                "-Name: \t\t\t%s \n" +
-                "-Max Score: \t%f \n" +
-                "-Sensor List: \t%s \n" +
-                "-Location: \t\t%s \n", this.name, this.S_Max, this.req_sensors, this.location);
+        if(this.worldData.get("Type").equals("3D_Earth")){
+            return String.format(
+                    "\t-Name: \t\t\t%s \n" +
+                            "\t-Max Score: \t%f \n" +
+                            "\t-Sensor List: \t%s \n" +
+                            "\t-Location:\n" +
+                            "\t\t\tLat:\t%.3f° \n" +
+                            "\t\t\tLon:\t%.3f° \n" +
+                            "\t\t\tAlt:\t%.3f [m] \n" +
+                            "\t-t_start: \t\t%.2f s\n" +
+                            "\t-t_end: \t\t%.2f s\n",
+
+                    this.name, this.S_Max, this.req_sensors, FastMath.toDegrees(this.location.get(0)), FastMath.toDegrees(this.location.get(1)), FastMath.toDegrees(this.location.get(2)), this.t_start, this.t_end);
+        }
+        else {
+            return String.format(
+                    "\t-Name: \t\t\t%s \n" +
+                            "\t-Max Score: \t%f \n" +
+                            "\t-Sensor List: \t%s \n" +
+                            "\t-Location: \t\t%s \n", this.name, this.S_Max, this.req_sensors, this.location);
+        }
     }
 
     public void complete(Subtask j){
@@ -447,6 +536,18 @@ public class Task {
         }
     }
 
+    private AbsoluteDate getDate( JSONObject dateData) throws OrekitException {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        int YY = Integer.parseInt( dateData.get("Year").toString() );
+        int MM = Integer.parseInt( dateData.get("Month").toString() );
+        int DD = Integer.parseInt( dateData.get("Day").toString() );
+        int hh = Integer.parseInt( dateData.get("Hour").toString() );
+        int mm = Integer.parseInt( dateData.get("Minute").toString() );
+        double ss = (double) dateData.get("Second");
+
+        return new AbsoluteDate(YY, MM, DD, hh, mm, ss, utc);
+    }
+
     /**
      * Getters and Setters
      */
@@ -456,6 +557,9 @@ public class Task {
     public double[][] getT(){ return T; }
     public boolean getCompleteness(){ return this.completeness; }
     public ArrayList<Double> getLocation(){ return this.location; }
+    public double getLat(){ return this.location.get(0); }
+    public double getLon(){ return this.location.get(1); }
+    public double getAlt(){ return this.location.get(2); }
     public double getLambda(){ return this.lambda; }
     public double getGamma(){ return this.gamma; }
     public double getS_Max(){ return this.S_Max; }

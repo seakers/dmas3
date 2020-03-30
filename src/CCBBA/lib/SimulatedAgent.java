@@ -1,10 +1,13 @@
 package CCBBA.lib;
 
+import madkit.action.SchedulingAction;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
+import madkit.message.SchedulingMessage;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.orekit.errors.OrekitException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +29,8 @@ public class SimulatedAgent extends AbstractAgent {
     private ArrayList<String> sensorList;                   // list of available sensors
     private ArrayList<Double> position;                     // agent position
     private ArrayList<Double> initialPosition;              // initial agent position
+    private OrbitalData agentOrbit;                         // initial agent position in orbit
+    private boolean maneuver;                               // orbit maneuver capability
     private ArrayList<Double> velocity;                     // agent velocity
     private double speed;                                   // agent speed
     private double mass;                                    // agent mass
@@ -108,6 +113,29 @@ public class SimulatedAgent extends AbstractAgent {
 
         // Initiate iteration results
         this.localResults = new IterationResults(this);
+
+        // Propagate Orbit and Access times
+        if(this.environment.getWorldType().equals("3D_Earth")) {
+            if(this.maneuver){
+                // -agent has maneuver capabilities
+                try {
+                    throw new Exception("ERROR: orbit manouvers not yet supported.");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
+                    sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
+                }
+            }
+            else {
+                // -agent does not have maneuver capabilities, propagate orbit in advance
+                try {
+                    getLogger().config("Propagating fixed orbit...");
+                    this.agentOrbit.propagateOrbit(this.localResults, environment.getStartDate(), environment.getEndDate(), this.del_t);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         getLogger().config("Agent created\n" + this.toString() );
     }
@@ -555,27 +583,45 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     private void checkInputFormat(JSONObject inputAgentData, JSONObject inputData) throws Exception {
+        // checks if input file contains all required information necessary for scenario simulation
         String worldType = ((JSONObject) ((JSONObject) inputData.get("Scenario")).get("World")).get("Type").toString();
-
 
         if (inputData.get("TimeStep") == null) {
             throw new NullPointerException("INPUT ERROR: Sim time-step not contained in input file");
-        }
-        else if (inputAgentData.get("Name") == null) {
+        } else if (inputAgentData.get("Name") == null) {
             throw new NullPointerException("INPUT ERROR: Agent name not contained in input file");
         } else if (inputAgentData.get("SensorList") == null) {
             throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " sensor list not contained in input file.");
         } else if (inputAgentData.get("Position") == null) {
-            if (inputAgentData.get("Orbital Parameters") == null) {
-                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " starting position or orbit not contained in input file.");
-            } else {
-                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " starting position not contained in input file.");
-            }
+            throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " starting position not contained in input file.");
         } else if (worldType.equals("3D_Grid") || worldType.equals("2D_Grid")) {
             if (inputAgentData.get("Speed") == null) {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " speed not contained in input file.");
             } else if (inputAgentData.get("Velocity") != null) {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + "'s velocity does not match world type selected.");
+            }
+        } else if (worldType.equals("3D_Earth")){
+            if ( ( (JSONObject) inputAgentData.get("Position")).get("h") == null) {
+                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " orbit altitude not contained in input file.");
+            }
+            else if ( ( (JSONObject) inputAgentData.get("Position")).get("e") == null) {
+                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " orbit eccentricity not contained in input file.");
+            }
+            else if ( ( (JSONObject) inputAgentData.get("Position")).get("i") == null) {
+                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " orbit inclination not contained in input file.");
+            }
+            else if ( ( (JSONObject) inputAgentData.get("Position")).get("PA") == null) {
+                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " orbit argument of perigee not contained in input file.");
+            }
+            else if ( ( (JSONObject) inputAgentData.get("Position")).get("RAAN") == null) {
+                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " orbit RAAN not contained in input file.");
+            }
+            else if ( ( (JSONObject) inputAgentData.get("Position")).get("Anomaly") == null) {
+                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " orbit true anomaly not contained in input file.");
+            }
+
+            if ( inputAgentData.get("Maneuver") == null ) {
+                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " orbit maneuver capability not contained in input file.");
             }
         }
 
@@ -616,61 +662,74 @@ public class SimulatedAgent extends AbstractAgent {
         this.position = new ArrayList<>();
         this.initialPosition = new ArrayList<>();
         if(inputAgentData.get("Position").getClass().equals(inputAgentData.get("Resources").getClass())){
-            // random position
-            JSONObject positionData = (JSONObject) inputAgentData.get("Position");
-            String worldType = worldData.get("Type").toString();
+            if (worldData.get("Type").equals("3D_Earth")) {
+                // initial position is set in orbital parameters
+                JSONObject positionData = (JSONObject) inputAgentData.get("Position");
+                double h = (double) positionData.get("h");
+                double e = (double) positionData.get("e");
+                double i = (double) positionData.get("i");
+                double w = (double) positionData.get("PA");
+                double Om = (double) positionData.get("RAAN");
+                double v = (double) positionData.get("Anomaly");
 
-            if(positionData.get("Dist").toString().equals("Linear")){
-                // ---Linear distribution
-                if( worldType.equals("2D_Grid") ){
-                    // ---Task is in a 2D grid world
-                    JSONArray boundsData = (JSONArray) worldData.get("Bounds");
-                    double x_max = (double) boundsData.get(0);
-                    double y_max = (double) boundsData.get(1);
+                this.agentOrbit = new OrbitalData(h, e, i, w, Om, v);
+            }
+            else {
+                // random position
+                JSONObject positionData = (JSONObject) inputAgentData.get("Position");
+                String worldType = worldData.get("Type").toString();
 
-                    double x = x_max * Math.random();
-                    double y = y_max * Math.random();
+                if (positionData.get("Dist").toString().equals("Linear")) {
+                    // ---Linear distribution
+                    if (worldType.equals("2D_Grid")) {
+                        // ---Task is in a 2D grid world
+                        JSONArray boundsData = (JSONArray) worldData.get("Bounds");
+                        double x_max = (double) boundsData.get(0);
+                        double y_max = (double) boundsData.get(1);
 
-                    this.position.add(x);
-                    this.position.add(y);
-                    this.position.add(0.0);
-                    this.initialPosition.add(x);
-                    this.initialPosition.add(y);
-                    this.initialPosition.add(0.0);
-                }
-                else if(worldType.equals("3D_Grid")){
-                    // ---Task is in a 3D grid world
-                    JSONArray boundsData = (JSONArray) worldData.get("Bounds");
-                    double x_max = (double) boundsData.get(0);
-                    double y_max = (double) boundsData.get(1);
-                    double z_max = (double) boundsData.get(2);
+                        double x = x_max * Math.random();
+                        double y = y_max * Math.random();
 
-                    double x = x_max * Math.random();
-                    double y = y_max * Math.random();
-                    double z = z_max * Math.random();
+                        this.position.add(x);
+                        this.position.add(y);
+                        this.position.add(0.0);
+                        this.initialPosition.add(x);
+                        this.initialPosition.add(y);
+                        this.initialPosition.add(0.0);
+                    } else if (worldType.equals("3D_Grid")) {
+                        // ---Task is in a 3D grid world
+                        JSONArray boundsData = (JSONArray) worldData.get("Bounds");
+                        double x_max = (double) boundsData.get(0);
+                        double y_max = (double) boundsData.get(1);
+                        double z_max = (double) boundsData.get(2);
 
-                    this.position.add(x);
-                    this.position.add(y);
-                    this.position.add(z);
-                    this.initialPosition.add(x);
-                    this.initialPosition.add(y);
-                    this.initialPosition.add(z);
-                }
+                        double x = x_max * Math.random();
+                        double y = y_max * Math.random();
+                        double z = z_max * Math.random();
+
+                        this.position.add(x);
+                        this.position.add(y);
+                        this.position.add(z);
+                        this.initialPosition.add(x);
+                        this.initialPosition.add(y);
+                        this.initialPosition.add(z);
+                    }
 //                else if(worldType.equals("3D_Earth")){
 //                    // ---Task is on earth's surface
 //                    // IMPLEMENTATION NEEDED
 //                }
-                else{
-                    throw new Exception("INPUT ERROR:" + this.name + " world not supported.");
-                }
+                    else {
+                        throw new Exception("INPUT ERROR:" + this.name + " world not supported.");
+                    }
 
-            }
+                }
 //            else if(locationDist.equals("Normal")){
 //                // ---Normal distribution
 //                // NEEDS IMPLEMENTATION
 //            }
-            else{
-                throw new Exception("INPUT ERROR:" + this.name + " location distribution not supported.");
+                else {
+                    throw new Exception("INPUT ERROR:" + this.name + " location distribution not supported.");
+                }
             }
         }
         else{
@@ -683,14 +742,34 @@ public class SimulatedAgent extends AbstractAgent {
         }
 
         // -Speed or Velocity
-        if (inputAgentData.get("Speed") != null) {
-            this.speed = (double) inputAgentData.get("Speed");
-        } else if (inputAgentData.get("Velocity") != null) {
-            this.velocity = new ArrayList<>();
-            JSONArray velocityData = (JSONArray) inputAgentData.get("Velocity");
-            for (Object velocityDatum : velocityData) {
-                this.velocity.add((double) velocityDatum);
+        if (worldData.get("Type").equals("3D_Grid") || worldData.get("Type").equals("2D_Grid")) {
+            if (inputAgentData.get("Speed") != null) {
+                this.speed = (double) inputAgentData.get("Speed");
+            } else if (inputAgentData.get("Velocity") != null) {
+                this.velocity = new ArrayList<>();
+                JSONArray velocityData = (JSONArray) inputAgentData.get("Velocity");
+                for (Object velocityDatum : velocityData) {
+                    this.velocity.add((double) velocityDatum);
+                }
             }
+        }
+        else if( (worldData.get("Type").equals("3D_Earth"))
+                && (!inputAgentData.get("Position").getClass().equals(inputAgentData.get("Resources").getClass())) ){
+            // initial orbit momentum
+            if (inputAgentData.get("Velocity") != null) {
+                this.velocity = new ArrayList<>();
+                JSONArray velocityData = (JSONArray) inputAgentData.get("Velocity");
+                for (Object velocityDatum : velocityData) {
+                    this.velocity.add((double) velocityDatum);
+                }
+            } else {
+                throw new Exception("INPUT ERROR:" + this.name + " orbit velocity vector not contained in input file.");
+            }
+        }
+
+        // -Maneuver capability
+        else if(worldData.get("Type").equals("3D_Earth")) {
+            this.maneuver = inputAgentData.get("Maneuver").equals("ON");
         }
 
         // -Mass

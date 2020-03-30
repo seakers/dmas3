@@ -39,6 +39,7 @@ public class Driver extends AbstractAgent {
 //        inputSimBatch("figure_3_grid/figure3_grid_INT.json");
 //        inputSimBatch("figure_3_debug/figure3_travel_debug.json");
 //        inputSimBatch("appendix_b/AppendixB_batch.json");
+        inputSimBatch("orekit/orekit_batch.json");
 
         if(inputBatch != null) {
             for (int i = 0; i < inputBatch.size(); i++) {

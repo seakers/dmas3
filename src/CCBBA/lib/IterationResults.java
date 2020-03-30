@@ -476,7 +476,6 @@ public class IterationResults {
         return this.getIterationDatum(datum.getJ());
     }
 
-
     public String toString(){
         StringBuilder output = new StringBuilder("#j\ty\t\tz\t\t\t\t\ttz\t\tc\t\ts\t\th\tv\tw_any\tw_solo\tw_all\tscore\tcost\tcomp\n" +
                                    "========================================================================================================\n");

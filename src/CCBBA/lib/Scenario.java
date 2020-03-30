@@ -6,7 +6,14 @@ import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
+import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -26,6 +33,8 @@ public class Scenario extends Watcher {
     private double t_0;
     private double del_t;
     private double GVT;
+    private AbsoluteDate startDate;
+    private AbsoluteDate endDate;
 
     // 2D or 3D grid world
     private ArrayList<Double> bounds = new ArrayList<>();
@@ -83,16 +92,41 @@ public class Scenario extends Watcher {
                 getLogger().config("3D grid world configured with bounds (" + x_max + ", " + y_max + ", " + z_max +")");
             }
             else if( worldType.toString().equals("3D_Earth") ){
-                // set up Orekit 3D world
-                
+                // set up Orekit 3D world tasks
+                File orekitData = new File("./src/orekit-data");
+                DataProvidersManager manager = DataProvidersManager.getInstance();
+                try {
+                    manager.addProvider(new DirectoryCrawler(orekitData));
+                } catch (OrekitException e) {
+                    e.printStackTrace();
+                }
+                // set up start and end dates
+                JSONObject startDateData = (JSONObject) worldData.get("StartDate");
+                JSONObject endDateData = (JSONObject) worldData.get("EndDate");
 
+                if(startDateData == null){
+                    throw new Exception("INPUT ERROR: start-date not included in input file.");
+                }
+                else if(endDateData == null){
+                    throw new Exception("INPUT ERROR: end-date not included in input file.");
+                }
+
+                setStartDate(startDateData);
+                setEndDate(endDateData);
+
+                getLogger().config("3D Earth world configured");
             }
             else{
                 throw new Exception("INPUT ERROR: World type not supported.");
             }
 
             // Start time
-            this.t_0 = (double) this.worldData.get("t_0");
+            if(startDate == null) {
+                this.t_0 = (double) this.worldData.get("t_0");
+            }
+            else{
+                this.t_0 = 0.0;
+            }
             this.GVT = this.t_0;
             this.del_t = (double) simData.get("TimeStep");
 
@@ -137,14 +171,6 @@ public class Scenario extends Watcher {
     }
 
     private void updateTime(){
-//        List<Message> receivedTimes = nextMessages(null);
-//
-//        for(int i = 0; i < receivedTimes.size(); i++){
-//            TimeMessage time = (TimeMessage) receivedTimes.get(i);
-//            if(time.getTime() > this.GVT){
-//                this.GVT = time.getTime();
-//            }
-//        }
         this.GVT += this.del_t;
     }
 
@@ -196,6 +222,30 @@ public class Scenario extends Watcher {
         getLogger().setLevel(this.loggerLevel);
     }
 
+    private void setStartDate(JSONObject startDateData) throws OrekitException {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        int YY = Integer.parseInt( startDateData.get("Year").toString() );
+        int MM = Integer.parseInt( startDateData.get("Month").toString() );
+        int DD = Integer.parseInt( startDateData.get("Day").toString() );
+        int hh = Integer.parseInt( startDateData.get("Hour").toString() );
+        int mm = Integer.parseInt( startDateData.get("Minute").toString() );
+        double ss = (double) startDateData.get("Second");
+
+        startDate = new AbsoluteDate(YY, MM, DD, hh, mm, ss, utc);
+    }
+
+    private void setEndDate(JSONObject endDateData) throws OrekitException {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        int YY = Integer.parseInt( endDateData.get("Year").toString() );
+        int MM = Integer.parseInt( endDateData.get("Month").toString() );
+        int DD = Integer.parseInt( endDateData.get("Day").toString() );
+        int hh = Integer.parseInt( endDateData.get("Hour").toString() );
+        int mm = Integer.parseInt( endDateData.get("Minute").toString() );
+        double ss = (double) endDateData.get("Second");
+
+        endDate = new AbsoluteDate(YY, MM, DD, hh, mm, ss, utc);
+    }
+
     /**
      * Getters and Setters
      */
@@ -204,6 +254,8 @@ public class Scenario extends Watcher {
     public double getT_0(){ return this.t_0; }
     public double getGVT(){ return this.GVT; }
     public String getWorldType(){ return this.worldType; }
+    public AbsoluteDate getStartDate(){ return this.startDate; }
+    public AbsoluteDate getEndDate(){ return this.endDate; }
 }
 
 
