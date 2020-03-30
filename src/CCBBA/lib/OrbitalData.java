@@ -1,6 +1,7 @@
 package CCBBA.lib;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -18,6 +19,7 @@ import org.orekit.time.*;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import seakers.orekit.object.CoveragePoint;
 import seakers.orekit.util.OrekitConfig;
 
 import java.io.*;
@@ -37,7 +39,7 @@ public class OrbitalData {
     private String dataFileName;
     private HashMap<Subtask, String> taskFileNames;
     private HashMap<AbsoluteDate, PVCoordinates> pvData;
-    private HashMap<Subtask, HashMap<AbsoluteDate, Boolean>> accessData;
+    private HashMap<Task, HashMap<AbsoluteDate, Boolean>> accessData;
     private ArrayList<AbsoluteDate> dateData;
 
     public OrbitalData(double h, double e, double i, double w, double Om, double v){
@@ -99,7 +101,7 @@ public class OrbitalData {
         }
 
         // -coverage analysis
-        calculateCoverage();
+        calculateCoverage(localResults);
 
         int x = 1;
     }
@@ -255,11 +257,11 @@ public class OrbitalData {
 
 
             //define orbit
-            double mu = Constants.WGS84_EARTH_MU;
             double latitude = datum.getJ().getParentTask().getLat();
             double longitude = datum.getJ().getParentTask().getLon();
             double altitude = datum.getJ().getParentTask().getAlt();
             GeodeticPoint station = new GeodeticPoint(latitude, longitude, altitude);
+            CoveragePoint taskLocation = new CoveragePoint( earth, station, datum.getJ().getName());
             TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
 
             // propagate by step-size
@@ -343,8 +345,39 @@ public class OrbitalData {
         }
     }
 
-    private void calculateCoverage(){
-        
+    private void calculateCoverage(IterationResults localResults){
+        for(IterationDatum datum : localResults.getResults()){
+            Task parentTask = datum.getJ().getParentTask();
+            if(!accessData.containsKey(parentTask)){
+                // no coverage calculated yet,
+                HashMap<AbsoluteDate, Boolean> taskCoverage = new HashMap<>();
+
+                for(AbsoluteDate date : dateData){
+                    PVCoordinates satPV = pvData.get(date);
+                    PVCoordinates taskPV = datum.getTaskOrbitData(date);
+
+                    taskCoverage.put(date, isInFOV(satPV, taskPV));
+                }
+
+                accessData.put(parentTask, taskCoverage);
+            }
+        }
+    }
+
+    private boolean isInFOV(PVCoordinates satPV, PVCoordinates taskPV){
+        Vector3D satPos = satPV.getPosition();
+        Vector3D taskPos = taskPV.getPosition();
+        double Re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+
+        double th = Math.acos( satPos.dotProduct(taskPos) / (satPos.getNorm() * taskPos.getNorm()) );
+        double th_1 = Math.acos( Re / satPos.getNorm() );
+        double th_2 = Math.acos( Re / taskPos.getNorm() );
+        double th_max = th_1 + th_2;
+
+        th = FastMath.toDegrees(th);
+        th_max = FastMath.toDegrees(th_max);
+
+        return th <= th_max;
     }
 
     public double getA() {
