@@ -261,7 +261,6 @@ public class OrbitalData {
             double longitude = datum.getJ().getParentTask().getLon();
             double altitude = datum.getJ().getParentTask().getAlt();
             GeodeticPoint station = new GeodeticPoint(latitude, longitude, altitude);
-            CoveragePoint taskLocation = new CoveragePoint( earth, station, datum.getJ().getName());
             TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
 
             // propagate by step-size
@@ -269,7 +268,7 @@ public class OrbitalData {
             printWriter = new PrintWriter(fileWriter);
             while (extrapDate.compareTo(endDate) <= 0)  {
                 // package data
-                PVCoordinates pvStation = inertialFrame.getTransformTo(staF, extrapDate).transformPVCoordinates( pvData.get(extrapDate) );
+                PVCoordinates pvStation = staF.getPVCoordinates(extrapDate, inertialFrame);
                 String position = String.format("%f\t%f\t%f\t", pvStation.getPosition().getX(), pvStation.getPosition().getY(), pvStation.getPosition().getZ() );
                 String velocity = String.format("%f\t%f\t%f\t", pvStation.getVelocity().getX(), pvStation.getVelocity().getY(), pvStation.getVelocity().getZ() );
                 String acceleration = String.format("%f\t%f\t%f", pvStation.getAcceleration().getX(), pvStation.getAcceleration().getY(), pvStation.getAcceleration().getZ() );
