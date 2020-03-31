@@ -2,12 +2,14 @@ package CCBBA.lib;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.moeaframework.util.tree.Abs;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
+import org.orekit.estimation.measurements.PV;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -40,7 +42,11 @@ public class OrbitalData {
     private HashMap<Subtask, String> taskFileNames;
     private HashMap<AbsoluteDate, PVCoordinates> pvData;
     private HashMap<Task, HashMap<AbsoluteDate, Boolean>> accessData;
+    private HashMap<Task, HashMap<AbsoluteDate, PVCoordinates>> groundTrack;
     private ArrayList<AbsoluteDate> dateData;
+
+    //must use IERS_2003 and EME2000 frames to be consistent with STK
+    private Frame inertialFrame = FramesFactory.getEME2000();
 
     public OrbitalData(double h, double e, double i, double w, double Om, double v){
         this.a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + h;
@@ -58,7 +64,7 @@ public class OrbitalData {
         accessData = new HashMap<>();
     }
 
-    public void propagateOrbit(IterationResults localResults, AbsoluteDate startDate, AbsoluteDate endDate, double del_t) throws Exception {
+    public void propagateOrbit(double fov, IterationResults localResults, AbsoluteDate startDate, AbsoluteDate endDate, double del_t) throws Exception {
         // generate orbit data file from orbital parameters and simulation start and end times
         DateTimeComponents startComp = startDate.getComponents(0);
         String start_date = startComp.getDate().toString();
@@ -101,7 +107,10 @@ public class OrbitalData {
         }
 
         // -coverage analysis
-        calculateCoverage(localResults);
+        calculateCoverage(fov, localResults);
+
+        // -calculate ground track
+        calculateGroundTrack(localResults);
 
         int x = 1;
     }
@@ -134,9 +143,6 @@ public class OrbitalData {
 
             //initializes the look up tables for planteary position (required!)
             OrekitConfig.init(4);
-
-            //must use IERS_2003 and EME2000 frames to be consistent with STK
-            Frame inertialFrame = FramesFactory.getEME2000();
 
             //define orbit
             double mu = Constants.WGS84_EARTH_MU;
@@ -257,7 +263,6 @@ public class OrbitalData {
 
             //must use IERS_2003 and EME2000 frames to be consistent with STK
             Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-            Frame inertialFrame = FramesFactory.getEME2000();
             BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                     Constants.WGS84_EARTH_FLATTENING,
                     earthFrame);
@@ -267,8 +272,8 @@ public class OrbitalData {
             double latitude = datum.getJ().getParentTask().getLat();
             double longitude = datum.getJ().getParentTask().getLon();
             double altitude = datum.getJ().getParentTask().getAlt();
-            GeodeticPoint station = new GeodeticPoint(latitude, longitude, altitude);
-            TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
+            GeodeticPoint taskLocation = new GeodeticPoint(latitude, longitude, altitude);
+            TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "task location");
 
             // propagate by step-size
             AbsoluteDate extrapDate = startDate;
@@ -356,7 +361,7 @@ public class OrbitalData {
         }
     }
 
-    private void calculateCoverage(IterationResults localResults){
+    private void calculateCoverage(double fov, IterationResults localResults){
         for(IterationDatum datum : localResults.getResults()){
             Task parentTask = datum.getJ().getParentTask();
             if(!accessData.containsKey(parentTask)){
@@ -367,7 +372,7 @@ public class OrbitalData {
                     PVCoordinates satPV = pvData.get(date);
                     PVCoordinates taskPV = datum.getTaskOrbitData(date);
 
-                    taskCoverage.put(date, isInFOV(satPV, taskPV));
+                    taskCoverage.put(date, isInFOV(fov, satPV, taskPV));
                 }
 
                 accessData.put(parentTask, taskCoverage);
@@ -375,7 +380,47 @@ public class OrbitalData {
         }
     }
 
-    private boolean isInFOV(PVCoordinates satPV, PVCoordinates taskPV){
+    private void calculateGroundTrack(IterationResults localResults) throws OrekitException {
+        this.groundTrack = new HashMap<>();
+
+        for(IterationDatum datum : localResults.getResults()){
+            Task parentTask = datum.getJ().getParentTask();
+            if(!groundTrack.containsKey(parentTask)){
+                // define task location
+                double latitude = datum.getJ().getParentTask().getLat();
+                double longitude = datum.getJ().getParentTask().getLon();
+                double altitude = datum.getJ().getParentTask().getAlt();
+
+                // define frames
+                Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+                BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                        Constants.WGS84_EARTH_FLATTENING,
+                        earthFrame);
+                GeodeticPoint taskLocation = new GeodeticPoint(latitude, longitude, altitude);
+                TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "task location");
+
+                HashMap<AbsoluteDate, PVCoordinates> taskTrack = new HashMap<>();
+
+                for(AbsoluteDate date : dateData){
+                    PVCoordinates satPV = pvData.get(date).normalize();
+                    Vector3D satPos = satPV.getPosition();
+                    Vector3D satVel = satPV.getVelocity();
+                    Vector3D satAcc = satPV.getAcceleration();
+
+                    Vector3D stepPos = satPos.scalarMultiply( Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
+                    PVCoordinates stepPV = new PVCoordinates(stepPos, satVel, satAcc);
+
+//                    PVCoordinates track = inertialFrame.getTransformTo(staF, date).transformPVCoordinates(stepPV);
+//                    taskTrack.put(date, track);
+                    taskTrack.put(date, stepPV);
+                }
+
+                groundTrack.put(parentTask, taskTrack);
+            }
+        }
+    }
+
+    private boolean isInFOV(double fov, PVCoordinates satPV, PVCoordinates taskPV){
         Vector3D satPos = satPV.getPosition();
         Vector3D taskPos = taskPV.getPosition();
         double Re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
@@ -383,12 +428,69 @@ public class OrbitalData {
         double th = Math.acos( satPos.dotProduct(taskPos) / (satPos.getNorm() * taskPos.getNorm()) );
         double th_1 = Math.acos( Re / satPos.getNorm() );
         double th_2 = Math.acos( Re / taskPos.getNorm() );
+                if(Double.isNaN(th_2)){ th_2 = 0.0; }
         double th_max = th_1 + th_2;
 
-        th = FastMath.toDegrees(th);
-        th_max = FastMath.toDegrees(th_max);
+        double th_disp = FastMath.toDegrees(th);
+        double th_max_disp = FastMath.toDegrees(th_max);
+        double fov_disp = FastMath.toDegrees(fov);
 
-        return th <= th_max;
+        boolean isInLineOfSight = (th <= th_max);
+        boolean isInSensorFieldOfView = ((FastMath.PI/2 - th_1) <= fov);
+
+        return isInLineOfSight && isInSensorFieldOfView;
+//        return isInLineOfSight;
+    }
+
+    public boolean hasAccessTo(Subtask j){
+        // checks if agent has access to task in its orbit
+        Task parentTask = j.getParentTask();
+
+        for(AbsoluteDate date : dateData){
+            if( accessData.get(parentTask).get(date) ){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public ArrayList<AccessTime> getAccessTimes(Subtask j){
+        // returns a list of all access times from a specific time
+        Task parentTask = j.getParentTask();
+        ArrayList<AccessTime> accessTimes = new ArrayList<>();
+
+        AbsoluteDate accesStart = null;
+        AbsoluteDate accessEnd = null;
+
+        boolean prevAccess = false;
+        boolean currAccess = false;
+        for(AbsoluteDate date : dateData){
+            currAccess = accessData.get(parentTask).get(date);
+
+            if(!prevAccess && currAccess){
+                // access started at this time
+                accesStart = date;
+            }
+            if(prevAccess && !currAccess){
+                // access ended at this time
+                accessEnd = date;
+            }
+
+            if(accesStart != null && accessEnd != null){
+                // Access time window found
+                AccessTime newAccessTime = new AccessTime(accesStart, accessEnd);
+                accessTimes.add(newAccessTime);
+
+                accesStart = null;
+                accessEnd = null;
+            }
+
+            // save previous iteration
+            prevAccess = currAccess;
+        }
+
+        return accessTimes;
     }
 
     public double getA() {
@@ -406,6 +508,8 @@ public class OrbitalData {
     public double getW() { return w; }
     public double getOm() { return Om; }
     public double getV() { return v; }
+    public HashMap<AbsoluteDate, PVCoordinates> getGroundTrack(Subtask j){ return this.groundTrack.get(j.getParentTask()); }
+    public ArrayList<AbsoluteDate> getDateData(){ return this.dateData; }
 
     public void setA(double a) {
         this.a = a;

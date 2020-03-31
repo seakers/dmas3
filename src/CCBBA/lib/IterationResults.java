@@ -231,6 +231,12 @@ public class IterationResults {
             // if I have already bid on a task on my bundle, I can't bid
             return false;
         }
+        else if(biddingAgent.getEnvironment().getWorldType().equals("3D_Earth")){
+            if(!biddingAgent.getAgentOrbit().hasAccessTo(j)){
+                // if I don't have access time to task, I can't bid
+                return false;
+            }
+        }
         else {
             // if dependent tasks have been completed, check if j meets time requirements
             ArrayList<Subtask> completedSubtasks = new ArrayList<>();

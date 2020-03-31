@@ -1,7 +1,13 @@
 package CCBBA.lib;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.estimation.measurements.PV;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static java.lang.Math.*;
 import static java.lang.Math.exp;
@@ -52,23 +58,172 @@ public class PathUtility{
     }
 
     void calcSubtaskUtility(Subtask j, ArrayList<Subtask> path, ArrayList<ArrayList<SimulatedAgent>> omega, SimulatedAgent agent) throws Exception {
-        double t_a;
-        ArrayList<Double> x_a;
+        double t_a = 0;
+        ArrayList<Double> x_a = new ArrayList<>(3);
+
+        double S = 0.0;
+        double sigmoid = 0.0;
+        double g = 0.0;
+        double p = 0.0;
+        double c_v = 0.0;
+        double n = 0.0;
 
         if(j.getParentTask().getGamma() == Double.NEGATIVE_INFINITY){
-            x_a = j.getParentTask().getLocation();
-            t_a = calcTimeOfArrival(path, j, agent, x_a);
+            if(agent.getEnvironment().getWorldType().equals("2D_World") || agent.getEnvironment().getWorldType().equals("3D_World")){
+                x_a = j.getParentTask().getLocation();
+                t_a = calcTimeOfArrival(path, j, agent, x_a);
+
+                S = calcSubtaskScore(j, t_a, agent);
+                sigmoid = calcSigmoid(j, x_a);
+                g = calcTravelCost(path, j, x_a, agent);
+                p = calcMergePenalty(path, j, agent, omega);
+                c_v = calcSubtaskCost(j, agent);
+                n = calcCostNoise(j);
+            }
+            else if(agent.getEnvironment().getWorldType().equals("3D_earth")){
+                throw new Exception("ERROR: maneuvering satellites not yet supported for this world-type");
+            }
+            else{
+                throw new Exception("ERROR: optimal measurement location determination not yet supported for this world-type.");
+            }
         }
         else{
-            throw new Exception("ERROR: optimal measurement location determination not yet supported.");
-        }
+            if(agent.getEnvironment().getWorldType().equals("3D_earth")){
+                if(j.getParentTask().getGamma() == Double.NEGATIVE_INFINITY){
+                    throw new Exception("ERROR: optimal measurement location determination not yet supported for set gamma value.");
+                }
+                if(!agent.getManeuver()){
+                    // agent cant maneuver, find optimal place and time for measurement
+                    int i_j = path.indexOf(j);
+                    AbsoluteDate simStartDate = agent.getEnvironment().getStartDate();
+                    AbsoluteDate prevPathSubtaskDate = agent.getEnvironment().getStartDate().shiftedBy(tz.get(i_j));
+                    ArrayList<AccessTime> agentAccessTimes = agent.getAgentOrbit().getAccessTimes(j);
 
-        double S = calcSubtaskScore(path, j, t_a, x_a, agent);
-        double sigmoid = calcSigmoid(path, j, agent, x_a);
-        double g = calcTravelCost(path, j, x_a, agent);
-        double p = calcMergePenalty(path, j, agent, omega);
-        double c_v = calcSubtaskCost(j, g, p, agent);
-        double n = calcCostNoise(j);
+                    // agent might have one or multiple accesses to ground point. Find optimal measurement
+                    double utilityAccessMax = 0.0;
+                    for(AccessTime agentAccess : agentAccessTimes){
+                        // calculate best measurement time and position for each access time
+                        AbsoluteDate start = agentAccess.getAccessStart();
+                        AbsoluteDate end = agentAccess.getAccessEnd();
+
+                        if( prevPathSubtaskDate.compareTo(start) > 0){
+                            if( prevPathSubtaskDate.compareTo(end) > 0) {
+                                // access window is before last time of arrival
+                                continue;
+                            }
+                            else{
+                                // access window start date is before last time of arrival but end date is still after last time of arrival
+                                start = prevPathSubtaskDate;
+                            }
+                        }
+
+                        // define access window
+                        int i_start = agent.getAgentOrbit().getDateData().indexOf(start);
+                        int i_end = agent.getAgentOrbit().getDateData().indexOf(end);
+
+                        // for each access time within access window, find the best utility
+                        double localAccessMax = 0.0;
+                        double S_local = 0.0, sigmoid_local = 0.0, p_local = 0.0, c_v_local = 0.0, n_local = 0.0;
+                        for(int i = i_start; i <= i_end; i++){
+                            // get task arrival time
+                            AbsoluteDate date_i = agent.getAgentOrbit().getDateData().get(i);
+                            double t_quickest = date_i.durationFrom(simStartDate);
+
+                            // get task measurement location
+                            PVCoordinates pv_a_local = agent.getAgentOrbit().getGroundTrack(j).get(date_i);
+                            ArrayList<Double> x_a_local = new ArrayList<>();
+                            x_a_local.add(pv_a_local.getPosition().getX());
+                            x_a_local.add(pv_a_local.getPosition().getY());
+                            x_a_local.add(pv_a_local.getPosition().getZ());
+
+                            // check if time constraints exist
+                            ArrayList<Subtask> timeConstraints = getTimeConstraints(j, path, agent);
+
+                            if( timeConstraints.size() > 0 ){
+                                // if there are time constraints, consider them
+                                Task parentTask = j.getParentTask();
+                                double[][] T = parentTask.getT();
+                                double maxTz = Double.NEGATIVE_INFINITY;
+                                int i_max = 0;
+
+                                for (Subtask timeConstraint : timeConstraints) {
+                                    double thisTz;
+                                    boolean pathContainsTimeConstraint = path.contains( timeConstraint );
+                                    boolean isBehindInPath =  path.indexOf(j) > path.indexOf( timeConstraint );
+
+                                    if( pathContainsTimeConstraint && isBehindInPath ){
+                                        int i_const = path.indexOf( timeConstraint );
+                                        thisTz = this.tz.get(i_const);
+                                    }
+                                    else {
+                                        thisTz = agent.getLocalResults().getIterationDatum(timeConstraint).getTz();
+                                    }
+
+                                    if (thisTz > maxTz) {
+                                        maxTz = thisTz;                     // <- slowest time of arrival in the coalition
+                                        i_max = timeConstraint.getI_q();
+                                    }
+                                }
+
+                                // looks to maximize utility by getting there as quickly as correlation time will allow
+                                double t_corr = T[j.getI_q()][ i_max ];
+                                if(abs( maxTz - t_quickest ) >= t_corr){
+                                    // measurement is taking place outside of correlation time
+                                    if( t_quickest > maxTz){
+                                        // I am the slowest one in the coalition, the other agents must adjust to my time
+                                        t_a = t_quickest;
+                                    }
+                                    else{
+                                        // I am getting there too quickly for other dependent agents, I must look for another measurement time
+                                        t_a = - 1.0;
+                                    }
+                                }
+                            }
+                            else{
+                                // no time constraints, get there as soon as possible
+                                t_a = t_quickest;
+                            }
+
+                            double S_access = 0.0, sigmoid_access = 0.0, p_access = 0.0, c_v_access = 0.0, n_access = 0.0;
+                            if(t_a >= 0.0) {
+                                // if time constraints were able to be met, calc utility. Else, utility will be set to 0.0
+                                S_access = calcSubtaskScore(j, t_a, agent);
+                                sigmoid_access = calcSigmoid(j, agent, pv_a_local, date_i);
+                                p_access = calcMergePenalty(path, j, agent, omega);
+                                c_v_access = calcSubtaskCost(j, agent);
+                                n_access = calcCostNoise(j);
+                            }
+
+                            double localUtility = S_access + sigmoid_access - p_access - c_v_access - n_access;
+
+                            if(localUtility > localAccessMax){
+                                localAccessMax = localUtility;
+                                S_local = S_access;
+                                sigmoid_local = sigmoid_access;
+                                p_local = p_access;
+                                c_v_local = c_v_access;
+                                n_local = n_access;
+                            }
+                        }
+
+                        if(localAccessMax > utilityAccessMax){
+                            utilityAccessMax = localAccessMax;
+                            S = S_local;
+                            sigmoid = sigmoid_local;
+                            p = p_local;
+                            c_v = c_v_local;
+                            n = n_local;
+                        }
+                    }
+                }
+                else{
+                    throw new Exception("ERROR: optimal measurement location not yet supported for maneuvering satellites");
+                }
+            }
+            else{
+                throw new Exception("ERROR: optimal measurement location determination not yet supported for this world-type.");
+            }
+        }
 
         this.utility += (S/sigmoid - g - p - c_v - n);
         this.cost += (g + p + c_v);
@@ -241,7 +396,7 @@ public class PathUtility{
         return timeConstraints;
     }
 
-    private double calcSubtaskScore(ArrayList<Subtask> path, Subtask j, double t_a, ArrayList<Double> x_a, SimulatedAgent agent){
+    private double calcSubtaskScore(Subtask j, double t_a, SimulatedAgent agent){
         double S_max = j.getParentTask().getS_Max();
         double K = j.getK();
         double e = calcUrgency(j, t_a, agent);
@@ -275,61 +430,17 @@ public class PathUtility{
         else return (1.0 / 3.0);
     }
 
-    private double calcSigmoid(ArrayList<Subtask> path, Subtask j, SimulatedAgent agent, ArrayList<Double> x_a){
-        int i = path.indexOf(j);
+    private double calcSigmoid(Subtask j, ArrayList<Double> x_a){
         double delta_x = 0.0;
         ArrayList<Double> x_i;
         double gamma = j.getParentTask().getGamma();
         double e;
-        int[][] D = j.getParentTask().getD();
 
         if( gamma == Double.NEGATIVE_INFINITY ) {
             return 1;
         }
         else {
-            if(i == 0){ // task is at the beginning of the path
-                if(agent.getOverallPath().size() > 0){ // there exists a path before new path
-                    x_i = agent.getOverallX_path().get( agent.getOverallX_path().size() - 1 ); // last location in previous path
-                }
-                else{ // there was no previous path
-                    x_i = agent.getPosition();
-                }
-            }
-            else{ // there is a task before the current task
-                // check if any previous tasks are mutually exclusive with j
-                ArrayList<Integer> exclusivePathSubtasks = new ArrayList<>();
-                for(int i_p = i; i_p >= 0; i_p--){
-                    if(path.get(i_p).getParentTask() != j.getParentTask()){
-                        break;
-                    }
-                    else{
-                        int i_q = path.get(i_p).getI_q();
-                        int i_j = j.getI_q();
-                        if(D[i_j][i_q] <= - 1) {
-                            exclusivePathSubtasks.add(i_p);
-                        }
-                    }
-                }
-
-                if(exclusivePathSubtasks.size() > 0){
-                    // if there are mutually exclusive subtasks in bundle, chose most recent nonexclusive task as the initial position
-                    int i_p = exclusivePathSubtasks.get(exclusivePathSubtasks.size() - 1) - 1;
-                    if(i_p > 0){
-                        x_i = this.x.get(i_p);
-                    }
-                    else{
-                        if(agent.getOverallPath().size() > 0){ // there exists a path before new path
-                            x_i = agent.getOverallX_path().get( agent.getOverallX_path().size() - 1 ); // last location in previous path
-                        }
-                        else{ // there was no previous path
-                            x_i = agent.getPosition();
-                        }
-                    }
-                }
-                else {
-                    x_i = this.x.get(i - 1);
-                }
-            }
+            x_i = j.getParentTask().getLocation();
 
             for(int i_x = 0; i_x < x_a.size(); i_x++){
                 delta_x += pow( x_a.get(i_x) - x_i.get(i_x), 2);
@@ -340,6 +451,23 @@ public class PathUtility{
         }
 
         return 1.0/( 1.0 + e);
+    }
+
+    private double calcSigmoid(Subtask j, SimulatedAgent agent, PVCoordinates pv_a_local, AbsoluteDate date) throws Exception {
+        double gamma = j.getParentTask().getGamma();
+
+        if( gamma == Double.NEGATIVE_INFINITY ) {
+            return 1;
+        }
+        else {
+            PVCoordinates taskPV = agent.getLocalResults().getIterationDatum(j).getTaskOrbitData(date);
+            Vector3D agentLocation = pv_a_local.getPosition();
+            Vector3D taskLocation = taskPV.getPosition();
+
+            double distance = agentLocation.distance(taskLocation);
+            double e = exp(gamma * distance);
+            return 1.0/( 1.0 + e);
+        }
     }
 
     private double calcTravelCost(ArrayList<Subtask> path, Subtask j, ArrayList<Double> x_a, SimulatedAgent agent){
@@ -523,7 +651,7 @@ public class PathUtility{
         return C_split + C_merge;
     }
 
-    private double calcSubtaskCost(Subtask j, Double g, Double p, SimulatedAgent agent) throws Exception {
+    private double calcSubtaskCost(Subtask j, SimulatedAgent agent) throws Exception {
 
         if(j.getParentTask().getCost_type().equals("Const")){
             return j.getParentTask().getCost();

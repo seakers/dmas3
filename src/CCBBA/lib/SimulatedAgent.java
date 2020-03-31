@@ -5,6 +5,7 @@ import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.SchedulingMessage;
+import org.hipparchus.util.FastMath;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.orekit.errors.OrekitException;
@@ -27,6 +28,7 @@ public class SimulatedAgent extends AbstractAgent {
     private Scenario environment;                           // world environment
     private String name;                                    // agent name
     private ArrayList<String> sensorList;                   // list of available sensors
+    private double fov;                                     // sensor field of view
     private ArrayList<Double> position;                     // agent position
     private ArrayList<Double> initialPosition;              // initial agent position
     private OrbitalData agentOrbit;                         // initial agent position in orbit
@@ -130,7 +132,7 @@ public class SimulatedAgent extends AbstractAgent {
                 // -agent does not have maneuver capabilities, propagate orbit in advance
                 try {
                     getLogger().config("Propagating fixed orbit...");
-                    this.agentOrbit.propagateOrbit(this.localResults, environment.getStartDate(), environment.getEndDate(), this.del_t);
+                    this.agentOrbit.propagateOrbit(this.fov, this.localResults, environment.getStartDate(), environment.getEndDate(), this.del_t);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -601,7 +603,10 @@ public class SimulatedAgent extends AbstractAgent {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + "'s velocity does not match world type selected.");
             }
         } else if (worldType.equals("3D_Earth")){
-            if ( ( (JSONObject) inputAgentData.get("Position")).get("h") == null) {
+            if ( inputAgentData.get("FOV") == null) {
+                throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " sensor field-of-view not contained in input file.");
+            }
+            else if ( ( (JSONObject) inputAgentData.get("Position")).get("h") == null) {
                 throw new NullPointerException("INPUT ERROR: " + inputAgentData.get("Name").toString() + " orbit altitude not contained in input file.");
             }
             else if ( ( (JSONObject) inputAgentData.get("Position")).get("e") == null) {
@@ -657,6 +662,9 @@ public class SimulatedAgent extends AbstractAgent {
         for (Object sensorListDatum : sensorListData) {
             this.sensorList.add(sensorListDatum.toString());
         }
+
+        // -Field of view
+        this.fov = FastMath.toRadians( (double) inputAgentData.get("FOV") );
 
         // -Position
         this.position = new ArrayList<>();
@@ -1478,6 +1486,9 @@ public class SimulatedAgent extends AbstractAgent {
             }
             else return false;
         }
+        else if(environment.getWorldType().equals("2D_Grid"){
+
+        }
         else{
             throw new Exception("Travel Cost type not yet supported");
         }
@@ -1626,4 +1637,6 @@ public class SimulatedAgent extends AbstractAgent {
     public int getZeta(){return this.zeta; }
     public AgentResources getInitialResources(){ return this.initialResources; }
     public double getDel_t(){ return this.del_t; };
+    public OrbitalData getAgentOrbit(){ return this.agentOrbit; }
+    public boolean getManeuver(){ return this.maneuver; }
 }
