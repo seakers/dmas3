@@ -9,6 +9,9 @@ import org.hipparchus.util.FastMath;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.orekit.errors.OrekitException;
+import org.orekit.estimation.measurements.PV;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +32,9 @@ public class SimulatedAgent extends AbstractAgent {
     private String name;                                    // agent name
     private ArrayList<String> sensorList;                   // list of available sensors
     private double fov;                                     // sensor field of view
+    private PVCoordinates positionPV;                       // agent position in orbital position vector
     private ArrayList<Double> position;                     // agent position
+    private PVCoordinates initialPositionPV;                // initial agent position in orbital position vector
     private ArrayList<Double> initialPosition;              // initial agent position
     private OrbitalData agentOrbit;                         // initial agent position in orbit
     private boolean maneuver;                               // orbit maneuver capability
@@ -54,6 +59,7 @@ public class SimulatedAgent extends AbstractAgent {
     private ArrayList<ArrayList<Double>> overallX_path;     // location of execution of each element in previous bundles
     private ArrayList<ArrayList<SimulatedAgent>> omega;     // Coalition mate matrix of current bundle
     private ArrayList<ArrayList<SimulatedAgent>> overallOmega; // Coalition mate matrix of previous bundle
+    private AbsoluteDate currentDate;                       // current date when performing tasks
     private double t_0;                                     // start time
     private double t_curr;                                  // current simulation time
     private double del_t;                                   // simulation time step
@@ -133,6 +139,11 @@ public class SimulatedAgent extends AbstractAgent {
                 try {
                     getLogger().config("Propagating fixed orbit...");
                     this.agentOrbit.propagateOrbit(this.fov, this.localResults, environment.getStartDate(), environment.getEndDate(), this.del_t);
+                    PVCoordinates initialPV = this.agentOrbit.getInitialLocation();
+                    this.positionPV = new PVCoordinates(initialPV.getPosition(), initialPV.getVelocity(), initialPV.getVelocity());
+                    this.initialPositionPV = new PVCoordinates(initialPV.getPosition(), initialPV.getVelocity(), initialPV.getVelocity());
+                    this.currentDate = environment.getStartDate();
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -1415,7 +1426,11 @@ public class SimulatedAgent extends AbstractAgent {
         if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
             this.position = new ArrayList<>();
             this.position.addAll(x_j);
-        } else {
+        }
+        else if(environment.getWorldType().equals("3D_Earth") ){
+            // agent is already at measurement location
+        }
+        else {
             throw new Exception("World type not supported.");
         }
     }
@@ -1446,7 +1461,17 @@ public class SimulatedAgent extends AbstractAgent {
             this.currentTravelCost += travelCost;
             deductTravelCost(travelCost);
 
-        } else {
+        }
+        else if( environment.getWorldType().equals("3D_World") ){
+            if(!this.maneuver) {
+                this.currentDate = this.agentOrbit.getNextDate(currentDate);
+                this.positionPV = this.agentOrbit.getNextLocation(currentDate);
+            }
+            else{
+                throw new Exception("Satellite maneuvers not yet supported.");
+            }
+        }
+        else {
             throw new Exception("World type not supported.");
         }
     }
@@ -1486,8 +1511,19 @@ public class SimulatedAgent extends AbstractAgent {
             }
             else return false;
         }
-        else if(environment.getWorldType().equals("2D_Grid"){
+        else if(environment.getWorldType().equals("3D_Earth")){
+            PVCoordinates groundLocation = agentOrbit.getGroundLocation(currentDate, path.get(0));
+            ArrayList<Double> x_curr = new ArrayList<>();
+            x_curr.add(groundLocation.getPosition().getX());
+            x_curr.add(groundLocation.getPosition().getY());
+            x_curr.add(groundLocation.getPosition().getZ());
 
+            for(int i = 0; i < x_curr.size(); i++){
+                if( x_curr.get(i) != x_path.get(0).get(i) ){
+                    return false;
+                }
+            }
+            return true;
         }
         else{
             throw new Exception("Travel Cost type not yet supported");

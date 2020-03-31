@@ -111,8 +111,6 @@ public class OrbitalData {
 
         // -calculate ground track
         calculateGroundTrack(localResults);
-
-        int x = 1;
     }
 
     private void propagateAgentOrbit(AbsoluteDate startDate, AbsoluteDate endDate, double del_t) throws OrekitException, FileNotFoundException {
@@ -510,6 +508,29 @@ public class OrbitalData {
     public double getV() { return v; }
     public HashMap<AbsoluteDate, PVCoordinates> getGroundTrack(Subtask j){ return this.groundTrack.get(j.getParentTask()); }
     public ArrayList<AbsoluteDate> getDateData(){ return this.dateData; }
+    public PVCoordinates getInitialLocation(){
+        AbsoluteDate startDate = this.dateData.get(0);
+        return this.pvData.get(startDate);
+    }
+    public PVCoordinates getNextLocation(AbsoluteDate currDate) throws Exception {
+        AbsoluteDate nextDate = this.getNextDate(currDate);
+        return this.pvData.get(nextDate);
+    }
+
+    public AbsoluteDate getNextDate(AbsoluteDate currDate) throws Exception{
+        boolean currDateFound = false;
+        for(AbsoluteDate date : this.dateData){
+            if(currDateFound){
+                return date;
+            }
+            currDateFound = ( date.equals(currDate) );
+        }
+        throw new Exception("Current date not contained in orbit propagation");
+    }
+
+    public PVCoordinates getGroundLocation(AbsoluteDate currDate, Subtask j){
+        return this.groundTrack.get(j).get(currDate);
+    }
 
     public void setA(double a) {
         this.a = a;
