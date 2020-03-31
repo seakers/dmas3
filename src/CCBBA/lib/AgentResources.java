@@ -118,6 +118,9 @@ public class AgentResources {
         if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")){
             return (this.value > 0);
         }
+        else if(worldType.equals("3D_Earth")){
+            return (this.value > 0);
+        }
         else{
             throw new Exception("World type not supported.");
         }
@@ -126,6 +129,9 @@ public class AgentResources {
     public void deductCost(IterationDatum datum, String worldType, double currentTravelCost) throws Exception {
         if(worldType.equals("2D_Grid") || worldType.equals("3D_Grid")){
             this.value -= datum.getCost() - currentTravelCost;
+        }
+        else if(worldType.equals("3D_Earth")){
+            this.value -= datum.getCost();
         }
         else{
             throw new Exception("World type not supported.");

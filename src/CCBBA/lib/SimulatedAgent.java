@@ -5,6 +5,7 @@ import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.SchedulingMessage;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -139,10 +140,20 @@ public class SimulatedAgent extends AbstractAgent {
                 try {
                     getLogger().config("Propagating fixed orbit...");
                     this.agentOrbit.propagateOrbit(this.fov, this.localResults, environment.getStartDate(), environment.getEndDate(), this.del_t);
-                    PVCoordinates initialPV = this.agentOrbit.getInitialLocation();
+                    PVCoordinates initialPV = this.agentOrbit.getInitialGroundLocation();
                     this.positionPV = new PVCoordinates(initialPV.getPosition(), initialPV.getVelocity(), initialPV.getVelocity());
                     this.initialPositionPV = new PVCoordinates(initialPV.getPosition(), initialPV.getVelocity(), initialPV.getVelocity());
                     this.currentDate = environment.getStartDate();
+
+                    this.position = new ArrayList<>();
+                    this.initialPosition = new ArrayList<>();
+
+                    this.position.add(positionPV.getPosition().getX());
+                    this.position.add(positionPV.getPosition().getY());
+                    this.position.add(positionPV.getPosition().getZ());
+                    this.initialPosition.add(positionPV.getPosition().getX());
+                    this.initialPosition.add(positionPV.getPosition().getY());
+                    this.initialPosition.add(positionPV.getPosition().getZ());
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -435,6 +446,9 @@ public class SimulatedAgent extends AbstractAgent {
                     if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
                         this.currentTravelCost = 0.0;
                     }
+                    else if(environment.getWorldType().equals("3D_Earth")){
+                        this.currentTravelCost = 0.0;
+                    }
                     else{
                         throw new Exception("Travel Cost type not yet supported");
                     }
@@ -558,7 +572,7 @@ public class SimulatedAgent extends AbstractAgent {
             sendMessage(resultsAddress, myDeath);
 
             logResources();
-            killAgent(this);
+//            killAgent(this);
         }
 
         // update time
@@ -1462,7 +1476,7 @@ public class SimulatedAgent extends AbstractAgent {
             deductTravelCost(travelCost);
 
         }
-        else if( environment.getWorldType().equals("3D_World") ){
+        else if( environment.getWorldType().equals("3D_Earth") ){
             if(!this.maneuver) {
                 this.currentDate = this.agentOrbit.getNextDate(currentDate);
                 this.positionPV = this.agentOrbit.getNextLocation(currentDate);
@@ -1512,14 +1526,14 @@ public class SimulatedAgent extends AbstractAgent {
             else return false;
         }
         else if(environment.getWorldType().equals("3D_Earth")){
-            PVCoordinates groundLocation = agentOrbit.getGroundLocation(currentDate, path.get(0));
+            PVCoordinates groundLocation = agentOrbit.getGroundLocation(currentDate);
             ArrayList<Double> x_curr = new ArrayList<>();
             x_curr.add(groundLocation.getPosition().getX());
             x_curr.add(groundLocation.getPosition().getY());
             x_curr.add(groundLocation.getPosition().getZ());
 
             for(int i = 0; i < x_curr.size(); i++){
-                if( x_curr.get(i) != x_path.get(0).get(i) ){
+                if( Math.abs(x_curr.get(i) - x_path.get(0).get(i)) > 1e3 ){
                     return false;
                 }
             }
@@ -1615,26 +1629,54 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     private void logPosition(){
-        StringBuilder output;
-        if(this.x_path.size() > 0) {
-            output = new StringBuilder(
-                    String.format(
-                            "\nCurrent Position: \t%s" +
-                                    "\nTarget Position: \t%s\n",
-                            this.position, this.x_path.get(0)
-                    )
-            );
+        if(environment.getWorldType().equals("3D_World") || environment.getWorldType().equals("2D_World")) {
+            StringBuilder output;
+            if (this.x_path.size() > 0) {
+                output = new StringBuilder(
+                        String.format(
+                                "\nCurrent Position: \t%s" +
+                                        "\nTarget Position: \t%s\n",
+                                this.position, this.x_path.get(0)
+                        )
+                );
+            } else {
+                output = new StringBuilder(
+                        String.format(
+                                "\nCurrent Position: \t%s" +
+                                        "\nTarget Position: \t[ - ]\n",
+                                this.position
+                        )
+                );
+            }
+            getLogger().finer(String.valueOf(output));
         }
-        else{
-            output = new StringBuilder(
-                    String.format(
-                            "\nCurrent Position: \t%s" +
-                                    "\nTarget Position: \t[ - ]\n",
-                            this.position
-                    )
-            );
+        else if(environment.getWorldType().equals("3D_Earth")){
+            StringBuilder output;
+            ArrayList<Double> currPos = new ArrayList<>();
+            Vector3D posVec = this.positionPV.getPosition();
+            currPos.add(posVec.getX());
+            currPos.add(posVec.getY());
+            currPos.add(posVec.getZ());
+
+            if (this.x_path.size() > 0) {
+                output = new StringBuilder(
+                        String.format(
+                                "\nCurrent Position: \t%s" +
+                                        "\nTarget Position: \t%s\n",
+                                currPos, this.x_path.get(0)
+                        )
+                );
+            } else {
+                output = new StringBuilder(
+                        String.format(
+                                "\nCurrent Position: \t%s" +
+                                        "\nTarget Position: \t[ - ]\n",
+                                currPos
+                        )
+                );
+            }
+            getLogger().finer(String.valueOf(output));
         }
-        getLogger().finer(String.valueOf(output));
     }
 
     public String toString(){

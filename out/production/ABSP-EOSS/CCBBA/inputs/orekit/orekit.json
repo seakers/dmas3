@@ -18,7 +18,7 @@
 					"i": 0.0,
 					"PA": 0.0,
 					"RAAN": 0.0,
-					"Anomaly": 90.0
+					"Anomaly": -90.0
 				},
 				"Maneuver": "OFF",
 				"Mass": 1.0,
@@ -43,11 +43,7 @@
 			{ 
 				"Name": "DualSensorTask"
 				"Instances": 1,
-				"MaxScore": {
-					"Dist": "Linear",
-					"MaxValue": 100.0,
-					"MinValue": 0.0
-				},
+				"MaxScore": 100.0,
 				"Cost": {
 					"Value": 0.0114,,
 					"Type": "Proportional",
@@ -77,10 +73,10 @@
 					"Second": 0.000,
 					"TimeScale": "UTC"
 				}
-				"duration": 30.0,
+				"duration": 0.0,
 				"t_corr": "INF",
-				"lambda": 0.00015,
-				"gamma" : "NEG_INF"
+				"lambda": 0.000015,
+				"gamma" : 0.00000015
 			},
 		],
 		"World": {

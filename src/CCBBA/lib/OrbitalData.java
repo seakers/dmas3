@@ -42,7 +42,7 @@ public class OrbitalData {
     private HashMap<Subtask, String> taskFileNames;
     private HashMap<AbsoluteDate, PVCoordinates> pvData;
     private HashMap<Task, HashMap<AbsoluteDate, Boolean>> accessData;
-    private HashMap<Task, HashMap<AbsoluteDate, PVCoordinates>> groundTrack;
+    private HashMap<AbsoluteDate, PVCoordinates> groundTrack;
     private ArrayList<AbsoluteDate> dateData;
 
     //must use IERS_2003 and EME2000 frames to be consistent with STK
@@ -110,7 +110,7 @@ public class OrbitalData {
         calculateCoverage(fov, localResults);
 
         // -calculate ground track
-        calculateGroundTrack(localResults);
+        calculateGroundTrack();
     }
 
     private void propagateAgentOrbit(AbsoluteDate startDate, AbsoluteDate endDate, double del_t) throws OrekitException, FileNotFoundException {
@@ -378,43 +378,21 @@ public class OrbitalData {
         }
     }
 
-    private void calculateGroundTrack(IterationResults localResults) throws OrekitException {
+    private void calculateGroundTrack() throws OrekitException {
         this.groundTrack = new HashMap<>();
 
-        for(IterationDatum datum : localResults.getResults()){
-            Task parentTask = datum.getJ().getParentTask();
-            if(!groundTrack.containsKey(parentTask)){
-                // define task location
-                double latitude = datum.getJ().getParentTask().getLat();
-                double longitude = datum.getJ().getParentTask().getLon();
-                double altitude = datum.getJ().getParentTask().getAlt();
+        // define task location
+        for(AbsoluteDate date : dateData){
+            PVCoordinates satPVnotNorm = new PVCoordinates( pvData.get(date).getPosition(), pvData.get(date).getVelocity(), pvData.get(date).getAcceleration() );
+            PVCoordinates satPV = satPVnotNorm.normalize();
+            Vector3D satPos = satPV.getPosition();
+            Vector3D satVel = satPV.getVelocity();
+            Vector3D satAcc = satPV.getAcceleration();
 
-                // define frames
-                Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-                BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                        Constants.WGS84_EARTH_FLATTENING,
-                        earthFrame);
-                GeodeticPoint taskLocation = new GeodeticPoint(latitude, longitude, altitude);
-                TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "task location");
+            Vector3D stepPos = satPos.scalarMultiply( Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
+            PVCoordinates stepPV = new PVCoordinates(stepPos, satVel, satAcc);
 
-                HashMap<AbsoluteDate, PVCoordinates> taskTrack = new HashMap<>();
-
-                for(AbsoluteDate date : dateData){
-                    PVCoordinates satPV = pvData.get(date).normalize();
-                    Vector3D satPos = satPV.getPosition();
-                    Vector3D satVel = satPV.getVelocity();
-                    Vector3D satAcc = satPV.getAcceleration();
-
-                    Vector3D stepPos = satPos.scalarMultiply( Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
-                    PVCoordinates stepPV = new PVCoordinates(stepPos, satVel, satAcc);
-
-//                    PVCoordinates track = inertialFrame.getTransformTo(staF, date).transformPVCoordinates(stepPV);
-//                    taskTrack.put(date, track);
-                    taskTrack.put(date, stepPV);
-                }
-
-                groundTrack.put(parentTask, taskTrack);
-            }
+            groundTrack.put(date, stepPV);
         }
     }
 
@@ -429,15 +407,10 @@ public class OrbitalData {
                 if(Double.isNaN(th_2)){ th_2 = 0.0; }
         double th_max = th_1 + th_2;
 
-        double th_disp = FastMath.toDegrees(th);
-        double th_max_disp = FastMath.toDegrees(th_max);
-        double fov_disp = FastMath.toDegrees(fov);
-
         boolean isInLineOfSight = (th <= th_max);
         boolean isInSensorFieldOfView = ((FastMath.PI/2 - th_1) <= fov);
 
         return isInLineOfSight && isInSensorFieldOfView;
-//        return isInLineOfSight;
     }
 
     public boolean hasAccessTo(Subtask j){
@@ -462,7 +435,7 @@ public class OrbitalData {
         AbsoluteDate accessEnd = null;
 
         boolean prevAccess = false;
-        boolean currAccess = false;
+        boolean currAccess;
         for(AbsoluteDate date : dateData){
             currAccess = accessData.get(parentTask).get(date);
 
@@ -472,6 +445,10 @@ public class OrbitalData {
             }
             if(prevAccess && !currAccess){
                 // access ended at this time
+                accessEnd = date;
+            }
+            if(prevAccess && currAccess && dateData.indexOf(date) == dateData.size()-1){
+                // access ends at the end of orbit propagation
                 accessEnd = date;
             }
 
@@ -506,11 +483,11 @@ public class OrbitalData {
     public double getW() { return w; }
     public double getOm() { return Om; }
     public double getV() { return v; }
-    public HashMap<AbsoluteDate, PVCoordinates> getGroundTrack(Subtask j){ return this.groundTrack.get(j.getParentTask()); }
+    public PVCoordinates getGroundTrack(AbsoluteDate date){ return this.groundTrack.get(date); }
     public ArrayList<AbsoluteDate> getDateData(){ return this.dateData; }
-    public PVCoordinates getInitialLocation(){
+    public PVCoordinates getInitialGroundLocation(){
         AbsoluteDate startDate = this.dateData.get(0);
-        return this.pvData.get(startDate);
+        return this.groundTrack.get(startDate);
     }
     public PVCoordinates getNextLocation(AbsoluteDate currDate) throws Exception {
         AbsoluteDate nextDate = this.getNextDate(currDate);
@@ -525,11 +502,12 @@ public class OrbitalData {
             }
             currDateFound = ( date.equals(currDate) );
         }
+        if(currDateFound) return currDate;
         throw new Exception("Current date not contained in orbit propagation");
     }
 
-    public PVCoordinates getGroundLocation(AbsoluteDate currDate, Subtask j){
-        return this.groundTrack.get(j).get(currDate);
+    public PVCoordinates getGroundLocation(AbsoluteDate currDate){
+        return this.groundTrack.get(currDate);
     }
 
     public void setA(double a) {
