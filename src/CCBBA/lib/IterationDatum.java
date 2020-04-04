@@ -26,8 +26,6 @@ public class IterationDatum {
     private int w_solo;                     // permission to bid solo
     private int w_any;                      // permission to bid any
     private int w_all;                      // total permissions to bid on a task
-    private HashMap<AbsoluteDate,
-            PVCoordinates> taskOrbitData;   // subtask orbit data or ground position
 
     /**
      * Constructors
@@ -49,7 +47,6 @@ public class IterationDatum {
         this.x = new ArrayList<>(3);
         this.cost = 0.0;
         this.score = 0.0;
-        this.taskOrbitData = new HashMap<>();
     }
 
     public IterationDatum(IterationDatum newDatum){
@@ -69,7 +66,6 @@ public class IterationDatum {
         this.x.addAll( newDatum.getX() );
         this.cost = newDatum.getCost();
         this.score = newDatum.getScore();
-        this.taskOrbitData = newDatum.getTaskOrbitData();
     }
 
     public void resetCoalitionCounters(SimulatedAgent agent){
@@ -97,8 +93,6 @@ public class IterationDatum {
     public ArrayList<Double> getX(){ return this.x; }
     public double getCost(){ return this.cost; }
     public double getScore(){ return this.score; }
-    public HashMap<AbsoluteDate, PVCoordinates> getTaskOrbitData(){ return this.taskOrbitData; }
-    public PVCoordinates getTaskOrbitData(AbsoluteDate date){ return this.taskOrbitData.get(date); }
 
     public void setH(int h){ this.h = h; }
     public void setY(double y) { this.y = y; }
@@ -106,7 +100,10 @@ public class IterationDatum {
     public void setTz(double tz) { this.tz = tz; }
     public void setC(double c) { this.c = c; }
     public void setS(int s) { this.s = s; }
-    public void setX(ArrayList<Double> x) { this.x = x; }
+    public void setX(ArrayList<Double> x) {
+        this.x = new ArrayList<>();
+        this.x.addAll(x);
+    }
     public void setV(int v) { this.v = v; }
     public void setCost(double cost){ this.cost = cost; }
     public void setScore(double score) { this.score = score; }
@@ -118,8 +115,4 @@ public class IterationDatum {
     public void setW_any(int w_any) { this.w_any = w_any;}
     public void setW_solo(int w_solo) { this.w_solo = w_solo;}
     public void setW_all(int w_all) { this.w_all = w_all;}
-    public void setTaskOrbitData(HashMap<AbsoluteDate, PVCoordinates> newOrbitData){
-        taskOrbitData = new HashMap<>();
-        taskOrbitData.putAll(newOrbitData);
-    }
 }

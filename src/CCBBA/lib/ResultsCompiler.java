@@ -5,6 +5,7 @@ import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.SchedulingMessage;
+import org.orekit.time.AbsoluteDate;
 
 import java.awt.*;
 import java.io.FileWriter;
@@ -73,6 +74,7 @@ public class ResultsCompiler extends AbstractAgent {
 //            printAgentList();
             printMetrics();
             printReport();
+            printOrbits();
         }
         printAllVectors( receivedResults );
     }
@@ -294,8 +296,6 @@ public class ResultsCompiler extends AbstractAgent {
             printWriter.print(result);
             printWriter.print("\t");
         }
-
-
 
         //close file
         printWriter.close();
@@ -856,6 +856,67 @@ public class ResultsCompiler extends AbstractAgent {
 
         //close file
         printWriter.close();
+    }
+
+    private void printOrbits(){
+        if(environment.getWorldType().equals("3D_Earth")) {
+            //create new file in directory
+            FileWriter fileWriter = null;
+            PrintWriter printWriter;
+            String outAddress = this.directoryAddress + "/taskOrbitFiles.out";
+            fileWriter = null;
+            try {
+                fileWriter = new FileWriter(outAddress, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // save file addresses of agent orbits used in this
+            printWriter = new PrintWriter(fileWriter);
+            for (IterationResults result : receivedResults) {
+                SimulatedAgent agent = result.getParentAgent();
+                if (receivedResults.indexOf(result) == 0) {
+                    printWriter.printf("%s", agent.getOrbitDataFilename());
+                } else {
+                    printWriter.printf("\n%s", agent.getOrbitDataFilename());
+                }
+            }
+
+            //close file
+            printWriter.close();
+        }
+    }
+
+    private void printTaskLocation(){
+        if(environment.getWorldType().equals("3D_Earth")) {
+            //create new file in directory
+            FileWriter fileWriter = null;
+            PrintWriter printWriter;
+            String outAddress = this.directoryAddress + "/taskOrbitFiles.out";
+            try {
+                fileWriter = new FileWriter(outAddress, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // save data of where tasks are located, where they were done, and at which date
+            printWriter = new PrintWriter(fileWriter);
+            for(IterationDatum datum : receivedResults.get(0).getResults()){
+                int i_dat = receivedResults.get(0).indexOf(datum);
+                Subtask j = datum.getJ();
+                ArrayList<Double> x_j = j.getParentTask().getLocation();
+                ArrayList<Double> x_a = datum.getX();
+                AbsoluteDate date = environment.getStartDate().shiftedBy(datum.getTz());
+                double dateSeconds = datum.getTz();
+
+                if(i_dat == 0){
+                    printWriter.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f",date, dateSeconds, x_j.get(0), x_j.get(1), x_j.get(2), x_a.get(0), x_a.get(1), x_a.get(2));
+                }
+                else{
+                    printWriter.printf("\n%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f",date, dateSeconds, x_j.get(0), x_j.get(1), x_j.get(2), x_a.get(0), x_a.get(1), x_a.get(2));
+                }
+            }
+        }
     }
 
     private void printAllVectors( ArrayList<IterationResults> receivedResults ){

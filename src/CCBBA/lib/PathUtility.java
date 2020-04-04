@@ -519,8 +519,13 @@ public class PathUtility{
             return 1;
         }
         else {
-            PVCoordinates taskPV = agent.getLocalResults().getIterationDatum(j).getTaskOrbitData(date);
+            PVCoordinates taskPV = agent.getAgentOrbit().getTaskOrbitData(j,date);
             Vector3D agentLocation = pv_a_local.getPosition();
+
+            if(taskPV == null){
+                return 1e-10;
+            }
+
             Vector3D taskLocation = taskPV.getPosition();
 
             double distance = agentLocation.distance(taskLocation);

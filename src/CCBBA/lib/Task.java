@@ -9,6 +9,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.PVCoordinates;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -175,26 +176,53 @@ public class Task {
         }
         else if( taskData.get("Location").getClass().equals(costData.getClass()) ){
             if(worldData.get("Type").equals("3D_Earth")){
-                // --Location is in Lat-Long-Alt
-                if(( (JSONObject) taskData.get("Location")).get("Lat") == null){
-                    throw new Exception("INPUT ERROR:" + this.name + " latitude not included in input file.");
-                }
-                else if(( (JSONObject) taskData.get("Location")).get("Lon") == null){
-                    throw new Exception("INPUT ERROR:" + this.name + " longitude not included in input file.");
-                }
-                else if(( (JSONObject) taskData.get("Location")).get("Alt") == null){
-                    throw new Exception("INPUT ERROR:" + this.name + " altitude not included in input file.");
-                }
+                if(( (JSONObject) taskData.get("Location")).get("Dist") != null){
+                    // --Location is a random Lat-Long-Alt
+                    JSONObject locationData = (JSONObject) taskData.get("Location");
+                    if(locationData.get("Dist").equals("Linear")) {
+                        if (((JSONObject) taskData.get("Location")).get("MaxLat") == null) {
+                            throw new Exception("INPUT ERROR:" + this.name + " maximum latitude not included in input file.");
+                        } else if (((JSONObject) taskData.get("Location")).get("MaxAlt") == null) {
+                            throw new Exception("INPUT ERROR:" + this.name + " maximum altitude not included in input file.");
+                        }
+                        double maxLat = (double) ((JSONObject) taskData.get("Location")).get("MaxLat");
+                        double maxAlt = (double) ((JSONObject) taskData.get("Location")).get("MaxAlt");
+                        if(maxLat > 90.0) throw new Exception("INPUT ERROR:" + this.name + " maximum latitude is over 90°");
 
-                double lat = (double) ( (JSONObject) taskData.get("Location")).get("Lat");
-                double lon = (double) ( (JSONObject) taskData.get("Location")).get("Lon");
-                double alt = (double) ( (JSONObject) taskData.get("Location")).get("Alt");
+                        double lat = FastMath.toRadians( 2 * maxLat )* Math.random() - FastMath.toRadians( maxLat );
+                        double lon = FastMath.toRadians( 360  ) * Math.random() - FastMath.toRadians( 180  );
+                        double alt = maxAlt * Math.random();
 
-                this.location.add(FastMath.toRadians(lat));
-                this.location.add(FastMath.toRadians(lon));
-                this.location.add(FastMath.toRadians(alt));
+                        this.location.add(lat);
+                        this.location.add(lon);
+                        this.location.add(alt);
 
-                this.locationType = "lat-lon";
+                        this.locationType = "lat-lon";
+                    }
+                    else{
+                        throw new Exception("INPUT ERROR:" + this.name + " location distribution not supported.");
+                    }
+                }
+                else {
+                    // --Location is in Lat-Long-Alt
+                    if (((JSONObject) taskData.get("Location")).get("Lat") == null) {
+                        throw new Exception("INPUT ERROR:" + this.name + " latitude not included in input file.");
+                    } else if (((JSONObject) taskData.get("Location")).get("Lon") == null) {
+                        throw new Exception("INPUT ERROR:" + this.name + " longitude not included in input file.");
+                    } else if (((JSONObject) taskData.get("Location")).get("Alt") == null) {
+                        throw new Exception("INPUT ERROR:" + this.name + " altitude not included in input file.");
+                    }
+
+                    double lat = (double) ((JSONObject) taskData.get("Location")).get("Lat");
+                    double lon = (double) ((JSONObject) taskData.get("Location")).get("Lon");
+                    double alt = (double) ((JSONObject) taskData.get("Location")).get("Alt");
+
+                    this.location.add(FastMath.toRadians(lat));
+                    this.location.add(FastMath.toRadians(lon));
+                    this.location.add(FastMath.toRadians(alt));
+
+                    this.locationType = "lat-lon";
+                }
             }
             else {
                 // --Location is random

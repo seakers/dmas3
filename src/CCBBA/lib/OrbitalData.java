@@ -24,6 +24,7 @@ import org.orekit.utils.PVCoordinates;
 import seakers.orekit.object.CoveragePoint;
 import seakers.orekit.util.OrekitConfig;
 
+import java.awt.desktop.AboutEvent;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +32,9 @@ import java.util.Locale;
 import java.util.Scanner;
 
 public class OrbitalData {
+    private double origin_latitude = 90.0;
+    private double origin_longitude = -180.0;
+    private double origin_altitude = 0.0;
     private double a;
     private double h;
     private double e;
@@ -39,16 +43,18 @@ public class OrbitalData {
     private double Om;
     private double v;
     private String dataFileName;
-    private HashMap<Subtask, String> taskFileNames;
+    private HashMap<Task, String> taskFileNames;
     private HashMap<AbsoluteDate, PVCoordinates> pvData;
+    private HashMap<Task, HashMap<AbsoluteDate, PVCoordinates>> taskPvData;
     private HashMap<Task, HashMap<AbsoluteDate, Boolean>> accessData;
     private HashMap<AbsoluteDate, PVCoordinates> groundTrack;
     private ArrayList<AbsoluteDate> dateData;
 
     //must use IERS_2003 and EME2000 frames to be consistent with STK
     private Frame inertialFrame = FramesFactory.getEME2000();
+    private Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
 
-    public OrbitalData(double h, double e, double i, double w, double Om, double v){
+    public OrbitalData(double h, double e, double i, double w, double Om, double v) throws OrekitException {
         this.a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + h;
         this.h = h;
         this.e = e;
@@ -62,6 +68,7 @@ public class OrbitalData {
         dateData = new ArrayList<>();
         pvData = new HashMap<>();
         accessData = new HashMap<>();
+        taskPvData = new HashMap<>();
     }
 
     public void propagateOrbit(double fov, IterationResults localResults, AbsoluteDate startDate, AbsoluteDate endDate, double del_t) throws Exception {
@@ -85,16 +92,18 @@ public class OrbitalData {
 
         for(IterationDatum datum : localResults.getResults()){
             Task parentTask = datum.getJ().getParentTask();
-            String name = parentTask.getName();
-            double lat = parentTask.getLat();
-            double lon = parentTask.getLon();
-            double alt = parentTask.getAlt();
+            if(!taskFileNames.containsKey(parentTask)){
+                String name = parentTask.getName();
+                double lat = parentTask.getLat();
+                double lon = parentTask.getLon();
+                double alt = parentTask.getAlt();
 
-            String taskDataName = String.format("%s_lat%.0f_lon%.0f_alt%.0f_s%s_%d-%d-%.0f_e%s_%d-%d-%.0f.csv", name, lat, lon, alt,
-                                                                        start_date, s_hh, s_mm, s_ss,
-                                                                        end_date, e_hh, e_mm, e_ss);
+                String taskDataName = String.format("%s_lat%.0f_lon%.0f_alt%.0f_s%s_%d-%d-%.0f_e%s_%d-%d-%.0f.csv", name, lat, lon, alt,
+                                                                            start_date, s_hh, s_mm, s_ss,
+                                                                            end_date, e_hh, e_mm, e_ss);
 
-            taskFileNames.put(datum.getJ(), taskDataName);
+                taskFileNames.put(parentTask, taskDataName);
+            }
         }
 
         // propagate orbits and generate data files
@@ -103,14 +112,14 @@ public class OrbitalData {
 
         // -task location
         for(IterationDatum datum : localResults.getResults()) {
-            propagateTaskLocation( datum, startDate, endDate, del_t);
+            propagateTaskLocation(datum);
         }
 
         // -coverage analysis
         calculateCoverage(fov, localResults);
 
         // -calculate ground track
-        calculateGroundTrack();
+        calculateAgentGroundTrack();
     }
 
     private void propagateAgentOrbit(AbsoluteDate startDate, AbsoluteDate endDate, double del_t) throws OrekitException, FileNotFoundException {
@@ -137,8 +146,6 @@ public class OrbitalData {
             //if running on a non-US machine, need the line below
             Locale.setDefault(new Locale("en", "US"));
 
-            long start = System.nanoTime();
-
             //initializes the look up tables for planteary position (required!)
             OrekitConfig.init(4);
 
@@ -152,7 +159,8 @@ public class OrbitalData {
             printWriter = new PrintWriter(fileWriter);
             while (extrapDate.compareTo(endDate) <= 0)  {
                 // package data
-                PVCoordinates pvSat = kepler.propagate(extrapDate).getPVCoordinates();
+                PVCoordinates pvSat = inertialFrame.getTransformTo(earthFrame, extrapDate).transformPVCoordinates(kepler.propagate(extrapDate).getPVCoordinates());
+                double dateSeconds  = extrapDate.durationFrom(startDate);
                 String position = String.format("%f,%f,%f", pvSat.getPosition().getX(), pvSat.getPosition().getY(), pvSat.getPosition().getZ() );
                 String velocity = String.format("%f,%f,%f", pvSat.getVelocity().getX(), pvSat.getVelocity().getY(), pvSat.getVelocity().getZ() );
                 String acceleration = String.format("%f,%f,%f", pvSat.getAcceleration().getX(), pvSat.getAcceleration().getY(), pvSat.getAcceleration().getZ() );
@@ -160,10 +168,10 @@ public class OrbitalData {
                 // print to text file
                 String stepData;
                 if(extrapDate == startDate){
-                    stepData = String.format(Locale.US, "%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
+                    stepData = String.format(Locale.US, "%s,%s,%s,%s,%f", extrapDate, position, velocity, acceleration, dateSeconds);
                 }
                 else{
-                    stepData = String.format(Locale.US, "\n%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
+                    stepData = String.format(Locale.US, "\n%s,%s,%s,%s,%f", extrapDate, position, velocity, acceleration, dateSeconds);
                 }
                 printWriter.print(stepData);
 
@@ -230,15 +238,191 @@ public class OrbitalData {
         }
     }
 
-    private void propagateTaskLocation(IterationDatum datum, AbsoluteDate startDate, AbsoluteDate endDate, double del_t) throws OrekitException, FileNotFoundException {
+    private void propagateTaskLocation(IterationDatum datum) throws Exception {
         // --create new file in directory
-        String filename = taskFileNames.get(datum.getJ());
+        Task parentTask = datum.getJ().getParentTask();
+
+        if(!this.taskPvData.containsKey(parentTask)) {
+            String filename = taskFileNames.get(parentTask);
+            FileWriter fileWriter = null;
+            PrintWriter printWriter;
+            String dataAddress = "./src/CCBBA/data/orbits/tasks/" + filename;
+            HashMap<AbsoluteDate, PVCoordinates> taskOrbitData = new HashMap<>();
+
+            // --check if file already exists
+            if (!(new File(dataAddress)).exists()) {
+                // if orbit data file does not exist already, calculate orbit
+                fileWriter = null;
+                try {
+                    fileWriter = new FileWriter(dataAddress, false);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                // propagate orbit
+                File orekitData = new File("./src/orekit-data");
+                DataProvidersManager manager = DataProvidersManager.getInstance();
+                manager.addProvider(new DirectoryCrawler(orekitData));
+
+                //if running on a non-US machine, need the line below
+                Locale.setDefault(new Locale("en", "US"));
+
+                //initializes the look up tables for planteary position (required!)
+                OrekitConfig.init(4);
+
+                //must use IERS_2003 and EME2000 frames to be consistent with STK
+                BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                        Constants.WGS84_EARTH_FLATTENING,
+                        earthFrame);
+
+
+                //define orbit
+                double latitude = datum.getJ().getParentTask().getLat();
+                double longitude = datum.getJ().getParentTask().getLon();
+                double altitude = datum.getJ().getParentTask().getAlt();
+                GeodeticPoint taskLocation = new GeodeticPoint(latitude, longitude, altitude);
+                TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "task location");
+
+                // propagate by step-size
+                AbsoluteDate startDate = dateData.get(0);
+                AbsoluteDate extrapDate;
+                printWriter = new PrintWriter(fileWriter);
+                for (int i = 0; i < dateData.size(); i++) {
+                    // package data
+                    extrapDate = dateData.get(i);
+//                    PVCoordinates pvStation = staF.getPVCoordinates(extrapDate, inertialFrame);
+                    PVCoordinates pvStation = staF.getPVCoordinates(extrapDate, earthFrame);
+                    String position = String.format("%f,%f,%f", pvStation.getPosition().getX(), pvStation.getPosition().getY(), pvStation.getPosition().getZ());
+                    String velocity = String.format("%f,%f,%f", pvStation.getVelocity().getX(), pvStation.getVelocity().getY(), pvStation.getVelocity().getZ());
+                    String acceleration = String.format("%f,%f,%f", pvStation.getAcceleration().getX(), pvStation.getAcceleration().getY(), pvStation.getAcceleration().getZ());
+
+                    // print to text file
+                    String stepData;
+                    if (extrapDate == startDate) {
+                        stepData = String.format(Locale.US, "%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
+                    } else {
+                        stepData = String.format(Locale.US, "\n%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
+                    }
+                    printWriter.print(stepData);
+
+                    // save to position vector datum
+                    taskOrbitData.put(extrapDate, pvStation);
+                }
+
+                //close file
+                printWriter.close();
+
+                //save data
+                taskPvData.put(parentTask, taskOrbitData);
+            }
+            else {// unpackage existing files
+                File csvFile = new File(dataAddress);
+                BufferedReader sc = new BufferedReader(new FileReader(csvFile));
+
+                //define the start and end date of the simulation
+                TimeScale utc = TimeScalesFactory.getUTC();
+                String line = null;
+
+                while (true) {
+                    try {
+                        if ((line = sc.readLine()) == null) break;
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    // -unpack date
+                    String[] data = line.split(",");
+                    String dateString = data[0];
+
+                    int year = Integer.parseInt(String.format("%c%c%c%c", dateString.charAt(0), dateString.charAt(1), dateString.charAt(2), dateString.charAt(3)));
+                    int month = Integer.parseInt(String.format("%c%c", dateString.charAt(5), dateString.charAt(6)));
+                    int day = Integer.parseInt(String.format("%c%c", dateString.charAt(8), dateString.charAt(9)));
+                    int hour = Integer.parseInt(String.format("%c%c", dateString.charAt(11), dateString.charAt(12)));
+                    int minute = Integer.parseInt(String.format("%c%c", dateString.charAt(14), dateString.charAt(15)));
+                    double second = Double.parseDouble(String.format("%c%c%c%c%c%c", dateString.charAt(17), dateString.charAt(18), dateString.charAt(19), dateString.charAt(20), dateString.charAt(21), dateString.charAt(22)));
+
+                    AbsoluteDate dateFromData = new AbsoluteDate(year, month, day, hour, minute, second, utc);
+                    AbsoluteDate date = findInDateData(dateFromData);
+
+                    // unpack position vector
+                    double x_pos = Double.parseDouble(data[1]);
+                    double y_pos = Double.parseDouble(data[2]);
+                    double z_pos = Double.parseDouble(data[3]);
+                    double x_vel = Double.parseDouble(data[4]);
+                    double y_vel = Double.parseDouble(data[5]);
+                    double z_vel = Double.parseDouble(data[6]);
+                    double x_acc = Double.parseDouble(data[7]);
+                    double y_acc = Double.parseDouble(data[8]);
+                    double z_acc = Double.parseDouble(data[9]);
+
+                    Vector3D position = new Vector3D(x_pos, y_pos, z_pos);
+                    Vector3D velocity = new Vector3D(x_vel, y_vel, z_vel);
+                    Vector3D acceleration = new Vector3D(x_acc, y_acc, z_acc);
+                    PVCoordinates pvStation = new PVCoordinates(position, velocity, acceleration);
+
+                    // save to position vector datum
+                    taskOrbitData.put(date, pvStation);
+                }
+
+                //save data
+                taskPvData.put(parentTask, taskOrbitData);
+//                datum.setTaskOrbitData(taskOrbitData);
+            }
+        }
+    }
+
+    private AbsoluteDate findInDateData(AbsoluteDate dateFromData) throws Exception {
+        for(AbsoluteDate date : dateData){
+            if(date.equals(dateFromData)) {
+                return date;
+            }
+        }
+
+        throw new Exception("Input date does not match date in database");
+    }
+
+    private void calculateCoverage(double fov, IterationResults localResults){
+        for(IterationDatum datum : localResults.getResults()){
+            Task parentTask = datum.getJ().getParentTask();
+            if(!accessData.containsKey(parentTask)){
+                // no coverage calculated yet,
+                HashMap<AbsoluteDate, Boolean> taskCoverage = new HashMap<>();
+
+                for(AbsoluteDate date : dateData){
+                    PVCoordinates satPV = pvData.get(date);
+                    PVCoordinates taskPV = taskPvData.get(parentTask).get(date);
+
+                    taskCoverage.put(date, isInFOV(fov, satPV, taskPV));
+                }
+
+                accessData.put(parentTask, taskCoverage);
+            }
+        }
+    }
+
+    private void calculateAgentGroundTrack() throws OrekitException, FileNotFoundException {
+        this.groundTrack = new HashMap<>();
+
+        // calculate grount track
+        for(AbsoluteDate date : dateData){
+            PVCoordinates satPVnotNorm = new PVCoordinates( pvData.get(date).getPosition(), pvData.get(date).getVelocity(), pvData.get(date).getAcceleration() );
+            PVCoordinates satPV = satPVnotNorm.normalize();
+            Vector3D satPos = satPV.getPosition();
+            Vector3D satVel = satPV.getVelocity();
+            Vector3D satAcc = satPV.getAcceleration();
+
+            Vector3D stepPos = satPos.scalarMultiply( Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
+            PVCoordinates stepPV = new PVCoordinates(stepPos, satVel, satAcc);
+
+            groundTrack.put(date, stepPV);
+        }
+
+        // save to outputs
+        // --create new file in directory
         FileWriter fileWriter = null;
         PrintWriter printWriter;
-        String dataAddress = "./src/CCBBA/data/orbits/tasks/" + filename;
-        HashMap<AbsoluteDate, PVCoordinates> taskOrbitData = new HashMap<>();
+        String dataAddress = "./src/CCBBA/data/groundTracks/" + dataFileName;
 
-        // --check if file already exists
         if( !(new File(dataAddress)).exists() ) {
             // if orbit data file does not exist already, calculate orbit
             fileWriter = null;
@@ -260,139 +444,34 @@ public class OrbitalData {
             OrekitConfig.init(4);
 
             //must use IERS_2003 and EME2000 frames to be consistent with STK
-            Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
             BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                     Constants.WGS84_EARTH_FLATTENING,
                     earthFrame);
 
-
-            //define orbit
-            double latitude = datum.getJ().getParentTask().getLat();
-            double longitude = datum.getJ().getParentTask().getLon();
-            double altitude = datum.getJ().getParentTask().getAlt();
-            GeodeticPoint taskLocation = new GeodeticPoint(latitude, longitude, altitude);
-            TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "task location");
-
-            // propagate by step-size
-            AbsoluteDate extrapDate = startDate;
+            //save orbit
+            AbsoluteDate startDate = this.dateData.get(0);
+            AbsoluteDate extrapDate;
             printWriter = new PrintWriter(fileWriter);
-            while (extrapDate.compareTo(endDate) <= 0)  {
+            for (int i = 0; i < dateData.size(); i++) {
                 // package data
-                PVCoordinates pvStation = staF.getPVCoordinates(extrapDate, inertialFrame);
-                String position = String.format("%f,%f,%f", pvStation.getPosition().getX(), pvStation.getPosition().getY(), pvStation.getPosition().getZ() );
-                String velocity = String.format("%f,%f,%f", pvStation.getVelocity().getX(), pvStation.getVelocity().getY(), pvStation.getVelocity().getZ() );
-                String acceleration = String.format("%f,%f,%f", pvStation.getAcceleration().getX(), pvStation.getAcceleration().getY(), pvStation.getAcceleration().getZ() );
+                extrapDate = dateData.get(i);
+                PVCoordinates pvTask = groundTrack.get(extrapDate);
+                String position = String.format("%f,%f,%f", pvTask.getPosition().getX(), pvTask.getPosition().getY(), pvTask.getPosition().getZ());
+                String velocity = String.format("%f,%f,%f", pvTask.getVelocity().getX(), pvTask.getVelocity().getY(), pvTask.getVelocity().getZ());
+                String acceleration = String.format("%f,%f,%f", pvTask.getAcceleration().getX(), pvTask.getAcceleration().getY(), pvTask.getAcceleration().getZ());
 
                 // print to text file
                 String stepData;
-                if(extrapDate == startDate){
+                if (extrapDate == startDate) {
                     stepData = String.format(Locale.US, "%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
-                }
-                else{
+                } else {
                     stepData = String.format(Locale.US, "\n%s,%s,%s,%s", extrapDate, position, velocity, acceleration);
                 }
                 printWriter.print(stepData);
-
-                // save to position vector datum
-                taskOrbitData.put(extrapDate, pvStation);
-
-                // advance by step-size
-                extrapDate = extrapDate.shiftedBy(del_t);
             }
 
             //close file
             printWriter.close();
-
-            //save data to iteration results
-            datum.setTaskOrbitData(taskOrbitData);
-        }
-        else{// unpackage existing files
-            File csvFile = new File(dataAddress);
-            BufferedReader sc = new BufferedReader(new FileReader(csvFile));
-
-            //define the start and end date of the simulation
-            TimeScale utc = TimeScalesFactory.getUTC();
-            String line = null;
-
-            while (true) {
-                try {
-                    if ( (line =sc.readLine()) == null) break;
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-
-                // -unpack date
-                String[] data = line.split(",");
-                String dateString = data[0];
-
-                int year = Integer.parseInt( String.format("%c%c%c%c", dateString.charAt(0), dateString.charAt(1), dateString.charAt(2), dateString.charAt(3)) );
-                int month = Integer.parseInt( String.format("%c%c", dateString.charAt(5), dateString.charAt(6)) );
-                int day = Integer.parseInt( String.format("%c%c", dateString.charAt(8), dateString.charAt(9)) );
-                int hour = Integer.parseInt( String.format("%c%c", dateString.charAt(11), dateString.charAt(12)) );
-                int minute = Integer.parseInt( String.format("%c%c", dateString.charAt(14), dateString.charAt(15)) );
-                double second = Double.parseDouble( String.format("%c%c%c%c%c%c", dateString.charAt(17), dateString.charAt(18), dateString.charAt(19), dateString.charAt(20), dateString.charAt(21), dateString.charAt(22)) );
-
-                AbsoluteDate date = new AbsoluteDate(year, month, day, hour, minute, second, utc);
-
-                // unpack position vector
-                double x_pos = Double.parseDouble( data[1] );
-                double y_pos = Double.parseDouble( data[2] );
-                double z_pos = Double.parseDouble( data[3] );
-                double x_vel = Double.parseDouble( data[4] );
-                double y_vel = Double.parseDouble( data[5] );
-                double z_vel = Double.parseDouble( data[6] );
-                double x_acc = Double.parseDouble( data[7] );
-                double y_acc = Double.parseDouble( data[8] );
-                double z_acc = Double.parseDouble( data[9] );
-
-                Vector3D position = new Vector3D(x_pos, y_pos, z_pos);
-                Vector3D velocity = new Vector3D(x_vel, y_vel, z_vel);
-                Vector3D acceleration = new Vector3D(x_acc, y_acc, z_acc);
-                PVCoordinates pvStation = new PVCoordinates(position, velocity, acceleration);
-
-                // save to position vector datum
-                taskOrbitData.put(date, pvStation);
-            }
-
-            //save data to iteration results
-            datum.setTaskOrbitData(taskOrbitData);
-        }
-    }
-
-    private void calculateCoverage(double fov, IterationResults localResults){
-        for(IterationDatum datum : localResults.getResults()){
-            Task parentTask = datum.getJ().getParentTask();
-            if(!accessData.containsKey(parentTask)){
-                // no coverage calculated yet,
-                HashMap<AbsoluteDate, Boolean> taskCoverage = new HashMap<>();
-
-                for(AbsoluteDate date : dateData){
-                    PVCoordinates satPV = pvData.get(date);
-                    PVCoordinates taskPV = datum.getTaskOrbitData(date);
-
-                    taskCoverage.put(date, isInFOV(fov, satPV, taskPV));
-                }
-
-                accessData.put(parentTask, taskCoverage);
-            }
-        }
-    }
-
-    private void calculateGroundTrack() throws OrekitException {
-        this.groundTrack = new HashMap<>();
-
-        // define task location
-        for(AbsoluteDate date : dateData){
-            PVCoordinates satPVnotNorm = new PVCoordinates( pvData.get(date).getPosition(), pvData.get(date).getVelocity(), pvData.get(date).getAcceleration() );
-            PVCoordinates satPV = satPVnotNorm.normalize();
-            Vector3D satPos = satPV.getPosition();
-            Vector3D satVel = satPV.getVelocity();
-            Vector3D satAcc = satPV.getAcceleration();
-
-            Vector3D stepPos = satPos.scalarMultiply( Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
-            PVCoordinates stepPV = new PVCoordinates(stepPos, satVel, satAcc);
-
-            groundTrack.put(date, stepPV);
         }
     }
 
@@ -508,6 +587,15 @@ public class OrbitalData {
 
     public PVCoordinates getGroundLocation(AbsoluteDate currDate){
         return this.groundTrack.get(currDate);
+    }
+
+    public PVCoordinates getTaskOrbitData(Subtask j, AbsoluteDate date){
+        Task parentTask = j.getParentTask();
+        return this.taskPvData.get(parentTask).get(date);
+    }
+
+    public String getDataFileName(){
+        return this.dataFileName;
     }
 
     public void setA(double a) {

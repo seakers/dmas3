@@ -469,7 +469,8 @@ public class SimulatedAgent extends AbstractAgent {
                         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
 
                         // restore current travel cost counter
-                        if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
+                        if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")
+                                || environment.getWorldType().equals("3D_Earth")) {
                             this.currentTravelCost = 0.0;
                         }
                         else{
@@ -1717,4 +1718,5 @@ public class SimulatedAgent extends AbstractAgent {
     public double getDel_t(){ return this.del_t; };
     public OrbitalData getAgentOrbit(){ return this.agentOrbit; }
     public boolean getManeuver(){ return this.maneuver; }
+    public String getOrbitDataFilename(){return this.agentOrbit.getDataFileName(); }
 }
