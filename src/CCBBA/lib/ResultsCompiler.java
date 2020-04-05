@@ -5,6 +5,7 @@ import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.SchedulingMessage;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 
 import java.awt.*;
@@ -75,6 +76,7 @@ public class ResultsCompiler extends AbstractAgent {
             printMetrics();
             printReport();
             printOrbits();
+            printTaskLocation();
         }
         printAllVectors( receivedResults );
     }
@@ -863,7 +865,7 @@ public class ResultsCompiler extends AbstractAgent {
             //create new file in directory
             FileWriter fileWriter = null;
             PrintWriter printWriter;
-            String outAddress = this.directoryAddress + "/taskOrbitFiles.out";
+            String outAddress = this.directoryAddress + "/agent_orbit_files.out";
             fileWriter = null;
             try {
                 fileWriter = new FileWriter(outAddress, false);
@@ -892,7 +894,7 @@ public class ResultsCompiler extends AbstractAgent {
             //create new file in directory
             FileWriter fileWriter = null;
             PrintWriter printWriter;
-            String outAddress = this.directoryAddress + "/taskOrbitFiles.out";
+            String outAddress = this.directoryAddress + "/task_orbit_files.out";
             try {
                 fileWriter = new FileWriter(outAddress, false);
             } catch (IOException e) {
@@ -901,21 +903,34 @@ public class ResultsCompiler extends AbstractAgent {
 
             // save data of where tasks are located, where they were done, and at which date
             printWriter = new PrintWriter(fileWriter);
+            AbsoluteDate startDate = environment.getStartDate();
             for(IterationDatum datum : receivedResults.get(0).getResults()){
                 int i_dat = receivedResults.get(0).indexOf(datum);
                 Subtask j = datum.getJ();
-                ArrayList<Double> x_j = j.getParentTask().getLocation();
+                Vector3D taskLocation = receivedResults.get(0).getParentAgent().getAgentOrbit().getTaskOrbitData(j, startDate).getPosition();
+                ArrayList<Double> x_j = new ArrayList<>(); x_j.add(taskLocation.getX()); x_j.add(taskLocation.getY()); x_j.add(taskLocation.getZ());
                 ArrayList<Double> x_a = datum.getX();
                 AbsoluteDate date = environment.getStartDate().shiftedBy(datum.getTz());
                 double dateSeconds = datum.getTz();
 
-                if(i_dat == 0){
-                    printWriter.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f",date, dateSeconds, x_j.get(0), x_j.get(1), x_j.get(2), x_a.get(0), x_a.get(1), x_a.get(2));
+                if(x_a.size() > 0) {
+                    if (i_dat == 0) {
+                        printWriter.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), x_a.get(0), x_a.get(1), x_a.get(2), dateSeconds);
+                    } else {
+                        printWriter.printf("\n%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), x_a.get(0), x_a.get(1), x_a.get(2), dateSeconds);
+                    }
                 }
                 else{
-                    printWriter.printf("\n%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f",date, dateSeconds, x_j.get(0), x_j.get(1), x_j.get(2), x_a.get(0), x_a.get(1), x_a.get(2));
+                    if (i_dat == 0) {
+                        printWriter.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), 0.0, 0.0, 0.0, dateSeconds);
+                    } else {
+                        printWriter.printf("\n%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), 0.0, 0.0, 0.0, dateSeconds);
+                    }
                 }
             }
+
+            //close file
+            printWriter.close();
         }
     }
 
