@@ -71,7 +71,6 @@ function [] = orbit_viz()
         end
         
         for j = 1:n
-           t;
            tz_j = taskOrbitData(j,7);
            if abs(tz_j - t) < 60.0
                 % draw measurement location 

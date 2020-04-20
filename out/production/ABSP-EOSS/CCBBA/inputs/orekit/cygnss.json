@@ -122,130 +122,14 @@
 					"TravelCostType": "Proportional"
 				},
 				"ConvergenceIndicator": 20
-			},
-			{
-				"Name": "CYGNISS-3-1",
-				"Instances": 1,
-				"SensorList": [ "L-RAD" ],
-				"FOV": 90.0,
-				"Position": {
-					"h": 510e3,
-					"e": 0.0001,
-					"i": 35.0,
-					"PA": 0.0,
-					"RAAN": 180.0,
-					"Anomaly": 0.0
-				},
-				"Maneuver": "OFF",
-				"Mass": 1.0,
-				"PlanningHorizon": 3,
-				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 2,
-				"MaxBidsAny": 5,
-				"Resources": {
-					"Type": "Const",
-					"MergeCost": 0.0,
-					"SplitCost": 0.0,
-					"Value": 100.0,
-					"TravelCost": 0.0057,
-					"TravelCostType": "Proportional"
-				},
-				"ConvergenceIndicator": 20
-			},
-			{
-				"Name": "CYGNISS-3-2",
-				"Instances": 1,
-				"SensorList": [ "L-SAR" ],
-				"FOV": 90.0,
-				"Position": {
-					"h": 510e3,
-					"e": 0.0001,
-					"i": 35.0,
-					"PA": 0.0,
-					"RAAN": 180.0,
-					"Anomaly": 90.0
-				},
-				"Maneuver": "OFF",
-				"Mass": 1.0,
-				"PlanningHorizon": 3,
-				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 2,
-				"MaxBidsAny": 5,
-				"Resources": {
-					"Type": "Const",
-					"MergeCost": 0.0,
-					"SplitCost": 0.0,
-					"Value": 100.0,
-					"TravelCost": 0.0057,
-					"TravelCostType": "Proportional"
-				},
-				"ConvergenceIndicator": 20
-			},
-			{
-				"Name": "CYGNISS-4-1",
-				"Instances": 1,
-				"SensorList": [ "L-RAD" ],
-				"FOV": 90.0,
-				"Position": {
-					"h": 510e3,
-					"e": 0.0001,
-					"i": 35.0,
-					"PA": 0.0,
-					"RAAN": 270.0,
-					"Anomaly": 0.0
-				},
-				"Maneuver": "OFF",
-				"Mass": 1.0,
-				"PlanningHorizon": 3,
-				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 2,
-				"MaxBidsAny": 5,
-				"Resources": {
-					"Type": "Const",
-					"MergeCost": 0.0,
-					"SplitCost": 0.0,
-					"Value": 100.0,
-					"TravelCost": 0.0057,
-					"TravelCostType": "Proportional"
-				},
-				"ConvergenceIndicator": 20
-			},
-			{
-				"Name": "CYGNISS-4-2",
-				"Instances": 1,
-				"SensorList": [ "L-SAR" ],
-				"FOV": 90.0,
-				"Position": {
-					"h": 510e3,
-					"e": 0.0001,
-					"i": 35.0,
-					"PA": 0.0,
-					"RAAN": 280.0,
-					"Anomaly": 90.0
-				},
-				"Maneuver": "OFF",
-				"Mass": 1.0,
-				"PlanningHorizon": 3,
-				"MaxConstraintViolations": 2,
-				"MaxBidsSolo": 2,
-				"MaxBidsAny": 5,
-				"Resources": {
-					"Type": "Const",
-					"MergeCost": 0.0,
-					"SplitCost": 0.0,
-					"Value": 100.0,
-					"TravelCost": 0.0057,
-					"TravelCostType": "Proportional"
-				},
-				"ConvergenceIndicator": 20
-			},
+			}
 		]		
 	}
 	"Scenario": {
 		"TaskList": [
 			{ 
 				"Name": "SoildMoisture"
-				"Instances": 1,
+				"Instances": 25,
 				"MaxScore": 100.0,
 				"Cost": {
 					"Value": 0.0114,,
