@@ -909,22 +909,24 @@ public class ResultsCompiler extends AbstractAgent {
                 Subtask j = datum.getJ();
                 Vector3D taskLocation = receivedResults.get(0).getParentAgent().getAgentOrbit().getTaskOrbitData(j, startDate).getPosition();
                 ArrayList<Double> x_j = new ArrayList<>(); x_j.add(taskLocation.getX()); x_j.add(taskLocation.getY()); x_j.add(taskLocation.getZ());
+                ArrayList<Double> x_j_polar = calcSpherical(x_j);
                 ArrayList<Double> x_a = datum.getX();
+                ArrayList<Double> x_a_polar = calcSpherical(x_a);
                 AbsoluteDate date = environment.getStartDate().shiftedBy(datum.getTz());
                 double dateSeconds = datum.getTz();
 
                 if(x_a.size() > 0) {
                     if (i_dat == 0) {
-                        printWriter.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), x_a.get(0), x_a.get(1), x_a.get(2), dateSeconds);
+                        printWriter.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), x_j_polar.get(1), x_j_polar.get(2), x_a.get(0), x_a.get(1), x_a.get(2), x_a_polar.get(1), x_a_polar.get(2), dateSeconds);
                     } else {
-                        printWriter.printf("\n%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), x_a.get(0), x_a.get(1), x_a.get(2), dateSeconds);
+                        printWriter.printf("\n%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), x_j_polar.get(1), x_j_polar.get(2), x_a.get(0), x_a.get(1), x_a.get(2), x_a_polar.get(1), x_a_polar.get(2), dateSeconds);
                     }
                 }
                 else{
                     if (i_dat == 0) {
-                        printWriter.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), 0.0, 0.0, 0.0, dateSeconds);
+                        printWriter.printf("%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), x_j_polar.get(1), x_j_polar.get(2), 0.0, 0.0, 0.0, 0.0, 0.0, dateSeconds);
                     } else {
-                        printWriter.printf("\n%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), 0.0, 0.0, 0.0, dateSeconds);
+                        printWriter.printf("\n%s\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f", date, x_j.get(0), x_j.get(1), x_j.get(2), x_j_polar.get(1), x_j_polar.get(2), 0.0, 0.0, 0.0, 0.0, 0.0, dateSeconds);
                     }
                 }
             }
@@ -1019,6 +1021,30 @@ public class ResultsCompiler extends AbstractAgent {
 
         //close file
         printWriter.close();
+    }
+
+    private ArrayList<Double> calcSpherical(ArrayList<Double> x){
+        ArrayList<Double> x_polar = new ArrayList<>();
+        ArrayList<Double> x_xy = new ArrayList<>();
+        x_xy.add(x.get(0));
+        x_xy.add(x.get(1));
+
+        double rho = calcNorm(x);
+        double theta = Math.atan2(x.get(1), x.get(0));
+        double phi = Math.atan2(x.get(2),calcNorm(x_xy));
+
+        x_polar.add(rho);
+        x_polar.add(theta);
+        x_polar.add(phi);
+        return x_polar;
+    }
+
+    private double calcNorm(ArrayList<Double> x){
+        double norm = 0.0;
+        for(int i = 0; i < x.size(); i++){
+            norm += Math.pow(x.get(i), 2);
+        }
+        return Math.sqrt(norm);
     }
 
     private ArrayList<SimulatedAgent> getListOfAgents(){
