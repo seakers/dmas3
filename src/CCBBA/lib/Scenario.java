@@ -177,6 +177,7 @@ public class Scenario extends Watcher {
         List<AgentAddress> agentsThinking1 = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
         List<AgentAddress> agentsThinking2 = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
         List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
+        List<AgentAddress> agentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
 
         if ( this.worldType.equals("3D_Earth") ) {
             if (isMessageBoxEmpty()) {
@@ -198,9 +199,30 @@ public class Scenario extends Watcher {
                     }
                 }
 
-                if(agentsEnvironment != null && messageAddress.size() >= agentsEnvironment.size()){
-                    // if all agents are out of filed of view from each other, then advance one time-step
-                    this.GVT += this.del_t;
+                if(agentsEnvironment != null){
+                    if(agentsDead == null){
+                        if(messageAddress.size() >= agentsEnvironment.size()){
+                            // if all agents are out of filed of view from each other, then advance one time-step
+                            this.GVT += this.del_t;
+                        }
+                        else{
+                            // if there is at least one agent in field of view of another, freeze time
+                            this.GVT += 0.0;
+                        }
+                    }
+                    else{
+                        if(agentsEnvironment.size() == agentsDead.size()){
+                            this.GVT += this.del_t;
+                        }
+                        else if(messageAddress.size() >= (agentsEnvironment.size() - agentsDead.size())){
+                            // if all agents are out of filed of view from each other, then advance one time-step
+                            this.GVT += this.del_t;
+                        }
+                        else{
+                            // if there is at least one agent in field of view of another, freeze time
+                            this.GVT += 0.0;
+                        }
+                    }
                 }
                 else{
                     // if there is at least one agent in field of view of another, freeze time

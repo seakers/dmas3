@@ -259,7 +259,7 @@ public class SimulatedAgent extends AbstractAgent {
 
         // leave phase one and start phase 2
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
-        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
+        if(alive) requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
 
         // Check for new Coalition members
         getNewCoalitionMemebers();
@@ -1639,8 +1639,23 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     private boolean isInFOV(ResultsMessage message){
-        PVCoordinates satPV = message.getLocation();
-        return this.getAgentOrbit().isInFOV(this.fov, this.positionPV, satPV);
+        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+        var itsRoles = message.getSender().getRole();
+
+        if(itsRoles.equals(SimGroups.AGENT_DIE) && myRoles.contains(SimGroups.AGENT_DIE)){
+            return true;
+        }
+        else if(!itsRoles.equals(SimGroups.AGENT_DIE) && myRoles.contains(SimGroups.AGENT_DIE)){
+            return true;
+        }
+        else if(itsRoles.equals(SimGroups.AGENT_DIE) && !myRoles.contains(SimGroups.AGENT_DIE)){
+            PVCoordinates satPV = message.getLocation();
+            return this.getAgentOrbit().isInFOV(this.fov, this.positionPV, satPV);
+        }
+        else {
+            PVCoordinates satPV = message.getLocation();
+            return this.getAgentOrbit().isInFOV(this.fov, this.positionPV, satPV);
+        }
     }
 
     private boolean tasksAvailable() throws Exception {
