@@ -68,10 +68,6 @@ public class Planner extends Scheduler {
     }
 
     private void updateTime(){
-        double time = this.getGVT();
-        TimeMessage updatedTime = new TimeMessage(time);
-        broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE, updatedTime);
-
         this.setGVT(environment.getGVT());
     }
 }

@@ -249,8 +249,8 @@ public class SimulatedAgent extends AbstractAgent {
 
         }
 
-        getLogger().info("Bundle constructed");
         getLogger().fine(this.name + " results after bundle construction: \n" + this.localResults.toString());
+        getLogger().info("Bundle constructed");
         logBundle();
         logPath();
 
@@ -283,47 +283,62 @@ public class SimulatedAgent extends AbstractAgent {
             IterationResults prevResults = new IterationResults(localResults, this);
 
             // Compare with received Results
-            compareResults();
+            boolean crossLinks = compareResults();
 
             // constrain checks
             constraintCheck();
-            this.zeta++;
 
-            // check for changes in results
-            getLogger().info("Checking for changes");
-            int i_dif = checkForChanges(prevResults);
-            if (i_dif >= 0) {
-                // changes were made, reconsider bids
-                getLogger().fine("Changes were made. Reconsidering bids");
-                getLogger().fine(this.localResults.comparisonToString(i_dif, prevResults));
-                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
-                this.convCounter = 0;
-            } else {
-                // no changes were made, check convergence
-                getLogger().fine("No changes were made. Checking convergence");
-                this.convCounter++;
-
-                getLogger().fine("Convergence status: " + convCounter + "/" + convIndicator);
-                if (convCounter < convIndicator) {
+            if(crossLinks) {
+                // check for changes in results
+                getLogger().info("Checking for changes");
+                int i_dif = checkForChanges(prevResults);
+                if (i_dif >= 0) {
+                    // changes were made, reconsider bids
+                    getLogger().fine("Changes were made. Reconsidering bids");
+                    getLogger().fine(this.localResults.comparisonToString(i_dif, prevResults));
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
-
-                } else {
-                    // convergence reached
-                    getLogger().config("Convergence reached. Plan determined!");
                     this.convCounter = 0;
-                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                } else {
+                    // no changes were made, check convergence
+                    getLogger().fine("No changes were made. Checking convergence");
+                    this.convCounter++;
 
-                    // Broadcast my results
-                    broadcastResults();
+                    getLogger().fine("Convergence status: " + convCounter + "/" + convIndicator);
+                    if (convCounter < convIndicator) {
+                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+
+                    } else {
+                        // convergence reached
+                        getLogger().config("Convergence reached. Plan determined!");
+                        this.convCounter = 0;
+                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+
+                        // Broadcast my results
+                        broadcastResults();
+                    }
                 }
-            }
 
-            // empty received results and exit phase 2
-            receivedResults = new ArrayList<>();
-            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
+                // empty received results and exit phase 2
+                receivedResults = new ArrayList<>();
+                leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
+
+                this.zeta++;
+            }
+            else {
+                getLogger().info("No messages received. No other agents in FOV");
+
+                leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
+                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+            }
         } else {
             getLogger().info("No messages received. Waiting on other agents");
         }
+
+        // Update Position
+        updatePosition();
+        this.t_curr = environment.getGVT();
+
+        // Check convergence timeout
         if(this.zeta == 50000){
             getLogger().warning("Timeout reached. No consensus reached");
             getLogger().fine(this.name + " results after timeout: \n" + this.localResults.toString());
@@ -364,121 +379,126 @@ public class SimulatedAgent extends AbstractAgent {
 
         if(alive) {
             if(path.size() > 0) {
-                // agent is alive and has a plan to perform
-                Subtask j = path.get(0);
+                for(int i = 0; i < path.size(); ){
+                    // agent is alive and has a plan to perform
+                    Subtask j = path.get(0);
 
-                if( taskPositionReached() ){
-                    // if my position is the same as the task, perform task
-                    getLogger().info("Executing one task from plan");
+                    if( taskPositionReached() ){
+                        // if my position is the same as the task, perform task
+                        getLogger().info("Executing one task from plan");
 
-                    // do earliest tasks in path
-                    ArrayList<Double> x = x_path.get(0);
-                    getLogger().fine("Performing task: " + j.getName() + " #" + (this.localResults.indexOf(j) + 1));
-                    completeTask(j, x);
+                        // do earliest tasks in path
+                        ArrayList<Double> x = x_path.get(0);
+                        getLogger().fine("Performing task: " + j.getName() + " #" + (this.localResults.indexOf(j) + 1));
+                        completeTask(j, x);
 
-                    // check if agent is still alive after performing task
-                    myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-                    alive = !myRoles.contains(SimGroups.AGENT_DIE);
+                        // check if agent is still alive after performing task
+                        myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+                        alive = !myRoles.contains(SimGroups.AGENT_DIE);
 
-                    if (alive) {
-                        // save to overall bundle, path, and omega
-                        getLogger().fine("Saving performed task to overall bundle and path");
-                        int i_path = bundle.indexOf(path.get(0));
-                        this.overallOmega.add(omega.get(i_path));
-                        this.overallX_path.add(x_path.get(0));
-                        this.overallPath.add(path.get(0));
-                        this.overallBundle.add(bundle.get(i_path));
+                        if (alive) {
+                            // save to overall bundle, path, and omega
+                            getLogger().fine("Saving performed task to overall bundle and path");
+                            int i_path = bundle.indexOf(path.get(0));
+                            this.overallOmega.add(omega.get(i_path));
+                            this.overallX_path.add(x_path.get(0));
+                            this.overallPath.add(path.get(0));
+                            this.overallBundle.add(bundle.get(i_path));
 
-                        // release performed task from path an bundle
-                        getLogger().fine("Releasing performed task from bundle");
-                        path.remove(0);
-                        x_path.remove(0);
-                        bundle.remove(i_path);
-                        omega.set(i_path, new ArrayList<>());
+                            // release performed task from path an bundle
+                            getLogger().fine("Releasing performed task from bundle");
+                            path.remove(0);
+                            x_path.remove(0);
+                            bundle.remove(i_path);
+                            omega.set(i_path, new ArrayList<>());
 
-                        localResults.resetCoalitionCounters();
-                    } else {
-                        getLogger().fine(this.name + " did not perform any tasks.");
-                    }
+                            localResults.resetCoalitionCounters();
+                        } else {
+                            getLogger().fine(this.name + " did not perform any tasks.");
+                        }
 
-                    getLogger().finer(this.name + " results after task was performed: \n" + this.localResults.toString());
-                    logBundle();
-                    logPath();
+                        getLogger().finer(this.name + " results after task was performed: \n" + this.localResults.toString());
+                        logBundle();
+                        logPath();
 
-                    // check for remaining tasks
-                    getLogger().fine("Checking for remaining tasks...");
-                    boolean tasksAvailable = tasksAvailable();
-                    if(alive) {
-                        // agent is still alive after performing task
-                        if (path.size() == 0) {
-                            // agent has completed all planned tasks
-                            if (checkResources()) {
-                                if (tasksAvailable) {
-                                    // tasks are remaining and the agent is still alive
-                                    getLogger().info("Resources still available. Creating new plan!");
-                                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+                        // check for remaining tasks
+                        getLogger().fine("Checking for remaining tasks...");
+                        boolean tasksAvailable = tasksAvailable();
+                        if(alive) {
+                            // agent is still alive after performing task
+                            if (path.size() == 0) {
+                                // agent has completed all planned tasks
+                                if (checkResources()) {
+                                    if (tasksAvailable) {
+                                        // tasks are remaining and the agent is still alive
+                                        getLogger().info("Resources still available. Creating new plan!");
+                                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+                                    } else {
+                                        // no tasks are remaining
+                                        getLogger().config("No more tasks available. Killing agent");
+                                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                                    }
                                 } else {
-                                    // no tasks are remaining
-                                    getLogger().config("No more tasks available. Killing agent");
+                                    // no sufficient resources left in agent
+                                    getLogger().config("Agent has no more resources available. Killing agent");
                                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
                                 }
                             } else {
-                                // no sufficient resources left in agent
-                                getLogger().config("Agent has no more resources available. Killing agent");
-                                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+                                // agent still contains tasks in its plan
+                                getLogger().fine("Agent still contains tasks in plan");
+                                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                             }
-                        } else {
-                            // agent still contains tasks in its plan
-                            getLogger().fine("Agent still contains tasks in plan");
+                        }
+                        else{
+                            // agent is dead after performing task
+                            getLogger().info("Agent is dead and has no plan to perform");
                             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
                         }
-                    }
-                    else{
-                        // agent is dead after performing task
-                        getLogger().info("Agent is dead and has no plan to perform");
-                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
-                    }
 
-                    // leave doing phase
-                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-
-                    // restore current travel cost counter
-                    if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
-                        this.currentTravelCost = 0.0;
-                    }
-                    else if(environment.getWorldType().equals("3D_Earth")){
-                        this.currentTravelCost = 0.0;
-                    }
-                    else{
-                        throw new Exception("Travel Cost type not yet supported");
-                    }
-                }
-                else{
-                    // I'm still on the way to performing task
-                    getLogger().info("Agent is on its way to latest task in the plan");
-
-                    // Advance to task
-                    ArrayList<Double> x = x_path.get(0);
-                    moveTowardsTastk(x);
-
-                    // check if I need to reconsider bids
-                    if(currentBundleSize > newBundleSize){
-                        // changes were made to parent task of a subtask in the path
-                        getLogger().fine("Parent task to a subtask in the path has changes. Reconsidering bids.");
+                        // leave doing phase
                         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
 
                         // restore current travel cost counter
-                        if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")
-                                || environment.getWorldType().equals("3D_Earth")) {
+                        if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
+                            this.currentTravelCost = 0.0;
+                        }
+                        else if(environment.getWorldType().equals("3D_Earth")){
                             this.currentTravelCost = 0.0;
                         }
                         else{
                             throw new Exception("Travel Cost type not yet supported");
                         }
+
+                        // Log status
+                        getLogger().fine(this.name + " results after subtask was performed: \n" + this.localResults.toString());
+                        logBundle();
+                        logPath();
                     }
                     else{
-                        getLogger().fine("No changes to parent task of a path subtask. Continuing with plan.");
+                        // I'm still on the way to performing task
+                        getLogger().info("Agent is on its way to latest task in the plan");
+
+                        // check if I need to reconsider bids
+                        if(currentBundleSize > newBundleSize){
+                            // changes were made to parent task of a subtask in the path
+                            getLogger().fine("Parent task to a subtask in the path has changes. Reconsidering bids.");
+                            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
+                            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+
+                            // restore current travel cost counter
+                            if (environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")
+                                    || environment.getWorldType().equals("3D_Earth")) {
+                                this.currentTravelCost = 0.0;
+                            }
+                            else{
+                                throw new Exception("Travel Cost type not yet supported");
+                            }
+                        }
+                        else{
+                            getLogger().fine("No changes to parent task of a path subtask. Continuing with plan.");
+                        }
+
+                        break;
                     }
                 }
             }
@@ -510,8 +530,11 @@ public class SimulatedAgent extends AbstractAgent {
             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
         }
 
-        // update time
+        // Update Position
+        updatePosition();
         this.t_curr = this.environment.getGVT();
+
+
     }
 
     @SuppressWarnings("unused")
@@ -690,7 +713,9 @@ public class SimulatedAgent extends AbstractAgent {
         }
 
         // -Field of view
-        this.fov = FastMath.toRadians( (double) inputAgentData.get("FOV") );
+        if (worldData.get("Type").equals("3D_Earth")) {
+            this.fov = FastMath.toRadians((double) inputAgentData.get("FOV"));
+        }
 
         // -Position
         this.position = new ArrayList<>();
@@ -839,13 +864,40 @@ public class SimulatedAgent extends AbstractAgent {
         return true;
     }
 
-    private void compareResults() throws Exception {
+    private boolean compareResults() throws Exception {
         // unpack results
         List<Message> receivedMessages = nextMessages(null);
         this.receivedResults = new ArrayList<>();
+        int outOfFOVcounter = 0;
+
         for (int i = 0; i < receivedMessages.size(); i++) {
             ResultsMessage message = (ResultsMessage) receivedMessages.get(i);
-            receivedResults.add(message.getResults());
+            if(this.environment.getWorldType().equals("2D_Grid") || this.environment.getWorldType().equals("3D_World")){
+                receivedResults.add(message.getResults());
+            }
+            else if(this.environment.getWorldType().equals("3D_Earth")){
+                if(isInFOV(message)){
+                    receivedResults.add(message.getResults());
+                }
+                else{
+                    outOfFOVcounter++;
+                }
+            }
+            else{
+                throw new Exception("World-type not yet supported");
+            }
+        }
+
+        if(this.environment.getWorldType().equals("3D_Earth")){
+            List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
+            if(agentsEnvironment != null && outOfFOVcounter >= agentsEnvironment.size()){
+                // I am the only agent or I am out of FOV from all other agents, alert environment
+
+                Message outOfFOVWarning = new Message();
+                broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE, outOfFOVWarning);
+
+                return false;
+            }
         }
 
         // compare results
@@ -974,6 +1026,8 @@ public class SimulatedAgent extends AbstractAgent {
         getLogger().fine(this.name + " results after comparison: \n" + this.localResults.toString());
         logBundle();
         logPath();
+
+        return true;
     }
 
     private void constraintCheck() throws Exception{
@@ -1467,20 +1521,48 @@ public class SimulatedAgent extends AbstractAgent {
             // move one time step towards task
             for(int i = 0; i < this.position.size(); i++){
                 dir.set(i, dir.get(i)/magnitude);
-                deltaX.add(this.speed*dir.get(i)*del_t);
+                deltaX.add(this.speed*dir.get(i)*(environment.getGVT() - this.t_curr));
                 this.position.set(i, this.position.get(i) + deltaX.get(i));
+//                this.position.set(i, deltaX.get(i));
             }
 
             // calculate and deduct travel cost
-            double travelCost = this.speed * this.del_t * this.myResources.getMiu();
+            double travelCost = this.speed * (environment.getGVT() - this.t_curr) * this.myResources.getMiu();
             this.currentTravelCost += travelCost;
             deductTravelCost(travelCost);
 
         }
         else if( environment.getWorldType().equals("3D_Earth") ){
+//            if(!this.maneuver) {
+//                this.currentDate = this.agentOrbit.getNextDate(currentDate);
+//                this.positionPV = this.agentOrbit.getNextLocation(currentDate);
+//            }
+//            else{
+//                throw new Exception("Satellite maneuvers not yet supported.");
+//            }
+        }
+        else {
+            throw new Exception("World type not supported.");
+        }
+    }
+
+    private void updatePosition() throws Exception {
+        if(environment.getWorldType().equals("2D_Grid") || environment.getWorldType().equals("3D_Grid")) {
+            if(bundle.size() > 0){
+                ArrayList<Double> x_j = x_path.get(0);
+                moveTowardsTastk(x_j);
+            }
+        }
+        else if( environment.getWorldType().equals("3D_Earth") ){
             if(!this.maneuver) {
-                this.currentDate = this.agentOrbit.getNextDate(currentDate);
-                this.positionPV = this.agentOrbit.getNextLocation(currentDate);
+                double t = this.environment.getGVT();
+                this.currentDate = this.environment.getStartDate().shiftedBy(t);
+                if(this.agentOrbit.getDateData().contains(currentDate)) {
+                    this.positionPV = this.agentOrbit.getNextLocation(currentDate);
+                }
+                else{
+                    throw new Exception("Date not found in propagated orbit data");
+                }
             }
             else{
                 throw new Exception("Satellite maneuvers not yet supported.");
@@ -1518,7 +1600,7 @@ public class SimulatedAgent extends AbstractAgent {
                 double distance = 0.0;
 
                 for(int i = 0; i < position.size(); i++){
-                    distance += Math.pow(position.get(i) - x_path.get(0).get(i), 2);
+                    distance += Math.pow(position.get(i) - taskPosition.get(i), 2);
                 }
                 distance = sqrt(distance);
 
@@ -1554,6 +1636,11 @@ public class SimulatedAgent extends AbstractAgent {
             this.t_curr += this.del_t;
         }
 //        this.t_curr = this.localResults.getIterationDatum(j).getTz() + j.getParentTask().getDuration();
+    }
+
+    private boolean isInFOV(ResultsMessage message){
+        PVCoordinates satPV = message.getLocation();
+        return this.getAgentOrbit().isInFOV(this.fov, this.positionPV, satPV);
     }
 
     private boolean tasksAvailable() throws Exception {
@@ -1630,7 +1717,7 @@ public class SimulatedAgent extends AbstractAgent {
     }
 
     private void logPosition(){
-        if(environment.getWorldType().equals("3D_World") || environment.getWorldType().equals("2D_World")) {
+        if(environment.getWorldType().equals("3D_World") || environment.getWorldType().equals("2D_Grid")) {
             StringBuilder output;
             if (this.x_path.size() > 0) {
                 output = new StringBuilder(
@@ -1719,4 +1806,5 @@ public class SimulatedAgent extends AbstractAgent {
     public OrbitalData getAgentOrbit(){ return this.agentOrbit; }
     public boolean getManeuver(){ return this.maneuver; }
     public String getOrbitDataFilename(){return this.agentOrbit.getDataFileName(); }
+    public PVCoordinates getPositionPV(){return this.positionPV;}
 }

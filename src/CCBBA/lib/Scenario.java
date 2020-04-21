@@ -1,8 +1,11 @@
 package CCBBA.lib;
 
+import madkit.action.SchedulingAction;
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.kernel.Watcher;
+import madkit.message.SchedulingMessage;
 import madkit.simulation.probe.PropertyProbe;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -170,8 +173,59 @@ public class Scenario extends Watcher {
         addProbe(new Scenario.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE, "environment"));
     }
 
-    private void updateTime(){
-        this.GVT += this.del_t;
+    private void updateTime() throws Exception{
+        List<AgentAddress> agentsThinking1 = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK1);
+        List<AgentAddress> agentsThinking2 = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK2);
+        List<AgentAddress> agentsEnvironment = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_EXIST);
+
+        if ( this.worldType.equals("3D_Earth") ) {
+            if (isMessageBoxEmpty()) {
+                if (agentsThinking1 == null && agentsThinking2 == null && agentsEnvironment != null) {
+                    // if no agents are thinking or creating a plan, advance time
+                    this.GVT += this.del_t;
+                } else {
+                    // if there is at least one agent thinking, freeze time
+                    this.GVT += 0.0;
+                }
+            } else {
+                // checks for messages sent from agents stuck in
+                List<Message> receivedMessages = nextMessages(null);
+                List<AgentAddress> messageAddress = new ArrayList<>();
+                for (int i = 0; i < receivedMessages.size(); i++) {
+                    AgentAddress address = receivedMessages.get(i).getSender();
+                    if (!messageAddress.contains(address)) {
+                        messageAddress.add(address);
+                    }
+                }
+
+                if(agentsEnvironment != null && messageAddress.size() >= agentsEnvironment.size()){
+                    // if all agents are out of filed of view from each other, then advance one time-step
+                    this.GVT += this.del_t;
+                }
+                else{
+                    // if there is at least one agent in field of view of another, freeze time
+                    this.GVT += 0.0;
+                }
+            }
+        }
+        else if(this.worldType.equals("3D_World") || this.worldType.equals("2D_Grid")){
+            if (agentsThinking1 == null && agentsThinking2 == null && agentsEnvironment != null) {
+                // if no agents are thinking or creating a plan, advance time
+                this.GVT += this.del_t;
+            } else {
+                // if there is at least one agent thinking, freeze time
+                this.GVT += 0.0;
+            }
+        }
+        else{
+            throw new Exception("ERROR world type not supported");
+        }
+
+        if( Math.abs( this.GVT - endDate.durationFrom(startDate) ) <= 1e-3 ){
+            // End time reached, terminate sim
+            SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
+            sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
+        }
     }
 
     class AgentsProbe extends PropertyProbe<AbstractAgent, Scenario> {

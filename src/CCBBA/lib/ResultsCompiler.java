@@ -6,6 +6,7 @@ import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.SchedulingMessage;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
 import java.awt.*;
@@ -909,9 +910,9 @@ public class ResultsCompiler extends AbstractAgent {
                 Subtask j = datum.getJ();
                 Vector3D taskLocation = receivedResults.get(0).getParentAgent().getAgentOrbit().getTaskOrbitData(j, startDate).getPosition();
                 ArrayList<Double> x_j = new ArrayList<>(); x_j.add(taskLocation.getX()); x_j.add(taskLocation.getY()); x_j.add(taskLocation.getZ());
-                ArrayList<Double> x_j_polar = calcSpherical(x_j);
+                ArrayList<Double> x_j_polar = calcSpherical(x_j, true);
                 ArrayList<Double> x_a = datum.getX();
-                ArrayList<Double> x_a_polar = calcSpherical(x_a);
+                ArrayList<Double> x_a_polar = calcSpherical(x_a, true);
                 AbsoluteDate date = environment.getStartDate().shiftedBy(datum.getTz());
                 double dateSeconds = datum.getTz();
 
@@ -1023,19 +1024,31 @@ public class ResultsCompiler extends AbstractAgent {
         printWriter.close();
     }
 
-    private ArrayList<Double> calcSpherical(ArrayList<Double> x){
+    private ArrayList<Double> calcSpherical(ArrayList<Double> x, boolean degrees){
         ArrayList<Double> x_polar = new ArrayList<>();
-        ArrayList<Double> x_xy = new ArrayList<>();
-        x_xy.add(x.get(0));
-        x_xy.add(x.get(1));
+        if(x.size() > 0) {
+            ArrayList<Double> x_xy = new ArrayList<>();
+            x_xy.add(x.get(0));
+            x_xy.add(x.get(1));
 
-        double rho = calcNorm(x);
-        double theta = Math.atan2(x.get(1), x.get(0));
-        double phi = Math.atan2(x.get(2),calcNorm(x_xy));
+            double rho = calcNorm(x);
+            double theta = Math.atan2(x.get(1), x.get(0));
+            double phi = Math.atan2(x.get(2), calcNorm(x_xy));
 
-        x_polar.add(rho);
-        x_polar.add(theta);
-        x_polar.add(phi);
+            if (degrees) {
+                theta = FastMath.toDegrees(theta);
+                phi = FastMath.toDegrees(phi);
+            }
+
+            x_polar.add(rho);
+            x_polar.add(theta);
+            x_polar.add(phi);
+        }
+        else{
+            x_polar.add(0.0);
+            x_polar.add(0.0);
+            x_polar.add(0.0);
+        }
         return x_polar;
     }
 

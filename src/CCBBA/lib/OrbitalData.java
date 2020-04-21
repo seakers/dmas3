@@ -475,7 +475,7 @@ public class OrbitalData {
         }
     }
 
-    private boolean isInFOV(double fov, PVCoordinates satPV, PVCoordinates taskPV){
+    public boolean isInFOV(double fov, PVCoordinates satPV, PVCoordinates taskPV){
         Vector3D satPos = satPV.getPosition();
         Vector3D taskPos = taskPV.getPosition();
         double Re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;

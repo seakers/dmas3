@@ -20,14 +20,15 @@ function [] = orbit_viz()
     end
     
     agentOrbitFiles = importdata( string(cases.folder) + '\' + string(cases.name) + '\agent_orbit_files.out' );
-    taskOrbitData = importdata( string(cases.folder) + '\' + string(cases.name) + '\task_orbit_files.out' ).data;
+    taskOrbitData = importdata( string(cases.folder) + '\' + string(cases.name) + '\task_orbit_files.out' );
+    taskOrbitData = taskOrbitData.data;
     
     cd('..'); cd('..');
     cd('orbits\agents')
     agentOrbitData = cell(length(agentOrbitFiles),1);
     for i = 1:length(agentOrbitFiles)
-       localOrbit = importdata( agentOrbitFiles{i} ).data;
-       agentOrbitData{i} = localOrbit;
+       localOrbit = importdata( agentOrbitFiles{i,1} );     
+       agentOrbitData{i,1} = localOrbit.data;
     end
     cd('..'); cd('..');
     cd('processing\orbit_viz');
@@ -70,14 +71,23 @@ function [] = orbit_viz()
         end
         
         for j = 1:n
-           tz_j = taskOrbitData(n,7);
-           if tz_j == t
+%            tz_j = taskOrbitData(j, 11);
+           tz_j = taskOrbitData(j, 7);
+           if (tz_j - t) < 60.0
                 % draw measurement location 
-                x_a = taskOrbitData(n,1)/Re;
-                y_a = taskOrbitData(n,2)/Re;
-                z_a = taskOrbitData(n,3)/Re;
+                x_j = taskOrbitData(j,1)/Re;
+                y_j = taskOrbitData(j,2)/Re;
+                z_j = taskOrbitData(j,3)/Re;
+                
+%                 x_a = taskOrbitData(j,6)/Re;
+%                 y_a = taskOrbitData(j,7)/Re;
+%                 z_a = taskOrbitData(j,8)/Re;
+                x_a = taskOrbitData(j,4)/Re;
+                y_a = taskOrbitData(j,5)/Re;
+                z_a = taskOrbitData(j,6)/Re;
                 
                 if x_a ~= 0.0 || y_a~=0.0 || z_a ~= 0.0
+                    plot3(x_j, y_j, z_j,'.b','markersize',10) 
                     plot3(x_a, y_a, z_a,'.r','markersize',10) 
                 end
            end

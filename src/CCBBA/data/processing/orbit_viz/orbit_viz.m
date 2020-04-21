@@ -71,15 +71,23 @@ function [] = orbit_viz()
         end
         
         for j = 1:n
-           t;
-           tz_j = taskOrbitData(j,7);
-           if abs(tz_j - t) < 60.0
+%            tz_j = taskOrbitData(j, 11);
+           tz_j = taskOrbitData(j, 7);
+           if (tz_j - t) < 60.0
                 % draw measurement location 
-                x_a = taskOrbitData(j,1)/Re;
-                y_a = taskOrbitData(j,2)/Re;
-                z_a = taskOrbitData(j,3)/Re;
+                x_j = taskOrbitData(j,1)/Re;
+                y_j = taskOrbitData(j,2)/Re;
+                z_j = taskOrbitData(j,3)/Re;
+                
+%                 x_a = taskOrbitData(j,6)/Re;
+%                 y_a = taskOrbitData(j,7)/Re;
+%                 z_a = taskOrbitData(j,8)/Re;
+                x_a = taskOrbitData(j,4)/Re;
+                y_a = taskOrbitData(j,5)/Re;
+                z_a = taskOrbitData(j,6)/Re;
                 
                 if x_a ~= 0.0 || y_a~=0.0 || z_a ~= 0.0
+                    plot3(x_j, y_j, z_j,'.b','markersize',10) 
                     plot3(x_a, y_a, z_a,'.r','markersize',10) 
                 end
            end

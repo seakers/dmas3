@@ -18,7 +18,36 @@
 					"i": 0.0,
 					"PA": 0.0,
 					"RAAN": 0.0,
-					"Anomaly": -90.0
+					"Anomaly": -45.0
+				},
+				"Maneuver": "OFF",
+				"Mass": 1.0,
+				"PlanningHorizon": 3,
+				"MaxConstraintViolations": 2,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 5,
+				"Resources": {
+					"Type": "Const",
+					"MergeCost": 0.0,
+					"SplitCost": 0.0,
+					"Value": 100.0,
+					"TravelCost": 0.0057,
+					"TravelCostType": "Proportional"
+				},
+				"ConvergenceIndicator": 20
+			},
+			{
+				"Name": "SatInt",
+				"Instances": 1,
+				"SensorList": [ "IR", "MW" ],
+				"FOV": 90.0,
+				"Position": {
+					"h": 700e3,
+					"e": 0.0001,
+					"i": 0.0,
+					"PA": 0.0,
+					"RAAN": 0.0,
+					"Anomaly": 45.0
 				},
 				"Maneuver": "OFF",
 				"Mass": 1.0,

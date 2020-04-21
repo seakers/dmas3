@@ -69,7 +69,7 @@ public class PathUtility{
         double n = 0.0;
 
         if(j.getParentTask().getGamma() == Double.NEGATIVE_INFINITY){
-            if(agent.getEnvironment().getWorldType().equals("2D_World") || agent.getEnvironment().getWorldType().equals("3D_World")){
+            if(agent.getEnvironment().getWorldType().equals("2D_Grid") || agent.getEnvironment().getWorldType().equals("3D_World")){
                 x_a = j.getParentTask().getLocation();
                 t_a = calcTimeOfArrival(path, j, agent, x_a);
 

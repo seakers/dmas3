@@ -1,0 +1,354 @@
+__________________________________
+          WINNING VECTORS         
+__________________________________
+Subtasks:			[L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	|	L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	|	L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	|	L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	|	L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	|	L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	|	L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	|	L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	|	L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	|	L-RAD_{}		L-RAD_{L-SAR}		L-SAR_{}		L-SAR_{L-RAD}	]
+Bids Score:			[0.000		0.000		0.000		0.000	|	0.000		0.000		0.000		0.000	|	0.000		0.000		0.000		0.000	|	0.000		0.000		0.000		0.000	|	0.000		0.000		0.000		0.000	|	0.000		0.000		0.000		0.000	|	0.000		0.000		0.000		0.000	|	0.000		0.000		0.000		0.000	|	0.000		0.000		0.000		0.000	|	0.000		0.000		0.000		0.000	]
+Measurement Time:	[0.00		0.00		0.00		0.00	|	0.00		0.00		0.00		0.00	|	0.00		0.00		0.00		0.00	|	0.00		0.00		0.00		0.00	|	0.00		0.00		0.00		0.00	|	0.00		0.00		0.00		0.00	|	0.00		0.00		0.00		0.00	|	0.00		0.00		0.00		0.00	|	0.00		0.00		0.00		0.00	|	0.00		0.00		0.00		0.000	]
+Iteration Assigned:	[0			0			0			0		|	0			0			0			0		|	0			0			0			0		|	0			0			0			0		|	0			0			0			0		|	0			0			0			0		|	0			0			0			0		|	0			0			0			0		|	0			0			0			0		|	0			0			0			0		]
+Winners:			[-			-			-			-		|	-			-			-			-		|	-			-			-			-		|	-			-			-			-		|	-			-			-			-		|	-			-			-			-		|	-			-			-			-		|	-			-			-			-		|	-			-			-			-		|	-			-			-			-		]
+
+__________________________________
+        PERFORMANCE METRICS       
+__________________________________
+Coalitions Formed:		0
+Coalitions Available:	10
+Coalition Ratio:		0.00%
+
+Score Achieved:			0.000
+Score Available:		1000.000
+Score Ratio:			0.00%
+
+Merge Cost:				0.000000
+Split Cost:				0.000000
+
+Avg Cost per Research:	0.00%
+
+Tasks Done:				0
+Tasks Available:		10
+Tasks Done Ratio:		0.00%
+
+Tasks done w/ 1 sens:	0
+Tasks done w/ 2 sens:	0
+Tasks done w/ 3 sens:	0
+
+Planning Horizon:		3
+
+__________________________________
+           AGENT LIST             
+__________________________________
+Agent Number:			1
+Planning Horizon:		3
+Max Const Iteration:	2
+Max Solo Bids:			2
+Max Any Bids:			5
+Iteration Counter:		23
+Final Resources:		100.000000
+
+Location:				[6115057.090		1812920.238		-5346.318]
+Sensor List:			[IR]
+Bundle:					[]
+Path:					[]
+X-Path:
+[	]
+Time Assignments:		[]
+__________________________________
+            TASK LIST             
+__________________________________
+Task Number:		0
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[0.398162, 0.548425, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
+
+**********************************
+Task Number:		1
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[0.009703, -1.563290, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
+
+**********************************
+Task Number:		2
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[-0.458669, -2.136632, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
+
+**********************************
+Task Number:		3
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[0.211100, -1.614220, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
+
+**********************************
+Task Number:		4
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[-0.115892, 2.110215, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
+
+**********************************
+Task Number:		5
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[0.606850, 1.986740, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
+
+**********************************
+Task Number:		6
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[-0.227865, 3.060374, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
+
+**********************************
+Task Number:		7
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[-0.185386, 2.862523, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
+
+**********************************
+Task Number:		8
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[-0.488957, -1.789955, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
+
+**********************************
+Task Number:		9
+Maximum Score:		100.000000
+Subtask Cost:		0.011400
+Number of Sensors:	2
+Number of Subtasks:	4
+
+Location:			[0.276960, 2.042769, 0.000000]
+Sensor List:		[L-RAD, L-SAR]
+Subtask List:		[L-RAD_{}, L-RAD_{L-SAR}, L-SAR_{}, L-SAR_{L-RAD}]
+
+Time Constraints:
+Start Time:		0.000000
+End Time:		2678400.000000
+Task Duration:	0.000000
+Corr Time:		216000.000000
+Lambda:			0.000002
+Dependency Matrix:
+   [0	-1	-1	-1
+	-1	0	-1	1
+	-1	-1	0	-1
+	-1	1	-1	0]
+
+Time Constraint Matrix:
+   [Infinity	Infinity	Infinity	Infinity
+	Infinity	Infinity	Infinity	216000.000000
+	Infinity	Infinity	Infinity	Infinity
+	Infinity	216000.000000	Infinity	Infinity]
+
