@@ -1,0 +1,139 @@
+{
+    "SimName": "Figure3-Mod-8",
+    "NumRuns": 50,
+	"Planner": "CCBBA",
+	"Logger": "WARNING"
+	"OutputSwitch": "ON"
+	"TimeStep": 0.1,
+	"Agents": {
+		"AgentList": [
+			{
+				"Name": "Sat1",
+				"Instances": 2,
+				"SensorList": [ "IR" ],
+				"Position": {
+					"Dist": "Linear",
+				},
+				"Speed": 1.0,
+				"Mass": 1.0,
+				"PlanningHorizon": 3,
+				"MaxConstraintViolations": 2,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 5,
+				"Resources": {
+					"Type": "Const",
+					"MergeCost": 0.0,
+					"SplitCost": 0.0,
+					"Value": 50.0,
+					"TravelCost": 0.0057,
+					"TravelCostType": "Proportional"
+				},
+				"ConvergenceIndicator": 20
+			}, 
+			{
+				"Name": "Sat2",
+				"Instances": 2,
+				"SensorList": [ "MW" ],
+				"Position": {
+					"Dist": "Linear",
+				},
+				"Speed": 1.0,
+				"Mass": 1.0,
+				"PlanningHorizon": 3,
+				"MaxConstraintViolations": 2,
+				"MaxBidsSolo": 2,
+				"MaxBidsAny": 5,
+				"Resources": {
+					"Type": "Const",
+					"MergeCost": 0.0,
+					"SplitCost": 0.0,
+					"Value": 50.0,
+					"TravelCost": 0.0057,
+					"TravelCostType": "Proportional"
+				},
+				"ConvergenceIndicator": 20
+			}			
+		]		
+	}
+	"Scenario": {
+		"TaskList": [
+			{ 
+				"Name": "DualSensorTask"
+				"Instances": 15,
+				"MaxScore": {
+					"Dist": "Linear",
+					"MaxValue": 100.0,
+					"MinValue": 0.0
+				}
+				"Cost": {
+					"Value": 0.0114,
+					"Type": "Proportional",
+					"Noise": 0.0
+				},
+				"SensorList": [ "IR", "MW" ],
+				"Location": {
+					"Dist": "Linear",
+				},
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 0.0,
+				"t_corr": 8.0,
+				"lambda": 0.015,
+				"gamma" : "NEG_INF"
+			},
+			{ 
+				"Name": "SingleSensorTask1"
+				"Instances": 8,
+				"MaxScore": {
+					"Dist": "Linear",
+					"MaxValue": 50.0,
+					"MinValue": 0.0
+				}
+				"Cost": {
+					"Value": 0.0114,
+					"Type": "Proportional",
+					"Noise": 0.0
+				},
+				"SensorList": [ "IR" ],
+				"Location": {
+					"Dist": "Linear",
+				},
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 0.0,
+				"t_corr": 8.0,
+				"lambda": 0.015,
+				"gamma" : "NEG_INF"
+			},
+			{ 
+				"Name": "SingleSensorTask2"
+				"Instances": 7,
+				"MaxScore": {
+					"Dist": "Linear",
+					"MaxValue": 50.0,
+					"MinValue": 0.0
+				}
+				"Cost": {
+					"Value": 0.0114,
+					"Type": "Proportional",
+					"Noise": 0.0
+				},
+				"SensorList": [ "MW" ],
+				"Location": {
+					"Dist": "Linear",
+				},
+				"t_start": 0.0,
+				"t_end": "INF",
+				"duration": 0.0,
+				"t_corr": 8.0,
+				"lambda": 0.015,
+				"gamma" : "NEG_INF"
+			}
+		],
+		"World": {
+			"Type": "2D_Grid",
+			"Bounds": [ 50.0, 50.0 ],
+			"t_0": 0.0
+		}
+	}
+}
