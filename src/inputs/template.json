@@ -1,0 +1,77 @@
+{
+  "settings": {
+    "simName": "DMAS3-CYGNSS",
+    "logger": "FINEST",
+    "timeStep": 300.0,
+    "planner":{
+      "planningHorizon": 3,
+      "maxConstraintViolations": 2,
+      "maxBidsSolo": 2,
+      "maxBidsAny": 5,
+      "maxBidsAll": 100,
+      "convergenceIndicator": 20,
+    }
+    "spacecraftDesign": true,
+  },
+  "spaceSegment": [
+    {
+      "orbit": "Walker1"
+      "instances": 1,
+      "payload": [
+        "SMAP-SAR",
+        "SMAP-MWR"
+      ],
+      "@type": "Spacecraft"
+    },
+    {
+      "orbit": "Orbit1"
+      "instances": 1,
+      "payload": [
+        "SAR-1"
+      ],
+      "@type": "Spacecraft"
+    }
+  ],
+  "groundSegment": [
+    {
+      "elevation": 1570,
+      "commBand": [
+        "UHF"
+      ],
+      "longitude": -104.83875274658203,
+      "latitude": 40.5974791834978,
+      "@type": "GroundStation"
+    }
+  ],
+  "orbits"[
+    {
+      "Name": "Walker1",
+      "@type": "WalkerConstellation",
+      "altitude": 500,
+      "nPlanes": 1,
+      "relPlanePhase": 0.0,
+    },
+    {
+      "Name": "Orbit1",
+      "altitude": 600,
+      "eccentricity": 0.0,
+      "inclination": 20.0,
+      "argumentOfPerigee": 0.0,
+      "raa": 90.0,
+      "anomaly": 0.0,
+    },
+    {
+      "Name": "Orbit2",
+      "altitude": 600,
+      "inclination": "SSO",
+    },
+  ],
+  "mission": {
+    "name" : "Template"
+    "acronym": "Temp"
+    "scenario": "SoilMoisture"
+    "start": "2020-01-01T00:00:00Z",
+    "duration": "P0Y0M90D",
+    "@type": "MissionConcept",
+  }
+}
