@@ -1,6 +1,6 @@
 {
   "settings": {
-    "simName": "DMAS3-CYGNSS",
+    "simName": "dmas3-template",
     "logger": "FINEST",
     "timeStep": 300.0,
     "planner":{
@@ -15,6 +15,7 @@
   },
   "spaceSegment": [
     {
+      "name": "SMAP"
       "orbit": "Walker1"
       "instances": 1,
       "payload": [
@@ -24,6 +25,7 @@
       "@type": "Spacecraft"
     },
     {
+      "name": "SAT1"
       "orbit": "Orbit1"
       "instances": 1,
       "payload": [
