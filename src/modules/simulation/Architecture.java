@@ -7,18 +7,20 @@ import org.json.simple.parser.JSONParser;
 
 import java.io.FileReader;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
-public class Architecture {
+public class Architecture extends AbstractAgent{
     private String inputFileName;
-    private JSONObject inputDataSpace;
-    private JSONObject inputDataGround;
+    private JSONArray inputDataSpace;
+    private JSONArray inputDataGround;
     private HashMap<String, AbstractAgent> spaceSegment;
     private HashMap<String, AbstractAgent> groundSegment;
 
     public Architecture(String inputFileName){
         this.inputFileName = inputFileName;
-        this.inputDataSpace = (JSONObject) readJSON(inputFileName).get("spaceSegment");
-        this.inputDataGround = (JSONObject) readJSON(inputFileName).get("groundSegment");
+        this.inputDataSpace = (JSONArray) readJSON(inputFileName).get("spaceSegment");
+        this.inputDataGround = (JSONArray) readJSON(inputFileName).get("groundSegment");
         this.spaceSegment = initiateSpaceSegment();
         this.groundSegment = initiateGroundSegment();
     }
@@ -53,5 +55,13 @@ public class Architecture {
 
     private HashMap<String, AbstractAgent> initiateGroundSegment(){
         return null;
+    }
+
+    public void executeAgents(){
+        Set<String> spaceKeyList = spaceSegment.keySet();
+
+        for(String spacecraft : spaceKeyList){
+            launchAgent(spaceSegment.get(spacecraft));
+        }
     }
 }

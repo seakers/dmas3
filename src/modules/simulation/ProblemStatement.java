@@ -18,24 +18,46 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+
 import jxl.*;
 
-public class ProblemStatement extends AbstractAgent {
+public class ProblemStatement {
     /**
      *  Reads Problem Statements folder location. Initiates Environment and the Tasks Located in it
      */
     private Environment environment;
-    private String problemStatementDir;
-    private JSONObject inputDataSettings;
-    private JSONObject inputDataMission;
+    private final String problemStatement;
+    private final String problemStatementDir;
+    private final String inputFileDir;
+    private final String outputFileDir;
+    private final JSONObject inputDataSettings;
+    private final JSONObject inputDataMission;
+    private String loggerLevel;
+    private AbsoluteDate startDate;
+    private AbsoluteDate endDate;
+    private AbsoluteDate currentDate;
+    private double timeStep;
+
     private TimeScale utc;
 
     public ProblemStatement(String inputFile, String problemStatement) throws Exception {
+        // read input JSON
+        this.problemStatement = problemStatement;
         this.problemStatementDir = "./src/scenarios/" + problemStatement;
-        this.inputDataSettings = (JSONObject) readJSON(inputFile).get("settings");
-        this.inputDataMission = (JSONObject) readJSON(inputFile).get("mission");
+        this.inputFileDir = "./src/inputs/" + inputFile;
+        this.outputFileDir = "./src/outputs/" + problemStatement;
+        this.inputDataSettings = (JSONObject) readJSON().get("settings");
+        this.inputDataMission = (JSONObject) readJSON().get("mission");
 
         // load orekit-data
+        loadOrekitData();
+
+        // initiate environment
+        initiateEnvironment();
+    }
+
+    private void loadOrekitData(){
         File orekitData = new File("./src/data/orekit-data");
         DataProvidersManager manager = DataProvidersManager.getInstance();
         try {
@@ -43,15 +65,12 @@ public class ProblemStatement extends AbstractAgent {
         } catch (OrekitException e) {
             e.printStackTrace();
         }
-
-        this.environment = initiateEnvironment();
     }
 
-    private JSONObject readJSON(String inputFileName){
+    private JSONObject readJSON(){
         JSONParser parser = new JSONParser();
         try {
-            Object obj = parser.parse(new FileReader(
-                    "src/inputs/" + inputFileName));
+            Object obj = parser.parse(new FileReader(this.inputFileDir));
             return (JSONObject) obj;
 
         } catch (Exception e) {
@@ -60,20 +79,14 @@ public class ProblemStatement extends AbstractAgent {
         return null;
     }
 
-    public void executeEnvironmentAgent(){
-        launchAgent(this.environment, false);
-    }
-
-    private Environment initiateEnvironment() throws Exception {
+    private void initiateEnvironment() throws Exception {
         this.utc = TimeScalesFactory.getUTC();
-        String logger = inputDataSettings.get("logger").toString();
-        AbsoluteDate startDate = stringToDate( inputDataMission.get("start").toString() );
+        this.loggerLevel = inputDataSettings.get("logger").toString();
+        this.startDate = stringToDate( inputDataMission.get("start").toString() );
+        this.currentDate = stringToDate( inputDataMission.get("start").toString() );
         double duration = stringToDuration( inputDataMission.get("duration").toString() );
-        AbsoluteDate endDate = startDate.shiftedBy(duration);
-        double timeStep = (double) inputDataMission.get("timeStep");
-
-        ArrayList<Task> environmentTasks = initiateTasks();
-        return new Environment(logger, startDate, endDate, timeStep, environmentTasks);
+        this.endDate = startDate.shiftedBy(duration);
+        this.timeStep = (double) inputDataMission.get("timeStep");
     }
 
     private AbsoluteDate stringToDate(String startDate) throws Exception {
@@ -118,39 +131,24 @@ public class ProblemStatement extends AbstractAgent {
         return yy + mm + dd;
     }
 
-    private ArrayList<Task> initiateTasks() throws Exception {
-        ArrayList<Task> tasks = new ArrayList<>();
-        Workbook taskDataXls = Workbook.getWorkbook(new File(problemStatementDir + "/Measurement Requirements.xls"));
-        Sheet data = taskDataXls.getSheet("Measurements");
-        int nRows = data.getRows();
-        int nCols = data.getColumns();
-        for(int i = 1; i < nRows; i++){
-            // Create a task per each row
-            Cell[] row = data.getRow(i);
-            String name = row[0].getContents();
-            double score = Double.parseDouble( row[1].getContents() );
-            double lat = Double.parseDouble( row[2].getContents() );
-            double lon = Double.parseDouble( row[3].getContents() );
-            double alt = Double.parseDouble( row[4].getContents() );
-            String[] freqString = row[5].getContents().split(",");
-            ArrayList<Double> freqs = new ArrayList<>(freqString.length);
-            for(int j = 0; j < freqString.length; j++){
-                freqs.add(Double.parseDouble(freqString[j]));
-            }
-            double spatialResReq = Double.parseDouble( row[6].getContents() );
-            double swathReq = Double.parseDouble( row[7].getContents() );
-            double lossReq = Double.parseDouble( row[8].getContents() );
-            int numLooks = Integer.parseInt( row[9].getContents() );
-            double tempResReqLooks = Double.parseDouble( row[10].getContents() );
-            String startTimeString = row[11].getContents();
-            String endTimeString = row[11].getContents();
-            String tempResMeasurementsString = row[12].getContents();
-
-            tasks.add( new Task(name, score, lat, lon, alt, freqs,
-                                spatialResReq, swathReq, lossReq, numLooks, tempResReqLooks,
-                                stringToDate(startTimeString), stringToDate(startTimeString), stringToDuration(tempResMeasurementsString)));
-        }
-
-        return tasks;
-    }
+    public Environment getEnvironment() { return environment; }
+    public void setEnvironment(Environment environment) { this.environment = environment; }
+    public String getProblemStatement() { return problemStatement; }
+    public String getProblemStatementDir() { return problemStatementDir; }
+    public String getInputFileDir() { return inputFileDir; }
+    public String getOutputFileDir() { return outputFileDir; }
+    public JSONObject getInputDataSettings() { return inputDataSettings; }
+    public JSONObject getInputDataMission() { return inputDataMission; }
+    public String getLoggerLevel() { return loggerLevel; }
+    public void setLoggerLevel(String loggerLevel) { this.loggerLevel = loggerLevel; }
+    public AbsoluteDate getStartDate() { return startDate; }
+    public void setStartDate(AbsoluteDate startDate) { this.startDate = startDate; }
+    public AbsoluteDate getEndDate() { return endDate; }
+    public void setEndDate(AbsoluteDate endDate) { this.endDate = endDate; }
+    public AbsoluteDate getCurrentDate() { return currentDate; }
+    public void setCurrentDate(AbsoluteDate currentDate) { this.currentDate = currentDate; }
+    public double getTimeStep() { return timeStep; }
+    public void setTimeStep(double timeStep) { this.timeStep = timeStep; }
+    public TimeScale getUtc() { return utc; }
+    public void setUtc(TimeScale utc) { this.utc = utc; }
 }

@@ -1,9 +1,12 @@
 import madkit.kernel.AbstractAgent;
+import modules.planner.Results;
 import modules.simulation.Architecture;
 import modules.simulation.ProblemStatement;
 import modules.simulation.Simulation;
 
-public class Driver {
+public class Driver extends AbstractAgent{
+    private static Simulation sim;
+
     public static void main(String[] args) throws Exception {
         String inputFile = "template.json";
         String problem = "SoilMoisture";
@@ -15,13 +18,18 @@ public class Driver {
         Architecture arch = new Architecture(inputFile);
 
         // Initiate simulation
-        Simulation sim = new Simulation(inputFile, arch, prob);
+        sim = new Simulation(inputFile, arch, prob);
 
         // Run simulation and save results
-        sim.run();
-//        Results results = sim.getResults();
-//
-//        // Print score and cost
+        executeThisAgent(1,false);
+    }
+
+    @Override
+    protected void activate(){
+        launchAgent(sim);
+        Results results = sim.getResults();
+
+        // Print score and cost
 //        System.out.println(results.getScore() + " " + results.getCost());
     }
 }
