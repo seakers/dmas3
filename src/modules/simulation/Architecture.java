@@ -1,35 +1,58 @@
 package modules.simulation;
 
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 import madkit.kernel.AbstractAgent;
+import modules.agents.Instrument.Instrument;
+import modules.agents.Instrument.InstrumentAntenna;
+import modules.agents.Instrument.Radiometer;
+import modules.agents.Instrument.SAR;
+import modules.agents.Spacecraft;
+import modules.agents.orbits.OrbitParams;
+import modules.environment.Measurement;
+import modules.environment.Task;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 public class Architecture extends AbstractAgent{
+    private String problemStatement;
+    private String problemStatementDir;
     private String inputFileName;
+    private String inputFileDir;
     private JSONArray inputDataSpace;
     private JSONArray inputDataGround;
-    private HashMap<String, AbstractAgent> spaceSegment;
+    private JSONArray inputOrbitData;
+    private ArrayList<Spacecraft> spaceSegment;
     private HashMap<String, AbstractAgent> groundSegment;
 
-    public Architecture(String inputFileName){
-        this.inputFileName = inputFileName;
-        this.inputDataSpace = (JSONArray) readJSON(inputFileName).get("spaceSegment");
-        this.inputDataGround = (JSONArray) readJSON(inputFileName).get("groundSegment");
-        this.spaceSegment = initiateSpaceSegment();
-        this.groundSegment = initiateGroundSegment();
+    public Architecture(String inputFile, String problemStatement) throws Exception {
+        this.problemStatement = problemStatement;
+        this.problemStatementDir = "./src/scenarios/" + problemStatement;
+        this.inputFileName = inputFile;
+        this.inputFileDir = "./src/inputs/" + inputFile;
+
+        this.inputDataSpace = (JSONArray) readJSON().get("spaceSegment");
+        this.inputDataGround = (JSONArray) readJSON().get("groundSegment");
+        this.inputOrbitData = (JSONArray) readJSON().get("orbits");
+        this.spaceSegment = new ArrayList<>(); this.spaceSegment.addAll( initiateSpaceSegment() );
+        this.groundSegment = null;
     }
 
-    private JSONObject readJSON(String inputFileName){
+    private JSONObject readJSON(){
         JSONParser parser = new JSONParser();
         try {
-            Object obj = parser.parse(new FileReader(
-                    "src/inputs/" + inputFileName));
+            Object obj = parser.parse(new FileReader(this.inputFileDir));
             return (JSONObject) obj;
 
         } catch (Exception e) {
@@ -38,30 +61,133 @@ public class Architecture extends AbstractAgent{
         return null;
     }
 
-    private HashMap<String, AbstractAgent> initiateSpaceSegment(){
-        /* for every spacecraft:
-            Design Spacecraft
-                EPS design
-                Payload capabilities
-            Propagate orbit
-                Calculate location vs time
-                Access times to each task
-                Calculate eclipse
-            Initiate planner
+    private ArrayList<Spacecraft> initiateSpaceSegment() throws Exception {
+        // Read Instrument excel data and generate instruments and antennas
+        Workbook instrumentDataXls = Workbook.getWorkbook(new File(problemStatementDir + "/Instrument Capabilities.xls"));
 
-        */
-        return null;
-    }
-
-    private HashMap<String, AbstractAgent> initiateGroundSegment(){
-        return null;
-    }
-
-    public void executeAgents(){
-        Set<String> spaceKeyList = spaceSegment.keySet();
-
-        for(String spacecraft : spaceKeyList){
-            launchAgent(spaceSegment.get(spacecraft));
+        // -create antennas
+        Sheet antennas = instrumentDataXls.getSheet("Antennas");
+        int nRowsAnts = antennas.getRows();
+        HashMap<String, InstrumentAntenna> antennaList = new HashMap<>();
+        for(int i = 1; i < nRowsAnts; i++){
+            Cell[] row = antennas.getRow(i);
+            String name = row[0].getContents();
+            double dimAz = Double.parseDouble(row[1].getContents());
+            double dimEl = Double.parseDouble(row[2].getContents());
+            double mass = Double.parseDouble(row[3].getContents());
+            InstrumentAntenna ant_i = new InstrumentAntenna(name, dimAz, dimEl, mass);
+            antennaList.put(name, ant_i);
         }
+
+        // -create instruments
+        Sheet instruments = instrumentDataXls.getSheet("Instruments");
+        int nRowsIns = instruments.getRows();
+        HashMap<String, Instrument> instrumentList = new HashMap<>();
+        for (int i = 1; i < nRowsIns; i++) {
+            // unpack data from spreadsheets
+            Cell[] row = instruments.getRow(i);
+            String name = row[0].getContents();
+            double dataRate = Double.parseDouble(row[1].getContents());
+            double pAvg = Double.parseDouble(row[2].getContents());
+            double pPeak = Double.parseDouble(row[3].getContents());
+            double bandwidth = Double.parseDouble(row[4].getContents());
+            double fov = Double.parseDouble(row[5].getContents());
+            double f = Double.parseDouble(row[6].getContents());
+            Measurement freq = new Measurement(f);
+            double mass = Double.parseDouble(row[7].getContents());
+            double nLooks = Double.parseDouble(row[8].getContents());
+            double offAxisAngle = Double.parseDouble(row[9].getContents());
+            String scanningType = row[10].getContents();
+            double scanningAngle = Double.parseDouble(row[11].getContents());
+            String sensorType = row[12].getContents();
+            String antennaName = row[13].getContents();
+
+            InstrumentAntenna ant = antennaList.get(antennaName);
+            Instrument ins;
+            switch (sensorType){
+                case "SAR":
+                    ins = new SAR(name, dataRate, pAvg, pPeak, freq, bandwidth, fov, offAxisAngle, mass, scanningType, scanningAngle, scanningAngle, sensorType, ant, nLooks);
+                    break;
+                case "RAD":
+                    ins = new Radiometer(name, dataRate, pAvg, pPeak, freq, bandwidth, fov, offAxisAngle, mass, scanningType, scanningAngle, scanningAngle, sensorType, ant);
+                    break;
+                default:
+                    throw new Exception("Sensor type not yet supported");
+            }
+            instrumentList.put(name, ins);
+        }
+
+        // Load Orbital Parameters
+        HashMap<String, OrbitParams> orbitList = new HashMap<>();
+        for(int i = 0; i < inputOrbitData.size(); i++){
+            JSONObject orbit_i = (JSONObject) inputOrbitData.get(i);
+            String type = orbit_i.get("@type").toString();
+
+            String name;
+            double alt;
+            double ecc;
+            double inc;
+            double parg;
+            double raan;
+            double anom;
+            String incName;
+            String date;
+            OrbitParams orbit;
+
+            switch (type){
+                case "WalkerConstellation":
+                    throw new Exception("Constellation orbit input not yet supported");
+                case "OrbitalElements":
+                    name = orbit_i.get("name").toString();
+                    alt = Double.parseDouble(orbit_i.get("altitude").toString());
+                    ecc = Double.parseDouble(orbit_i.get("eccentricity").toString());
+                    inc = Double.parseDouble(orbit_i.get("inclination").toString());
+                    parg =Double.parseDouble(orbit_i.get("argumentOfPerigee").toString());
+                    raan =Double.parseDouble(orbit_i.get("raan").toString());
+                    anom =Double.parseDouble(orbit_i.get("anomaly").toString());
+
+                    orbit = new OrbitParams(name, alt, ecc, inc, parg, raan, anom);
+                    orbitList.put(name, orbit);
+                    break;
+                case "OrbitName":
+                    name = orbit_i.get("name").toString();
+                    alt = Double.parseDouble(orbit_i.get("altitude").toString());
+                    incName = orbit_i.get("inclination").toString();
+                    date = orbit_i.get("date").toString();
+
+                    orbit = new OrbitParams(name, alt, incName, date);
+                    orbitList.put(name, orbit);
+                    break;
+                default:
+                    throw new Exception("Orbit type not yet supported");
+            }
+        }
+
+        // Assign payloads and orbits to each spacecraft
+        ArrayList<Spacecraft> spaceSegment = new ArrayList<>();
+        for(int i = 0; i < inputDataSpace.size(); i++){
+            // Unpack JSON data
+            JSONObject sat_i = (JSONObject) inputDataSpace.get(i);
+            String name = sat_i.get("name").toString();
+            String orbitName = sat_i.get("orbit").toString();
+            String plannerName = sat_i.get("planner").toString();
+            JSONArray payloadData = (JSONArray) sat_i.get("payload");
+
+            ArrayList<Instrument> payload  = new ArrayList<>();
+            for(int j = 0; j < payloadData.size(); j++){
+                String instrumentName = payloadData.get(j).toString();
+                Instrument instrument = instrumentList.get(instrumentName);
+                payload.add(instrument);
+            }
+            OrbitParams orbit = orbitList.get(orbitName);
+
+            // Create spacecraft agent
+            Spacecraft spacecraft = new Spacecraft(name, payload, orbit, plannerName);
+            spaceSegment.add(spacecraft);
+        }
+        if(spaceSegment.size() == 0) throw new Exception("No spacecraft loaded onto simulation");
+        else return spaceSegment;
     }
+
+    public ArrayList<Spacecraft> getSpaceSegment(){return this.spaceSegment;}
 }

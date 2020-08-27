@@ -1,10 +1,6 @@
 package modules.simulation;
 
-import jmetal.encodings.variable.Int;
-import jxl.read.biff.BiffException;
-import madkit.kernel.AbstractAgent;
 import modules.environment.Environment;
-import modules.planner.Task;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.orekit.data.DataProvidersManager;
@@ -16,11 +12,6 @@ import org.orekit.time.TimeScalesFactory;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.logging.Level;
-
-import jxl.*;
 
 public class ProblemStatement {
     /**
@@ -41,6 +32,9 @@ public class ProblemStatement {
 
     private TimeScale utc;
 
+    /**
+    Loads problem statement information from excel sheet
+     */
     public ProblemStatement(String inputFile, String problemStatement) throws Exception {
         // read input JSON
         this.problemStatement = problemStatement;
@@ -54,7 +48,7 @@ public class ProblemStatement {
         loadOrekitData();
 
         // initiate environment
-        initiateEnvironment();
+        initiateEnvironmentInfo();
     }
 
     private void loadOrekitData(){
@@ -79,7 +73,7 @@ public class ProblemStatement {
         return null;
     }
 
-    private void initiateEnvironment() throws Exception {
+    private void initiateEnvironmentInfo() throws Exception {
         this.utc = TimeScalesFactory.getUTC();
         this.loggerLevel = inputDataSettings.get("logger").toString();
         this.startDate = stringToDate( inputDataMission.get("start").toString() );
@@ -114,20 +108,49 @@ public class ProblemStatement {
     }
 
     private double stringToDuration(String duration) throws Exception {
-        if(duration.length() != 10){
-            throw new Exception("Mission duration format not supported");
-        }
+        StringBuilder YYs = new StringBuilder();
+        StringBuilder MMs = new StringBuilder();
+        StringBuilder DDs = new StringBuilder();
+        int stage = 0;
 
-        int YY = Integer.parseInt(String.valueOf(duration.charAt(1))
-                + String.valueOf(duration.charAt(2)));
-        int MM = Integer.parseInt(String.valueOf(duration.charAt(4))
-                + String.valueOf(duration.charAt(5)));
-        int DD = Integer.parseInt(String.valueOf(duration.charAt(7))
-                + String.valueOf(duration.charAt(8)));
+        for(int i = 0; i < duration.length(); i++){
+            String c = String.valueOf(duration.charAt(i));
+            switch (c) {
+                case "P":
+                    stage = 1;
+                    continue;
+                case "Y":
+                    stage = 2;
+                    continue;
+                case "M":
+                    stage = 3;
+                    continue;
+                case "D":
+                    stage = 4;
+                    continue;
+            }
+
+            switch(stage){
+                case 1:
+                    YYs.append(c);
+                    break;
+                case 2:
+                    MMs.append(c);
+                    break;
+                case 3:
+                    DDs.append(c);
+                case 4:
+                    break;
+            }
+        }
+        double YY = Double.parseDouble(YYs.toString());
+        double MM = Double.parseDouble(MMs.toString());
+        double DD = Double.parseDouble(DDs.toString());
 
         double yy = YY * 365.25 * 24 * 3600;
         double mm = MM * 365.25/12 * 24 * 3600;
         double dd = DD * 24 * 3600;
+
         return yy + mm + dd;
     }
 

@@ -1,12 +1,14 @@
 package modules.simulation;
 
 import madkit.kernel.AbstractAgent;
+import modules.agents.Spacecraft;
 import modules.environment.Environment;
 import modules.planner.Results;
 
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -15,23 +17,12 @@ public class Simulation extends AbstractAgent {
     private Architecture arch;
     private ProblemStatement prob;
     private Environment environment;
-    private HashMap<String, AbstractAgent> spaceSegment;
     private Results results;
 
     public Simulation(String inputFile, Architecture arch, ProblemStatement prob){
         this.arch = arch;
         this.prob = prob;
         this.results = new Results();
-    }
-
-    public void run(){
-        try {
-
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -41,10 +32,11 @@ public class Simulation extends AbstractAgent {
             createFileDirectory();
 
             // 2 : create the simulation group
-
+            createGroup(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
 
             // 3 : launch simulation environment
-            launchAgent(new Environment(prob));
+            this.environment = new Environment(prob);
+            launchAgent(this.environment);
 
             // 4 : launch architecture agents
             launchSpaceSegment();
@@ -71,9 +63,9 @@ public class Simulation extends AbstractAgent {
     }
 
     private void launchSpaceSegment(){
-//        for(String key : spaceSegment.keySet()){
-//            launchAgent(spaceSegment.get(key));
-//        }
+        for(Spacecraft sc : arch.getSpaceSegment()){
+            launchAgent(sc);
+        }
     }
 
     public Results getResults(){return this.results;}

@@ -1,9 +1,8 @@
-package modules.planner;
+package modules.planner.CCBBA;
 
 import modules.agents.Spacecraft;
-import org.orekit.utils.PVCoordinates;
+import modules.environment.Subtask;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class IterationResults {

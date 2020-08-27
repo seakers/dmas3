@@ -15,7 +15,7 @@ public class Driver extends AbstractAgent{
         ProblemStatement prob = new ProblemStatement(inputFile, problem);
 
         // Load architecture to be evaluated
-        Architecture arch = new Architecture(inputFile);
+        Architecture arch = new Architecture(inputFile, problem);
 
         // Initiate simulation
         sim = new Simulation(inputFile, arch, prob);

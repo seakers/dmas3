@@ -15,22 +15,25 @@
   "spaceSegment": [
     {
       "name": "SMAP",
-      "orbit": "Walker1",
+      "orbit": "Orbit1",
       "instances": 1,
       "payload": [
         "SMAP-SAR",
         "SMAP-MWR"
       ],
-      "@type": "Spacecraft"
+      "@type": "Spacecraft",
+      "planner": "CCBBA"
     },
     {
       "name": "SAT1",
       "orbit": "Orbit1",
       "instances": 1,
       "payload": [
-        "SAR-1"
+        "SMAP-SAR",
+        "SMAP-MWR"
       ],
-      "@type": "Spacecraft"
+      "@type": "Spacecraft",
+      "planner": "CCBBA"
     }
   ],
   "groundSegment": [
@@ -46,26 +49,22 @@
   ],
   "orbits": [
     {
-      "name": "Walker1",
-      "@type": "WalkerConstellation",
-      "altitude": 500,
-      "nPlanes": 1,
-      "relPlanePhase": 0.0,
-    },
-    {
       "name": "Orbit1",
+      "@type": "OrbitalElements",
       "altitude": 600,
       "eccentricity": 0.0,
       "inclination": 20.0,
       "argumentOfPerigee": 0.0,
-      "raa": 90.0,
-      "anomaly": 0.0,
+      "raan": 90.0,
+      "anomaly": 0.0
     },
     {
       "name": "Orbit2",
+      "@type": "OrbitName",
       "altitude": 600,
       "inclination": "SSO",
-    },
+      "date": "DD"
+    }
   ],
   "mission": {
     "name" : "Template",

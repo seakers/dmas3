@@ -1,4 +1,4 @@
-package modules.planner;
+package modules.planner.CCBBA;
 
 public class IterationDatum {
 }

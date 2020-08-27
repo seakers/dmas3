@@ -3,11 +3,11 @@ package modules.environment;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
+import madkit.kernel.AbstractAgent;
 import madkit.kernel.Watcher;
-import modules.planner.Measurement;
-import modules.planner.Task;
+import madkit.simulation.probe.PropertyProbe;
 import modules.simulation.ProblemStatement;
-import org.json.simple.JSONObject;
+import modules.simulation.SimGroups;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 
@@ -40,14 +40,41 @@ public class Environment extends Watcher {
     @Override
     protected void activate() {
         try {
+            // Initiate environment tasks
             environmentTasks = new ArrayList<>();
             environmentTasks.addAll( initiateTasks() );
+
+            // Add probes
+            // 1 : request my role so that the viewer can probe me
+            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE);
+
+            // 2 : give probe access to agents - Any agent within the group agent can access this environment's properties
+            addProbe(new Environment.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT, "environment"));
+            addProbe(new Environment.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER, "environment"));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    class AgentsProbe extends PropertyProbe<AbstractAgent, Environment> {
+
+        public AgentsProbe(String community, String group, String role, String fieldName) {
+            super(community, group, role, fieldName);
+        }
+
+        @Override
+        protected void adding(AbstractAgent agent) {
+            super.adding(agent);
+            setPropertyValue(agent, Environment.this);
+        }
+    }
+
     // Helper functions
+    protected void tic(){
+        this.currentDate = this.currentDate.shiftedBy(this.timeStep);
+    }
+
     private ArrayList<Task> initiateTasks() throws Exception {
         ArrayList<Task> tasks = new ArrayList<>();
         Workbook taskDataXls = Workbook.getWorkbook(new File(problemStatementDir + "/Measurement Requirements.xls"));
@@ -69,18 +96,17 @@ public class Environment extends Watcher {
                 freqs.add(new Measurement(f));
             }
             double spatialResReq = Double.parseDouble( row[6].getContents() );
-            double swathReq = Double.parseDouble( row[7].getContents() );
-            double lossReq = Double.parseDouble( row[8].getContents() );
-            int numLooks = (int) Double.parseDouble( row[9].getContents() );
-            double tempResReqLooks = Double.parseDouble( row[10].getContents() );
+            double snrReq = Double.parseDouble( row[7].getContents() );
+            int numLooks = (int) Double.parseDouble( row[8].getContents() );
+            String tempResReqMin =  row[9].getContents();
+            String tempResReqMax = row[10].getContents();
             String startTimeString = row[11].getContents();
             String endTimeString = row[12].getContents();
-            String tempResMeasurementsString = row[13].getContents();
-            double urgencyFactor = Double.parseDouble( row[14].getContents() );
+            double urgencyFactor = Double.parseDouble( row[13].getContents() );
 
             tasks.add( new Task(name, score, lat, lon, alt, freqs,
-                    spatialResReq, swathReq, lossReq, numLooks, tempResReqLooks, urgencyFactor,
-                    stringToDate(startTimeString), stringToDate(startTimeString), stringToDuration(tempResMeasurementsString)));
+                    spatialResReq, snrReq, numLooks, stringToDuration(tempResReqMin), stringToDuration(tempResReqMax),
+                    stringToDate(startTimeString), stringToDate(endTimeString), urgencyFactor));
         }
 
         return tasks;
@@ -115,34 +141,50 @@ public class Environment extends Watcher {
     }
 
     private double stringToDuration(String duration) throws Exception {
-        if(duration.length() == 10) {
-            int YY = Integer.parseInt(String.valueOf(duration.charAt(1))
-                    + String.valueOf(duration.charAt(2)));
-            int MM = Integer.parseInt(String.valueOf(duration.charAt(4))
-                    + String.valueOf(duration.charAt(5)));
-            int DD = Integer.parseInt(String.valueOf(duration.charAt(7))
-                    + String.valueOf(duration.charAt(8)));
+        StringBuilder YYs = new StringBuilder();
+        StringBuilder MMs = new StringBuilder();
+        StringBuilder DDs = new StringBuilder();
+        int stage = 0;
 
-            double yy = YY * 365.25 * 24 * 3600;
-            double mm = MM * 365.25/12 * 24 * 3600;
-            double dd = DD * 24 * 3600;
-            return yy + mm + dd;
+        for(int i = 0; i < duration.length(); i++){
+            String c = String.valueOf(duration.charAt(i));
+            switch (c) {
+                case "P":
+                    stage = 1;
+                    continue;
+                case "Y":
+                    stage = 2;
+                    continue;
+                case "M":
+                    stage = 3;
+                    continue;
+                case "D":
+                    stage = 4;
+                    continue;
+            }
+
+            switch(stage){
+                case 1:
+                    YYs.append(c);
+                    break;
+                case 2:
+                    MMs.append(c);
+                    break;
+                case 3:
+                    DDs.append(c);
+                case 4:
+                    break;
+            }
         }
-        else if(duration.length() == 7) {
-            int YY = Integer.parseInt(String.valueOf(duration.charAt(1)));
-            int MM = Integer.parseInt(String.valueOf(duration.charAt(3)));
-            int DD = Integer.parseInt(String.valueOf(duration.charAt(5)));
+        double YY = Double.parseDouble(YYs.toString());
+        double MM = Double.parseDouble(MMs.toString());
+        double DD = Double.parseDouble(DDs.toString());
 
-            double yy = YY * 365.25 * 24 * 3600;
-            double mm = MM * 365.25/12 * 24 * 3600;
-            double dd = DD * 24 * 3600;
-            return yy + mm + dd;
-        }
-        else{
-            throw new Exception("Mission duration format not supported");
-        }
+        double yy = YY * 365.25 * 24 * 3600;
+        double mm = MM * 365.25/12 * 24 * 3600;
+        double dd = DD * 24 * 3600;
 
-
+        return yy + mm + dd;
     }
 
     private void setUpLogger(String logger) throws Exception {

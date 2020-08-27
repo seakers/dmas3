@@ -1,4 +1,6 @@
-package modules.planner;
+package modules.environment;
+
+import org.orekit.time.AbsoluteDate;
 
 public class Requirements {
     /**
@@ -7,31 +9,39 @@ public class Requirements {
     private double spatialResReq;
     private double swathReq;
     private double lossReq;
-    private double temporalResolution;
+    private double temporalResolutionMin;
+    private double temporalResolutionMax;
     private int numLooks;
-    private double tempResReqLooks;
     private double urgencyFactor;
+    private AbsoluteDate startDate;
+    private AbsoluteDate endDate;
 
     // Constructors
     public Requirements(){
         spatialResReq = -1.0;
-        swathReq = -1.0;
+//        swathReq = -1.0;
         lossReq = -1.0;
         numLooks = -1;
-        tempResReqLooks = -1.0;
+        temporalResolutionMin = -1.0;
+        temporalResolutionMax = -1.0;
         urgencyFactor = -1.0;
+        startDate = new AbsoluteDate();
+        endDate = new AbsoluteDate();
     }
-    public Requirements(double spatialResReq, double swathReq, double lossReq, int numLooks, double tempResReqLooks, double urgencyFactor){
+    public Requirements(double spatialResReq, double lossReq, int numLooks, double temporalResolutionMin, double temporalResolutionMax, double urgencyFactor, AbsoluteDate startDate, AbsoluteDate endDate){
         this.spatialResReq = spatialResReq;
-        this.swathReq = swathReq;
         this.lossReq = lossReq;
         this.numLooks = numLooks;
-        this.tempResReqLooks = tempResReqLooks;
+        this.temporalResolutionMin = temporalResolutionMin;
+        this.temporalResolutionMax = temporalResolutionMax;
+        this.urgencyFactor = urgencyFactor;
+        this.startDate = startDate.getDate();
+        this.endDate = endDate.getDate();
     }
 
     // Copy constructor
     public Requirements copy(){
-        return new Requirements(this.spatialResReq, this.swathReq, this.lossReq, this.numLooks, this.tempResReqLooks, this.urgencyFactor);
+        return new Requirements(spatialResReq, lossReq, numLooks, temporalResolutionMin, temporalResolutionMax, urgencyFactor, startDate, endDate);
     }
 
     // Getters and setters
@@ -41,12 +51,10 @@ public class Requirements {
     public void setSwathReq(double swathReq) { this.swathReq = swathReq; }
     public double getLossReq() { return lossReq; }
     public void setLossReq(double lossReq) { this.lossReq = lossReq; }
-    public double getTemporalResolution() { return temporalResolution; }
-    public void setTemporalResolution(double temporalResolution) { this.temporalResolution = temporalResolution; }
+    public double getTemporalResolutionMin() { return temporalResolutionMin; }
+    public double getTemporalResolutionMax() { return temporalResolutionMax; }
     public int getNumLooks() { return numLooks; }
     public void setNumLooks(int numLooks) { this.numLooks = numLooks; }
-    public double getTempResReqLooks() { return tempResReqLooks; }
-    public void setTempResReqLooks(double tempResReqLooks) { this.tempResReqLooks = tempResReqLooks; }
     public double getUrgencyFactor(){return this.urgencyFactor;}
     public void setUrgencyFactor(double urgencyFactor){ this.urgencyFactor = urgencyFactor;}
 }

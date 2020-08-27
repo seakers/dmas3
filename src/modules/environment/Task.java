@@ -1,45 +1,51 @@
-package modules.planner;
+package modules.environment;
 
 import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Task {
 
     private String name;                        // Task name
     private double maxScore;                    // Maximum score
     private ArrayList<Double> location;         // Task location in {lat, lon, alt}
-    private ArrayList<Measurement> measurements;   // List of frequencies required for measurement
+    private ArrayList<Measurement> measurements;// List of frequencies required for measurement
     private Requirements requirements;          // List of measurement requirements
     private ArrayList<Subtask> subtasks;        // List of subtasks
-    private double[][] D;                       // Coalition Dependency Matrix
-    private double[][] T;                       // Coalition Correlation Time Matrix
+    private Dependencies dependencies;          // List of subtask dependencies
+    private int I;                              // Number of measurements
+    private int N_j;                            // Number of subtasks
     private boolean completion;
 
     public Task(String name, double score, double lat, double lon, double alt, ArrayList<Measurement> measurements,
-                double spatialResReq, double swathReq, double lossReq, int numLooks, double tempResReqLooks,double urgencyFactor,
-                AbsoluteDate startTime, AbsoluteDate endTime, double tempResMeasurements){
+                double spatialResReq, double lossReq, int numLooks, double temporalResolutionMin, double temporalResolutionMax,
+                AbsoluteDate startDate, AbsoluteDate endDate, double urgencyFactor){
         try {
             this.name = name;
             this.maxScore = score;
             this.location = new ArrayList<>(); location.add(lat); location.add(lon); location.add(alt);
-            this.measurements = new ArrayList<>(); this.measurements.addAll(measurements);
-            this.requirements = new Requirements(spatialResReq, swathReq, lossReq, numLooks, tempResReqLooks, urgencyFactor);
+            this.measurements = new ArrayList<>();
+            for(int n = 0; n < numLooks; n++){
+                for(Measurement measurement : measurements){
+                    Measurement temp = measurement.copy();
+                    this.measurements.add(temp);
+                }
+            }
+            this.I = this.measurements.size();
+            this.requirements = new Requirements(spatialResReq, lossReq, numLooks, temporalResolutionMin, temporalResolutionMax, urgencyFactor, startDate, endDate);
             this.completion = false;
             this.subtasks = generateSubtasks();
+            this.N_j = this.subtasks.size();
+            this.dependencies = new Dependencies(N_j, subtasks, requirements);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private ArrayList<Subtask> generateSubtasks() throws Exception {
-        if (requirements.getNumLooks() == 1) {
-            this.subtasks = new ArrayList<>();
-            int i;
-
+        ArrayList<Subtask> subtasksList = new ArrayList<>();
+        if (requirements.getNumLooks() >= 1 || (requirements.getNumLooks() > 1 && measurements.size() == 1)) {
             for(Measurement mainFreq : measurements){
-                i = measurements.indexOf(mainFreq);
                 ArrayList<Measurement> remainingFreqs = new ArrayList<>();
                 for(Measurement f : measurements){
                     if(mainFreq != f) remainingFreqs.add(f);
@@ -47,16 +53,14 @@ public class Task {
 
                 ArrayList<ArrayList<Measurement>> depMeasurementCombinations = getCombinations(remainingFreqs);
                 for(ArrayList<Measurement> depMeasurements : depMeasurementCombinations){
-                    subtasks.add( new Subtask(mainFreq, depMeasurements, i, this, ) );
+                    subtasksList.add( new Subtask(mainFreq, depMeasurements, this) );
                 }
-                int x = 1;
             }
-
-            return null;
         }
         else{
             throw new Exception("Multiple number of looks per measurement not yet supported");
         }
+        return subtasksList;
     }
 
     private ArrayList<ArrayList<Measurement>> getCombinations(ArrayList<Measurement> remainingFrequencies){
@@ -85,4 +89,5 @@ public class Task {
     public double getAlt(){return location.get(2);}
     public Requirements getRequirements(){return requirements;}
     public String getName(){return name;}
+    public ArrayList<Measurement> getMeasurements(){return measurements;}
 }

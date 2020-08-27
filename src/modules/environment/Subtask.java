@@ -1,4 +1,4 @@
-package modules.planner;
+package modules.environment;
 
 import java.util.ArrayList;
 
@@ -10,6 +10,7 @@ public class Subtask {
     private String name;
     private boolean completion;
     private int levelOfPartiality;
+    private int i_q;
 
     public Subtask(Measurement mainMeasurement, ArrayList<Measurement> depMeasurement, Task parentTask){
         this.mainMeasurement = mainMeasurement;
@@ -18,7 +19,9 @@ public class Subtask {
         this.requirements = parentTask.getRequirements();
         this.name = makeName();
         this.completion = false;
-        int =
+        this.i_q = parentTask.getMeasurements().indexOf(mainMeasurement);
+        this.levelOfPartiality = depMeasurement.size() + 1;
+        this.completion = false;
     }
     private String makeName(){
         String name = parentTask.getName() + "_" + mainMeasurement.getBand() + "_{";
@@ -34,4 +37,6 @@ public class Subtask {
         return name;
     }
     public String toString(){ return this.name; }
+    public ArrayList<Measurement> getDepMeasurements(){return this.depMeasurement;}
+    public Measurement getMainMeasurement(){return this.mainMeasurement;}
 }
