@@ -176,6 +176,9 @@ public class Architecture extends AbstractAgent{
             ArrayList<Instrument> payload  = new ArrayList<>();
             for(int j = 0; j < payloadData.size(); j++){
                 String instrumentName = payloadData.get(j).toString();
+                if(!instrumentList.containsKey(instrumentName)){
+                    throw new Exception("INPUT ERROR. " + instrumentName + " not found in problem statement folder");
+                }
                 Instrument instrument = instrumentList.get(instrumentName);
                 payload.add(instrument);
             }

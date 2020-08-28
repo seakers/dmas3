@@ -18,4 +18,6 @@ public class SpacecraftDesign {
         System.out.println("Spacecraft design algorithm implementation pending.");
         this.design = new ArrayList<>();
     }
+
+    public ArrayList<Instrument> getPayload(){return this.payload;}
 }

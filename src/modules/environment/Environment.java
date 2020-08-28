@@ -44,6 +44,8 @@ public class Environment extends Watcher {
             environmentTasks = new ArrayList<>();
             environmentTasks.addAll( initiateTasks() );
 
+            // Calculate Task Trajectory
+
             // Add probes
             // 1 : request my role so that the viewer can probe me
             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE);
@@ -106,7 +108,7 @@ public class Environment extends Watcher {
 
             tasks.add( new Task(name, score, lat, lon, alt, freqs,
                     spatialResReq, snrReq, numLooks, stringToDuration(tempResReqMin), stringToDuration(tempResReqMax),
-                    stringToDate(startTimeString), stringToDate(endTimeString), urgencyFactor));
+                    stringToDate(startTimeString), stringToDate(endTimeString), timeStep, urgencyFactor));
         }
 
         return tasks;
@@ -226,4 +228,6 @@ public class Environment extends Watcher {
     public ArrayList<Task> getScenarioTasks(){ return this.environmentTasks; }
     public AbsoluteDate getStartDate(){ return this.startDate; }
     public AbsoluteDate getEndDate(){ return this.endDate; }
+    public double getTimeStep(){return this.timeStep;}
+    public ArrayList<Task> getEnvironmentTasks(){return environmentTasks;}
 }

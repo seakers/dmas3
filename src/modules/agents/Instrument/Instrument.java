@@ -39,4 +39,63 @@ public abstract class Instrument {
     public abstract Instrument copy();
     public abstract double getSNR(PVCoordinates scPosition, PVCoordinates targetPosition);
     public abstract double getSpatialRes(PVCoordinates scPosition, PVCoordinates targetPosition);
+
+    // Getters
+    public String getName() {
+        return name;
+    }
+
+    public double getDataRate() {
+        return dataRate;
+    }
+
+    public double getpAvg() {
+        return pAvg;
+    }
+
+    public double getpPeak() {
+        return pPeak;
+    }
+
+    public Measurement getFreq() {
+        return freq;
+    }
+
+    public double getBandwidth() {
+        return bandwidth;
+    }
+
+    public double getFOV() {
+        return fov;
+    }
+
+    public double getLookAngle() {
+        return n;
+    }
+
+    public double getMass() {
+        return mass;
+    }
+
+    public String getScanningType() {
+        return scanningType;
+    }
+
+    public double getScanAnglePlus() {
+        return scanAnglePlus;
+    }
+
+    public double getScanAngleMinus() {
+        return scanAngleMinus;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public InstrumentAntenna getAnt() {
+        return ant;
+    }
+
+    public String toString(){return this.name; }
 }

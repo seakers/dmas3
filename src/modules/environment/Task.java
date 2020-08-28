@@ -1,6 +1,9 @@
 package modules.environment;
 
+import modules.agents.orbits.GroundPointTrajectory;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
 
@@ -15,11 +18,12 @@ public class Task {
     private Dependencies dependencies;          // List of subtask dependencies
     private int I;                              // Number of measurements
     private int N_j;                            // Number of subtasks
+    private GroundPointTrajectory pv;           // Trajectory of task as a ground point
     private boolean completion;
 
     public Task(String name, double score, double lat, double lon, double alt, ArrayList<Measurement> measurements,
                 double spatialResReq, double lossReq, int numLooks, double temporalResolutionMin, double temporalResolutionMax,
-                AbsoluteDate startDate, AbsoluteDate endDate, double urgencyFactor){
+                AbsoluteDate startDate, AbsoluteDate endDate, double timestep, double urgencyFactor){
         try {
             this.name = name;
             this.maxScore = score;
@@ -37,6 +41,8 @@ public class Task {
             this.subtasks = generateSubtasks();
             this.N_j = this.subtasks.size();
             this.dependencies = new Dependencies(N_j, subtasks, requirements);
+            this.pv = new GroundPointTrajectory(lat, lon, alt, startDate, endDate, timestep);
+            this.pv.propagateOrbit();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -90,4 +96,10 @@ public class Task {
     public Requirements getRequirements(){return requirements;}
     public String getName(){return name;}
     public ArrayList<Measurement> getMeasurements(){return measurements;}
+    public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {
+        return this.pv.getPV(date);
+    }
+    public PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException {
+        return this.pv.getPVEarth(date);
+    }
 }
