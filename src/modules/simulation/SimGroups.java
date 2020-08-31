@@ -2,7 +2,7 @@ package modules.simulation;
 
 import madkit.kernel.AbstractAgent;
 
-public class SimGroups extends AbstractAgent {
+public class SimGroups {
 
     /**
      * Organizational constants
@@ -33,4 +33,6 @@ public class SimGroups extends AbstractAgent {
         public static final String PLANNER = "agent_planner";
         public static final String CCBBA_THINK1 = "plan_construction";
         public static final String CCBBA_THINK2 = "plan_sharing";
+        public static final String CCBBA_THINK1_DONE = "results_ready_for_broacast";
+        public static final String CCBBA_DONE = "plan_achieved";
 }

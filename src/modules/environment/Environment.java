@@ -53,6 +53,7 @@ public class Environment extends Watcher {
             // 2 : give probe access to agents - Any agent within the group agent can access this environment's properties
             addProbe(new Environment.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT, "environment"));
             addProbe(new Environment.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER, "environment"));
+            addProbe(new Environment.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE, "environment"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -73,10 +74,6 @@ public class Environment extends Watcher {
     }
 
     // Helper functions
-    protected void tic(){
-        this.currentDate = this.currentDate.shiftedBy(this.timeStep);
-    }
-
     private ArrayList<Task> initiateTasks() throws Exception {
         ArrayList<Task> tasks = new ArrayList<>();
         Workbook taskDataXls = Workbook.getWorkbook(new File(problemStatementDir + "/Measurement Requirements.xls"));
@@ -224,10 +221,24 @@ public class Environment extends Watcher {
         getLogger().setLevel(this.loggerLevel);
     }
 
+    protected void tic(){
+        this.currentDate = this.currentDate.shiftedBy(this.timeStep);
+    }
+
     // Getters and Setters
     public ArrayList<Task> getScenarioTasks(){ return this.environmentTasks; }
     public AbsoluteDate getStartDate(){ return this.startDate; }
     public AbsoluteDate getEndDate(){ return this.endDate; }
     public double getTimeStep(){return this.timeStep;}
     public ArrayList<Task> getEnvironmentTasks(){return environmentTasks;}
+    public double getGVT(){ return this.currentDate.durationFrom(this.startDate); }
+    public AbsoluteDate getCurrentDate(){return this.currentDate;}
+    public ArrayList<Subtask> getEnvironmentSubtasks(){
+        ArrayList<Subtask> subtasks = new ArrayList<>();
+        for(Task task : this.environmentTasks){
+            ArrayList<Subtask> taskSubtasks = task.getSubtasks();
+            subtasks.addAll(taskSubtasks);
+        }
+        return subtasks;
+    }
 }

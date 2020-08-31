@@ -3,27 +3,22 @@ package modules.simulation;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
-import jxl.read.biff.BiffException;
 import madkit.kernel.AbstractAgent;
-import modules.agents.Instrument.Instrument;
-import modules.agents.Instrument.InstrumentAntenna;
-import modules.agents.Instrument.Radiometer;
-import modules.agents.Instrument.SAR;
-import modules.agents.Spacecraft;
-import modules.agents.orbits.OrbitParams;
+import modules.spacecraft.instrument.Instrument;
+import modules.spacecraft.instrument.InstrumentAntenna;
+import modules.spacecraft.instrument.Radiometer;
+import modules.spacecraft.instrument.SAR;
+import modules.spacecraft.Spacecraft;
+import modules.spacecraft.orbits.OrbitParams;
 import modules.environment.Measurement;
-import modules.environment.Task;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 
 public class Architecture extends AbstractAgent{
     private String problemStatement;

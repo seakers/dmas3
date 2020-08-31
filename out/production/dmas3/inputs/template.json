@@ -14,8 +14,19 @@
   },
   "spaceSegment": [
     {
-      "name": "SMAP",
+      "name": "SMAP1",
       "orbit": "Orbit1",
+      "instances": 1,
+      "payload": [
+        "SMAP-RAD",
+        "SMAP-MWR"
+      ],
+      "@type": "Spacecraft",
+      "planner": "CCBBA"
+    },
+    {
+      "name": "SMAP2",
+      "orbit": "Orbit2",
       "instances": 1,
       "payload": [
         "SMAP-RAD",
@@ -49,6 +60,16 @@
     },
     {
       "name": "Orbit2",
+      "@type": "OrbitalElements",
+      "altitude": 600,
+      "eccentricity": 0.0001,
+      "inclination": 0.0,
+      "argumentOfPerigee": 0.0,
+      "raan": 0.0,
+      "anomaly": 54.8647
+    },
+    {
+      "name": "Orbit3",
       "@type": "OrbitName",
       "altitude": 600,
       "inclination": "SSO",

@@ -1,6 +1,6 @@
 package modules.environment;
 
-import modules.agents.orbits.GroundPointTrajectory;
+import modules.spacecraft.orbits.GroundPointTrajectory;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -102,4 +102,5 @@ public class Task {
     public PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException {
         return this.pv.getPVEarth(date);
     }
+    public ArrayList<Subtask> getSubtasks(){return this.subtasks;}
 }

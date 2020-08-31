@@ -39,4 +39,5 @@ public class Subtask {
     public String toString(){ return this.name; }
     public ArrayList<Measurement> getDepMeasurements(){return this.depMeasurement;}
     public Measurement getMainMeasurement(){return this.mainMeasurement;}
+    public int getI_q(){return this.i_q;}
 }
