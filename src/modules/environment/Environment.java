@@ -3,8 +3,10 @@ package modules.environment;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
+import madkit.action.SchedulingAction;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Watcher;
+import madkit.message.SchedulingMessage;
 import madkit.simulation.probe.PropertyProbe;
 import modules.simulation.ProblemStatement;
 import modules.simulation.SimGroups;
@@ -13,6 +15,7 @@ import org.orekit.time.TimeScale;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 
 public class Environment extends Watcher {
@@ -22,6 +25,7 @@ public class Environment extends Watcher {
     private AbsoluteDate currentDate;
     private double timeStep;
     private ArrayList<Task> environmentTasks;
+    private HashMap<Task,TaskCapability> measurementCapabilities;
     private String problemStatementDir;
     private TimeScale utc;
 
@@ -44,7 +48,11 @@ public class Environment extends Watcher {
             environmentTasks = new ArrayList<>();
             environmentTasks.addAll( initiateTasks() );
 
-            // Calculate Task Trajectory
+            // Initiate capabilities
+            measurementCapabilities = new HashMap<>();
+            for(Task task : environmentTasks){
+                measurementCapabilities.put(task, new TaskCapability(task));
+            }
 
             // Add probes
             // 1 : request my role so that the viewer can probe me
@@ -223,6 +231,12 @@ public class Environment extends Watcher {
 
     protected void tic(){
         this.currentDate = this.currentDate.shiftedBy(this.timeStep);
+
+        if(this.currentDate.compareTo(this.endDate) >= 0) {
+            // End time reached, terminate sim
+            SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
+            sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
+        }
     }
 
     // Getters and Setters
@@ -240,5 +254,12 @@ public class Environment extends Watcher {
             subtasks.addAll(taskSubtasks);
         }
         return subtasks;
+    }
+    public void updateMeasurementCapability(SubtaskCapability subtaskCapability){
+        Task task = subtaskCapability.getParentSubtask().getParentTask();
+        this.measurementCapabilities.get(task).updateSubtaskCapability(subtaskCapability);
+    }
+    public void completeSubtask(Subtask subtask){
+        subtask.getParentTask().completeSubtasks(subtask);
     }
 }

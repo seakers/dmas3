@@ -103,4 +103,17 @@ public class Task {
         return this.pv.getPVEarth(date);
     }
     public ArrayList<Subtask> getSubtasks(){return this.subtasks;}
+    public void completeSubtasks(Subtask j){
+        j.setCompletion(true);
+
+        int subtasksCompleted = 0;
+        for(Subtask q : this.subtasks){
+            if(this.dependencies.mutuallyExclusive(j,q)){
+                q.setCompletion(true);
+            }
+            if(q.getCompletion() == true) subtasksCompleted++;
+        }
+        if(subtasksCompleted >= this.N_j) this.completion = true;
+    }
+    public boolean getCompletion(){return this.completion;}
 }

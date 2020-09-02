@@ -4,21 +4,20 @@ import madkit.kernel.Message;
 import modules.environment.Subtask;
 import modules.planner.CCBBA.IterationDatum;
 import modules.planner.CCBBA.IterationResults;
-import modules.spacecraft.Spacecraft;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.HashMap;
 
 public class CCBBAResultsMessage extends Message {
-    private HashMap<Subtask, IterationDatum> results;
+    private IterationResults results;
     private PVCoordinates pv;
     private PVCoordinates pvEarth;
 
-    public CCBBAResultsMessage(HashMap<Subtask, IterationDatum> results, PVCoordinates pv, PVCoordinates pvEarth){
-        this.results = new HashMap<>(); this.results.putAll(results);
+    public CCBBAResultsMessage(IterationResults results, PVCoordinates pv, PVCoordinates pvEarth){
+        this.results = results.copy();
         this.pv = pv;
         this.pvEarth = pvEarth;
     }
 
-    public HashMap<Subtask, IterationDatum> getResults(){return this.results;}
+    public IterationResults getResults(){return this.results;}
 }

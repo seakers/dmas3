@@ -4,15 +4,16 @@ import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.MessageFilter;
+import modules.environment.*;
 import modules.planner.plans.*;
 import modules.spacecraft.instrument.Instrument;
 import modules.spacecraft.orbits.OrbitParams;
 import modules.spacecraft.orbits.SpacecraftOrbit;
-import modules.environment.Environment;
 import modules.planner.CCBBA.CCBBAPlanner;
 import modules.planner.Planner;
 import modules.simulation.SimGroups;
 import modules.planner.messages.*;
+import modules.spacecraft.orbits.TimeInterval;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -30,6 +31,7 @@ public class Spacecraft extends AbstractAgent {
     private Environment environment;    // world environment
     private Plan plan;                  // current planned task
     private List<Message> receivedMessages;//list of received messages from other agents
+    private ArrayList<MeasurementPlan> measurementsMade;
 
     public Spacecraft(String name, ArrayList<Instrument> payload, OrbitParams orbitParams, String planner) throws Exception {
         this.name = name;
@@ -69,6 +71,7 @@ public class Spacecraft extends AbstractAgent {
             this.planner.setParentAgentAddress(this.getAgentAddressIn(SimGroups.MY_COMMUNITY,SimGroups.SIMU_GROUP,SimGroups.AGENT));
             launchAgent(this.planner);
             this.plannerAddress = this.planner.getAgentAddressIn(SimGroups.MY_COMMUNITY,SimGroups.SIMU_GROUP,SimGroups.PLANNER);
+            this.measurementsMade = new ArrayList<>();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,7 +99,8 @@ public class Spacecraft extends AbstractAgent {
         PlannerMessage plannerMessage = readMessagesFromPlanner();
 
         if(plannerMessage == null){
-            this.plan = new WaitPlan();
+            this.plan = new WaitPlan(this.environment.getCurrentDate(),
+                    this.environment.getCurrentDate().shiftedBy(this.environment.getTimeStep()));
         }
         else{
             this.plan = plannerMessage.getPlan();
@@ -110,17 +114,19 @@ public class Spacecraft extends AbstractAgent {
         String planClass = this.plan.getClass().toString();
         if(planClass.equals(PlanNames.BROADCAST)){
             // broadcast message from plan
-            Message message = this.plan.getBroadcastMessage();
+            CCBBAResultsMessage message = (CCBBAResultsMessage) ((BroadcastPlan) this.plan).getBroadcastMessage();
             broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT, message);
         }
         else if(planClass.equals(PlanNames.DIE)) {
-
+            // adopt death role, this will be used by planner to only wait until the simulation ends
+            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
         }
         else if(planClass.equals(PlanNames.MANEUVER)){
 
         }
         else if(planClass.equals(PlanNames.MEASURE)){
-
+            makeMeasurement();
+            this.measurementsMade.add((MeasurementPlan ) this.plan.copy());
         }
         else if(planClass.equals(PlanNames.WAIT)){
             // do nothing
@@ -158,6 +164,54 @@ public class Spacecraft extends AbstractAgent {
     private PlannerMessage readMessagesFromPlanner(){
         return (PlannerMessage) nextMessage(new PlannerFilter(this.plannerAddress));
     }
+    private void makeMeasurement(){
+        MeasurementPlan measurementPlan = (MeasurementPlan) this.plan;
+
+        // unpack plan details
+        Subtask subtask = measurementPlan.getRelevantSubtask();
+        ArrayList<Instrument> instruments = measurementPlan.getInstruments();
+        Measurement measurement = measurementPlan.getMeasurement();
+        Requirements requirements = measurementPlan.getRelevantSubtask().getParentTask().getRequirements();
+
+        // calculate measurement performance
+        double spatialRes = calcSpatialRes(subtask, instruments);
+        double SNR = calcSNR(subtask, instruments);
+        double duration = calcDuration(subtask, instruments);
+
+        SubtaskCapability newCapability = new SubtaskCapability(subtask, instruments, measurement, requirements, spatialRes, SNR, duration);
+
+        // update environment
+        this.environment.updateMeasurementCapability(newCapability);
+        this.environment.completeSubtask(subtask);
+    }
+
+    private double calcSpatialRes(Subtask subtask, ArrayList<Instrument> instruments){
+        return -1.0;
+    }
+
+    private double calcSNR(Subtask subtask, ArrayList<Instrument> instruments){
+        return -1.0;
+    }
+
+    private double calcDuration(Subtask subtask, ArrayList<Instrument> instruments){
+        return -1.0;
+    }
+
+    public boolean hasAccess(Subtask j){
+        Task task = j.getParentTask();
+        boolean hasAccess = false;
+        for(Instrument ins : design.getPayload()){
+           if(orbit.hasAccess(ins, task)){
+               hasAccess = true;
+           }
+        }
+        return hasAccess;
+    }
+
+    /**
+     * Getters and setters
+     */
     public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {return this.orbit.getPV(date);}
     public PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException {return this.orbit.getPVEarth(date);}
+    public SpacecraftDesign getDesign(){ return this.design; }
 }

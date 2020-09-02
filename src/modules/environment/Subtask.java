@@ -40,4 +40,7 @@ public class Subtask {
     public ArrayList<Measurement> getDepMeasurements(){return this.depMeasurement;}
     public Measurement getMainMeasurement(){return this.mainMeasurement;}
     public int getI_q(){return this.i_q;}
+    public Task getParentTask(){return this.parentTask;}
+    public void setCompletion(boolean status){this.completion = status;}
+    public boolean getCompletion(){return this.completion;}
 }

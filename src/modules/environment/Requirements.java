@@ -57,4 +57,6 @@ public class Requirements {
     public void setNumLooks(int numLooks) { this.numLooks = numLooks; }
     public double getUrgencyFactor(){return this.urgencyFactor;}
     public void setUrgencyFactor(double urgencyFactor){ this.urgencyFactor = urgencyFactor;}
+    public AbsoluteDate getStartDate(){return this.startDate;}
+    public AbsoluteDate getEndDate(){return this.endDate;}
 }

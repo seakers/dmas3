@@ -78,6 +78,11 @@ public class SpacecraftOrbit extends OrbitData {
         }
     }
 
+    public boolean hasAccess(Instrument ins, Task task){
+        ArrayList<TimeInterval> accessIntervals = accessTimes.get(ins).get(task);
+        return (accessIntervals.size() > 0);
+    }
+
     public boolean getAccess(Instrument ins, Task task, AbsoluteDate date) throws Exception {
         String scanType = ins.getScanningType();
         double fov = ins.getFOV();

@@ -56,4 +56,33 @@ public class Dependencies {
             }
         }
     }
+
+    public int getNumDependencies(Subtask subtask){
+        int j = subtask.getI_q();
+        int numDependencies = 0;
+        for(int q = 0; q < subtask.getParentTask().getSubtasks().size(); q++){
+            if(depends(j,q)) numDependencies++;
+        }
+        return numDependencies;
+    }
+
+    public boolean depends(Subtask j, Subtask q){
+        if(D[j.getI_q()][q.getI_q()] >= 1){
+            return true;
+        }
+        return false;
+    }
+    public boolean depends(int j, int q){
+        if(D[j][q] >= 1){
+            return true;
+        }
+        return false;
+    }
+
+    public boolean mutuallyExclusive(Subtask j, Subtask q){
+        if(D[j.getI_q()][q.getI_q()] <= -1){
+            return true;
+        }
+        return false;
+    }
 }

@@ -1,5 +1,6 @@
 package modules.planner.CCBBA;
 
+import madkit.kernel.AbstractAgent;
 import modules.environment.Subtask;
 import modules.spacecraft.Spacecraft;
 import org.orekit.time.AbsoluteDate;
@@ -11,7 +12,7 @@ public class IterationDatum {
     private Subtask j;                      // subtask who the following results belong to
     private int i_q;                        // subtask index with respect to its parent task subtask list
     private double y;                       // winner bid
-    private Spacecraft z;                   // winner agent
+    private AbstractAgent z;                // winner agent
     private double tz;                      // measurement epoch [s]
     private AbsoluteDate tz_date;           // measurement date
     private double c;                       // self bid
@@ -47,5 +48,163 @@ public class IterationDatum {
         this.w_solo = settings.w_solo;
         this.w_any = settings.w_any;
         this.w_all = settings.w_all;
+    }
+
+    private IterationDatum(Subtask j, double y, AbstractAgent z, double tz, AbsoluteDate tz_date, double c,
+                          AbsoluteDate s, double spatialRes, double snr, double cost, double score, int h, int v,
+                           int w_solo, int w_any, int w_all){
+        this.j = j;
+        this.i_q = j.getI_q();
+        this.y = y;
+        this.z = z;
+        this.tz = tz;
+        this.tz_date = tz_date.getDate();
+        this.c = c;
+        this.s = s.getDate();
+        this.spatialRes = spatialRes;
+        this.snr = snr;
+        this.cost = cost;
+        this.score = score;
+
+        this.h = h;
+        this.v = v;
+        this.w_solo = w_solo;
+        this.w_any = w_any;
+        this.w_all = w_all;
+    }
+
+    public IterationDatum copy(){
+        return new IterationDatum(j, y, z, tz, tz_date, c, s, spatialRes, snr, cost, score, h, v, w_solo, w_any, w_all);
+    }
+
+    public void resetAvailability(){
+        this.h = 1;
+    }
+
+    /**
+     * Getters and Setters
+     */
+    public Subtask getSubtask() {
+        return j;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public AbstractAgent getZ() {
+        return z;
+    }
+
+    public void setZ(AbstractAgent z) {
+        this.z = z;
+    }
+
+    public double getTz() {
+        return tz;
+    }
+
+    public void setTz(double tz) {
+        this.tz = tz;
+    }
+
+    public AbsoluteDate getTz_date() {
+        return tz_date;
+    }
+
+    public void setTz_date(AbsoluteDate tz_date) {
+        this.tz_date = tz_date;
+    }
+
+    public double getC() {
+        return c;
+    }
+
+    public void setC(double c) {
+        this.c = c;
+    }
+
+    public AbsoluteDate getS() {
+        return s;
+    }
+
+    public void setS(AbsoluteDate s) {
+        this.s = s;
+    }
+
+    public double getSpatialRes() {
+        return spatialRes;
+    }
+
+    public void setSpatialRes(double spatialRes) {
+        this.spatialRes = spatialRes;
+    }
+
+    public double getSnr() {
+        return snr;
+    }
+
+    public void setSnr(double snr) {
+        this.snr = snr;
+    }
+
+    public double getCost() {
+        return cost;
+    }
+
+    public void setCost(double cost) {
+        this.cost = cost;
+    }
+
+    public double getScore() {
+        return score;
+    }
+
+    public void setScore(double score) {
+        this.score = score;
+    }
+
+    public int getH() {
+        return h;
+    }
+
+    public void setH(int h) {
+        this.h = h;
+    }
+
+    public int getV() {
+        return v;
+    }
+
+    public void setV(int v) {
+        this.v = v;
+    }
+
+    public int getW_solo() {
+        return w_solo;
+    }
+
+    public void setW_solo(int w_solo) {
+        this.w_solo = w_solo;
+    }
+
+    public int getW_any() {
+        return w_any;
+    }
+
+    public void setW_any(int w_any) {
+        this.w_any = w_any;
+    }
+
+    public int getW_all() {
+        return w_all;
+    }
+
+    public void setW_all(int w_all) {
+        this.w_all = w_all;
     }
 }

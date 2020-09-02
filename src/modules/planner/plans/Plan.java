@@ -12,8 +12,29 @@ public abstract class Plan {
     protected AbsoluteDate endDate;                 // end date of planned task
     protected ArrayList<Component> components;      // list of active components during task
     protected ArrayList<Instrument> instruments;    // list of active instrument during task
-    protected Message broadcastMessage;             // message to be broadcast my agent
+
+    public Plan(AbsoluteDate startDate, AbsoluteDate endDate, ArrayList<Component> components, ArrayList<Instrument> instruments) {
+        this.startDate = startDate.getDate();
+        this.endDate = endDate.getDate();
+        this.components = new ArrayList<>(); this.components.addAll(components);
+        this.instruments = new ArrayList<>(); this.instruments.addAll(instruments);
+    }
 
     public abstract Plan copy();
-    public Message getBroadcastMessage(){return this.broadcastMessage;}
+
+    public AbsoluteDate getStartDate() {
+        return startDate;
+    }
+
+    public AbsoluteDate getEndDate() {
+        return endDate;
+    }
+
+    public ArrayList<Component> getComponents() {
+        return components;
+    }
+
+    public ArrayList<Instrument> getInstruments() {
+        return instruments;
+    }
 }
