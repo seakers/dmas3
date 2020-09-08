@@ -116,4 +116,5 @@ public class Task {
         if(subtasksCompleted >= this.N_j) this.completion = true;
     }
     public boolean getCompletion(){return this.completion;}
+    public Dependencies getDependencies(){return dependencies;}
 }

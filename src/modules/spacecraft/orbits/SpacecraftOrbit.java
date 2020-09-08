@@ -25,11 +25,61 @@ public class SpacecraftOrbit extends OrbitData {
     private OrbitParams params;
     private ArrayList<Instrument> payload;
     private HashMap<Instrument, HashMap<Task, ArrayList<TimeInterval>>> accessTimes;
+    private HashMap<Task, ArrayList<TimeInterval>> lineOfSightTimes;
 
     public SpacecraftOrbit(OrbitParams params, ArrayList<Instrument> payload, Environment environment) throws OrekitException {
         super(environment.getStartDate(), environment.getEndDate(), environment.getTimeStep());
         this.params = params.copy();
         this.payload = payload;
+    }
+
+    public void calcLoSTimes(Environment environment) throws  Exception{
+        ArrayList<Task> environmentTasks = environment.getEnvironmentTasks();
+        this.lineOfSightTimes = new HashMap<>();
+
+        // get coverage times to each task for each sensor
+        for(Task task : environmentTasks) {
+            ArrayList<TimeInterval> taskLoS = new ArrayList<>();
+            boolean los_i;
+            boolean los_im = false;
+
+            AbsoluteDate stepDate = this.startDate.getDate();
+            TimeInterval interval = new TimeInterval();
+            while (stepDate.compareTo(endDate) < 0) {
+                // calculate if spacecraft's instrument can access task
+                los_i = calcLineOfSight(task, stepDate);
+
+                if(!los_im && los_i){
+                    // access started
+                    interval.setAccessStart(stepDate);
+                }
+                else if(los_im && !los_i){
+                    // access ended
+                    interval.setAccessEnd(stepDate);
+                    taskLoS.add(interval.copy());
+                    interval = new TimeInterval();
+                }
+                else if(los_im && los_i && (stepDate.compareTo(endDate) >= 0)){
+                    // access continued until the end of the simulation
+                    interval.setAccessEnd(stepDate);
+                    taskLoS.add(interval.copy());
+                    interval = new TimeInterval();
+                }
+
+                // set up next iteration
+                los_im = los_i;
+                stepDate = stepDate.shiftedBy(timeStep);
+            }
+            lineOfSightTimes.put(task,taskLoS);
+        }
+    }
+
+    public boolean calcLineOfSight(Task task, AbsoluteDate date) throws Exception {
+        Vector3D satPos = getPVEarth(date).getPosition();
+        Vector3D taskPos = task.getPVEarth(date).getPosition();
+
+        // check if in line of sight
+        return lineOfsight(satPos, taskPos);
     }
 
     public void calcAccessTimes(Environment environment) throws Exception {
@@ -93,7 +143,6 @@ public class SpacecraftOrbit extends OrbitData {
 
         // check if in line of sight
         if(lineOfsight(satPos, taskPos)) {
-
             // check if in field of view of sensor
             switch (scanType) {
                 case "side":
@@ -108,7 +157,8 @@ public class SpacecraftOrbit extends OrbitData {
 
                     boolean inFOVAT = (angleATdeg <= fov);
                     boolean inFOVCT = (angleCTdeg >= scanMin)&&(angleCTdeg <= scanMax);
-                    return inFOVAT && inFOVCT;
+//                    return inFOVAT && inFOVCT;
+                    return true;
                 case "conical":
                     throw new Exception("Sensor scanning type not yet supported");
                 default:
@@ -120,7 +170,7 @@ public class SpacecraftOrbit extends OrbitData {
         }
     }
 
-    private double getATAngle(Vector3D satPos, Vector3D satVel, Vector3D taskPos){
+    public double getATAngle(Vector3D satPos, Vector3D satVel, Vector3D taskPos){
         // declare unit vectors wrt satellite
         Vector3D satX = satVel.normalize();
         Vector3D satZ = satPos.normalize().scalarMultiply(-1);
@@ -136,7 +186,7 @@ public class SpacecraftOrbit extends OrbitData {
         return Math.acos( relProj.dotProduct(satZ) / ( relProj.getNorm() * satZ.getNorm() ) );
     }
 
-    private double getCTAngle(Vector3D satPos, Vector3D satVel, Vector3D taskPos){
+    public double getCTAngle(Vector3D satPos, Vector3D satVel, Vector3D taskPos){
         // declare unit vectors wrt satellite
         Vector3D satX = satVel.normalize();
         Vector3D satZ = satPos.normalize().scalarMultiply(-1);
@@ -244,4 +294,6 @@ public class SpacecraftOrbit extends OrbitData {
 
     private double rad2deg(double th){ return th*180.0/Math.PI; }
     private double deg2rad(double th){ return th*Math.PI/180.0; }
+    public HashMap<Instrument, HashMap<Task, ArrayList<TimeInterval>>> getAccessTimes(){ return accessTimes; }
+    public HashMap<Task, ArrayList<TimeInterval>> getLineOfSightTimes(){return this.lineOfSightTimes;}
 }

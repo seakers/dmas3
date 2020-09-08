@@ -7,6 +7,7 @@ import madkit.message.MessageFilter;
 import modules.environment.*;
 import modules.planner.plans.*;
 import modules.spacecraft.instrument.Instrument;
+import modules.spacecraft.maneuvers.Maneuver;
 import modules.spacecraft.orbits.OrbitParams;
 import modules.spacecraft.orbits.SpacecraftOrbit;
 import modules.planner.CCBBA.CCBBAPlanner;
@@ -14,11 +15,13 @@ import modules.planner.Planner;
 import modules.simulation.SimGroups;
 import modules.planner.messages.*;
 import modules.spacecraft.orbits.TimeInterval;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Spacecraft extends AbstractAgent {
@@ -63,6 +66,7 @@ public class Spacecraft extends AbstractAgent {
 
             //2- Calculate Task Access Times
             this.orbit.calcAccessTimes(environment);
+            this.orbit.calcLoSTimes(environment);
 
             //3- Design Spacecraft
             this.design.designSpacecraft(this.orbit);
@@ -207,6 +211,36 @@ public class Spacecraft extends AbstractAgent {
         }
         return hasAccess;
     }
+
+    public ArrayList<ArrayList<TimeInterval>> getAccessTimes(Subtask j){
+        HashMap<Instrument, HashMap<Task, ArrayList<TimeInterval>>> accessTimes = this.orbit.getAccessTimes();
+        ArrayList<Instrument> payload = this.design.getPayload();
+
+        ArrayList<ArrayList<TimeInterval>> subtaskAccessTimes = new ArrayList<>();
+        for(Instrument ins : payload){
+            ArrayList<TimeInterval> tempAccess = new ArrayList<>(accessTimes.get(ins).get(j.getParentTask()));
+            subtaskAccessTimes.add(tempAccess);
+        }
+        return subtaskAccessTimes;
+    }
+
+    public ArrayList<TimeInterval> getLineOfSightTimeS(Subtask j){
+        return this.orbit.getLineOfSightTimes().get(j.getParentTask());
+    }
+
+    public boolean isInFovAT(Instrument ins, Vector3D satPos, Vector3D satVel, Vector3D taskPos){
+        double fov = ins.getFOV();
+        double angleATdeg = rad2deg( this.orbit.getATAngle(satPos, satVel, taskPos) );
+        return (angleATdeg <= fov);
+    }
+    public boolean isInFovCT(Instrument ins, Vector3D satPos, Vector3D satVel, Vector3D taskPos){
+        double fov = ins.getFOV();
+        double angleCTdeg = rad2deg( this.orbit.getCTAngle(satPos, satVel, taskPos) );
+        return (angleCTdeg <= fov);
+    }
+
+    private double rad2deg(double th){ return th*180.0/Math.PI; }
+    private double deg2rad(double th){ return th*Math.PI/180.0; }
 
     /**
      * Getters and setters

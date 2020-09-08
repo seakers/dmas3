@@ -10,6 +10,7 @@ import modules.spacecraft.Spacecraft;
 import modules.environment.Subtask;
 import modules.planner.Planner;
 import modules.planner.messages.*;
+import modules.spacecraft.maneuvers.Maneuver;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
@@ -27,6 +28,8 @@ public class CCBBAPlanner extends Planner {
     private ArrayList<Subtask> overallPath;
     private ArrayList<ArrayList<AbstractAgent>> omega;
     private ArrayList<ArrayList<Spacecraft>> overallOmega;
+    private ArrayList<Maneuver> maneuvers;
+    private ArrayList<Maneuver> overallManeuvers;
     private IterationResults iterationResults;
     private ArrayList<HashMap<Subtask, IterationDatum>> receivedResults;
     private Environment environment;
@@ -37,6 +40,9 @@ public class CCBBAPlanner extends Planner {
 
     @Override
     public void activate(){
+        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER);
+        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+
         this.planner = "CCBBA";
         this.settings = new CCBBASettings();
         this.bundle = new ArrayList<>();
@@ -48,11 +54,10 @@ public class CCBBAPlanner extends Planner {
             this.omega.add(new ArrayList<AbstractAgent>());
         }
         this.overallOmega = new ArrayList<>();
+        this.maneuvers = new ArrayList<>();
+        this.overallManeuvers = new ArrayList<>();
         this.iterationResults = new IterationResults(parentSpacecraft, environment.getEnvironmentSubtasks(), settings);
         this.receivedResults = new ArrayList<>();
-
-        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER);
-        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
     }
 
     @Override
@@ -62,7 +67,7 @@ public class CCBBAPlanner extends Planner {
     }
 
 
-    public void phaseOne() throws OrekitException {
+    public void phaseOne() throws Exception {
         // generate bundle
         getLogger().info("Starting phase one");
 
@@ -83,16 +88,14 @@ public class CCBBAPlanner extends Planner {
         getLogger().info("Constructing bundle...");
 
         while((bundle.size() < settings.M) && (iterationResults.subtasksAvailable()) && alive){
-            ArrayList<Bid> bidList = iterationResults.calcBidList(bundle, path);
+            // Calculate bids for all available subtasks
+            ArrayList<Bid> bidList = iterationResults.calcBidList(this);
 
-            // Initialize maximum bid
-            Subtask j_winner = null;
-            double maxBid = 0.0;
+            // Select Maximum
+            Bid maxBid = getMaxBid(bidList);
 
-            for(Bid bid : bidList){
-
-            }
-
+            // Add max bid to bundle and path
+            addToPath(maxBid);
         }
 
 
@@ -160,4 +163,27 @@ public class CCBBAPlanner extends Planner {
         }
         return newOmega;
     }
+
+    private Bid getMaxBid(ArrayList<Bid> bidList){
+        Bid winningBid = null;
+        double maxBid = 0.0;
+
+        for(Bid bid : bidList){
+            if(bid.getScore() > maxBid){
+                winningBid = bid;
+                maxBid = bid.getScore();
+            }
+        }
+
+        return winningBid;
+    }
+
+    private void addToPath(Bid bid){
+        int x = 1;
+    }
+
+    public ArrayList<Subtask> getBundle(){return this.bundle;}
+    public ArrayList<Subtask> getPath(){return this.path;}
+    public double getTimeStep(){return this.environment.getTimeStep();}
+    public IterationDatum getIterationDatum(Subtask j){return this.iterationResults.getIterationDatum(j);}
 }
