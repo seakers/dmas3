@@ -258,4 +258,6 @@ public class ADCS extends Component{
         this.bodyFrame = new ArrayList<>(bodyFrame);
         this.pointingVectorsBod = new HashMap<>(pointingVectors);
     }
+
+    public ArrayList<Vector3D> getBodyFrame(){return this.bodyFrame;}
 }

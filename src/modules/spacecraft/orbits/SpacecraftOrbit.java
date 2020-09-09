@@ -129,7 +129,7 @@ public class SpacecraftOrbit extends OrbitData {
     }
 
     public boolean hasAccess(Instrument ins, Task task){
-        ArrayList<TimeInterval> accessIntervals = accessTimes.get(ins).get(task);
+        ArrayList<TimeInterval> accessIntervals = lineOfSightTimes.get(task);
         return (accessIntervals.size() > 0);
     }
 

@@ -65,7 +65,7 @@ public class Spacecraft extends AbstractAgent {
             this.orbit.propagateOrbit();
 
             //2- Calculate Task Access Times
-            this.orbit.calcAccessTimes(environment);
+//            this.orbit.calcAccessTimes(environment);
             this.orbit.calcLoSTimes(environment);
 
             //3- Design Spacecraft
@@ -240,9 +240,5 @@ public class Spacecraft extends AbstractAgent {
     public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {return this.orbit.getPV(date);}
     public PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException {return this.orbit.getPVEarth(date);}
     public SpacecraftDesign getDesign(){ return this.design; }
-    public ArrayList<Vector3D> getBodyFrame(){
-        if( ((CCBBAPlanner) this.planner).getOverallPath().size() == 0 ){
-            return 
-        }
-    }
+    public ArrayList<Vector3D> getBodyFrame(){ return this.design.getAdcs().getBodyFrame(); }
 }

@@ -7,8 +7,8 @@ import org.orekit.time.AbsoluteDate;
 import java.util.ArrayList;
 
 public class AttitudeManeuver extends Maneuver {
-    protected ArrayList<Vector3D> p_o = new ArrayList<>();      // original pointing frame wrt the orbit frame
-    protected ArrayList<Vector3D> p_f = new ArrayList<>();      // original pointing frame wrt the orbit frame
+    protected ArrayList<Vector3D> p_o = new ArrayList<>();      // original body frame wrt the orbit frame
+    protected ArrayList<Vector3D> p_f = new ArrayList<>();      // final body frame wrt the orbit frame
 
     public AttitudeManeuver(ArrayList<Vector3D> p_o, ArrayList<Vector3D> p_f, AbsoluteDate startDate, AbsoluteDate endDate) {
         super(startDate, endDate);
@@ -46,4 +46,5 @@ public class AttitudeManeuver extends Maneuver {
     protected double rad2deg(double th){
         return th*180/Math.PI;
     }
+    public ArrayList<Vector3D> getFinalBodyFrame(){return this.p_f;}
 }

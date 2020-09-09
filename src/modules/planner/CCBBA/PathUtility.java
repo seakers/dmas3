@@ -6,6 +6,7 @@ import modules.environment.Subtask;
 import modules.environment.Task;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.Instrument;
+import modules.spacecraft.maneuvers.AttitudeManeuver;
 import modules.spacecraft.maneuvers.Maneuver;
 import modules.spacecraft.orbits.TimeInterval;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -103,7 +104,7 @@ public class PathUtility {
 
                     // if constraints are satisfied, then calculate utility at this point in time
                     if(dateFulfillsConstraints){
-                        ArrayList<Integer> visibilityList = calcVisibilityMatrix(parentSpacecraft,j,stepDate);
+                        ArrayList<ArrayList<Integer>> visibilityList = calcVisibilityMatrix(j,path,parentSpacecraft,stepDate);
                     }
 
                     stepDate.shiftedBy(timeStep);
@@ -218,7 +219,7 @@ public class PathUtility {
         }
     }
 
-    private ArrayList<ArrayList<Integer>> calcVisibilityMatrix(Subtask j, ArrayList<Subtask> path, Spacecraft spacecraft, AbsoluteDate date) throws OrekitException {
+    private ArrayList<ArrayList<Integer>> calcVisibilityMatrix(Subtask j, ArrayList<Subtask> path, Spacecraft spacecraft, AbsoluteDate date) throws Exception {
         ArrayList<ArrayList<Integer>> visibilityMatrix = new ArrayList<>();
         ArrayList<Instrument> payload = spacecraft.getDesign().getPayload();
 
@@ -236,7 +237,7 @@ public class PathUtility {
                         bodyFrame = spacecraft.getBodyFrame();
                     }
                     else{
-
+                        bodyFrame = ((AttitudeManeuver) (maneuvers.get(path_i-1))).getFinalBodyFrame();
                     }
 
                     visibleToInstrument = spacecraft.isVisible(ins, bodyFrame, date, taskPos);
@@ -244,7 +245,7 @@ public class PathUtility {
                 }
             }
             else{
-                if(!visibilityMatrix.get(0).contains(1)){
+                if(!visibilityMatrix.get(0).contains(0)){
                     // if all instruments can see subtask j without maneuver, then finish iterations
                     for(Instrument ins : payload){
                         visibilityTemp = new ArrayList<>();

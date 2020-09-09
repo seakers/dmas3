@@ -28,6 +28,7 @@ public abstract class Instrument {
         this.freq = freq;
         this.bandwidth = bandwidth;
         this.fov = fov;
+        this.fovType = fovType;
         this.n = n;
         this.mass = mass;
         this.scanningType = scanningType;
