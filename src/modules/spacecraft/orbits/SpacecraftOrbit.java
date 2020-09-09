@@ -157,8 +157,7 @@ public class SpacecraftOrbit extends OrbitData {
 
                     boolean inFOVAT = (angleATdeg <= fov);
                     boolean inFOVCT = (angleCTdeg >= scanMin)&&(angleCTdeg <= scanMax);
-//                    return inFOVAT && inFOVCT;
-                    return true;
+                    return inFOVAT && inFOVCT;
                 case "conical":
                     throw new Exception("Sensor scanning type not yet supported");
                 default:

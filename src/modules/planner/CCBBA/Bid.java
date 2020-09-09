@@ -54,7 +54,7 @@ public class Bid {
     public ArrayList<ArrayList<Subtask>> generateNewPaths(ArrayList<Subtask> oldPath, Subtask j){
         ArrayList<ArrayList<Subtask>> newPaths = new ArrayList<>();
 
-        for(int i = 0; i < oldPath.size(); i++){
+        for(int i = 0; i < (oldPath.size()+1); i++){
             ArrayList<Subtask> tempPath = new ArrayList<>(oldPath);
             tempPath.add(i,j);
             newPaths.add(tempPath);

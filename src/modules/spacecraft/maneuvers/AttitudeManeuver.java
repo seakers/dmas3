@@ -1,23 +1,43 @@
 package modules.spacecraft.maneuvers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
 
 public class AttitudeManeuver extends Maneuver {
-    protected Vector3D p_o = new Vector3D(0,0,0);      // original pointing vector
-    protected Vector3D p_f = new Vector3D(0,0,0);      // final pointing vector
+    protected ArrayList<Vector3D> p_o = new ArrayList<>();      // original pointing frame wrt the orbit frame
+    protected ArrayList<Vector3D> p_f = new ArrayList<>();      // original pointing frame wrt the orbit frame
 
-    public AttitudeManeuver(Vector3D p_o, Vector3D p_f, AbsoluteDate startDate, AbsoluteDate endDate) {
+    public AttitudeManeuver(ArrayList<Vector3D> p_o, ArrayList<Vector3D> p_f, AbsoluteDate startDate, AbsoluteDate endDate) {
         super(startDate, endDate);
-        this.p_o = new Vector3D(p_o.getX(), p_o.getY(), p_o.getZ());
-        this.p_f = new Vector3D(p_f.getX(), p_f.getY(), p_f.getZ());
+        this.p_o = new ArrayList<>();
+        Vector3D x_o = p_o.get(0);
+        Vector3D y_o = p_o.get(1);
+        Vector3D z_o = p_o.get(2);
+        p_o.add(x_o);
+        p_o.add(y_o);
+        p_o.add(z_o);
+
+        this.p_f = new ArrayList<>();
+        Vector3D x_f = p_f.get(0);
+        Vector3D y_f = p_f.get(1);
+        Vector3D z_f = p_f.get(2);
+        p_f.add(x_f);
+        p_f.add(y_f);
+        p_f.add(z_f);
     }
 
-    protected AttitudeManeuver(Vector3D p_o, AbsoluteDate startDate, AbsoluteDate endDate) {
+    protected AttitudeManeuver(ArrayList<Vector3D> p_o,  AbsoluteDate startDate, AbsoluteDate endDate) {
         super(startDate, endDate);
-        this.p_o = new Vector3D(p_o.getX(), p_o.getY(), p_o.getZ());
+        this.p_o = new ArrayList<>();
+        Vector3D x_o = p_o.get(0);
+        Vector3D y_o = p_o.get(1);
+        Vector3D z_o = p_o.get(2);
+        p_o.add(x_o);
+        p_o.add(y_o);
+        p_o.add(z_o);
     }
 
     protected double deg2rad(double th){

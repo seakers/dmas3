@@ -21,6 +21,7 @@ public class IterationDatum {
     private double snr;                     // Signal to Noise Ratio of measurement bid [dB]
     private double cost;                    // cost of performing subtask
     private double score;                   // raw score from performing subtask
+    private boolean locked;                 // locking trigger that prevents a task from being dropped by the winner agent
 
     // Info used by agent
     private int h;                          // availability
@@ -42,6 +43,7 @@ public class IterationDatum {
         this.snr = -1.0;
         this.cost = 0.0;
         this.score = 0.0;
+        this.locked = false;
 
         this.h = 1;
         this.v = 0;
@@ -58,9 +60,11 @@ public class IterationDatum {
         this.y = y;
         this.z = z;
         this.tz = tz;
-        this.tz_date = tz_date.getDate();
+        if(tz_date == null) this.tz_date = null;
+        else this.tz_date = tz_date.getDate();
         this.c = c;
-        this.s = s.getDate();
+        if(s == null) this.s = null;
+        else this.s = s.getDate();
         this.spatialRes = spatialRes;
         this.snr = snr;
         this.cost = cost;

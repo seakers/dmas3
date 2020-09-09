@@ -38,7 +38,7 @@ public class Task {
             this.I = this.measurements.size();
             this.requirements = new Requirements(spatialResReq, lossReq, numLooks, temporalResolutionMin, temporalResolutionMax, urgencyFactor, startDate, endDate);
             this.completion = false;
-            this.subtasks = generateSubtasks();
+            this.subtasks = generateSubtasks(measurements);
             this.N_j = this.subtasks.size();
             this.dependencies = new Dependencies(N_j, subtasks, requirements);
             this.pv = new GroundPointTrajectory(lat, lon, alt, startDate, endDate, timestep);
@@ -48,23 +48,24 @@ public class Task {
         }
     }
 
-    private ArrayList<Subtask> generateSubtasks() throws Exception {
+    private ArrayList<Subtask> generateSubtasks( ArrayList<Measurement> indMeasurements) throws Exception {
         ArrayList<Subtask> subtasksList = new ArrayList<>();
-        if (requirements.getNumLooks() >= 1 || (requirements.getNumLooks() > 1 && measurements.size() == 1)) {
-            for(Measurement mainFreq : measurements){
+        if (requirements.getNumLooks() == 1 || (requirements.getNumLooks() > 1 && indMeasurements.size() == 1)) {
+            for(Measurement mainFreq : this.measurements){
                 ArrayList<Measurement> remainingFreqs = new ArrayList<>();
-                for(Measurement f : measurements){
+                for(Measurement f : this.measurements){
                     if(mainFreq != f) remainingFreqs.add(f);
                 }
 
                 ArrayList<ArrayList<Measurement>> depMeasurementCombinations = getCombinations(remainingFreqs);
                 for(ArrayList<Measurement> depMeasurements : depMeasurementCombinations){
-                    subtasksList.add( new Subtask(mainFreq, depMeasurements, this) );
+                    int i_q = subtasksList.size();
+                    subtasksList.add( new Subtask(mainFreq, depMeasurements, this, i_q) );
                 }
             }
         }
         else{
-            throw new Exception("Multiple number of looks per measurement not yet supported");
+            throw new Exception("Multiple number of looks for different types of measurements not yet supported");
         }
         return subtasksList;
     }

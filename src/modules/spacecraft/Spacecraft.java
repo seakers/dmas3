@@ -227,16 +227,8 @@ public class Spacecraft extends AbstractAgent {
     public ArrayList<TimeInterval> getLineOfSightTimeS(Subtask j){
         return this.orbit.getLineOfSightTimes().get(j.getParentTask());
     }
-
-    public boolean isInFovAT(Instrument ins, Vector3D satPos, Vector3D satVel, Vector3D taskPos){
-        double fov = ins.getFOV();
-        double angleATdeg = rad2deg( this.orbit.getATAngle(satPos, satVel, taskPos) );
-        return (angleATdeg <= fov);
-    }
-    public boolean isInFovCT(Instrument ins, Vector3D satPos, Vector3D satVel, Vector3D taskPos){
-        double fov = ins.getFOV();
-        double angleCTdeg = rad2deg( this.orbit.getCTAngle(satPos, satVel, taskPos) );
-        return (angleCTdeg <= fov);
+    public boolean isVisible(Instrument ins, ArrayList<Vector3D> bodyFrame, AbsoluteDate date, Vector3D objectPos) throws Exception {
+        return this.getDesign().getAdcs().isVisible(ins,bodyFrame,orbit,date,objectPos);
     }
 
     private double rad2deg(double th){ return th*180.0/Math.PI; }
@@ -248,4 +240,9 @@ public class Spacecraft extends AbstractAgent {
     public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {return this.orbit.getPV(date);}
     public PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException {return this.orbit.getPVEarth(date);}
     public SpacecraftDesign getDesign(){ return this.design; }
+    public ArrayList<Vector3D> getBodyFrame(){
+        if( ((CCBBAPlanner) this.planner).getOverallPath().size() == 0 ){
+            return 
+        }
+    }
 }

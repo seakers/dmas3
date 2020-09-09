@@ -87,24 +87,25 @@ public class Architecture extends AbstractAgent{
             double pPeak = Double.parseDouble(row[3].getContents());
             double bandwidth = Double.parseDouble(row[4].getContents());
             double fov = Double.parseDouble(row[5].getContents());
-            double f = Double.parseDouble(row[6].getContents());
+            String fov_type = row[6].getContents();
+            double f = Double.parseDouble(row[7].getContents());
             Measurement freq = new Measurement(f);
-            double mass = Double.parseDouble(row[7].getContents());
-            double nLooks = Double.parseDouble(row[8].getContents());
-            double offAxisAngle = Double.parseDouble(row[9].getContents());
-            String scanningType = row[10].getContents();
-            double scanningAngle = Double.parseDouble(row[11].getContents());
-            String sensorType = row[12].getContents();
-            String antennaName = row[13].getContents();
+            double mass = Double.parseDouble(row[8].getContents());
+            double nLooks = Double.parseDouble(row[9].getContents());
+            double offAxisAngle = Double.parseDouble(row[10].getContents());
+            String scanningType = row[11].getContents();
+            double scanningAngle = Double.parseDouble(row[12].getContents());
+            String sensorType = row[13].getContents();
+            String antennaName = row[14].getContents();
 
             InstrumentAntenna ant = antennaList.get(antennaName);
             Instrument ins;
             switch (sensorType){
                 case "SAR":
-                    ins = new SAR(name, dataRate, pAvg, pPeak, freq, bandwidth, fov, offAxisAngle, mass, scanningType, scanningAngle, scanningAngle, sensorType, ant, nLooks);
+                    ins = new SAR(name, dataRate, pAvg, pPeak, freq, bandwidth, fov, fov_type, offAxisAngle, mass, scanningType, scanningAngle, scanningAngle, sensorType, ant, nLooks);
                     break;
                 case "RAD":
-                    ins = new Radiometer(name, dataRate, pAvg, pPeak, freq, bandwidth, fov, offAxisAngle, mass, scanningType, scanningAngle, scanningAngle, sensorType, ant);
+                    ins = new Radiometer(name, dataRate, pAvg, pPeak, freq, bandwidth, fov, fov_type, offAxisAngle, mass, scanningType, scanningAngle, scanningAngle, sensorType, ant);
                     break;
                 default:
                     throw new Exception("Sensor type not yet supported");

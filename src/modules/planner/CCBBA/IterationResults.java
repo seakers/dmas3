@@ -52,7 +52,7 @@ public class IterationResults {
         for(Subtask subtask : keys){
             IterationDatum datum = results.get(subtask);
             if(datum.getH() == 1){
-                return false;
+                return true;
             }
         }
         return false;
@@ -66,7 +66,7 @@ public class IterationResults {
         for(Subtask j : subtasks){
             Bid localBid = new Bid(j);
             int h = 0;
-            if(canBid(j, bundle)){
+            if(canBid(j, bundle, planner)){
                 localBid.calcBid((Spacecraft) parentAgent, planner);
 
                 h = coalitionTest();
@@ -78,7 +78,7 @@ public class IterationResults {
         return  bidList;
     }
 
-    private boolean canBid(Subtask j, ArrayList<Subtask> bundle){
+    private boolean canBid(Subtask j, ArrayList<Subtask> bundle, CCBBAPlanner planner){
         Spacecraft agent = (Spacecraft) this.parentAgent;
         ArrayList<Instrument> instruments = agent.getDesign().getPayload();
         Dependencies dep = j.getParentTask().getDependencies();
@@ -96,6 +96,13 @@ public class IterationResults {
         else if(j.getParentTask().getCompletion()) return false;
         else if(bundle.contains(j)) return false;
         else if(!agent.hasAccess(j)) return false;
+
+        // check if dependent subtasks are about to reach coalition violation timeout
+        for(Subtask q : j.getParentTask().getSubtasks()){
+            boolean depends = dep.depends(j,q);
+            boolean violationLimitReached = results.get(q).getV() >= planner.getSettings().O_kq;
+            if(depends && violationLimitReached) return  false;
+        }
 
         // Check if Pessimistic or Optimistic bidding strategy applies
         // Start by counting number of coalitions and requirements

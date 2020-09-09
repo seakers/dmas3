@@ -186,4 +186,8 @@ public class CCBBAPlanner extends Planner {
     public ArrayList<Subtask> getPath(){return this.path;}
     public double getTimeStep(){return this.environment.getTimeStep();}
     public IterationDatum getIterationDatum(Subtask j){return this.iterationResults.getIterationDatum(j);}
+    public ArrayList<Subtask> getOverallBundle(){return this.overallBundle;}
+    public ArrayList<Subtask> getOverallPath(){return this.overallPath;}
+    public CCBBASettings getSettings(){return settings;}
+    public IterationResults getIterationResults(){return iterationResults;}
 }

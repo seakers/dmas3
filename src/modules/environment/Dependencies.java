@@ -37,20 +37,29 @@ public class Dependencies {
                 }
                 else{
                     // Checks for dependency constraints
-                    for(Measurement depMeasurements : Q.getDepMeasurements()){
-                        if(depMeasurements.equals(J.getMainMeasurement())){
-                            D[j][q] = 1;
-                            T_max[j][q] = requirements.getTemporalResolutionMax();
-                            if(J.getMainMeasurement().getBand().equals(Q.getMainMeasurement().getBand())){
-                                // if the measurements are of the same band, add lower bound to temporal resolution
-                                T_min[j][q] = requirements.getTemporalResolutionMin();
-                            }
-                            else{
-                                // if they are measurements of the same band, there is no lower bound to temporal resolution
-                                T_min[j][q] = 0.0;
-                            }
+                    boolean constraintFound = false;
+                    if(J.getDepMeasurements().contains(Q.getMainMeasurement())
+                            && Q.getDepMeasurements().contains(J.getMainMeasurement())
+                            && J.getDepMeasurements().size()==Q.getDepMeasurements().size()){
 
+                        D[j][q] = 1;
+                        if(J.getMainMeasurement().getBand().equals(Q.getMainMeasurement().getBand())) {
+                            // if the measurements are of the same band, add lower bound to temporal resolution
+                            T_max[j][q] = requirements.getTemporalResolutionMax() * J.getDepMeasurements().size();
+                            T_min[j][q] = requirements.getTemporalResolutionMin();
                         }
+                        else{
+                            // if they are measurements of different bands, there is no lower bound to temporal resolution
+                            T_max[j][q] = requirements.getTemporalResolutionMax();
+                            T_min[j][q] = 0.0;
+                        }
+                        constraintFound = true;
+                    }
+                    if(!constraintFound){
+                        // Subtask J does not depend on subtask Q
+                        D[j][q] = -1;
+                        T_min[j][q] = 0.0;
+                        T_max[j][q] = Double.POSITIVE_INFINITY;
                     }
                 }
             }
@@ -84,5 +93,13 @@ public class Dependencies {
             return true;
         }
         return false;
+    }
+
+    public double Tmax(Subtask j, Subtask q){
+        return T_max[j.getI_q()][q.getI_q()];
+    }
+
+    public double Tmin(Subtask j, Subtask q){
+        return T_min[j.getI_q()][q.getI_q()];
     }
 }

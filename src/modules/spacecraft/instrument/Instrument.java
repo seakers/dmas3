@@ -11,6 +11,7 @@ public abstract class Instrument {
     protected Measurement freq;       // Sensed frequency [Hz]
     protected double bandwidth;       // Sensed bandwidth [Hz]
     protected double fov;             // Field of view [deg]
+    protected String fovType;         // Shape of FOV
     protected double n;               // Look angle off-nadir [deg]
     protected double mass;            // Instrument Mass [kg]
     protected String scanningType;    // Instrument Scanning Capability Type
@@ -19,7 +20,7 @@ public abstract class Instrument {
     protected String type;            // Type of Instrument
     protected InstrumentAntenna ant;  // Antenna used for this instrument
 
-    public Instrument(String name, double dataRate, double pAvg, double pPeak, Measurement freq, double bandwidth, double fov, double n, double mass, String scanningType, double scanAnglePlus, double scanAngleMinus, String type, InstrumentAntenna ant) {
+    public Instrument(String name, double dataRate, double pAvg, double pPeak, Measurement freq, double bandwidth, double fov, String fovType, double n, double mass, String scanningType, double scanAnglePlus, double scanAngleMinus, String type, InstrumentAntenna ant) {
         this.name = name;
         this.dataRate = dataRate;
         this.pAvg = pAvg;
@@ -98,4 +99,6 @@ public abstract class Instrument {
     }
 
     public String toString(){return this.name; }
+
+    public String getFovType(){return this.fovType;}
 }
