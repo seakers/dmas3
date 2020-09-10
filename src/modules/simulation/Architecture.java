@@ -10,7 +10,7 @@ import modules.spacecraft.instrument.Radiometer;
 import modules.spacecraft.instrument.SAR;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.orbits.OrbitParams;
-import modules.environment.Measurement;
+import modules.spacecraft.instrument.measurements.Measurement;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

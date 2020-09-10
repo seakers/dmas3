@@ -10,6 +10,7 @@ import madkit.message.SchedulingMessage;
 import madkit.simulation.probe.PropertyProbe;
 import modules.simulation.ProblemStatement;
 import modules.simulation.SimGroups;
+import modules.spacecraft.instrument.measurements.Measurement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 

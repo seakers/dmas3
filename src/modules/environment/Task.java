@@ -1,5 +1,6 @@
 package modules.environment;
 
+import modules.spacecraft.instrument.measurements.Measurement;
 import modules.spacecraft.orbits.GroundPointTrajectory;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -118,4 +119,5 @@ public class Task {
     }
     public boolean getCompletion(){return this.completion;}
     public Dependencies getDependencies(){return dependencies;}
+    public double getMaxScore(){return maxScore;}
 }

@@ -38,4 +38,15 @@ public class SlewingManeuver extends  AttitudeManeuver {
     }
 
     public double getTh(){return th;}
+
+    @Override
+    public double getSpecificTorque() {
+        Vector3D z0 = p_o.get(2);
+        Vector3D zf = p_f.get(2);
+
+        double dth = Math.acos( z0.dotProduct(zf)/ (z0.getNorm() * zf.getNorm()) );
+        double dt = endDate.durationFrom(startDate);
+
+        return 4.0*dth/Math.pow(dt,2);
+    }
 }

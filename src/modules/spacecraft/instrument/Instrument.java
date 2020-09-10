@@ -1,6 +1,6 @@
 package modules.spacecraft.instrument;
 
-import modules.environment.Measurement;
+import modules.spacecraft.instrument.measurements.Measurement;
 import org.orekit.utils.PVCoordinates;
 
 public abstract class Instrument {

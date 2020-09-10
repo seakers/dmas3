@@ -76,7 +76,7 @@ public class ADCS extends Component{
         orbitFrame.add(y_bod);
         orbitFrame.add(z_bod);
 
-        if(x_bod.getNorm() > 1 || y_bod.getNorm() > 1 || z_bod.getNorm() > 1){
+        if(x_bod.getNorm() > 1+1e-3 || y_bod.getNorm() > 1+1e-3 || z_bod.getNorm() > 1+1e-3 ){
             throw new Exception("orbital frame calculation gives non-unit vectors");
         }
 
@@ -87,8 +87,8 @@ public class ADCS extends Component{
         HashMap<Instrument, Vector3D> pointingVectors = new HashMap<>();
 
         for(Instrument ins : payload){
-            double lookAngle = deg2rad(ins.getLookAngle());
-            Vector3D pointVector = new Vector3D(0, Math.sin(lookAngle), Math.cos(lookAngle));
+            double lookAngle = deg2rad(-ins.getLookAngle());
+            Vector3D pointVector = new Vector3D(0, -Math.sin(lookAngle), Math.cos(lookAngle));
             pointingVectors.put(ins, pointVector);
         }
 
@@ -99,6 +99,15 @@ public class ADCS extends Component{
         ArrayList<Vector3D> orbitFrame = calcOrbitFrame(orbit,date);
         Vector3D pointBod = pointingVectorsBod.get(ins);
         Vector3D pointOrb = transform(pointBod, this.bodyFrame);
+        Vector3D pointEarth = transform(pointOrb, orbitFrame);
+
+        return pointEarth;
+    }
+
+    public Vector3D getPointingVector(Instrument ins, ArrayList<Vector3D> bodyFrame, SpacecraftOrbit orbit, AbsoluteDate date) throws Exception{
+        ArrayList<Vector3D> orbitFrame = calcOrbitFrame(orbit,date);
+        Vector3D pointBod = pointingVectorsBod.get(ins);
+        Vector3D pointOrb = transform(pointBod, bodyFrame);
         Vector3D pointEarth = transform(pointOrb, orbitFrame);
 
         return pointEarth;
@@ -116,10 +125,9 @@ public class ADCS extends Component{
         ArrayList<Vector3D> orbitFrame = calcOrbitFrame(orbit,date);
 
         // th in rads
-        double lookAngle = deg2rad(ins.getLookAngle());
-        Vector3D pointBod = new Vector3D(0, Math.sin(lookAngle + th), Math.cos(lookAngle));
-        Vector3D pointOrb = transform(pointBod, this.bodyFrame);
-        Vector3D pointEarth = transform(pointOrb, orbitFrame);
+        double lookAngle = deg2rad( -ins.getLookAngle() );
+        Vector3D pointBod = new Vector3D(0, -Math.sin(lookAngle + th), Math.cos(lookAngle + th));
+        Vector3D pointEarth = transform(pointBod, orbitFrame);
 
         return pointEarth;
     }
@@ -149,18 +157,53 @@ public class ADCS extends Component{
         return copy;
     }
 
-    public boolean isVisible(Instrument ins, ArrayList<Vector3D> bodyFrame, SpacecraftOrbit orbit, AbsoluteDate date, Vector3D objectPos) throws Exception {
+    public boolean isVisible(Instrument ins, Vector3D pointEarth, Vector3D objectPos, SpacecraftOrbit orbit, AbsoluteDate date) throws Exception {
         ArrayList<Vector3D> orbitFrame = calcOrbitFrame(orbit,date);
-
         String fovType = ins.getFovType();
         if(fovType.equals("square")){
             double fov = deg2rad( ins.getFOV() );
             double scanningAngleMinus = deg2rad( ins.getScanAngleMinus() );
             double scanningAnglePlus = deg2rad( ins.getScanAnglePlus() );
 
-            Vector3D pointBod = pointingVectorsBod.get(ins);
-            Vector3D pointOrb = transform(pointBod, bodyFrame);
-            Vector3D pointEarth = transform(pointOrb, orbitFrame);
+            double ATangleTask = getTaskATAngle(orbitFrame, orbit.getPVEarth(date).getPosition(), objectPos);
+            double CTAngleTask = getTaskCTAngle(orbitFrame, orbit.getPVEarth(date).getPosition(), objectPos);
+            double ATAnglePoint = getPointATAngle(orbitFrame, pointEarth);
+            double CTAnglePoint = getPointCTAngle(orbitFrame, pointEarth);
+
+            if(ins.getScanningType().equals("side")){
+                if(Math.abs(ATangleTask - ATAnglePoint) > fov/2.0) return false;
+                else return (Math.abs(CTAngleTask - CTAnglePoint) <= (fov/2.0 + scanningAnglePlus + 1e-3));
+            }
+            else{
+                throw new Exception("Scanning type not yet supported");
+            }
+
+        }
+        else if(fovType.equals("circular")){
+            if(ins.getScanningType().equals("none")){
+
+            }
+            else{
+                throw new Exception("Scanning type not yet supported");
+            }
+            throw new Exception("FOV type not yet supported");
+        }
+        else{
+            throw new Exception("FOV type not yet supported");
+        }
+    }
+
+    public boolean isVisible(Instrument ins, ArrayList<Vector3D> bodyFrame, SpacecraftOrbit orbit, AbsoluteDate date, Vector3D objectPos) throws Exception {
+        ArrayList<Vector3D> orbitFrame = calcOrbitFrame(orbit,date);
+        Vector3D pointBod = pointingVectorsBod.get(ins);
+        Vector3D pointOrb = transform(pointBod, bodyFrame);
+        Vector3D pointEarth = transform(pointOrb, orbitFrame);
+
+        String fovType = ins.getFovType();
+        if(fovType.equals("square")){
+            double fov = deg2rad( ins.getFOV() );
+            double scanningAngleMinus = deg2rad( ins.getScanAngleMinus() );
+            double scanningAnglePlus = deg2rad( ins.getScanAnglePlus() );
 
             double ATangleTask = getTaskATAngle(orbitFrame, orbit.getPVEarth(date).getPosition(), objectPos);
             double CTAngleTask = getTaskCTAngle(orbitFrame, orbit.getPVEarth(date).getPosition(), objectPos);
@@ -176,6 +219,61 @@ public class ADCS extends Component{
             }
 
         }
+        else if(fovType.equals("circular")){
+            if(ins.getScanningType().equals("none")){
+
+            }
+            else{
+                throw new Exception("Scanning type not yet supported");
+            }
+            throw new Exception("FOV type not yet supported");
+        }
+        else{
+            throw new Exception("FOV type not yet supported");
+        }
+    }
+
+    public double calcSlewAngleReq(Instrument ins, ArrayList<Vector3D> bodyFrame, SpacecraftOrbit orbit,
+                                   AbsoluteDate date, Vector3D objectPos) throws Exception{
+        ArrayList<Vector3D> orbitFrame = calcOrbitFrame(orbit,date);
+        Vector3D pointBod = pointingVectorsBod.get(ins);
+        Vector3D pointOrb = transform(pointBod, bodyFrame);
+        Vector3D pointEarth = transform(pointOrb, orbitFrame);
+
+        String fovType = ins.getFovType();
+        double fov = deg2rad( ins.getFOV() );
+
+        if(fovType.equals("square")){
+            double scanningAngleMinus = deg2rad( ins.getScanAngleMinus() );
+            double scanningAnglePlus = deg2rad( ins.getScanAnglePlus() );
+
+            double ATangleTask = getTaskATAngle(orbitFrame, orbit.getPVEarth(date).getPosition(), objectPos);
+            double CTAngleTask = getTaskCTAngle(orbitFrame, orbit.getPVEarth(date).getPosition(), objectPos);
+            double ATAnglePoint = getPointATAngle(orbitFrame, pointEarth);
+            double CTAnglePoint = getPointCTAngle(orbitFrame, pointEarth);
+
+            if(ins.getScanningType().equals("side")){
+                // since slew can only move CT, if object is not visible AT then no maneuver is possible
+                if(Math.abs(ATangleTask - ATAnglePoint) > fov/2.0) {
+                    return Double.POSITIVE_INFINITY;
+                }
+                else {
+                    double maneuver;
+                    if(CTAngleTask < CTAnglePoint){
+                        maneuver = CTAngleTask - (CTAnglePoint - fov/2.0 - scanningAngleMinus);
+                    }
+                    else{
+                        maneuver = CTAngleTask - (CTAnglePoint + fov/2.0 + scanningAnglePlus);
+                    }
+
+                    double maneuverDeg = rad2deg(maneuver);
+                    return maneuver;
+                }
+            }
+            else{
+                throw new Exception("Scanning type not yet supported");
+            }
+        }
         else{
             throw new Exception("FOV type not yet supported");
         }
@@ -189,7 +287,7 @@ public class ADCS extends Component{
 
         // calc projection of relative position on to sat x-z plane
         Vector3D relProj = satX.scalarMultiply( pointVec.dotProduct(satX) )
-                .add( satZ.scalarMultiply( pointVec.dotProduct(satZ) ) );
+                .add( satZ.scalarMultiply( pointVec.dotProduct(satZ) ) ).normalize();
 
         return Math.acos( relProj.dotProduct(satZ) / ( relProj.getNorm() * satZ.getNorm() ) );
     }
@@ -202,7 +300,7 @@ public class ADCS extends Component{
 
         // calc projection of relative position on to sat x-z plane
         Vector3D relProj = satX.scalarMultiply( pointVec.dotProduct(satX) )
-                .add( satZ.scalarMultiply( pointVec.dotProduct(satZ) ) );
+                .add( satZ.scalarMultiply( pointVec.dotProduct(satZ) ) ).normalize();
 
         return Math.acos( relProj.dotProduct(pointVec) / ( relProj.getNorm() * pointVec.getNorm() ) );
     }
@@ -218,7 +316,7 @@ public class ADCS extends Component{
 
         // calc projection of relative position on to sat x-z plane
         Vector3D relProj = satX.scalarMultiply( taskRelSat.dotProduct(satX) )
-                .add( satZ.scalarMultiply( taskRelSat.dotProduct(satZ) ) );
+                .add( satZ.scalarMultiply( taskRelSat.dotProduct(satZ) ) ).normalize();
 
         return Math.acos( relProj.dotProduct(satZ) / ( relProj.getNorm() * satZ.getNorm() ) );
     }
@@ -234,10 +332,12 @@ public class ADCS extends Component{
 
         // calc projection of relative position on to sat x-z plane
         Vector3D relProj = satX.scalarMultiply( taskRelSat.dotProduct(satX) )
-                .add( satZ.scalarMultiply( taskRelSat.dotProduct(satZ) ) );
+                .add( satZ.scalarMultiply( taskRelSat.dotProduct(satZ) ) ).normalize();
 
         return Math.acos( relProj.dotProduct(taskRelSat) / ( relProj.getNorm() * taskRelSat.getNorm() ) );
     }
+
+    public double getTaskCTAngle(){return 1.0;}
 
     private double calcADCSPower(){
         return -1.0;
@@ -247,6 +347,9 @@ public class ADCS extends Component{
     }
     private double deg2rad(double th){
         return th*Math.PI/180;
+    }
+    private double rad2deg(double th){
+        return  th*180/Math.PI;
     }
 
     @Override
@@ -260,4 +363,5 @@ public class ADCS extends Component{
     }
 
     public ArrayList<Vector3D> getBodyFrame(){return this.bodyFrame;}
+    public double getPower(){return this.power;}
 }

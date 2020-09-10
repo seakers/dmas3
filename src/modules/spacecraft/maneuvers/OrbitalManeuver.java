@@ -11,4 +11,8 @@ public class OrbitalManeuver extends  Maneuver {
     public OrbitalManeuver(AbsoluteDate startDate, AbsoluteDate endDate) {
         super(startDate, endDate);
     }
+    @Override
+    public double getSpecificTorque() throws Exception {
+        throw new Exception("Orbital maneuvers not yet supported");
+    }
 }

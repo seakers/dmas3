@@ -1,5 +1,7 @@
 package modules.environment;
 
+import modules.spacecraft.instrument.measurements.Measurement;
+
 import java.util.ArrayList;
 
 public class Subtask {
@@ -54,4 +56,5 @@ public class Subtask {
         }
         return depSubtasks;
     }
+    public double getLevelOfPartiality(){return (double) this.levelOfPartiality;}
 }

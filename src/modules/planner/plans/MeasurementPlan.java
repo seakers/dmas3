@@ -1,6 +1,6 @@
 package modules.planner.plans;
 
-import modules.environment.Measurement;
+import modules.spacecraft.instrument.measurements.Measurement;
 import modules.environment.Subtask;
 import modules.spacecraft.component.Component;
 import modules.spacecraft.instrument.Instrument;

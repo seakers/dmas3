@@ -1,7 +1,7 @@
 package modules.environment;
 
 import modules.spacecraft.instrument.Instrument;
-import org.orekit.time.AbsoluteDate;
+import modules.spacecraft.instrument.measurements.Measurement;
 
 import java.util.ArrayList;
 

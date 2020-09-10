@@ -16,17 +16,17 @@ public class AttitudeManeuver extends Maneuver {
         Vector3D x_o = p_o.get(0);
         Vector3D y_o = p_o.get(1);
         Vector3D z_o = p_o.get(2);
-        p_o.add(x_o);
-        p_o.add(y_o);
-        p_o.add(z_o);
+        this.p_o.add(x_o);
+        this.p_o.add(y_o);
+        this.p_o.add(z_o);
 
         this.p_f = new ArrayList<>();
         Vector3D x_f = p_f.get(0);
         Vector3D y_f = p_f.get(1);
         Vector3D z_f = p_f.get(2);
-        p_f.add(x_f);
-        p_f.add(y_f);
-        p_f.add(z_f);
+        this.p_f.add(x_f);
+        this.p_f.add(y_f);
+        this.p_f.add(z_f);
     }
 
     protected AttitudeManeuver(ArrayList<Vector3D> p_o,  AbsoluteDate startDate, AbsoluteDate endDate) {
@@ -35,9 +35,9 @@ public class AttitudeManeuver extends Maneuver {
         Vector3D x_o = p_o.get(0);
         Vector3D y_o = p_o.get(1);
         Vector3D z_o = p_o.get(2);
-        p_o.add(x_o);
-        p_o.add(y_o);
-        p_o.add(z_o);
+        this.p_o.add(x_o);
+        this.p_o.add(y_o);
+        this.p_o.add(z_o);
     }
 
     protected double deg2rad(double th){
@@ -47,4 +47,9 @@ public class AttitudeManeuver extends Maneuver {
         return th*180/Math.PI;
     }
     public ArrayList<Vector3D> getFinalBodyFrame(){return this.p_f;}
+
+    @Override
+    public double getSpecificTorque() throws Exception {
+        return 0.0;
+    }
 }

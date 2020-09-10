@@ -16,11 +16,9 @@ public class InstrumentAntenna {
     public double getDimAz() {
         return dimAz;
     }
-
     public double getDimEl() {
         return dimEl;
     }
-
     public double getMass() {
         return mass;
     }

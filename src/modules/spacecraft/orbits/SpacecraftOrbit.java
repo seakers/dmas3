@@ -291,6 +291,14 @@ public class SpacecraftOrbit extends OrbitData {
         }
     }
 
+    public double getAlt(AbsoluteDate date) throws OrekitException {
+        // returns the altitude of the spacecraft in [m]
+        double pos = this.getPVEarth(date).getPosition().getNorm();
+        double Re = this.params.getRe();
+
+        return pos-Re;
+    }
+
     private double rad2deg(double th){ return th*180.0/Math.PI; }
     private double deg2rad(double th){ return th*Math.PI/180.0; }
     public HashMap<Instrument, HashMap<Task, ArrayList<TimeInterval>>> getAccessTimes(){ return accessTimes; }

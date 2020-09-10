@@ -22,9 +22,9 @@ public class GroundPointTrajectory extends OrbitData{
 
     public GroundPointTrajectory(double lat, double lon, double alt, AbsoluteDate startDate, AbsoluteDate endDate, double timeStep) throws OrekitException {
         super(startDate, endDate, timeStep);
-        this.lat = lat;
-        this.lon = lon;
-        this.alt = alt;
+        this.lat = deg2rad( lat );
+        this.lon = deg2rad( lon );
+        this.alt = deg2rad( alt );
     }
 
     @Override
@@ -135,4 +135,6 @@ public class GroundPointTrajectory extends OrbitData{
             return staF.getPVCoordinates(date, earthFrame);
         }
     }
+
+    private double deg2rad(double th){ return th*Math.PI/180; }
 }

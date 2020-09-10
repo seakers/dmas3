@@ -15,6 +15,10 @@ public class Requirements {
     private double urgencyFactor;
     private AbsoluteDate startDate;
     private AbsoluteDate endDate;
+    private double spatialResReqWeight;
+    private double lossReqWeight;
+    private double spatialResReqSlope;
+    private double lossReqSlope;
 
     // Constructors
     public Requirements(){
@@ -37,6 +41,10 @@ public class Requirements {
         this.urgencyFactor = urgencyFactor;
         this.startDate = startDate.getDate();
         this.endDate = endDate.getDate();
+        this.spatialResReqWeight = 0.5;
+        this.lossReqWeight = 1.0 - this.spatialResReqWeight;
+        this.spatialResReqSlope = 1.0;
+        this.lossReqWeight = 1.0;
     }
 
     // Copy constructor
@@ -59,4 +67,8 @@ public class Requirements {
     public void setUrgencyFactor(double urgencyFactor){ this.urgencyFactor = urgencyFactor;}
     public AbsoluteDate getStartDate(){return this.startDate;}
     public AbsoluteDate getEndDate(){return this.endDate;}
+    public double getSpatialResReqWeight(){return  this.spatialResReqWeight;}
+    public double getLossReqWeight(){return this.lossReqWeight; }
+    public double getSpatialResReqSlope(){return spatialResReqSlope;}
+    public double getLossReqSlope(){return lossReqSlope; }
 }
