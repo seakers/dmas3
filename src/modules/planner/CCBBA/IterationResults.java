@@ -14,10 +14,12 @@ import java.util.Set;
 public class IterationResults {
     private HashMap<Subtask, IterationDatum> results;
     private AbstractAgent parentAgent;
+    private CCBBAPlanner parentPlanner;
 
-    public IterationResults(AbstractAgent parentAgent, ArrayList<Subtask> subtasks, CCBBASettings settings){
+    public IterationResults(Spacecraft parentAgent, ArrayList<Subtask> subtasks, CCBBASettings settings){
         this.results = new HashMap<>();
         this.parentAgent = parentAgent;
+        this.parentPlanner = (CCBBAPlanner) parentAgent.getPlanner();
         for(Subtask subtask : subtasks){
             IterationDatum datum = new IterationDatum(subtask,settings);
             results.put(subtask, datum);
@@ -71,7 +73,7 @@ public class IterationResults {
 
                 h = coalitionTest(localBid,j,planner,parentAgent);
                 if(h == 1) h = mutexTest(localBid,j,planner,parentAgent);
-                if(h == 1) h = 0;
+                if(h == 1 && localBid.getC() <= 0.0) h = 0;
             }
             this.getIterationDatum(j).setH(h);
             bidList.add(localBid);
@@ -214,7 +216,7 @@ public class IterationResults {
         else return 0;
     }
 
-    private boolean isOptimistic(Subtask j){
+    public boolean isOptimistic(Subtask j){
         // determines if j can be bid on using an optimistic or pessimistic biding strategy
         Dependencies dep = j.getParentTask().getDependencies();
         ArrayList<Subtask> dependentTasks = new ArrayList<>();
@@ -240,6 +242,58 @@ public class IterationResults {
 
             datum.setCost( bid.getWinningPathUtility().getCostList().get(i_path) );
             datum.setScore( bid.getWinningPathUtility().getScoreList().get(i_path) );
+            datum.setPerformance( bid.getPerformanceList().get(i_path) );
+        }
+    }
+
+    public void updateResults(IterationDatum newDatum){
+        this.parentPlanner.releaseTaskFromBundle(newDatum);
+
+        IterationDatum updatedDatum = newDatum.copy();
+        updatedDatum.setW_any( this.getIterationDatum(newDatum).getW_any() );
+        updatedDatum.setW_solo( this.getIterationDatum(newDatum).getW_solo() );
+        updatedDatum.setW_all( this.getIterationDatum(newDatum).getW_all() );
+        updatedDatum.setC( this.getIterationDatum(newDatum).getC() );
+
+        this.results.put(newDatum.getSubtask(), updatedDatum);
+    }
+
+    public void resetResults(IterationDatum newDatum){
+        this.parentPlanner.releaseTaskFromBundle(newDatum);
+
+        IterationDatum updatedDatum = new IterationDatum(newDatum.getSubtask(), parentPlanner.getSettings());
+        updatedDatum.setW_any( this.getIterationDatum(newDatum).getW_any() );
+        updatedDatum.setW_solo( this.getIterationDatum(newDatum).getW_solo() );
+        updatedDatum.setW_all( this.getIterationDatum(newDatum).getW_all() );
+        updatedDatum.setC( this.getIterationDatum(newDatum).getC() );
+
+        this.results.put(newDatum.getSubtask(), updatedDatum);
+    }
+
+    public void leaveResults(IterationDatum newDatum){
+        // does nothing
+    }
+    public boolean containsKey(Subtask j){
+        Set<Subtask> keyset = results.keySet();
+        return keyset.contains(j);
+    }
+    public void put(IterationDatum datum){
+        Subtask j = datum.getSubtask();
+        this.results.put(j,datum.copy());
+    }
+    public boolean checkForChanges(IterationResults receivedResults){
+        Set<Subtask> myKeyset = this.results.keySet();
+        Set<Subtask> itsKeyset = receivedResults.getResults().keySet();
+
+        if(myKeyset.size() != itsKeyset.size()) return false;
+        else{
+            for(Subtask j : myKeyset){
+                IterationDatum myDatum = this.getIterationDatum(j);
+                IterationDatum itsDatum = receivedResults.getIterationDatum(j);
+                if(!myDatum.equals(itsDatum)) return false;
+                else if(myDatum.getV() != 0) return false;
+            }
+            return true;
         }
     }
 
@@ -256,4 +310,12 @@ public class IterationResults {
     public IterationDatum getIterationDatum(Subtask subtask){
         return this.results.get(subtask);
     }
+    public IterationDatum getIterationDatum(IterationDatum datum){
+        return this.getIterationDatum(datum.getSubtask());
+    }
+
+//    public boolean checkForChanges(IterationResults prevResults) {
+//
+//
+//    }
 }

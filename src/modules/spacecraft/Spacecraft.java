@@ -162,7 +162,7 @@ public class Spacecraft extends AbstractAgent {
     }
     private void sendMessagesToPlanner(){
         for(int i = 0; i < receivedMessages.size(); i++){
-            Message message_i = this.receivedMessages.get(i);
+            CCBBAResultsMessage message_i = (CCBBAResultsMessage) this.receivedMessages.get(i);
             sendMessageWithRole(this.plannerAddress, message_i, SimGroups.AGENT);
         }
     }
@@ -257,4 +257,5 @@ public class Spacecraft extends AbstractAgent {
     public AbsoluteDate getStartDate(){return this.orbit.getStartDate(); }
     public SpacecraftOrbit getOrbit(){return orbit;}
     public AbsoluteDate getCurrentDate(){ return this.environment.getCurrentDate(); }
+    public Planner getPlanner(){return planner;}
 }

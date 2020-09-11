@@ -38,6 +38,7 @@ public class PathUtility {
     private ArrayList<ArrayList<AbstractAgent>> pathOmega;
     private ArrayList<ArrayList<Instrument>> instrumentsUsed;
     private ArrayList<Subtask> path;
+    private ArrayList<MeasurementPerformance> performanceList;
 
     public PathUtility(Spacecraft parentSpacecraft, CCBBAPlanner planner, ArrayList<Subtask> path) throws Exception {
         utilityList = new ArrayList<>();
@@ -48,6 +49,7 @@ public class PathUtility {
         pathOmega = calcCoalitionMatrix(parentSpacecraft,planner,path);
         instrumentsUsed = new ArrayList<>();
         this.path = new ArrayList<>(path);
+        performanceList = new ArrayList<>();
 
         // calculate the utility of each subtask
         for(Subtask j : path){
@@ -55,15 +57,29 @@ public class PathUtility {
             ArrayList<TimeInterval> lineOfSightTimes = parentSpacecraft.getLineOfSightTimeS(j);
             int i_path = path.indexOf(j);
 
+            // Get the initial body frame prior to subtask j
+            int path_i = path.indexOf(j);
+            ArrayList<Vector3D> bodyFrame;
+            if(path_i == 0){
+                // if first in path, get the spacecraft's latest body frame
+                bodyFrame = parentSpacecraft.getBodyFrame();
+            }
+            else{
+                // if subtasks in path exist, then use the status of the maneuvers of the previous task as starting points
+                AttitudeManeuver lastManeuver = ((AttitudeManeuver) (maneuvers.get(path_i-1)));
+                bodyFrame = lastManeuver.getFinalBodyFrame();
+            }
+
             double S_max= 0.0;
             double sig_max = 0.0;
             double maneuverCost_max = 0.0;
             double coalPenalties_max = 0.0;
             double measurementCost_max = 0.0;
             AbsoluteDate ta_max = new AbsoluteDate();
-            Maneuver maneuver_max = new NoManeuver(new AbsoluteDate());
+            Maneuver maneuver_max = new NoManeuver(bodyFrame,new AbsoluteDate());
             double utility_max = 0.0;
             ArrayList<Instrument> sensors_max = new ArrayList<>();
+            MeasurementPerformance performance_max = new MeasurementPerformance(j);
 
             // get the maximum utility from all line of sight time intervals
             for(TimeInterval interval : lineOfSightTimes){
@@ -125,11 +141,11 @@ public class PathUtility {
                 double maneuverCost_interval = 0.0;
                 double coalPenalties_interval = 0.0;
                 double measurementCost_interval = 0.0;
-                AbsoluteDate ta_interval = new AbsoluteDate();
-                Maneuver maneuver_interval = new NoManeuver(ta_interval);
+                AbsoluteDate ta_interval = stepDate.getDate();
+                Maneuver maneuver_interval = new NoManeuver(bodyFrame, ta_interval);
                 double utility_interval = 0.0;
                 ArrayList<Instrument> sensors_interval = new ArrayList<>();
-
+                MeasurementPerformance performance_interval = new MeasurementPerformance(j);
 
                 // linear search each interval for maximum utility
                 while(stepDate.compareTo(endDate) <= 0){
@@ -143,9 +159,10 @@ public class PathUtility {
                     double coalPenalties_date = 0.0;
                     double measurementCost_date = 0.0;
                     AbsoluteDate ta_date = stepDate.getDate();
-                    Maneuver maneuver_date = new NoManeuver(stepDate.getDate());
+                    Maneuver maneuver_date = new NoManeuver(bodyFrame, stepDate.getDate());
                     double utility_date = 0.0;
                     ArrayList<Instrument> sensors_date = new ArrayList<>();
+                    MeasurementPerformance performance_date = new MeasurementPerformance(j);
 
                     // if constraints are satisfied, then calculate utility at this point in time
                     if(dateFulfillsConstraints){
@@ -167,6 +184,7 @@ public class PathUtility {
                             double measurementcost_maneuver = 0.0;
                             double utility_maneuver = 0.0;
                             ArrayList<Instrument> sensors_maneuver = new ArrayList<>();
+                            MeasurementPerformance performance_maneuver = new MeasurementPerformance(j);
 
                             ArrayList<ArrayList<Instrument>> instrumentCombinations = calcInstrumentCombinations(visibleToSensorsList);
                             for(ArrayList<Instrument> sensorsUsed : instrumentCombinations){
@@ -191,6 +209,7 @@ public class PathUtility {
                                     measurementcost_maneuver = measurementCost_combination;
                                     utility_maneuver = utility_combination;
                                     sensors_maneuver = sensorsUsed;
+                                    performance_maneuver = performance;
                                 }
                             }
 
@@ -203,6 +222,7 @@ public class PathUtility {
                                 maneuver_date = maneuverTemp;
                                 utility_date = utility_maneuver;
                                 sensors_date = sensors_maneuver;
+                                performance_date = performance_maneuver;
                             }
                         }
                     }
@@ -217,6 +237,7 @@ public class PathUtility {
                         maneuver_interval = maneuver_date;
                         utility_interval = utility_date;
                         sensors_interval = sensors_date;
+                        performance_interval = performance_date;
                     }
 
                     stepDate = stepDate.shiftedBy(timeStep).getDate();
@@ -232,6 +253,7 @@ public class PathUtility {
                     maneuver_max = maneuver_interval;
                     utility_max = utility_interval;
                     sensors_max = sensors_interval;
+                    performance_max = performance_interval;
                 }
             }
 
@@ -243,6 +265,7 @@ public class PathUtility {
             AbsoluteDate ta = ta_max.getDate();
             Maneuver maneuver = maneuver_max;
             ArrayList<Instrument> sensors = sensors_max;
+            MeasurementPerformance performance = performance_max;
 
             this.utility += (S*sig - manuverCost - coalPenalties - measurementCost);
             this.cost += (manuverCost + coalPenalties + measurementCost);
@@ -254,6 +277,7 @@ public class PathUtility {
             this.tz.add(ta);
             this.maneuvers.add(maneuver);
             this.instrumentsUsed.add(sensors);
+            this.performanceList.add(performance);
         }
     }
 
@@ -409,7 +433,7 @@ public class PathUtility {
                     boolean visibleToInstrument = spacecraft.isVisible(ins, bodyFrame, date, taskPos);
                     if(visibleToInstrument) visibilityTemp.add(ins);
                 }
-                maneuverListTemp.add( new AttitudeManeuver( bodyFrame, bodyFrame, maneuverStartTime, date) );
+                maneuverListTemp.add( new NoManeuver(bodyFrame, maneuverStartTime, date) );
                 visibilityMatrix.add(visibilityTemp);
 
                 if(visibilityMatrix.get(0).size() == payload.size()){
@@ -417,7 +441,7 @@ public class PathUtility {
                     for(Instrument ins : payload){
                         visibilityTemp = new ArrayList<>();
                         visibilityMatrix.add(visibilityTemp);
-                        maneuverListTemp.add( new AttitudeManeuver( bodyFrame, bodyFrame, maneuverStartTime, date) );
+                        maneuverListTemp.add( new NoManeuver( bodyFrame, maneuverStartTime, date) );
                     }
                     break;
                 }
@@ -554,7 +578,8 @@ public class PathUtility {
      * @param maneuvers
      */
     private PathUtility(double utility, double cost, double score, ArrayList<Double> utilityList, ArrayList<Double> costList,
-                       ArrayList<Double> scoreList, ArrayList<AbsoluteDate> tz, ArrayList<Maneuver> maneuvers,ArrayList<ArrayList<Instrument>> instrumentsUsed){
+                       ArrayList<Double> scoreList, ArrayList<AbsoluteDate> tz, ArrayList<Maneuver> maneuvers,ArrayList<ArrayList<Instrument>> instrumentsUsed,
+                        ArrayList<Subtask> path, ArrayList<MeasurementPerformance> performanceList){
         this.utility = utility;
         this.cost = cost;
         this.score = score;
@@ -564,10 +589,12 @@ public class PathUtility {
         this.tz = new ArrayList<>(tz);
         this.maneuvers = new ArrayList<>(maneuvers);
         this.instrumentsUsed = new ArrayList<>(instrumentsUsed);
+        this.path = new ArrayList<>(path);
+        this.performanceList = new ArrayList<>(performanceList);
     }
 
     public PathUtility copy(){
-        return new PathUtility(utility, cost, score, utilityList, costList, scoreList, tz, maneuvers, instrumentsUsed);
+        return new PathUtility(utility, cost, score, utilityList, costList, scoreList, tz, maneuvers, instrumentsUsed, path, performanceList);
     }
 
     /**
@@ -582,4 +609,5 @@ public class PathUtility {
     public ArrayList<AbsoluteDate> getTz() { return tz; }
     public ArrayList<Maneuver> getManeuvers(){return maneuvers;}
     public ArrayList<Subtask> getPath(){return path;}
+    public ArrayList<MeasurementPerformance> getPerformanceList(){return performanceList;}
 }

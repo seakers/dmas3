@@ -2,6 +2,7 @@ package modules.planner.CCBBA;
 
 import modules.environment.Subtask;
 import modules.spacecraft.Spacecraft;
+import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 import modules.spacecraft.maneuvers.Maneuver;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -9,9 +10,9 @@ import org.orekit.utils.PVCoordinates;
 import java.util.ArrayList;
 
 public class Bid {
-    private Subtask j = null;                       // subtask being bid on
+    private Subtask j;                              // subtask being bid on
     private double c = 0.0;                         // utility bid
-    private double cost = -1.0;                      // cost bid
+    private double cost = -1.0;                     // cost bid
     private double score = -1.0;                    // score bid
     private AbsoluteDate t = new AbsoluteDate();    // date of measurement
     private int i_path = -1;                        // location in path
@@ -113,10 +114,9 @@ public class Bid {
         this.i_path = i_path;
     }
 
-    public ArrayList<Subtask> getPath(){
-        return this.winningPathUtility.getPath();
-    }
-
+    public ArrayList<Subtask> getPath(){ return this.winningPathUtility.getPath(); }
     public PathUtility getWinningPathUtility(){ return  this.winningPathUtility; }
     public ArrayList<Subtask> getWinnerPath(){return this.winningPathUtility.getPath(); }
+    public ArrayList<Maneuver> getManeuvers(){return this.winningPathUtility.getManeuvers(); }
+    public ArrayList<MeasurementPerformance> getPerformanceList(){return this.winningPathUtility.getPerformanceList();}
 }

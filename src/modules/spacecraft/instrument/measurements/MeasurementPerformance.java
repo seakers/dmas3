@@ -11,10 +11,17 @@ import org.orekit.utils.PVCoordinates;
 import java.util.ArrayList;
 
 public class MeasurementPerformance {
-    private Measurement mainMeasurement;    // measurement being made
-    private double spatialResAZ;            // spatial resolution in the azimuth direction [m]
-    private double spatialResEL;            // spatial resolution in the elevation direction[m]
-    private double snr;                     // signal-to-noise ratio [dB]
+    private final Measurement mainMeasurement;    // measurement being made
+    private final double spatialResAZ;            // spatial resolution in the azimuth direction [m]
+    private final double spatialResEL;            // spatial resolution in the elevation direction[m]
+    private final double snr;                     // signal-to-noise ratio [dB]
+
+    public MeasurementPerformance(Subtask j){
+        mainMeasurement = j.getMainMeasurement();
+        spatialResAZ = -1.0;
+        spatialResEL = -1.0;
+        snr = -1.0;
+    }
 
     public MeasurementPerformance(Subtask j, ArrayList<Instrument> instruments, Spacecraft spacecraft, AbsoluteDate date) throws Exception {
         this.mainMeasurement = j.getMainMeasurement();
@@ -111,6 +118,19 @@ public class MeasurementPerformance {
         }
 
         return  snrMax;
+    }
+
+    /**
+     * Copy constructor
+     */
+    private MeasurementPerformance(Measurement measurement, double spatialResAZ, double spatialResEL, double snr){
+        this.mainMeasurement = measurement;
+        this.spatialResAZ = spatialResAZ;
+        this.spatialResEL = spatialResEL;
+        this.snr = snr;
+    }
+    public MeasurementPerformance copy(){
+        return new MeasurementPerformance(mainMeasurement, spatialResAZ, spatialResEL, snr);
     }
 
     // Getters

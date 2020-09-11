@@ -1,13 +1,12 @@
 package modules.planner.CCBBA;
 
 import madkit.kernel.AbstractAgent;
-import modules.environment.Environment;
-import modules.environment.Task;
+import madkit.kernel.Message;
+import modules.environment.*;
 import modules.planner.plans.BroadcastPlan;
 import modules.planner.plans.Plan;
 import modules.simulation.SimGroups;
 import modules.spacecraft.Spacecraft;
-import modules.environment.Subtask;
 import modules.planner.Planner;
 import modules.planner.messages.*;
 import modules.spacecraft.maneuvers.Maneuver;
@@ -16,12 +15,14 @@ import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public class CCBBAPlanner extends Planner {
     private Plan plan;
     private String planner;
     private CCBBASettings settings;
+    private int convergenceCounter;
     private ArrayList<Subtask> bundle;
     private ArrayList<Subtask> overallBundle;
     private ArrayList<Subtask> path;
@@ -45,6 +46,7 @@ public class CCBBAPlanner extends Planner {
 
         this.planner = "CCBBA";
         this.settings = new CCBBASettings();
+        this.convergenceCounter = 0;
         this.bundle = new ArrayList<>();
         this.overallBundle = new ArrayList<>();
         this.path = new ArrayList<>();
@@ -85,7 +87,7 @@ public class CCBBAPlanner extends Planner {
         checkNewCoalitionMembers();
 
         // construct bundle
-        getLogger().info("Constructing bundle...");
+        getLogger().info("TP1 - Constructing bundle...");
 
         while((bundle.size() < settings.M) && (iterationResults.subtasksAvailable()) && alive){
             // Calculate bids for all available subtasks
@@ -104,44 +106,454 @@ public class CCBBAPlanner extends Planner {
                 // Add new path
                 this.path = new ArrayList<>(maxBid.getWinnerPath());
 
+                // Add new maneuvers
+                this.maneuvers = new ArrayList<>(maxBid.getManeuvers());
+
                 // update iteration results
                 this.iterationResults.updateResults(maxBid,parentSpacecraft);
-                // MISSING: UPDATING MANEUVERS FROM PATH
             }
             else if(j_chosen != null){
                 datum_chosen.setH(0);
             }
         }
 
+        // check for new coalition members
+        checkNewCoalitionMembers();
+
 
         // broadcast results
+        getLogger().info("TP1 - Sending new results to spacecraft for broadcast...");
         AbsoluteDate currentDate = environment.getCurrentDate();
         double timestep = environment.getTimeStep();
         CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults,
-                                                                        parentSpacecraft.getPV(currentDate),
                                                                         parentSpacecraft.getPVEarth(currentDate));
         this.plan = new BroadcastPlan(resultsMessage,currentDate,currentDate.shiftedBy(timestep));
         sendPlanToParentAgent(new PlannerMessage(this.plan));
-
-        // check for new coalition members
-        checkNewCoalitionMembers();
 
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
     }
 
-    public void phaseTwo(){
-        // compare results
+    public void phaseTwo() throws Exception {
+        getLogger().info("Starting phase two");
+        // read messages from spacecraft
+        List<Message>  receivedMessages = nextMessages(null);
+        if(receivedMessages.size() > 0){
+            getLogger().info("TP2 - New messages found! Comparing results...");
 
-        // evaluate constraints
+            // Save previous iteration's results
+            IterationResults prevResults = iterationResults.copy();
 
-        // evaluate convergence
+            // Unpack messages
+            ArrayList<IterationResults> receivedResults = new ArrayList<>();
+            for(Message receivedMessage : receivedMessages){
+                IterationResults results = ((CCBBAResultsMessage) receivedMessage).getResults();
+                receivedResults.add(results);
+            }
 
-        // if converged, then move to done
+            // compare results
+            compareResults(receivedResults);
 
-        // else, readjust plan
-        leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
-        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+            // evaluate constraints
+            constraintEval();
+
+            // evaluate convergence
+            boolean changesMade = checkForChanges(prevResults);
+            if(changesMade){
+                // changes were made, reconsider bids
+                getLogger().fine("Changes were made. Reconsidering bids");
+                leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
+                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+            }
+            else{
+                // no changes were made, check convergence
+                getLogger().fine("No changes were made. Checking convergence");
+                convergenceCounter++;
+
+                // check if convergence counter reached
+                if(convergenceCounter >= settings.convIndicator){
+                    // if converged, then move to done
+                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
+                }
+                else{
+                    // readjust plan
+                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+                }
+
+            }
+        }
+        else{
+            getLogger().info("TP2 - No messages found. Wait for them...");
+        }
+    }
+
+    private boolean checkForChanges(IterationResults prevResults) {
+        return iterationResults.checkForChanges(prevResults);
+    }
+
+    private void compareResults(ArrayList<IterationResults> receivedResults){
+        getLogger().info("Comparing results...");
+        for(IterationResults result : receivedResults) {
+            for(Subtask j : result.getResults().keySet()){
+                // Unpack received Results
+                IterationDatum itsDatum = result.getIterationDatum(j);
+                double itsY = itsDatum.getY();
+                AbstractAgent itsZ;
+                itsZ = itsDatum.getZ();
+                AbsoluteDate itsTz = itsDatum.getTz();
+                AbstractAgent it = result.getParentAgent();
+                AbsoluteDate itsS = itsDatum.getS();
+                boolean itsCompletion = itsDatum.getSubtask().getCompletion();
+
+                // Unpack my results
+                if(iterationResults.containsKey(j)){
+                    // if its results are from an unsensed subtask, add the datum to your results
+                    iterationResults.put(itsDatum);
+                    continue;
+                }
+                IterationDatum myDatum = iterationResults.getIterationDatum(j);
+                double myY = myDatum.getY();
+                AbstractAgent myZ = myDatum.getZ();
+                AbsoluteDate myTz = myDatum.getTz();
+                AbstractAgent me = parentSpacecraft;
+                AbsoluteDate myS = myDatum.getS();
+                boolean myCompletion = myDatum.getSubtask().getCompletion();
+
+                // Comparing bids. See Ref 40 Table 1
+                if (itsZ.equals(it)) {
+                    if (myZ.equals(me)) {
+                        if ((itsCompletion) && (itsCompletion != myCompletion)) {
+                            // update
+                            iterationResults.updateResults(itsDatum);
+                        } else if (itsY > myY) {
+                            // update
+                            iterationResults.updateResults(itsDatum);
+                            iterationResults.getIterationDatum(itsDatum).decreaseW_all();
+                        }
+                    } else if (myZ == it) {
+                        // update
+                        iterationResults.updateResults(itsDatum);
+                    } else if ((myZ != me) && (myZ != it) && (myZ != null)) {
+                        if ((itsS.compareTo(myS) < 0) || (itsY > myY)) {
+                            // update
+                            iterationResults.updateResults(itsDatum);
+                        }
+                    } else if (myZ == null) {
+                        // update
+                        iterationResults.updateResults(itsDatum);
+                    }
+                } else if (itsZ == me) {
+                    if (myZ == me) {
+                        // leave
+                        iterationResults.leaveResults(itsDatum);
+                    } else if (myZ == it) {
+                        // reset
+                        iterationResults.resetResults(itsDatum);
+                    } else if ((myZ != me) && (myZ != it) && (myZ != null)) {
+                        if (itsS.compareTo(myS) < 0) {
+                            // reset
+                            iterationResults.resetResults(itsDatum);
+                        }
+                    } else if (myZ == null) {
+                        // leave
+                        iterationResults.leaveResults(itsDatum);
+                    }
+                } else if ((itsZ != it) && (itsZ != me) && (itsZ != null)) {
+                    if (myZ == me) {
+                        if ((itsCompletion) && (itsCompletion != myCompletion)) {
+                            // update
+                            iterationResults.updateResults(itsDatum);
+                        } else if ((itsS.compareTo(myS) < 0) && (itsY > myY)) {
+                            // update
+                            iterationResults.updateResults(itsDatum);
+                            iterationResults.getIterationDatum(itsDatum).decreaseW_all();
+                        }
+                    } else if (myZ == it) {
+                        if (itsS.compareTo(myS) < 0) {
+                            //update
+                            iterationResults.updateResults(itsDatum);
+                        } else {
+                            // reset
+                            iterationResults.resetResults(itsDatum);
+                        }
+                    } else if (myZ == itsZ) {
+                        if (itsS.compareTo(myS) < 0) {
+                            // update
+                            iterationResults.updateResults(itsDatum);
+                        }
+                    } else if ((myZ != me) && (myZ != it) && (myZ != itsZ) && (myZ != null)) {
+                        if ((itsS.compareTo(myS) < 0) && (itsY > myY)) {
+                            // update
+                            iterationResults.updateResults(itsDatum);
+                        }
+                    } else if (myZ == null) {
+                        // leave
+                        iterationResults.leaveResults(itsDatum);
+                    }
+                } else if (itsZ == null) {
+                    if (myZ == me) {
+                        // leave
+                        iterationResults.leaveResults(itsDatum);
+                    } else if (myZ == it) {
+                        // update
+                        iterationResults.updateResults(itsDatum);
+                    } else if ((myZ != me) && (myZ != it) && (myZ != null)) {
+                        if (itsS.compareTo(myS) < 0) {
+                            // update
+                            iterationResults.updateResults(itsDatum);
+                        }
+                    } else if (myZ == null) {
+                        // leave
+                        iterationResults.leaveResults(itsDatum);
+                    }
+                }
+
+            }
+        }
+    }
+
+    private void constraintEval() throws Exception {
+        getLogger().info("Checking constraints...");
+        for (Subtask j : this.bundle) {
+            // create list of new coalition members
+            ArrayList<ArrayList<AbstractAgent>> newOmega = getNewCoalitionMembers(j);
+            ArrayList<ArrayList<AbstractAgent>> oldOmega = this.omega;
+
+            boolean mutexSat = mutexSat(j);
+            boolean timeSat = timeSat(j);
+            boolean depSat = depSat(j);
+            boolean coalitionSat = coalitionSat(j, oldOmega, newOmega);
+
+            if (!mutexSat || !timeSat || !depSat || !coalitionSat) {
+                // subtask does not satisfy all constraints, release task
+                IterationDatum resetDatum = iterationResults.getIterationDatum(j);
+                iterationResults.getIterationDatum(j).decreaseW_all();
+                iterationResults.resetResults(resetDatum);
+                String constraintsFailed = this.parentSpacecraft.getName() + " FAILED ";
+
+                if (!mutexSat) {
+                    constraintsFailed += "mutexSat, ";
+                }
+                if (!timeSat) {
+                    constraintsFailed += "timeSat, ";
+                }
+                if (!depSat) {
+                    constraintsFailed += "depSat, ";
+                }
+                if (!coalitionSat) {
+                    constraintsFailed += "coalitionSat ";
+                }
+
+                constraintsFailed += "on subtask " + j.toString();
+                getLogger().fine(constraintsFailed);
+                break;
+            } else {
+                getLogger().fine("Constraint check for bunde task #" + (bundle.indexOf(j) + 1) + " passed");
+            }
+        }
+    }
+
+    private boolean coalitionSat(Subtask j, ArrayList<ArrayList<AbstractAgent>> oldOmega, ArrayList<ArrayList<AbstractAgent>> newOmega) {
+        // Check Coalition Member Constraints
+        int i_b = bundle.indexOf(j);
+
+        if (oldOmega.get(i_b).size() == 0) { // no coalition partners in original list
+            if (newOmega.get(i_b).size() > 0) { // new coalition partners in new list
+                // release task
+                return false;
+            }
+        } else { // coalition partners exist in original list, compare lists
+            if (newOmega.get(i_b).size() > 0) { // new list is not empty
+                // compare lists
+                if (oldOmega.get(i_b).size() != newOmega.get(i_b).size()) { // if different sizes, then lists are not the same
+                    // release task
+                    return false;
+                } else { // compare element by element
+                    boolean released = false;
+                    for (AbstractAgent listMember : oldOmega.get(i_b)) {
+                        if (!newOmega.get(i_b).contains(listMember)) { // if new list does not contain member of old list, then lists are not the same
+                            // release task
+                            released = true;
+                            break;
+                        }
+                    }
+                    if (released) {
+                        // release task
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean depSat(Subtask j) {
+        Task parentTask = j.getParentTask();
+        Dependencies dep = parentTask.getDependencies();
+
+        int n_req = 0;
+        int n_sat = 0;
+
+        for(Subtask q : parentTask.getSubtasks()){
+            IterationDatum datum = iterationResults.getIterationDatum(q);
+            if(j == q) continue;
+            if(dep.depends(j,q)) {
+                n_req++;
+                if(datum.getZ() != null) n_sat++;
+            }
+        }
+
+        IterationDatum datum = iterationResults.getIterationDatum(j);
+        if (iterationResults.isOptimistic(j)) { // task has optimistic bidding strategy
+            if (datum.getV() == 0) {
+                if ((n_sat == 0) && (n_req > 0)) {
+                    // agent must be the first to win a bid for this tasks
+                    datum.decreaseW_solo();
+                } else if ((n_req > n_sat) && (n_req > 0)) {
+                    // agent bids on a task without all of its requirements met for the first time
+                    datum.decreaseW_any();
+                }
+            }
+
+            if ((n_req != n_sat) && (n_req > 0)) { //if not all dependencies are met, v_i++
+                datum.increaseV();
+            } else if ((n_req == n_sat) && (n_req > 0)) { // if all dependencies are met, v_i = 0
+                datum.resetV();
+            }
+
+            if (datum.getV() > this.settings.O_kq) { // if task has held on to task for too long
+                // release task
+                datum.decreaseW_solo();
+                datum.decreaseW_any();
+                return false;
+            }
+        }
+        else { // task has pessimistic bidding strategy
+            //if not all dependencies are met
+            if (n_req > n_sat) {
+                //release task
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean mutexSat(Subtask j) {
+        Task parentTask = j.getParentTask();
+        Dependencies dep = parentTask.getDependencies();
+        double y_bid = 0.0;
+        double y_mutex = 0.0;
+
+        for(Subtask q : parentTask.getSubtasks()){
+            if(j != q && dep.mutuallyExclusive(j,q)) y_mutex += iterationResults.getIterationDatum(q).getY();
+            else if(dep.depends(j,q)) y_bid += iterationResults.getIterationDatum(q).getY();
+        }
+        y_bid += iterationResults.getIterationDatum(j).getY();
+
+        //if outbid by mutex, release task
+        if (y_mutex > y_bid) {
+            return false;
+        } else if (y_mutex < y_bid) {
+            return true;
+        } else { // both coalition bid values are equal, compare costs
+            double c_bid = 0.0;
+            double c_mutex = 0.0;
+
+            for(Subtask q : parentTask.getSubtasks()){
+                if(j != q && dep.mutuallyExclusive(j,q)) c_mutex += iterationResults.getIterationDatum(q).getY();
+                else if(dep.depends(j,q)) c_bid += iterationResults.getIterationDatum(q).getY();
+            }
+            c_bid += iterationResults.getIterationDatum(j).getY();
+
+            if (c_mutex > c_bid) {
+                // opposing coalition has higher costs
+                return true;
+            } else if (c_mutex < c_bid) {
+                // your coalition has higher costs
+                return false;
+            } else {
+                // if costs and bids are equal, the task highest on the list gets allocated
+                int i_them = 0;
+                int i_us = parentTask.getSubtasks().indexOf(j);
+
+                for(Subtask q : parentTask.getSubtasks()){
+                    if(j != q && dep.mutuallyExclusive(j,q)) i_them = parentTask.getSubtasks().indexOf(q);
+                }
+                return i_us > i_them;
+            }
+        }
+    }
+
+    private boolean timeSat(Subtask j) throws Exception {
+        boolean taskReleased = false;
+        Task parentTask = j.getParentTask();
+        Dependencies dep = parentTask.getDependencies();
+
+        // check for temporal constraints violations
+        ArrayList<Subtask> tempViolations = tempSat(j);
+
+        for(Subtask u : tempViolations){
+            // if time constraint violations exist compare each time violation
+            if(dep.depends(j,u) && ( dep.noDependency(u,j) || dep.noDependency(u,j) )){
+                taskReleased = true;
+                break;
+            }
+            else if(dep.depends(j,u) && dep.depends(u,j)){
+                // if j and u are mutually dependent, check for latest arrival time
+                AbsoluteDate tz_j = iterationResults.getIterationDatum(j).getTz();
+                AbsoluteDate tz_u = iterationResults.getIterationDatum(u).getTz();
+                AbsoluteDate t_start = parentSpacecraft.getStartDate();
+
+                if( tz_j.durationFrom(t_start) <= tz_u.durationFrom(t_start) ){
+                    // if u has a higher arrival time than j, release task
+                    taskReleased = true;
+                    break;
+                }
+                else if(u.getCompletion()){
+                    // u already has been performed and j cannot meet time requirements, release task
+                    taskReleased = true;
+                    break;
+                }
+
+            }
+        }
+
+        if (taskReleased) {
+            if (iterationResults.isOptimistic(j)) {
+                iterationResults.getIterationDatum(j).decreaseW_any();
+                iterationResults.getIterationDatum(j).decreaseW_solo();
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private ArrayList<Subtask> tempSat(Subtask q) throws Exception {
+        Task parentTask = q.getParentTask();
+        Dependencies dep = parentTask.getDependencies();
+
+        ArrayList<Subtask> violationSubtasks = new ArrayList<>();
+        AbsoluteDate tz_q = iterationResults.getIterationDatum(q).getTz();
+        for(Subtask u : parentTask.getSubtasks()){
+            AbstractAgent winner_u = iterationResults.getIterationDatum(u).getZ();
+            AbsoluteDate tz_u = iterationResults.getIterationDatum(u).getTz();
+            boolean req1 = true;        // true if the times are between the maximum correlation time
+            boolean req2 = true;        // true if the times are between the minimum correlation time
+
+            if(q != u && winner_u != null){
+                // if not the same subtask and other subtask has a winner, check time constraint satisfaction
+                req1 = Math.abs(tz_u.durationFrom(tz_q) ) <= dep.Tmax(u,q) && Math.abs(tz_q.durationFrom(tz_u) ) <= dep.Tmax(q,u);
+                req2 = Math.abs(tz_u.durationFrom(tz_q) ) >= dep.Tmin(u,q) && Math.abs(tz_q.durationFrom(tz_u) ) >= dep.Tmin(q,u);
+            }
+            if (!(req1 && req2)) {
+                violationSubtasks.add(u);
+            }
+        }
+
+        return violationSubtasks;
     }
 
     private void sendPlanToParentAgent(PlannerMessage message){
@@ -182,7 +594,7 @@ public class CCBBAPlanner extends Planner {
     }
 
     private Bid getMaxBid(ArrayList<Bid> bidList, IterationResults prevResults){
-        Bid winningBid = null;
+        Bid winningBid = bidList.get(0);
         double maxBid = 0.0;
 
         for(Bid bid : bidList){
@@ -225,6 +637,55 @@ public class CCBBAPlanner extends Planner {
             if(prevUtility > newUtility) return false;
         }
         return true;
+    }
+
+    public void releaseTaskFromBundle(IterationDatum itsDatum){
+        Subtask j = itsDatum.getSubtask();
+        if (bundle.contains(j)) {
+            int counter = 0;
+            int i_b = bundle.indexOf(j);
+            int i_p = path.indexOf(j);
+
+            if(i_b <= i_p) {
+                for ( ; i_b < bundle.size(); ) {
+                    Subtask j_b = bundle.get(i_b);
+                    if (counter > 0) {
+                        AbstractAgent updatedWinner = iterationResults.getIterationDatum(j_b).getZ();
+                        if(updatedWinner == parentSpacecraft) {
+                            IterationDatum resetDatum = getIterationDatum(j_b);
+                            iterationResults.resetResults(resetDatum);
+                        }
+                    }
+                    this.omega.set(i_b, new ArrayList<>());
+
+                    // remove subtask and all subsequent ones from bundle and path
+                    this.path.remove(path.indexOf(j_b));
+                    this.maneuvers.remove(path.indexOf(j_b));
+                    this.bundle.remove(i_b);
+                    counter++;
+                }
+            }
+            else{
+                for ( ; i_p < path.size(); ) {
+                    Subtask j_p = path.get(i_p);
+                    if (counter > 0) {
+                        AbstractAgent updatedWinner = iterationResults.getIterationDatum(j_p).getZ();
+                        if(updatedWinner == parentSpacecraft) {
+                            IterationDatum resetDatum = getIterationDatum(j_p);
+                            iterationResults.resetResults(resetDatum);
+                        }
+                    }
+                    i_b = bundle.indexOf(j_p);
+                    this.omega.set(i_b, new ArrayList<>());
+
+                    // remove subtask and all subsequent ones from bundle and path
+                    this.path.remove(i_p);
+                    this.maneuvers.remove(i_p);
+                    this.bundle.remove(i_b);
+                    counter++;
+                }
+            }
+        }
     }
 
     public ArrayList<Subtask> getBundle(){return this.bundle;}

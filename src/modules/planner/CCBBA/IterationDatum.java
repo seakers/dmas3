@@ -3,6 +3,7 @@ package modules.planner.CCBBA;
 import madkit.kernel.AbstractAgent;
 import modules.environment.Subtask;
 import modules.spacecraft.Spacecraft;
+import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
@@ -16,11 +17,9 @@ public class IterationDatum {
     private AbsoluteDate tz_date;           // measurement date
     private double c;                       // self bid
     private AbsoluteDate s;                 // bid date stamp
-    private double spatialRes;              // spatial resolution of measurement bid [m]
-    private double snr;                     // Signal to Noise Ratio of measurement bid [dB]
     private double cost;                    // cost of performing subtask
     private double score;                   // raw score from performing subtask
-    private boolean locked;                 // locking trigger that prevents a task from being dropped by the winner agent
+    private MeasurementPerformance performance; // proposed performance of the measurement bid
 
     // Info used by agent
     private int h;                          // availability
@@ -37,11 +36,9 @@ public class IterationDatum {
         this.tz_date = null;
         this.c = 0.0;
         this.s = null;
-        this.spatialRes = -1.0;
-        this.snr = -1.0;
         this.cost = 0.0;
         this.score = 0.0;
-        this.locked = false;
+        this.performance = new MeasurementPerformance(j);
 
         this.h = 1;
         this.v = 0;
@@ -51,8 +48,8 @@ public class IterationDatum {
     }
 
     private IterationDatum(Subtask j, double y, AbstractAgent z, AbsoluteDate tz_date, double c,
-                          AbsoluteDate s, double spatialRes, double snr, double cost, double score, int h, int v,
-                           int w_solo, int w_any, int w_all){
+                          AbsoluteDate s, double cost, double score,
+                           MeasurementPerformance performance, int h, int v, int w_solo, int w_any, int w_all){
         this.j = j;
         this.i_q = j.getI_q();
         this.y = y;
@@ -62,10 +59,9 @@ public class IterationDatum {
         this.c = c;
         if(s == null) this.s = null;
         else this.s = s.getDate();
-        this.spatialRes = spatialRes;
-        this.snr = snr;
         this.cost = cost;
         this.score = score;
+        this.performance = performance.copy();
 
         this.h = h;
         this.v = v;
@@ -75,129 +71,57 @@ public class IterationDatum {
     }
 
     public IterationDatum copy(){
-        return new IterationDatum(j, y, z, tz_date, c, s, spatialRes, snr, cost, score, h, v, w_solo, w_any, w_all);
+        return new IterationDatum(j, y, z, tz_date, c, s, cost, score, performance, h, v, w_solo, w_any, w_all);
+    }
+
+    public boolean equals(IterationDatum datum){
+        if(j != datum.getSubtask()) return false;
+        else if(Math.abs(y - datum.getY()) > 1e-3) return false;
+        else if(z != datum.getZ()) return false;
+        else if(Math.abs( tz_date.durationFrom(datum.getTz()) ) > 1e-3) return false;
+        else if(Math.abs( s.durationFrom(datum.getS()) ) > 1e-3) return false;
+        else if(Math.abs(cost - datum.getCost()) > 1e-3) return false;
+        else if(Math.abs(score - datum.getScore()) > 1e-3) return false;
+        return (v == datum.getV());
     }
 
     public void resetAvailability(){
         this.h = 1;
     }
+    public void decreaseW_any(){ this.w_any -= 1;}
+    public void decreaseW_solo(){ this.w_solo -= 1;}
+    public void decreaseW_all(){ this.w_all -= 1;}
+    public void increaseV(){ this.v += 1;}
+    public void resetV(){this.v = 0;}
 
     /**
      * Getters and Setters
      */
-    public Subtask getSubtask() {
-        return j;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    public AbstractAgent getZ() {
-        return z;
-    }
-
-    public void setZ(AbstractAgent z) {
-        this.z = z;
-    }
-
-    public AbsoluteDate getTz() {
-        return tz_date;
-    }
-
-    public void setTz(AbsoluteDate tz) {
-        this.tz_date = tz.getDate();
-    }
-
-    public double getC() {
-        return c;
-    }
-
-    public void setC(double c) {
-        this.c = c;
-    }
-
-    public AbsoluteDate getS() {
-        return s;
-    }
-
-    public void setS(AbsoluteDate s) {
-        this.s = s;
-    }
-
-    public double getSpatialRes() {
-        return spatialRes;
-    }
-
-    public void setSpatialRes(double spatialRes) {
-        this.spatialRes = spatialRes;
-    }
-
-    public double getSnr() {
-        return snr;
-    }
-
-    public void setSnr(double snr) {
-        this.snr = snr;
-    }
-
-    public double getCost() {
-        return cost;
-    }
-
-    public void setCost(double cost) {
-        this.cost = cost;
-    }
-
-    public double getScore() {
-        return score;
-    }
-
-    public void setScore(double score) {
-        this.score = score;
-    }
-
-    public int getH() {
-        return h;
-    }
-
-    public void setH(int h) {
-        this.h = h;
-    }
-
-    public int getV() {
-        return v;
-    }
-
-    public void setV(int v) {
-        this.v = v;
-    }
-
-    public int getW_solo() {
-        return w_solo;
-    }
-
-    public void setW_solo(int w_solo) {
-        this.w_solo = w_solo;
-    }
-
-    public int getW_any() {
-        return w_any;
-    }
-
-    public void setW_any(int w_any) {
-        this.w_any = w_any;
-    }
-
-    public int getW_all() {
-        return w_all;
-    }
-
-    public void setW_all(int w_all) {
-        this.w_all = w_all;
-    }
+    public Subtask getSubtask() { return j; }
+    public double getY() { return y; }
+    public void setY(double y) { this.y = y; }
+    public AbstractAgent getZ() { return z; }
+    public void setZ(AbstractAgent z) { this.z = z; }
+    public AbsoluteDate getTz() { return tz_date; }
+    public void setTz(AbsoluteDate tz) { this.tz_date = tz.getDate(); }
+    public double getC() { return c; }
+    public void setC(double c) { this.c = c; }
+    public AbsoluteDate getS() { return s; }
+    public void setS(AbsoluteDate s) { this.s = s; }
+    public double getCost() { return cost; }
+    public void setCost(double cost) { this.cost = cost; }
+    public double getScore() { return score; }
+    public void setScore(double score) { this.score = score; }
+    public int getH() { return h; }
+    public void setH(int h) { this.h = h; }
+    public int getV() { return v; }
+    public void setV(int v) { this.v = v; }
+    public int getW_solo() { return w_solo; }
+    public void setW_solo(int w_solo) { this.w_solo = w_solo; }
+    public int getW_any() { return w_any; }
+    public void setW_any(int w_any) { this.w_any = w_any; }
+    public int getW_all() { return w_all; }
+    public void setW_all(int w_all) { this.w_all = w_all; }
+    public MeasurementPerformance getPerformance(){return  performance;}
+    public void setPerformance(MeasurementPerformance newPerf){ this.performance = newPerf.copy(); }
 }

@@ -10,14 +10,13 @@ import java.util.HashMap;
 
 public class CCBBAResultsMessage extends Message {
     private IterationResults results;
-    private PVCoordinates pv;
     private PVCoordinates pvEarth;
 
-    public CCBBAResultsMessage(IterationResults results, PVCoordinates pv, PVCoordinates pvEarth){
+    public CCBBAResultsMessage(IterationResults results, PVCoordinates pvEarth){
         this.results = results.copy();
-        this.pv = pv;
         this.pvEarth = pvEarth;
     }
 
-    public IterationResults getResults(){return this.results;}
+    public IterationResults getResults(){return results;}
+    public PVCoordinates getAgentPV(){return pvEarth;}
 }
