@@ -13,7 +13,6 @@ public class IterationDatum {
     private int i_q;                        // subtask index with respect to its parent task subtask list
     private double y;                       // winner bid
     private AbstractAgent z;                // winner agent
-    private double tz;                      // measurement epoch [s]
     private AbsoluteDate tz_date;           // measurement date
     private double c;                       // self bid
     private AbsoluteDate s;                 // bid date stamp
@@ -35,7 +34,6 @@ public class IterationDatum {
         this.i_q = j.getI_q();
         this.y = 0.0;
         this.z = null;
-        this.tz = -1.0;
         this.tz_date = null;
         this.c = 0.0;
         this.s = null;
@@ -52,14 +50,13 @@ public class IterationDatum {
         this.w_all = settings.w_all;
     }
 
-    private IterationDatum(Subtask j, double y, AbstractAgent z, double tz, AbsoluteDate tz_date, double c,
+    private IterationDatum(Subtask j, double y, AbstractAgent z, AbsoluteDate tz_date, double c,
                           AbsoluteDate s, double spatialRes, double snr, double cost, double score, int h, int v,
                            int w_solo, int w_any, int w_all){
         this.j = j;
         this.i_q = j.getI_q();
         this.y = y;
         this.z = z;
-        this.tz = tz;
         if(tz_date == null) this.tz_date = null;
         else this.tz_date = tz_date.getDate();
         this.c = c;
@@ -78,7 +75,7 @@ public class IterationDatum {
     }
 
     public IterationDatum copy(){
-        return new IterationDatum(j, y, z, tz, tz_date, c, s, spatialRes, snr, cost, score, h, v, w_solo, w_any, w_all);
+        return new IterationDatum(j, y, z, tz_date, c, s, spatialRes, snr, cost, score, h, v, w_solo, w_any, w_all);
     }
 
     public void resetAvailability(){
@@ -108,20 +105,12 @@ public class IterationDatum {
         this.z = z;
     }
 
-    public double getTz() {
-        return tz;
-    }
-
-    public void setTz(double tz) {
-        this.tz = tz;
-    }
-
-    public AbsoluteDate getTz_date() {
+    public AbsoluteDate getTz() {
         return tz_date;
     }
 
-    public void setTz_date(AbsoluteDate tz_date) {
-        this.tz_date = tz_date;
+    public void setTz(AbsoluteDate tz) {
+        this.tz_date = tz.getDate();
     }
 
     public double getC() {

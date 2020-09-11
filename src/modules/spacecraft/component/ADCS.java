@@ -64,7 +64,7 @@ public class ADCS extends Component{
         return bodyFrame;
     }
 
-    private ArrayList<Vector3D> calcOrbitFrame(SpacecraftOrbit orbit, AbsoluteDate startDate) throws Exception {
+    public ArrayList<Vector3D> calcOrbitFrame(SpacecraftOrbit orbit, AbsoluteDate startDate) throws Exception {
         // returns 3 vectors representing the frame of the orbital direction
         // x points towards velocity, z towards the ground, and y to the right of x
         Vector3D x_bod = orbit.getPVEarth(startDate).getVelocity().normalize();
@@ -160,7 +160,7 @@ public class ADCS extends Component{
     public boolean isVisible(Instrument ins, Vector3D pointEarth, Vector3D objectPos, SpacecraftOrbit orbit, AbsoluteDate date) throws Exception {
         ArrayList<Vector3D> orbitFrame = calcOrbitFrame(orbit,date);
         String fovType = ins.getFovType();
-        if(fovType.equals("square")){
+        if(fovType.equals("square") || fovType.equals("circular")){
             double fov = deg2rad( ins.getFOV() );
             double scanningAngleMinus = deg2rad( ins.getScanAngleMinus() );
             double scanningAnglePlus = deg2rad( ins.getScanAnglePlus() );
@@ -179,15 +179,6 @@ public class ADCS extends Component{
             }
 
         }
-        else if(fovType.equals("circular")){
-            if(ins.getScanningType().equals("none")){
-
-            }
-            else{
-                throw new Exception("Scanning type not yet supported");
-            }
-            throw new Exception("FOV type not yet supported");
-        }
         else{
             throw new Exception("FOV type not yet supported");
         }
@@ -200,7 +191,7 @@ public class ADCS extends Component{
         Vector3D pointEarth = transform(pointOrb, orbitFrame);
 
         String fovType = ins.getFovType();
-        if(fovType.equals("square")){
+        if(fovType.equals("square") || fovType.equals("circular")){
             double fov = deg2rad( ins.getFOV() );
             double scanningAngleMinus = deg2rad( ins.getScanAngleMinus() );
             double scanningAnglePlus = deg2rad( ins.getScanAnglePlus() );
@@ -219,15 +210,6 @@ public class ADCS extends Component{
             }
 
         }
-        else if(fovType.equals("circular")){
-            if(ins.getScanningType().equals("none")){
-
-            }
-            else{
-                throw new Exception("Scanning type not yet supported");
-            }
-            throw new Exception("FOV type not yet supported");
-        }
         else{
             throw new Exception("FOV type not yet supported");
         }
@@ -243,7 +225,7 @@ public class ADCS extends Component{
         String fovType = ins.getFovType();
         double fov = deg2rad( ins.getFOV() );
 
-        if(fovType.equals("square")){
+        if(fovType.equals("square") || fovType.equals("circular")){
             double scanningAngleMinus = deg2rad( ins.getScanAngleMinus() );
             double scanningAnglePlus = deg2rad( ins.getScanAnglePlus() );
 
@@ -321,7 +303,7 @@ public class ADCS extends Component{
         return Math.acos( relProj.dotProduct(satZ) / ( relProj.getNorm() * satZ.getNorm() ) );
     }
 
-    private double getTaskCTAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
+    public double getTaskCTAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
         // declare unit vectors wrt satellite
         Vector3D satX = orbitFrame.get(0);
         Vector3D satY = orbitFrame.get(1);
@@ -340,7 +322,7 @@ public class ADCS extends Component{
     public double getTaskCTAngle(){return 1.0;}
 
     private double calcADCSPower(){
-        return -1.0;
+        return 1.0;
     }
     private double calcADCSMass(){
         return -1.0;

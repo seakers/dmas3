@@ -89,13 +89,28 @@ public class CCBBAPlanner extends Planner {
 
         while((bundle.size() < settings.M) && (iterationResults.subtasksAvailable()) && alive){
             // Calculate bids for all available subtasks
-            ArrayList<Bid> bidList = iterationResults.calcBidList(this);
+            ArrayList<Bid> bidList = iterationResults.calcBidList(this, this.parentSpacecraft);
 
             // Select Maximum
-            Bid maxBid = getMaxBid(bidList);
+            Bid maxBid = getMaxBid(bidList, prevResults);
 
             // Add max bid to bundle and path
-            addToPath(maxBid);
+            Subtask j_chosen = maxBid.getJ();
+            IterationDatum datum_chosen = iterationResults.getIterationDatum(j_chosen);
+            if( maxBid.getC() > 0 && maxBid.getC() > datum_chosen.getY()){
+                // Add task to bundle
+                this.bundle.add(j_chosen);
+
+                // Add new path
+                this.path = new ArrayList<>(maxBid.getWinnerPath());
+
+                // update iteration results
+                this.iterationResults.updateResults(maxBid,parentSpacecraft);
+                // MISSING: UPDATING MANEUVERS FROM PATH
+            }
+            else if(j_chosen != null){
+                datum_chosen.setH(0);
+            }
         }
 
 
@@ -106,8 +121,10 @@ public class CCBBAPlanner extends Planner {
                                                                         parentSpacecraft.getPV(currentDate),
                                                                         parentSpacecraft.getPVEarth(currentDate));
         this.plan = new BroadcastPlan(resultsMessage,currentDate,currentDate.shiftedBy(timestep));
-
         sendPlanToParentAgent(new PlannerMessage(this.plan));
+
+        // check for new coalition members
+        checkNewCoalitionMembers();
 
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
@@ -164,12 +181,29 @@ public class CCBBAPlanner extends Planner {
         return newOmega;
     }
 
-    private Bid getMaxBid(ArrayList<Bid> bidList){
+    private Bid getMaxBid(ArrayList<Bid> bidList, IterationResults prevResults){
         Bid winningBid = null;
         double maxBid = 0.0;
 
         for(Bid bid : bidList){
-            if(bid.getScore() > maxBid){
+            Subtask j_bid = bid.getJ();
+            IterationDatum datum = this.getIterationDatum(j_bid);
+
+            double bidUtility = bid.getC();
+            int h = datum.getH();
+
+            if(h == 1){
+                if(datum.getY() > bidUtility){
+                    datum.setH(0);
+                    h = 0;
+                }
+                else if(!pathAvailable(bid,prevResults)){
+                    datum.setH(0);
+                    h = 0;
+                }
+            }
+
+            if( (h >= 0) && (bidUtility*h > maxBid) ){
                 winningBid = bid;
                 maxBid = bid.getScore();
             }
@@ -178,8 +212,19 @@ public class CCBBAPlanner extends Planner {
         return winningBid;
     }
 
-    private void addToPath(Bid bid){
-        int x = 1;
+    private boolean pathAvailable(Bid bid, IterationResults prevResults){
+        // checks if new proposed path does not have bids lower than those previously won
+        ArrayList<Subtask> bidPath = bid.getPath();
+        ArrayList<Double> pathUtility = bid.getWinningPathUtility().getUtilityList();
+
+        for(Subtask j_path : bidPath){
+            int i_p = bidPath.indexOf(j_path);
+            double prevUtility = prevResults.getIterationDatum(j_path).getY();
+            double newUtility = pathUtility.get(i_p);
+
+            if(prevUtility > newUtility) return false;
+        }
+        return true;
     }
 
     public ArrayList<Subtask> getBundle(){return this.bundle;}

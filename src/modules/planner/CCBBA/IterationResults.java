@@ -57,7 +57,7 @@ public class IterationResults {
         }
         return false;
     }
-    public ArrayList<Bid> calcBidList(CCBBAPlanner planner) throws Exception {
+    public ArrayList<Bid> calcBidList(CCBBAPlanner planner, AbstractAgent parentAgent) throws Exception {
         ArrayList<Bid> bidList = new ArrayList<>();
         Set<Subtask> subtasks = this.results.keySet();
         ArrayList<Subtask> bundle = planner.getBundle();
@@ -69,8 +69,9 @@ public class IterationResults {
             if(canBid(j, bundle, planner)){
                 localBid.calcBid((Spacecraft) parentAgent, planner);
 
-                h = coalitionTest();
-                if(h == 1) h = mutexTest();
+                h = coalitionTest(localBid,j,planner,parentAgent);
+                if(h == 1) h = mutexTest(localBid,j,planner,parentAgent);
+                if(h == 1) h = 0;
             }
             this.getIterationDatum(j).setH(h);
             bidList.add(localBid);
@@ -139,12 +140,78 @@ public class IterationResults {
         }
     }
 
-    private int coalitionTest(){
-        return -1;
+    private int coalitionTest(Bid localBid, Subtask j, CCBBAPlanner planner, AbstractAgent agent){
+        double new_bid = 0.0;
+        double coalition_bid = 0.0;
+
+        ArrayList<Subtask> relatedSubtasks = j.getParentTask().getSubtasks();
+        Dependencies dep = j.getParentTask().getDependencies();
+
+        for(Subtask q : relatedSubtasks){
+            if(q == j) continue;
+
+            boolean sameWinner = this.getIterationDatum(q).getZ() == this.getIterationDatum(j).getZ();
+            boolean noConstraintsJQ = dep.noDependency(j,q);
+            boolean constraintsJQ = dep.depends(j,q);
+            boolean agentIsWinner = this.getIterationDatum(q).getZ() == agent;
+
+            if( sameWinner && (noConstraintsJQ || constraintsJQ)){
+                coalition_bid += this.getIterationDatum(q).getY();
+            }
+
+            if( constraintsJQ && agentIsWinner){
+                new_bid += this.getIterationDatum(q).getY();
+            }
+        }
+        new_bid += localBid.getC();
+
+        if(new_bid > coalition_bid) return 1;
+        else return 0;
     }
 
-    private int mutexTest(){
-        return -1;
+    private int mutexTest(Bid localBid, Subtask j, CCBBAPlanner planner, AbstractAgent agent){
+        ArrayList<Subtask> relatedSubtasks = j.getParentTask().getSubtasks();
+        Dependencies dep = j.getParentTask().getDependencies();
+
+        double new_bid = 0.0;
+        ArrayList<ArrayList<Subtask>> coalitionMembers = new ArrayList<>();
+        for(Subtask q : relatedSubtasks){
+            if( q != j && dep.depends(j,q)) new_bid += this.getIterationDatum(q).getY();
+
+            ArrayList<Subtask> Jv = new ArrayList<>();
+            for(Subtask k : relatedSubtasks){
+                if(dep.depends(q,j)) Jv.add(k);
+            }
+            Jv.add(q);
+            coalitionMembers.add(Jv);
+        }
+        new_bid += localBid.getC();
+
+        ArrayList<ArrayList<Subtask>> exclusiveCoalitionMembers = new ArrayList<>();
+        for(ArrayList<Subtask> Jv : coalitionMembers){
+            ArrayList<Subtask> Jv_p = new ArrayList<>();
+            for(Subtask q : Jv){
+                for(Subtask k : relatedSubtasks){
+                    if(dep.mutuallyExclusive(k,q) && !Jv_p.contains(k)) {
+                        Jv_p.add(k);
+                    }
+                }
+            }
+            exclusiveCoalitionMembers.add(Jv_p);
+        }
+
+        double max_bid = 0.0;
+        double y_coalition;
+        for(ArrayList<Subtask> Jv_p : exclusiveCoalitionMembers){
+            y_coalition = 0.0;
+            for(Subtask k : Jv_p){
+                y_coalition += this.getIterationDatum(k).getY();
+            }
+            if(y_coalition > max_bid) max_bid = y_coalition;
+        }
+
+        if(new_bid > max_bid) return 1;
+        else return 0;
     }
 
     private boolean isOptimistic(Subtask j){
@@ -158,6 +225,22 @@ public class IterationResults {
         }
 
         return  dependentTasks.size() > 0;
+    }
+
+    public void updateResults(Bid bid, Spacecraft winner){
+        for(Subtask j : bid.getWinnerPath()){
+            IterationDatum datum = this.getIterationDatum(j);
+            int i_path = bid.getWinnerPath().indexOf(j);
+
+            datum.setY( bid.getWinningPathUtility().getUtilityList().get(i_path) );
+            datum.setZ( winner );
+            datum.setTz( bid.getWinningPathUtility().getTz().get(i_path) );
+            datum.setC( bid.getWinningPathUtility().getUtilityList().get(i_path) );
+            if(j == bid.getJ()) datum.setS( winner.getCurrentDate().getDate() );
+
+            datum.setCost( bid.getWinningPathUtility().getCostList().get(i_path) );
+            datum.setScore( bid.getWinningPathUtility().getScoreList().get(i_path) );
+        }
     }
 
     /**

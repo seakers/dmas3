@@ -7,6 +7,7 @@ import modules.environment.Subtask;
 import modules.environment.Task;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.Instrument;
+import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 import modules.spacecraft.maneuvers.AttitudeManeuver;
 import modules.spacecraft.maneuvers.Maneuver;
 import modules.spacecraft.maneuvers.NoManeuver;
@@ -36,6 +37,7 @@ public class PathUtility {
     private ArrayList<Maneuver> maneuvers;      // list of maneuvers done to achieve respective subtask
     private ArrayList<ArrayList<AbstractAgent>> pathOmega;
     private ArrayList<ArrayList<Instrument>> instrumentsUsed;
+    private ArrayList<Subtask> path;
 
     public PathUtility(Spacecraft parentSpacecraft, CCBBAPlanner planner, ArrayList<Subtask> path) throws Exception {
         utilityList = new ArrayList<>();
@@ -45,7 +47,7 @@ public class PathUtility {
         maneuvers = new ArrayList<>();
         pathOmega = calcCoalitionMatrix(parentSpacecraft,planner,path);
         instrumentsUsed = new ArrayList<>();
-        ArrayList<Instrument> payload = parentSpacecraft.getDesign().getPayload();
+        this.path = new ArrayList<>(path);
 
         // calculate the utility of each subtask
         for(Subtask j : path){
@@ -61,6 +63,7 @@ public class PathUtility {
             AbsoluteDate ta_max = new AbsoluteDate();
             Maneuver maneuver_max = new NoManeuver(new AbsoluteDate());
             double utility_max = 0.0;
+            ArrayList<Instrument> sensors_max = new ArrayList<>();
 
             // get the maximum utility from all line of sight time intervals
             for(TimeInterval interval : lineOfSightTimes){
@@ -84,14 +87,14 @@ public class PathUtility {
                         Subtask j_last = planner.getOverallPath().get(overall_path_size - 1);
                         IterationDatum datum = planner.getIterationDatum(j_last);
 
-                        if (datum.getTz_date().compareTo(endDate) > 0) {
+                        if (datum.getTz().compareTo(endDate) > 0) {
                             // if the start time of the previous measurement is later than the end of this time interval,
                             // skip to the next interval
                             continue;
-                        } else if (datum.getTz_date().compareTo(startDate) > 0) {
+                        } else if (datum.getTz().compareTo(startDate) > 0) {
                             // if the start date of the previous measurement is after the start date, then skip all previous
                             // dates in the time interval;
-                            stepDate = datum.getTz_date();
+                            stepDate = datum.getTz();
                         } else {
                             stepDate = startDate.getDate();
                         }
@@ -112,6 +115,10 @@ public class PathUtility {
                         stepDate = startDate.getDate();
                     }
                 }
+                if(stepDate.durationFrom(parentSpacecraft.getStartDate()) == 0.0){
+                    stepDate = stepDate.shiftedBy(timeStep);
+                }
+
                 // Initialize local search for max utility
                 double S_interval = 0.0;
                 double sig_interval = 0.0;
@@ -121,6 +128,7 @@ public class PathUtility {
                 AbsoluteDate ta_interval = new AbsoluteDate();
                 Maneuver maneuver_interval = new NoManeuver(ta_interval);
                 double utility_interval = 0.0;
+                ArrayList<Instrument> sensors_interval = new ArrayList<>();
 
 
                 // linear search each interval for maximum utility
@@ -137,6 +145,7 @@ public class PathUtility {
                     AbsoluteDate ta_date = stepDate.getDate();
                     Maneuver maneuver_date = new NoManeuver(stepDate.getDate());
                     double utility_date = 0.0;
+                    ArrayList<Instrument> sensors_date = new ArrayList<>();
 
                     // if constraints are satisfied, then calculate utility at this point in time
                     if(dateFulfillsConstraints){
@@ -157,11 +166,16 @@ public class PathUtility {
                             double coalPenalties_maneuver = 0.0;
                             double measurementcost_maneuver = 0.0;
                             double utility_maneuver = 0.0;
+                            ArrayList<Instrument> sensors_maneuver = new ArrayList<>();
 
                             ArrayList<ArrayList<Instrument>> instrumentCombinations = calcInstrumentCombinations(visibleToSensorsList);
                             for(ArrayList<Instrument> sensorsUsed : instrumentCombinations){
+                                if(sensorsUsed.size() == 0) continue;
+
+                                MeasurementPerformance performance = new MeasurementPerformance(j,sensorsUsed,parentSpacecraft,stepDate);
+
                                 double S_combination = calcSubtaskScore(j,stepDate,parentSpacecraft);
-                                double sig_combination = calcRequirementSatisfaction(j,sensorsUsed,parentSpacecraft,maneuverTemp,stepDate);
+                                double sig_combination = calcRequirementSatisfaction(j,performance);
                                 double maneuverCost_combination = calcManeuverCost(maneuverTemp,parentSpacecraft);
                                 double coalPenalties_combination = 0.0;
                                 double measurementCost_combination = 0.0;
@@ -176,6 +190,7 @@ public class PathUtility {
                                     coalPenalties_maneuver = coalPenalties_combination;
                                     measurementcost_maneuver = measurementCost_combination;
                                     utility_maneuver = utility_combination;
+                                    sensors_maneuver = sensorsUsed;
                                 }
                             }
 
@@ -187,6 +202,7 @@ public class PathUtility {
                                 measurementCost_date = measurementcost_maneuver;
                                 maneuver_date = maneuverTemp;
                                 utility_date = utility_maneuver;
+                                sensors_date = sensors_maneuver;
                             }
                         }
                     }
@@ -200,6 +216,7 @@ public class PathUtility {
                         ta_interval = ta_date.getDate();
                         maneuver_interval = maneuver_date;
                         utility_interval = utility_date;
+                        sensors_interval = sensors_date;
                     }
 
                     stepDate = stepDate.shiftedBy(timeStep).getDate();
@@ -212,7 +229,9 @@ public class PathUtility {
                     coalPenalties_max = coalPenalties_interval;
                     measurementCost_max = measurementCost_interval;
                     ta_max = ta_interval.getDate();
+                    maneuver_max = maneuver_interval;
                     utility_max = utility_interval;
+                    sensors_max = sensors_interval;
                 }
             }
 
@@ -223,6 +242,7 @@ public class PathUtility {
             double measurementCost = measurementCost_max;
             AbsoluteDate ta = ta_max.getDate();
             Maneuver maneuver = maneuver_max;
+            ArrayList<Instrument> sensors = sensors_max;
 
             this.utility += (S*sig - manuverCost - coalPenalties - measurementCost);
             this.cost += (manuverCost + coalPenalties + measurementCost);
@@ -233,6 +253,7 @@ public class PathUtility {
             this.scoreList.add(S*sig);
             this.tz.add(ta);
             this.maneuvers.add(maneuver);
+            this.instrumentsUsed.add(sensors);
         }
     }
 
@@ -314,7 +335,7 @@ public class PathUtility {
                     tempTz = this.tz.get( path.indexOf( constraint ) );
                 }
                 else{
-                    tempTz = planner.getIterationDatum( constraint ).getTz_date();
+                    tempTz = planner.getIterationDatum( constraint ).getTz();
                 }
 
                 if(maxTz == null) {
@@ -367,7 +388,7 @@ public class PathUtility {
                 // if a previous plan was performed, then use it's arrival time as the start of the maneuver
                 int i_last_overall = planner.getOverallPath().size() -1;
                 Subtask lastSubtask = planner.getOverallPath().get(i_last_overall);
-                maneuverStartTime = planner.getIterationDatum(lastSubtask).getTz_date();
+                maneuverStartTime = planner.getIterationDatum(lastSubtask).getTz();
             }
         }
         else{
@@ -468,10 +489,10 @@ public class PathUtility {
         }
     }
 
-    private double calcRequirementSatisfaction(Subtask j, ArrayList<Instrument> instrumenstUsed, Spacecraft spacecraft, Maneuver maneuver, AbsoluteDate date) throws Exception {
+    private double calcRequirementSatisfaction(Subtask j, MeasurementPerformance performance) throws Exception {
         // Calc measurement performance
-        double spatialRes = spacecraft.calcSpatialRes(j, instrumenstUsed, spacecraft, maneuver, date);
-        double snr = spacecraft.calcSNR(j,instrumenstUsed,date);
+        double spatialRes = performance.getSpatialResAz();
+        double snr = performance.getSNR();
 
         // Get measurement requirements
         Requirements req = j.getParentTask().getRequirements();
@@ -485,11 +506,31 @@ public class PathUtility {
 
         double delta_spat = spatialRes - spatialResReq;
         double e_spat = exp(spatialResReqSlope * delta_spat);
+        double sigmoid_spat;
+        if(e_spat == Double.POSITIVE_INFINITY){
+            sigmoid_spat = 0.0;
+        }
+        else if(e_spat == Double.NEGATIVE_INFINITY){
+            sigmoid_spat = spatialResReqWeight;
+        }
+        else{
+            sigmoid_spat = (spatialResReqWeight/( 1.0 + e_spat));
+        }
 
         double delta_snr = snrReq - snr;
         double e_snr = exp(snrReqSlope * delta_snr);
+        double sigmoid_snr;
+        if(e_snr == Double.POSITIVE_INFINITY){
+            sigmoid_snr = 0.0;
+        }
+        else if(e_snr == Double.NEGATIVE_INFINITY){
+            sigmoid_snr = snrReqWeight;
+        }
+        else{
+            sigmoid_snr = (snrReqWeight/( 1.0 + e_snr));
+        }
 
-        return (spatialResReqWeight/( 1.0 + e_spat)) + (snrReqWeight/( 1.0 + e_snr));
+        return (sigmoid_spat + sigmoid_snr);
     }
 
     private double calcManeuverCost(Maneuver maneuver, Spacecraft spacecraft) throws Exception {
@@ -513,7 +554,7 @@ public class PathUtility {
      * @param maneuvers
      */
     private PathUtility(double utility, double cost, double score, ArrayList<Double> utilityList, ArrayList<Double> costList,
-                       ArrayList<Double> scoreList, ArrayList<AbsoluteDate> tz, ArrayList<Maneuver> maneuvers){
+                       ArrayList<Double> scoreList, ArrayList<AbsoluteDate> tz, ArrayList<Maneuver> maneuvers,ArrayList<ArrayList<Instrument>> instrumentsUsed){
         this.utility = utility;
         this.cost = cost;
         this.score = score;
@@ -522,10 +563,11 @@ public class PathUtility {
         this.scoreList = new ArrayList<>(scoreList);
         this.tz = new ArrayList<>(tz);
         this.maneuvers = new ArrayList<>(maneuvers);
+        this.instrumentsUsed = new ArrayList<>(instrumentsUsed);
     }
 
     public PathUtility copy(){
-        return new PathUtility(utility, cost, score, utilityList, costList, scoreList, tz, maneuvers);
+        return new PathUtility(utility, cost, score, utilityList, costList, scoreList, tz, maneuvers, instrumentsUsed);
     }
 
     /**
@@ -539,4 +581,5 @@ public class PathUtility {
     public ArrayList<Double> getScoreList() { return scoreList; }
     public ArrayList<AbsoluteDate> getTz() { return tz; }
     public ArrayList<Maneuver> getManeuvers(){return maneuvers;}
+    public ArrayList<Subtask> getPath(){return path;}
 }

@@ -70,7 +70,9 @@ public class Architecture extends AbstractAgent{
             double dimAz = Double.parseDouble(row[1].getContents());
             double dimEl = Double.parseDouble(row[2].getContents());
             double mass = Double.parseDouble(row[3].getContents());
-            InstrumentAntenna ant_i = new InstrumentAntenna(name, dimAz, dimEl, mass);
+            String type = row[4].getContents();
+            double eff = Double.parseDouble(row[5].getContents());
+            InstrumentAntenna ant_i = new InstrumentAntenna(name, dimAz, dimEl, mass, type, eff);
             antennaList.put(name, ant_i);
         }
 
@@ -83,29 +85,28 @@ public class Architecture extends AbstractAgent{
             Cell[] row = instruments.getRow(i);
             String name = row[0].getContents();
             double dataRate = Double.parseDouble(row[1].getContents());
-            double pAvg = Double.parseDouble(row[2].getContents());
-            double pPeak = Double.parseDouble(row[3].getContents());
-            double bandwidth = Double.parseDouble(row[4].getContents());
-            double fov = Double.parseDouble(row[5].getContents());
-            String fov_type = row[6].getContents();
-            double f = Double.parseDouble(row[7].getContents());
+            double pPeak = Double.parseDouble(row[2].getContents());
+            double prf = Double.parseDouble(row[3].getContents());
+            double pulseWidth = Double.parseDouble(row[4].getContents());
+            double bandwidth = Double.parseDouble(row[5].getContents());
+            double f = Double.parseDouble(row[6].getContents());
             Measurement freq = new Measurement(f);
-            double mass = Double.parseDouble(row[8].getContents());
-            double nLooks = Double.parseDouble(row[9].getContents());
-            double offAxisAngle = Double.parseDouble(row[10].getContents());
-            String scanningType = row[11].getContents();
-            double scanningAngle = Double.parseDouble(row[12].getContents());
-            String sensorType = row[13].getContents();
-            String antennaName = row[14].getContents();
+            double mass = Double.parseDouble(row[7].getContents());
+            double nLooks = Double.parseDouble(row[8].getContents());
+            double offAxisAngle = Double.parseDouble(row[9].getContents());
+            String scanningType = row[10].getContents();
+            double scanningAngle = Double.parseDouble(row[11].getContents());
+            String sensorType = row[12].getContents();
+            String antennaName = row[13].getContents();
 
             InstrumentAntenna ant = antennaList.get(antennaName);
             Instrument ins;
             switch (sensorType){
                 case "SAR":
-                    ins = new SAR(name, dataRate, pAvg, pPeak, freq, bandwidth, fov, fov_type, offAxisAngle, mass, scanningType, scanningAngle, scanningAngle, sensorType, ant, nLooks);
+                    ins = new SAR(name, dataRate, pPeak, prf, pulseWidth, freq, bandwidth, offAxisAngle, mass, scanningType, scanningAngle/2.0, scanningAngle/2.0, sensorType, ant, nLooks);
                     break;
                 case "RAD":
-                    ins = new Radiometer(name, dataRate, pAvg, pPeak, freq, bandwidth, fov, fov_type, offAxisAngle, mass, scanningType, scanningAngle, scanningAngle, sensorType, ant);
+                    ins = new Radiometer(name, dataRate, pPeak, pulseWidth, freq, bandwidth, offAxisAngle, mass, scanningType, scanningAngle/2.0, scanningAngle/2.0, sensorType, ant, nLooks);
                     break;
                 default:
                     throw new Exception("Sensor type not yet supported");

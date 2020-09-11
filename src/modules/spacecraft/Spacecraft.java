@@ -6,10 +6,9 @@ import madkit.kernel.Message;
 import modules.environment.*;
 import modules.planner.plans.*;
 import modules.spacecraft.instrument.Instrument;
+import modules.spacecraft.instrument.Radiometer;
+import modules.spacecraft.instrument.SAR;
 import modules.spacecraft.instrument.measurements.Measurement;
-import modules.spacecraft.instrument.measurements.RADMeasurement;
-import modules.spacecraft.instrument.measurements.SARMeasurement;
-import modules.spacecraft.maneuvers.Maneuver;
 import modules.spacecraft.orbits.OrbitParams;
 import modules.spacecraft.orbits.SpacecraftOrbit;
 import modules.planner.CCBBA.CCBBAPlanner;
@@ -173,102 +172,25 @@ public class Spacecraft extends AbstractAgent {
     private void makeMeasurement() throws Exception {
         MeasurementPlan measurementPlan = (MeasurementPlan) this.plan;
 
-        // unpack plan details
-        Subtask subtask = measurementPlan.getRelevantSubtask();
-        ArrayList<Instrument> instruments = measurementPlan.getInstruments();
-        Measurement measurement = measurementPlan.getMeasurement();
-        Requirements requirements = measurementPlan.getRelevantSubtask().getParentTask().getRequirements();
-
-        // calculate measurement performance
-        double spatialRes = calcSpatialRes(subtask, instruments, measurementPlan.getStartDate());
-        double SNR = calcSNR(subtask, instruments, measurementPlan.getStartDate());
-        double duration = calcDuration(subtask, instruments);
-
-        SubtaskCapability newCapability = new SubtaskCapability(subtask, instruments, measurement, requirements, spatialRes, SNR, duration);
-
-        // update environment
-        this.environment.updateMeasurementCapability(newCapability);
-        this.environment.completeSubtask(subtask);
+//        // unpack plan details
+//        Subtask subtask = measurementPlan.getRelevantSubtask();
+//        ArrayList<Instrument> instruments = measurementPlan.getInstruments();
+//        Measurement measurement = measurementPlan.getMeasurement();
+//        Requirements requirements = measurementPlan.getRelevantSubtask().getParentTask().getRequirements();
+//
+//        // calculate measurement performance
+//        double spatialRes = -1.0;
+//        double SNR = -1.0;
+//        double duration = calcDuration(subtask, instruments);
+//
+//        SubtaskCapability newCapability = new SubtaskCapability(subtask, instruments, measurement, requirements, spatialRes, SNR, duration);
+//
+//        // update environment
+//        this.environment.updateMeasurementCapability(newCapability);
+//        this.environment.completeSubtask(subtask);
     }
 
     public double calcSpatialRes(Subtask subtask, ArrayList<Instrument> instruments, AbsoluteDate date){
-        return -1.0;
-    }
-
-    public double calcSpatialRes(Subtask subtask, ArrayList<Instrument> instruments, Spacecraft spacecraft, Maneuver maneuver, AbsoluteDate date) throws Exception {
-        Measurement mainMeasurement = subtask.getMainMeasurement();
-        double range = 0.0;
-
-        if(instruments.size() == 0){
-            return 1e6;
-        }
-        else if(instruments.size() == 1){
-            // only one instrument used
-            Instrument ins = instruments.get(0);
-            String insType = ins.getType();
-            if(insType.equals("SAR")){
-                SARMeasurement sar = new SARMeasurement(subtask, ins, this, maneuver, date);
-                return sar.calcSpatialResolution();
-            }
-            else if(insType.equals("RAD")){
-                RADMeasurement rad = new RADMeasurement(subtask, ins, this, maneuver, date);
-                return rad.calcSpatialResolution();
-            }
-            else{
-                throw new Exception("Instrument type not yet supported");
-            }
-        }
-        else{
-            // SYNERGY::SAR and RAD measurement
-            boolean cond1 = instruments.get(0).getType().equals("SAR") || instruments.get(0).getType().equals("RAD");
-            boolean cond2 = instruments.get(1).getType().equals("SAR") || instruments.get(1).getType().equals("RAD");
-            boolean cond3 = instruments.get(0).getType().equals(instruments.get(1).getType());
-            if(instruments.size() == 2 && cond1 && cond2 && cond3){
-                Instrument ins1 = instruments.get(0);
-                Instrument ins2 = instruments.get(1);
-                SARMeasurement sar;
-                RADMeasurement rad;
-                if(ins1.getType().equals("SAR")){
-                    sar = new SARMeasurement(subtask, ins1, this, maneuver, date);
-                    rad = new RADMeasurement(subtask, ins2, this, maneuver, date);
-                }
-                else{
-                    sar = new SARMeasurement(subtask, ins2, this, maneuver, date);
-                    rad = new RADMeasurement(subtask, ins1, this, maneuver, date);
-                }
-
-                double sarRes = sar.calcSpatialResolution();
-                double radRes = rad.calcSpatialResolution();
-                return Math.sqrt(sarRes * radRes);
-            }
-
-            // No known Synergy rule known for this combination of instruments, pick best resolution
-            else{
-                double resMin = 1e9;
-                for(Instrument ins : instruments){
-                    String insType = ins.getType();
-                    double res;
-                    if(insType.equals("SAR")){
-                        SARMeasurement sar = new SARMeasurement(subtask, ins, this, maneuver, date);
-                        res = sar.calcSpatialResolution();
-                    }
-                    else if(insType.equals("RAD")){
-                        RADMeasurement rad = new RADMeasurement(subtask, ins, this, maneuver, date);
-                        res = rad.calcSpatialResolution();
-                    }
-                    else{
-                        throw new Exception("Instrument type not yet supported");
-                    }
-                    if(res < resMin){
-                        resMin = res;
-                    }
-                }
-                return resMin;
-            }
-        }
-    }
-
-    public double calcSNR(Subtask subtask, ArrayList<Instrument> instruments, AbsoluteDate date){
         return -1.0;
     }
 
@@ -318,6 +240,9 @@ public class Spacecraft extends AbstractAgent {
     public double getAlt(AbsoluteDate date) throws OrekitException {
         return this.orbit.getAlt(date);
     }
+    public double getTaskCTAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
+        return  this.design.getAdcs().getTaskCTAngle(orbitFrame, satPos, taskPos);
+    }
 
     private double rad2deg(double th){ return th*180.0/Math.PI; }
     private double deg2rad(double th){ return th*Math.PI/180.0; }
@@ -331,4 +256,5 @@ public class Spacecraft extends AbstractAgent {
     public ArrayList<Vector3D> getBodyFrame(){ return this.design.getAdcs().getBodyFrame(); }
     public AbsoluteDate getStartDate(){return this.orbit.getStartDate(); }
     public SpacecraftOrbit getOrbit(){return orbit;}
+    public AbsoluteDate getCurrentDate(){ return this.environment.getCurrentDate(); }
 }

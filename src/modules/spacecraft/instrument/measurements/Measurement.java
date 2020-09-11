@@ -90,7 +90,7 @@ public class Measurement {
                 return "mm";
             }
             else{
-                throw new Exception("mMeasurement band yet not supported");
+                throw new Exception("Measurement band yet not supported");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -107,16 +107,4 @@ public class Measurement {
     public double calcSpatialResolution(){ return -1.0; }
     public double calcSNR(){ return -1.0; }
     protected double calcSwadth(Spacecraft spacecraft, AbsoluteDate date){return -1.0;}
-
-    protected double calMeasurementAngle(Subtask j, Instrument ins, Spacecraft spacecraft, Maneuver maneuver, AbsoluteDate date) throws Exception {
-        SpacecraftOrbit orbit = spacecraft.getOrbit();
-        ArrayList<Vector3D> bodyFrame = ((AttitudeManeuver) maneuver).getFinalBodyFrame();
-        Vector3D pointPV = spacecraft.getDesign().getAdcs().getPointingVector(ins,bodyFrame,orbit,date);
-
-        Vector3D satPV = spacecraft.getPVEarth(date).getPosition();
-        Vector3D taskPV = j.getParentTask().getPVEarth(date).getPosition();
-        Vector3D taskRelPV = taskPV.subtract(satPV);
-
-        return acos( pointPV.dotProduct(taskRelPV) / (pointPV.getNorm() * taskRelPV.getNorm()) );
-    }
 }

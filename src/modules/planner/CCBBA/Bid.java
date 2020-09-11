@@ -35,7 +35,9 @@ public class Bid {
         double maxPathBid = 0.0;
         for(ArrayList<Subtask> newPath : possiblePaths){
             PathUtility newPathUtility = new PathUtility(parentSpacecraft, planner, newPath);
+
             double newPathBid = newPathUtility.getPathUtility() - oldPathUtility.getPathUtility();
+
             if(newPath.indexOf(j) != newPath.size()-1) newPathBid -= 10.0; // if new bid disrupts previously agreed plan, add penalty
 
             if(newPathBid > maxPathBid){
@@ -110,4 +112,11 @@ public class Bid {
     public void setI_path(int i_path) {
         this.i_path = i_path;
     }
+
+    public ArrayList<Subtask> getPath(){
+        return this.winningPathUtility.getPath();
+    }
+
+    public PathUtility getWinningPathUtility(){ return  this.winningPathUtility; }
+    public ArrayList<Subtask> getWinnerPath(){return this.winningPathUtility.getPath(); }
 }

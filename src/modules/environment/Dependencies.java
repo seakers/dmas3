@@ -76,23 +76,16 @@ public class Dependencies {
     }
 
     public boolean depends(Subtask j, Subtask q){
-        if(D[j.getI_q()][q.getI_q()] >= 1){
-            return true;
-        }
-        return false;
+        return D[j.getI_q()][q.getI_q()] >= 1;
     }
     public boolean depends(int j, int q){
-        if(D[j][q] >= 1){
-            return true;
-        }
-        return false;
+        return D[j][q] >= 1;
     }
-
+    public boolean noDependency(Subtask j, Subtask q){
+        return D[j.getI_q()][q.getI_q()] == 0;
+    }
     public boolean mutuallyExclusive(Subtask j, Subtask q){
-        if(D[j.getI_q()][q.getI_q()] <= -1){
-            return true;
-        }
-        return false;
+        return D[j.getI_q()][q.getI_q()] <= -1;
     }
 
     public double Tmax(Subtask j, Subtask q){

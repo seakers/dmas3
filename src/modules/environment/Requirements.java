@@ -43,7 +43,7 @@ public class Requirements {
         this.endDate = endDate.getDate();
         this.spatialResReqWeight = 0.5;
         this.lossReqWeight = 1.0 - this.spatialResReqWeight;
-        this.spatialResReqSlope = 1.0;
+        this.spatialResReqSlope = 2.5e-3;
         this.lossReqWeight = 1.0;
     }
 
