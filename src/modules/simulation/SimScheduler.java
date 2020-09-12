@@ -37,6 +37,8 @@ public class SimScheduler extends Scheduler {
             addActivator(agents);
             agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2, "phaseTwo");
             addActivator(agents);
+            agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE, "planDone");
+            addActivator(agents);
 
         // 4 : give instructions to environment
         agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE, "tic");

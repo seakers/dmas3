@@ -270,6 +270,16 @@ public class IterationResults {
         this.results.put(newDatum.getSubtask(), updatedDatum);
     }
 
+    public void resetResults(Subtask j){
+        IterationDatum updatedDatum = new IterationDatum(j, parentPlanner.getSettings());
+        updatedDatum.setW_any( this.getIterationDatum(j).getW_any() );
+        updatedDatum.setW_solo( this.getIterationDatum(j).getW_solo() );
+        updatedDatum.setW_all( this.getIterationDatum(j).getW_all() );
+        updatedDatum.setC( this.getIterationDatum(j).getC() );
+
+        this.results.put(j, updatedDatum);
+    }
+
     public void leaveResults(IterationDatum newDatum){
         // does nothing
     }
@@ -282,18 +292,19 @@ public class IterationResults {
         this.results.put(j,datum.copy());
     }
     public boolean checkForChanges(IterationResults receivedResults){
+        // returns true if changes were made
         Set<Subtask> myKeyset = this.results.keySet();
         Set<Subtask> itsKeyset = receivedResults.getResults().keySet();
 
-        if(myKeyset.size() != itsKeyset.size()) return false;
+        if(myKeyset.size() != itsKeyset.size()) return true;
         else{
             for(Subtask j : myKeyset){
                 IterationDatum myDatum = this.getIterationDatum(j);
                 IterationDatum itsDatum = receivedResults.getIterationDatum(j);
-                if(!myDatum.equals(itsDatum)) return false;
-                else if(myDatum.getV() != 0) return false;
+                if(!myDatum.equals(itsDatum)) return true;
+                else if(myDatum.getV() != 0) return true;
             }
-            return true;
+            return false;
         }
     }
 
