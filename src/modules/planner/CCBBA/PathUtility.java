@@ -89,32 +89,20 @@ public class PathUtility {
                 double timeStep = planner.getTimeStep();
                 AbsoluteDate stepDate;
 
+                // check if time interval has already passed the simulation time
+                AbsoluteDate simTcurr = parentSpacecraft.getCurrentDate();
+                if(simTcurr.compareTo(endDate) > 0){
+                    // if current simulation time is past the interval, then skip to next interval
+                    continue;
+                }
+                else if(simTcurr.compareTo(startDate) > 0){
+                    // if current simulation time is within the access interval, chane start time to current sim time
+                    startDate = simTcurr.getDate();
+                }
+
                 // check if interval happens at or after last measurement
                 if(i_path == 0){
-                    // if the first one in the path, check previously finished plans
-                    int overall_path_size = planner.getOverallPath().size();
-
-                    if(overall_path_size == 0){
-                        // if no finished plan, start at interval start
-                        stepDate = startDate.getDate();
-                    }
-                    else {
-                        // else if there was a finished plan, check it's time of arrival to determine start date
-                        Subtask j_last = planner.getOverallPath().get(overall_path_size - 1);
-                        IterationDatum datum = planner.getIterationDatum(j_last);
-
-                        if (datum.getTz().compareTo(endDate) > 0) {
-                            // if the start time of the previous measurement is later than the end of this time interval,
-                            // skip to the next interval
-                            continue;
-                        } else if (datum.getTz().compareTo(startDate) > 0) {
-                            // if the start date of the previous measurement is after the start date, then skip all previous
-                            // dates in the time interval;
-                            stepDate = datum.getTz();
-                        } else {
-                            stepDate = startDate.getDate();
-                        }
-                    }
+                    stepDate = startDate.getDate();
                 }
                 else{
                     if( tz.get(i_path-1).compareTo(endDate) > 0){
@@ -125,7 +113,7 @@ public class PathUtility {
                     else if( tz.get(i_path-1).compareTo(startDate) > 0){
                         // if the start date of the previous measurement is after the start date, then skip all previous
                         // dates in the time interval;
-                        stepDate = tz.get(i_path-1);
+                        stepDate = tz.get(i_path-1).shiftedBy(planner.getTimeStep());
                     }
                     else {
                         stepDate = startDate.getDate();
@@ -379,10 +367,10 @@ public class PathUtility {
             AbsoluteDate minUp  = maxTz.shiftedBy(t_corr_min);
             AbsoluteDate minLow = maxTz.shiftedBy(-t_corr_min);
 
-            boolean meetsTmax = (date.compareTo(maxLow) <= 0) && (date.compareTo(maxUp) >= 0);
-            boolean meetsTminLow = (date.compareTo(minLow) >= 0);
-            boolean meetsTminUp = (date.compareTo(minUp) <= 0);
-            boolean happensAfterConstraint = date.compareTo(maxTz) < 0;
+            boolean meetsTmax = (date.compareTo(maxLow) >= 0) && (date.compareTo(maxUp) <= 0);
+            boolean meetsTminLow = (date.compareTo(minLow) <= 0);
+            boolean meetsTminUp = (date.compareTo(minUp) >= 0);
+            boolean happensAfterConstraint = date.compareTo(maxTz) > 0;
 
             if(meetsTmax && (meetsTminLow || meetsTminUp)) return true;
             else if(meetsTmax && happensAfterConstraint) return true;
@@ -404,22 +392,13 @@ public class PathUtility {
             bodyFrame = spacecraft.getBodyFrame();
 
             // if first in path, check if previous plan has been performed
-            if(planner.getOverallPath().size() == 0){
-                // if not, then take the start of the simulation as the start date
-                maneuverStartTime = spacecraft.getStartDate();
-            }
-            else{
-                // if a previous plan was performed, then use it's arrival time as the start of the maneuver
-                int i_last_overall = planner.getOverallPath().size() -1;
-                Subtask lastSubtask = planner.getOverallPath().get(i_last_overall);
-                maneuverStartTime = planner.getIterationDatum(lastSubtask).getTz();
-            }
+            maneuverStartTime = spacecraft.getCurrentDate();
         }
         else{
             // if subtasks in path exist, then use the status of the maneuvers of the previous task as starting points
             AttitudeManeuver lastManeuver = ((AttitudeManeuver) (maneuvers.get(path_i-1)));
             bodyFrame = lastManeuver.getFinalBodyFrame();
-            maneuverStartTime = lastManeuver.getEndDate();
+            maneuverStartTime = lastManeuver.getEndDate().shiftedBy(planner.getTimeStep());
         }
 
         // check for visibility for no maneuvers and for all maneuvers
@@ -610,4 +589,5 @@ public class PathUtility {
     public ArrayList<Maneuver> getManeuvers(){return maneuvers;}
     public ArrayList<Subtask> getPath(){return path;}
     public ArrayList<MeasurementPerformance> getPerformanceList(){return performanceList;}
+    public ArrayList<ArrayList<Instrument>> getInstrumentsUsed(){return instrumentsUsed;}
 }

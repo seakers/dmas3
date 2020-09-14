@@ -238,6 +238,8 @@ public class Environment extends Watcher {
             SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
             sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
         }
+
+        getLogger().finer("Current simulation time: " + this.currentDate.toString());
     }
 
     // Getters and Setters

@@ -15,7 +15,7 @@ public class TaskCapability {
 
         subtaskCapabilities = new HashMap<>();
         for(Subtask subtask : task.getSubtasks()){
-            SubtaskCapability subtaskCapability = new SubtaskCapability();
+            SubtaskCapability subtaskCapability = new SubtaskCapability(subtask);
             subtaskCapabilities.put(subtask,subtaskCapability);
         }
     }

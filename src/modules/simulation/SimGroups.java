@@ -31,6 +31,7 @@ public class SimGroups {
 
         // Agent CCBBA Roles
         public static final String PLANNER = "agent_planner";
+        public static final String PLANNER_DIE = "planner_die";
         public static final String CCBBA_THINK1 = "plan_construction";
         public static final String CCBBA_THINK2 = "plan_sharing";
         public static final String CCBBA_DONE = "plan_achieved";

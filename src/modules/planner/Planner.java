@@ -13,5 +13,5 @@ public abstract class Planner extends AbstractAgent {
     protected Spacecraft parentSpacecraft;
 
     public void setParentAgentAddress(AgentAddress address){this.parentAgentAddress = address;}
-    public abstract void planDone();
+    public abstract void planDone() throws Exception;
 }

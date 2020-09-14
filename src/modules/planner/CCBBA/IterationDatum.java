@@ -78,15 +78,28 @@ public class IterationDatum {
         if(j != datum.getSubtask()) return false;
         else if(Math.abs(y - datum.getY()) > 1e-3) return false;
         else if(z != datum.getZ()) return false;
-        else if(Math.abs( tz_date.durationFrom(datum.getTz()) ) > 1e-3) return false;
-        else if(Math.abs( s.durationFrom(datum.getS()) ) > 1e-3) return false;
+        else if(tz_date != null && datum.getTz() != null) {
+            if (Math.abs(tz_date.durationFrom(datum.getTz())) > 1e-3) return false;
+        }
+        else if((tz_date == null && datum.getTz() != null)
+                || (tz_date != null && datum.getTz() == null)){
+            return false;
+        }
+        else if(s != null && datum.getS() != null) {
+            if (Math.abs(s.durationFrom(datum.getS())) > 1e-3) return false;
+        }
+        else if((s == null && datum.getS() != null)
+                || (s != null && datum.getS() == null)){
+            return false;
+        }
         else if(Math.abs(cost - datum.getCost()) > 1e-3) return false;
         else if(Math.abs(score - datum.getScore()) > 1e-3) return false;
         return (v == datum.getV());
     }
 
     public void resetAvailability(){
-        this.h = 1;
+        if(this.getSubtask().getCompletion()) this.h = 0;
+        else this.h = 1;
     }
     public void decreaseW_any(){ this.w_any -= 1;}
     public void decreaseW_solo(){ this.w_solo -= 1;}

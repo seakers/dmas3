@@ -3,20 +3,18 @@ package modules.planner.CCBBA;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Message;
 import modules.environment.*;
-import modules.planner.plans.BroadcastPlan;
-import modules.planner.plans.Plan;
+import modules.planner.plans.*;
 import modules.simulation.SimGroups;
 import modules.spacecraft.Spacecraft;
 import modules.planner.Planner;
 import modules.planner.messages.*;
+import modules.spacecraft.instrument.Instrument;
 import modules.spacecraft.maneuvers.Maneuver;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 public class CCBBAPlanner extends Planner {
     private Plan plan;
@@ -31,8 +29,10 @@ public class CCBBAPlanner extends Planner {
     private ArrayList<ArrayList<Spacecraft>> overallOmega;
     private ArrayList<Maneuver> maneuvers;
     private ArrayList<Maneuver> overallManeuvers;
+    private ArrayList<ArrayList<Instrument>> sensorsUsed;
     private IterationResults iterationResults;
     private ArrayList<HashMap<Subtask, IterationDatum>> receivedResults;
+    private ArrayList<Plan> planList;
     private Environment environment;
 
     public CCBBAPlanner(Spacecraft parentSpacecraft){
@@ -58,13 +58,108 @@ public class CCBBAPlanner extends Planner {
         this.overallOmega = new ArrayList<>();
         this.maneuvers = new ArrayList<>();
         this.overallManeuvers = new ArrayList<>();
+        this.sensorsUsed = new ArrayList<>();
         this.iterationResults = new IterationResults(parentSpacecraft, environment.getEnvironmentSubtasks(), settings);
         this.receivedResults = new ArrayList<>();
+        this.planList = new ArrayList<>();
     }
 
     @Override
-    public void planDone() {
-        // send plan to parent agent
+    public void planDone() throws Exception {
+        // check if other agents have new plans that affect bids
+        int originalPathSize = this.path.size();
+
+        // read messages from spacecraft
+        List<Message>  receivedMessages = nextMessages(null);
+        int numAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT).size();
+
+        if(receivedMessages.size() > 0 || numAgents == 1){
+            getLogger().info("New results received!");
+
+            // Save previous iteration's results
+            IterationResults prevResults = iterationResults.copy();
+
+            // Unpack messages
+            ArrayList<IterationResults> receivedResults = new ArrayList<>();
+            for(Message receivedMessage : receivedMessages){
+                IterationResults results = ((CCBBAResultsMessage) receivedMessage).getResults();
+                receivedResults.add(results);
+            }
+
+            // compare results
+            compareResults(receivedResults);
+
+            // evaluate constraints
+            constraintEval();
+        }
+        int newPathSize = this.path.size();
+
+        if(originalPathSize != newPathSize){
+            // changes were made to tasks in the bundle/path, reconsider bids
+
+            // tell agent to halt its current actions and wait for new instructions
+            this.plan = new WaitPlan(this.parentSpacecraft.getCurrentDate(),
+                    this.parentSpacecraft.getCurrentDate().shiftedBy(this.environment.getTimeStep()));
+            sendPlanToParentAgent(new PlannerMessage(this.plan));
+
+            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
+        }
+        else if(newPathSize > 0){
+            // if no changes were made to tasks in the bundle, then do the first task in the path
+            AbsoluteDate t_curr = parentSpacecraft.getCurrentDate();
+            Plan plan_curr = planList.get(0);
+
+            if(plan_curr.getStartDate().compareTo(t_curr) <= 0){
+                this.plan = plan_curr.copy();
+                sendPlanToParentAgent(new PlannerMessage(this.plan));
+                planList.remove(0);
+            }
+
+            if(this.plan != null) {
+                if (this.plan.getClass().equals(ManeuverPlan.class)) {
+                    this.maneuvers.remove(0);
+                } else if (this.plan.getClass().equals(MeasurementPlan.class)) {
+//                    // Mark subtask as complete
+//                    Subtask j = this.path.get(0);
+//                    Task parentTask = j.getParentTask();
+//                    parentTask.completeSubtasks(j);
+
+                    this.path.remove(0);
+                }
+            }
+
+            if(this.path.size() == 0){
+                // no more tasks in plan, check if tasks available
+                if(iterationResults.subtasksAvailable()){
+                    // tasks available, creating new plan
+                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+                }
+                else{
+                    // no more subtasks available for agent, send parent agent to death state
+                    this.plan = new DiePlan(parentSpacecraft.getCurrentDate(), parentSpacecraft.getEndDate());
+                    sendPlanToParentAgent(new PlannerMessage(this.plan));
+                }
+            }
+            this.plan = null;
+            // else wait to do remaining plan
+        }
+        else if(newPathSize == 0){
+            // no more tasks in plan, check if tasks available
+            if(iterationResults.subtasksAvailable()){
+                // tasks available, creating new plan
+                leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
+                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+            }
+            else{
+                // no more subtasks available for agent, send parent agent to death state
+                this.plan = new DiePlan(parentSpacecraft.getCurrentDate(), parentSpacecraft.getEndDate());
+                sendPlanToParentAgent(new PlannerMessage(this.plan));
+            }
+            this.plan = null;
+        }
+
         int x = 1;
     }
 
@@ -87,7 +182,7 @@ public class CCBBAPlanner extends Planner {
         checkNewCoalitionMembers();
 
         // construct bundle
-        getLogger().info("TP1 - Constructing bundle...");
+        getLogger().info("Phase 1 - Constructing bundle...");
 
         while((bundle.size() < settings.M) && (iterationResults.subtasksAvailable()) && alive){
             // Calculate bids for all available subtasks
@@ -109,6 +204,9 @@ public class CCBBAPlanner extends Planner {
                 // Add new maneuvers
                 this.maneuvers = new ArrayList<>(maxBid.getManeuvers());
 
+                // Add new list of sensors used
+                this.sensorsUsed = new ArrayList<>(maxBid.getInstrumentsUsed());
+
                 // update iteration results
                 this.iterationResults.updateResults(maxBid,parentSpacecraft);
             }
@@ -122,9 +220,9 @@ public class CCBBAPlanner extends Planner {
 
 
         // broadcast results
-        getLogger().info("TP1 - Sending new results to spacecraft for broadcast...");
-        AbsoluteDate currentDate = environment.getCurrentDate();
-        double timestep = environment.getTimeStep();
+        getLogger().info("Phase 1 - Sending new results to spacecraft for broadcast...");
+        AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
+        double timestep = this.getTimeStep();
         CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults,
                                                                         parentSpacecraft.getPVEarth(currentDate));
         this.plan = new BroadcastPlan(resultsMessage,currentDate,currentDate.shiftedBy(timestep));
@@ -141,8 +239,10 @@ public class CCBBAPlanner extends Planner {
 
         // read messages from spacecraft
         List<Message>  receivedMessages = nextMessages(null);
-        if(receivedMessages.size() > 0){
-            getLogger().info("TP2 - New messages found! Comparing results...");
+        int numAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT).size();
+
+        if(receivedMessages.size() > 0 || numAgents == 1){
+            getLogger().info("New results received!");
 
             // Save previous iteration's results
             IterationResults prevResults = iterationResults.copy();
@@ -171,12 +271,13 @@ public class CCBBAPlanner extends Planner {
             }
             else{
                 // no changes were made, check convergence
-                getLogger().fine("No changes were made. Checking convergence");
                 convergenceCounter++;
+                getLogger().fine("No changes made. Convergence status: " + convergenceCounter + "/" + settings.convIndicator);
 
                 // check if convergence counter reached
                 if(convergenceCounter < settings.convIndicator){
                     // readjust plan
+                    getLogger().fine("Convergence not yet achieved.");
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
                 }
@@ -185,7 +286,7 @@ public class CCBBAPlanner extends Planner {
                     convergenceCounter = 0;
 
                     // broadcast results
-                    getLogger().info("TP2 - Sending converged results to spacecraft for broadcast...");
+                    getLogger().info("Plan achieved!");
                     AbsoluteDate currentDate = environment.getCurrentDate();
                     double timestep = environment.getTimeStep();
                     CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults,
@@ -193,15 +294,40 @@ public class CCBBAPlanner extends Planner {
                     this.plan = new BroadcastPlan(resultsMessage,currentDate,currentDate.shiftedBy(timestep));
                     sendPlanToParentAgent(new PlannerMessage(this.plan));
 
+                    // create plan list
+                    this.planList = createPlanList();
+
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
                 }
-
             }
         }
         else{
-            getLogger().info("TP2 - No messages found. Waiting for them...");
+            getLogger().info("Waiting for results from other agents...");
         }
+    }
+
+    private ArrayList<Plan> createPlanList(){
+        ArrayList<Plan> planList = new ArrayList<>();
+
+        for(Subtask j : path){
+            int i_path = path.indexOf(j);
+
+            IterationDatum datum = getIterationDatum(j);
+            AbsoluteDate startDateMeasurement = datum.getTz();
+            AbsoluteDate endDateMeasurement = startDateMeasurement.shiftedBy(this.getTimeStep());
+            Maneuver maneuver = maneuvers.get(i_path);
+            AbsoluteDate startDateManeuver = maneuver.getStartDate();
+            AbsoluteDate endDateManeuver = maneuver.getEndDate();
+            ArrayList<Instrument> instruments = sensorsUsed.get(i_path);
+
+            ManeuverPlan maneuverPlan = new ManeuverPlan(startDateManeuver, endDateManeuver, maneuver);
+            MeasurementPlan measurementPlan = new MeasurementPlan(startDateMeasurement, endDateMeasurement, instruments, j);
+
+            planList.add(maneuverPlan); planList.add(measurementPlan);
+        }
+
+        return planList;
     }
 
     private boolean checkForChanges(IterationResults prevResults) {
@@ -245,7 +371,7 @@ public class CCBBAPlanner extends Planner {
                         // update
                         iterationResults.updateResults(itsDatum);
                     } else if ((myZ != me) && (myZ != it) && (myZ != null)) {
-                        if (itsS.compareTo(myS) < 0) {
+                        if (itsS.compareTo(myS) > 0) {
                             // update
                             iterationResults.updateResults(itsDatum);
                         }
@@ -262,7 +388,7 @@ public class CCBBAPlanner extends Planner {
                         // reset
                         iterationResults.resetResults(itsDatum);
                     } else if ((myZ != me) && (myZ != it) && (myZ != null)) {
-                        if (itsS.compareTo(myS) < 0) {
+                        if (itsS.compareTo(myS) > 0) {
                             // reset
                             iterationResults.resetResults(itsDatum);
                         }
@@ -275,13 +401,13 @@ public class CCBBAPlanner extends Planner {
                         if ((itsCompletion) && (itsCompletion != myCompletion)) {
                             // update
                             iterationResults.updateResults(itsDatum);
-                        } else if ((itsS.compareTo(myS) < 0) && (itsY > myY)) {
+                        } else if ((itsS.compareTo(myS) > 0) && (itsY > myY)) {
                             // update
                             iterationResults.updateResults(itsDatum);
                             iterationResults.getIterationDatum(itsDatum).decreaseW_all();
                         }
                     } else if (myZ == it) {
-                        if (itsS.compareTo(myS) < 0) {
+                        if (itsS.compareTo(myS) > 0) {
                             //update
                             iterationResults.updateResults(itsDatum);
                         } else {
@@ -289,12 +415,12 @@ public class CCBBAPlanner extends Planner {
                             iterationResults.resetResults(itsDatum);
                         }
                     } else if (myZ == itsZ) {
-                        if (itsS.compareTo(myS) < 0) {
+                        if (itsS.compareTo(myS) > 0) {
                             // update
                             iterationResults.updateResults(itsDatum);
                         }
                     } else if ((myZ != me) && (myZ != it) && (myZ != itsZ) && (myZ != null)) {
-                        if ((itsS.compareTo(myS) < 0) && (itsY > myY)) {
+                        if ((itsS.compareTo(myS) > 0) && (itsY > myY)) {
                             // update
                             iterationResults.updateResults(itsDatum);
                         }
@@ -311,7 +437,7 @@ public class CCBBAPlanner extends Planner {
                         // update
                         iterationResults.updateResults(itsDatum);
                     } else if ((myZ != me) && (myZ != it) && (myZ != null)) {
-                        if ((itsS.compareTo(myS) < 0) || (itsY > myY)) {
+                        if ((itsS.compareTo(myS) > 0) || (itsY > myY)) {
                             // update
                             iterationResults.updateResults(itsDatum);
                         }

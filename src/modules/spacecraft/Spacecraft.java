@@ -6,9 +6,8 @@ import madkit.kernel.Message;
 import modules.environment.*;
 import modules.planner.plans.*;
 import modules.spacecraft.instrument.Instrument;
-import modules.spacecraft.instrument.Radiometer;
-import modules.spacecraft.instrument.SAR;
 import modules.spacecraft.instrument.measurements.Measurement;
+import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 import modules.spacecraft.orbits.OrbitParams;
 import modules.spacecraft.orbits.SpacecraftOrbit;
 import modules.planner.CCBBA.CCBBAPlanner;
@@ -77,6 +76,7 @@ public class Spacecraft extends AbstractAgent {
             launchAgent(this.planner);
             this.plannerAddress = this.planner.getAgentAddressIn(SimGroups.MY_COMMUNITY,SimGroups.SIMU_GROUP,SimGroups.PLANNER);
             this.measurementsMade = new ArrayList<>();
+            this.plan = null;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,10 +104,15 @@ public class Spacecraft extends AbstractAgent {
         PlannerMessage plannerMessage = readMessagesFromPlanner();
 
         if(plannerMessage == null){
-            this.plan = new WaitPlan(this.environment.getCurrentDate(),
-                    this.environment.getCurrentDate().shiftedBy(this.environment.getTimeStep()));
+            if(this.plan == null) {
+                // if no plan given by planner and no plan being done, then wait for new plan
+                this.plan = new WaitPlan(this.environment.getCurrentDate(),
+                        this.getCurrentDate().shiftedBy(this.environment.getTimeStep()));
+            }
+            // else continue with current plan
         }
         else{
+            // if planner has delivered a plan, then do new plan
             this.plan = plannerMessage.getPlan();
         }
 
@@ -127,30 +132,26 @@ public class Spacecraft extends AbstractAgent {
             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
         }
         else if(planClass.equals(PlanNames.MANEUVER)){
-
+            performManeuver();
         }
         else if(planClass.equals(PlanNames.MEASURE)){
             makeMeasurement();
-            this.measurementsMade.add((MeasurementPlan ) this.plan.copy());
+            this.measurementsMade.add((MeasurementPlan) this.plan.copy());
         }
         else if(planClass.equals(PlanNames.WAIT)){
             // do nothing
+            this.plan = null;
         }
         else{
             throw new Exception("Plan type not yet supported");
         }
 
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
-        if(this.plan.getClass().equals(DiePlan.class)) {
-            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
-        }
-        else{
-            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_SENSE);
-        }
+        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_SENSE);
     }
 
     public void die(){
-
+        int x = 2;
     }
 
     /**
@@ -172,30 +173,24 @@ public class Spacecraft extends AbstractAgent {
     private void makeMeasurement() throws Exception {
         MeasurementPlan measurementPlan = (MeasurementPlan) this.plan;
 
-//        // unpack plan details
-//        Subtask subtask = measurementPlan.getRelevantSubtask();
-//        ArrayList<Instrument> instruments = measurementPlan.getInstruments();
-//        Measurement measurement = measurementPlan.getMeasurement();
-//        Requirements requirements = measurementPlan.getRelevantSubtask().getParentTask().getRequirements();
-//
-//        // calculate measurement performance
-//        double spatialRes = -1.0;
-//        double SNR = -1.0;
-//        double duration = calcDuration(subtask, instruments);
-//
-//        SubtaskCapability newCapability = new SubtaskCapability(subtask, instruments, measurement, requirements, spatialRes, SNR, duration);
-//
-//        // update environment
-//        this.environment.updateMeasurementCapability(newCapability);
-//        this.environment.completeSubtask(subtask);
-    }
+        // unpack plan details
+        Subtask subtask = measurementPlan.getRelevantSubtask();
+        ArrayList<Instrument> instruments = measurementPlan.getInstruments();
+        Measurement measurement = measurementPlan.getMeasurement();
+        AbsoluteDate date = measurementPlan.getStartDate();
+        Requirements requirements = measurementPlan.getRelevantSubtask().getParentTask().getRequirements();
 
-    public double calcSpatialRes(Subtask subtask, ArrayList<Instrument> instruments, AbsoluteDate date){
-        return -1.0;
-    }
+        // calculate measurement performance
+        MeasurementPerformance performance = new MeasurementPerformance(subtask,instruments, this, date);
+        SubtaskCapability newCapability = new SubtaskCapability(subtask, instruments, measurement, requirements, performance);
 
-    private double calcDuration(Subtask subtask, ArrayList<Instrument> instruments){
-        return -1.0;
+        // update environment
+        this.environment.updateMeasurementCapability(newCapability);
+        this.environment.completeSubtask(subtask);
+    }
+    private void performManeuver(){
+        ManeuverPlan maneuverPlan = (ManeuverPlan) this.plan;
+        this.design.getAdcs().updateBodyFrame(maneuverPlan);
     }
 
     public boolean hasAccess(Subtask j){
@@ -207,18 +202,6 @@ public class Spacecraft extends AbstractAgent {
            }
         }
         return hasAccess;
-    }
-
-    public ArrayList<ArrayList<TimeInterval>> getAccessTimes(Subtask j){
-        HashMap<Instrument, HashMap<Task, ArrayList<TimeInterval>>> accessTimes = this.orbit.getAccessTimes();
-        ArrayList<Instrument> payload = this.design.getPayload();
-
-        ArrayList<ArrayList<TimeInterval>> subtaskAccessTimes = new ArrayList<>();
-        for(Instrument ins : payload){
-            ArrayList<TimeInterval> tempAccess = new ArrayList<>(accessTimes.get(ins).get(j.getParentTask()));
-            subtaskAccessTimes.add(tempAccess);
-        }
-        return subtaskAccessTimes;
     }
 
     public ArrayList<TimeInterval> getLineOfSightTimeS(Subtask j){
@@ -243,6 +226,11 @@ public class Spacecraft extends AbstractAgent {
     public double getTaskCTAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
         return  this.design.getAdcs().getTaskCTAngle(orbitFrame, satPos, taskPos);
     }
+    public boolean isAlive(){
+        // check life status
+        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+        return !(myRoles.contains(SimGroups.AGENT_DIE));
+    }
 
     private double rad2deg(double th){ return th*180.0/Math.PI; }
     private double deg2rad(double th){ return th*Math.PI/180.0; }
@@ -255,6 +243,7 @@ public class Spacecraft extends AbstractAgent {
     public SpacecraftDesign getDesign(){ return this.design; }
     public ArrayList<Vector3D> getBodyFrame(){ return this.design.getAdcs().getBodyFrame(); }
     public AbsoluteDate getStartDate(){return this.orbit.getStartDate(); }
+    public AbsoluteDate getEndDate(){return this.orbit.getEndDate();}
     public SpacecraftOrbit getOrbit(){return orbit;}
     public AbsoluteDate getCurrentDate(){ return this.environment.getCurrentDate(); }
     public Planner getPlanner(){return planner;}

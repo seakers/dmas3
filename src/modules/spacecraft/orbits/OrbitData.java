@@ -81,4 +81,5 @@ public abstract class OrbitData {
 
     public ArrayList<AbsoluteDate> getDates(){return this.dates;}
     public AbsoluteDate getStartDate(){return this.startDate;}
+    public AbsoluteDate getEndDate(){return this.endDate;}
 }

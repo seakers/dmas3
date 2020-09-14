@@ -1,6 +1,8 @@
 package modules.spacecraft.component;
 
+import modules.planner.plans.ManeuverPlan;
 import modules.spacecraft.instrument.Instrument;
+import modules.spacecraft.maneuvers.AttitudeManeuver;
 import modules.spacecraft.maneuvers.Maneuver;
 import modules.spacecraft.maneuvers.SlewingManeuver;
 import modules.spacecraft.orbits.SpacecraftOrbit;
@@ -142,6 +144,17 @@ public class ADCS extends Component{
         this.bodyFrame.set(0,x_new);
         this.bodyFrame.set(1,y_new);
         this.bodyFrame.set(2,z_new);
+    }
+
+    public void updateBodyFrame(ManeuverPlan plan){
+        ArrayList<Vector3D> newBodyFrame = ( (AttitudeManeuver) plan.getManeuver()).getFinalBodyFrame();
+        Vector3D x_new = newBodyFrame.get(0);
+        Vector3D y_new = newBodyFrame.get(1);
+        Vector3D z_new = newBodyFrame.get(2);
+
+        this.bodyFrame.set(0,new Vector3D(x_new.getX(), x_new.getY(), x_new.getZ()));
+        this.bodyFrame.set(1,new Vector3D(y_new.getX(), y_new.getY(), y_new.getZ()));
+        this.bodyFrame.set(2,new Vector3D(z_new.getX(), z_new.getY(), z_new.getZ()));
     }
 
     private ArrayList<Vector3D> copyFrame(ArrayList<Vector3D> original){

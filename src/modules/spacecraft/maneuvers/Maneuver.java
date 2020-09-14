@@ -13,4 +13,5 @@ public abstract class Maneuver {
     public AbsoluteDate getStartDate(){return startDate;}
     public AbsoluteDate getEndDate(){return endDate;}
     public abstract double getSpecificTorque() throws Exception;
+    public void updateStartTime(AbsoluteDate newStartDate){this.startDate = newStartDate.getDate();}
 }

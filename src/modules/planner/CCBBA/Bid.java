@@ -2,6 +2,7 @@ package modules.planner.CCBBA;
 
 import modules.environment.Subtask;
 import modules.spacecraft.Spacecraft;
+import modules.spacecraft.instrument.Instrument;
 import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 import modules.spacecraft.maneuvers.Maneuver;
 import org.orekit.time.AbsoluteDate;
@@ -119,4 +120,5 @@ public class Bid {
     public ArrayList<Subtask> getWinnerPath(){return this.winningPathUtility.getPath(); }
     public ArrayList<Maneuver> getManeuvers(){return this.winningPathUtility.getManeuvers(); }
     public ArrayList<MeasurementPerformance> getPerformanceList(){return this.winningPathUtility.getPerformanceList();}
+    public ArrayList<ArrayList<Instrument>> getInstrumentsUsed(){return this.winningPathUtility.getInstrumentsUsed();}
 }

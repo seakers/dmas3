@@ -144,6 +144,6 @@ public class MeasurementPerformance {
             throw new Exception("spatial resolution not yet calculated");
         }
 
-        return Math.min(spatialResAZ, spatialResEL);
+        return Math.max(spatialResAZ, spatialResEL);
     }
 }
