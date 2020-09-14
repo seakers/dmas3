@@ -120,11 +120,8 @@ public class CCBBAPlanner extends Planner {
                 if (this.plan.getClass().equals(ManeuverPlan.class)) {
                     this.maneuvers.remove(0);
                 } else if (this.plan.getClass().equals(MeasurementPlan.class)) {
-//                    // Mark subtask as complete
-//                    Subtask j = this.path.get(0);
-//                    Task parentTask = j.getParentTask();
-//                    parentTask.completeSubtasks(j);
-
+                    this.overallPath.add(path.get(0));
+                    this.overallBundle.add(path.get(0));
                     this.path.remove(0);
                 }
             }

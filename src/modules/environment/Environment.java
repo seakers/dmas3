@@ -235,6 +235,14 @@ public class Environment extends Watcher {
 
         if(this.currentDate.compareTo(this.endDate) >= 0) {
             // End time reached, terminate sim
+
+            // compile results
+
+
+            // save results to text files3
+
+
+            // send terminate command to scheduler
             SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
             sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
         }

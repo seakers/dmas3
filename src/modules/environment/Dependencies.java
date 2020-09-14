@@ -64,6 +64,16 @@ public class Dependencies {
                 }
             }
         }
+
+
+    }
+
+    public int countDependencies(Subtask j){
+        int count = 0;
+        for(Subtask q : j.getParentTask().getSubtasks()){
+            if(this.depends(j,q)) count++;
+        }
+        return count;
     }
 
     public int getNumDependencies(Subtask subtask){
