@@ -23,6 +23,7 @@ import org.orekit.utils.PVCoordinates;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 
 public class Spacecraft extends AbstractAgent {
     private String name;                // Satellite name
@@ -35,12 +36,13 @@ public class Spacecraft extends AbstractAgent {
     private Plan plan;                  // current planned task
     private List<Message> receivedMessages;//list of received messages from other agents
     private ArrayList<MeasurementPlan> measurementsMade;
+    private boolean planInQueue;
 
     public Spacecraft(String name, ArrayList<Instrument> payload, OrbitParams orbitParams, String planner) throws Exception {
         this.name = name;
         this.orbitParams = orbitParams;
         this.design = new SpacecraftDesign(payload);
-
+        getLogger().setLevel(Level.FINER);
         switch(planner){
             case "CCBBA":
                 this.planner = new CCBBAPlanner(this);
@@ -99,21 +101,58 @@ public class Spacecraft extends AbstractAgent {
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK);
     }
 
-    public void think(){
+    public void think() throws Exception {
         // check if planner has delivered a plan
-        PlannerMessage plannerMessage = readMessagesFromPlanner();
+        ArrayList<PlannerMessage> plannerMessages = readMessagesFromPlanner();
 
-        if(plannerMessage == null){
-            if(this.plan == null) {
+        // Check for life status
+        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+        boolean alive = !(myRoles.contains(SimGroups.AGENT_DIE));
+        if(alive) getLogger().info("Starting doing phase");
+
+        if(plannerMessages.size() == 0){
+            if (this.plan == null) {
                 // if no plan given by planner and no plan being done, then wait for new plan
                 this.plan = new WaitPlan(this.environment.getCurrentDate(),
                         this.getCurrentDate().shiftedBy(this.environment.getTimeStep()));
             }
-            // else continue with current plan
         }
-        else{
-            // if planner has delivered a plan, then do new plan
+
+        for(PlannerMessage plannerMessage : plannerMessages) {
             this.plan = plannerMessage.getPlan();
+
+            String planClass = this.plan.getClass().toString();
+            if (planClass.equals(PlanNames.BROADCAST)) {
+                // broadcast message from plan
+                CCBBAResultsMessage message = (CCBBAResultsMessage) ((BroadcastPlan) this.plan).getBroadcastMessage();
+                broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT, message);
+            } else if (planClass.equals(PlanNames.DIE)) {
+                // adopt death role, this will be used by planner to only wait until the simulation ends
+//                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
+
+                // if everyone's dead, send messages to environment
+                List<AgentAddress> otherAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP,SimGroups.PLANNER);
+                List<AgentAddress> otherAgentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP,SimGroups.PLANNER_DIE);
+                int n_agents = otherAgents.size();
+                int n_agents_dead = 0;
+                if(otherAgentsDead != null) n_agents_dead = otherAgentsDead.size();
+
+                AbsoluteDate endDate = environment.getEndDate().shiftedBy(-environment.getTimeStep());
+                if (n_agents == n_agents_dead && getCurrentDate().compareTo(endDate) >= 0) {
+                    CCBBAResultsMessage message = (CCBBAResultsMessage) ((DiePlan) this.plan).getBroadcastMessage();
+                    environment.addResult(message);
+                }
+            } else if (planClass.equals(PlanNames.MANEUVER)) {
+                performManeuver();
+            } else if (planClass.equals(PlanNames.MEASURE)) {
+                makeMeasurement();
+                this.measurementsMade.add((MeasurementPlan) this.plan.copy());
+            } else if (planClass.equals(PlanNames.WAIT)) {
+                // do nothing
+                this.plan = null;
+            } else {
+                throw new Exception("Plan type not yet supported");
+            }
         }
 
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_THINK);
@@ -121,37 +160,8 @@ public class Spacecraft extends AbstractAgent {
     }
 
     public void execute() throws Exception{
-        String planClass = this.plan.getClass().toString();
-        if(planClass.equals(PlanNames.BROADCAST)){
-            // broadcast message from plan
-            CCBBAResultsMessage message = (CCBBAResultsMessage) ((BroadcastPlan) this.plan).getBroadcastMessage();
-            broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT, message);
-        }
-        else if(planClass.equals(PlanNames.DIE)) {
-            // adopt death role, this will be used by planner to only wait until the simulation ends
-            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
-        }
-        else if(planClass.equals(PlanNames.MANEUVER)){
-            performManeuver();
-        }
-        else if(planClass.equals(PlanNames.MEASURE)){
-            makeMeasurement();
-            this.measurementsMade.add((MeasurementPlan) this.plan.copy());
-        }
-        else if(planClass.equals(PlanNames.WAIT)){
-            // do nothing
-            this.plan = null;
-        }
-        else{
-            throw new Exception("Plan type not yet supported");
-        }
-
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_SENSE);
-    }
-
-    public void die(){
-        int x = 2;
     }
 
     /**
@@ -167,8 +177,14 @@ public class Spacecraft extends AbstractAgent {
             sendMessageWithRole(this.plannerAddress, message_i, SimGroups.AGENT);
         }
     }
-    private PlannerMessage readMessagesFromPlanner(){
-        return (PlannerMessage) nextMessage(new PlannerFilter(this.plannerAddress));
+    private ArrayList<PlannerMessage> readMessagesFromPlanner(){
+        ArrayList<PlannerMessage> plannerMessages = new ArrayList<>();
+        List<Message> newMessages = nextMessages(new PlannerFilter(this.plannerAddress));
+        for(Message message : newMessages){
+            PlannerMessage plannerMessage = (PlannerMessage) message;
+            plannerMessages.add(plannerMessage);
+        }
+        return plannerMessages;
     }
     private void makeMeasurement() throws Exception {
         MeasurementPlan measurementPlan = (MeasurementPlan) this.plan;

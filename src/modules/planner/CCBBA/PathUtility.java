@@ -184,7 +184,7 @@ public class PathUtility {
                                 double sig_combination = calcRequirementSatisfaction(j,performance);
                                 double maneuverCost_combination = calcManeuverCost(maneuverTemp,parentSpacecraft);
                                 double coalPenalties_combination = 0.0;
-                                double measurementCost_combination = 0.0;
+                                double measurementCost_combination = calcMeasurementCost(sensorsUsed, planner.getTimeStep());
 
                                 double utility_combination = S_combination*sig_combination -
                                         maneuverCost_combination - coalPenalties_combination - measurementCost_combination;
@@ -300,7 +300,8 @@ public class PathUtility {
 
             for(Subtask q : keys){
                 AbstractAgent tempWinner = planner.getIterationDatum(q).getZ();
-                if( (tempWinner != parentSpacecraft) && (tempWinner != null) && (dep.depends(j,q)) ){
+                if( (j.getParentTask() == q.getParentTask()) && (tempWinner != parentSpacecraft)
+                        && (tempWinner != null) && (dep.depends(j,q)) ){
                     tempCoal.add(tempWinner);
                 }
             }
@@ -544,6 +545,16 @@ public class PathUtility {
         double scale = 1.0;
 
         return M*powerReq*scale;
+    }
+
+    private double calcMeasurementCost(ArrayList<Instrument> instruments, double duration){
+        double v = 1e-1;
+        double totalAveragePower = 0.0;
+
+        for(Instrument ins : instruments){
+            totalAveragePower += ins.getPavg();
+        }
+        return totalAveragePower*v;
     }
     /**
      * Copy Constructors

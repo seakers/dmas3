@@ -14,6 +14,7 @@ public class Simulation extends AbstractAgent {
     private static ProblemStatement prob;
     private Environment environment;
     private Results results;
+    private String directoryAddress;
 
     public static void main(String[] args) throws Exception {
         String inputFile = "template.json";
@@ -45,7 +46,7 @@ public class Simulation extends AbstractAgent {
             createGroup(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
 
             // 3 : launch simulation environment
-            this.environment = new Environment(prob);
+            this.environment = new Environment(prob, directoryAddress);
             launchAgent(this.environment, false);
 
             // 4 : launch architecture agents
@@ -53,9 +54,6 @@ public class Simulation extends AbstractAgent {
 
             // 5 : launch simulation scheduler
             launchAgent(new SimScheduler(), false);
-
-            // 6 : launch results compiler
-            int x = 1;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,7 +65,7 @@ public class Simulation extends AbstractAgent {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy_MM_dd-hh_mm_ss_SSS");
         LocalDateTime now = LocalDateTime.now();
 
-        String directoryAddress = this.prob.getOutputFileDir();
+        directoryAddress = this.prob.getOutputFileDir();
         new File( directoryAddress ).mkdir();
         directoryAddress += "/results-" + prob.getProblemStatement() + "-"+ dtf.format(now);
         new File( directoryAddress).mkdir();

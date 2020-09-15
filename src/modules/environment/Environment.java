@@ -5,18 +5,24 @@ import jxl.Sheet;
 import jxl.Workbook;
 import madkit.action.SchedulingAction;
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.Message;
 import madkit.kernel.Watcher;
 import madkit.message.SchedulingMessage;
 import madkit.simulation.probe.PropertyProbe;
+import modules.planner.CCBBA.IterationResults;
+import modules.planner.Results;
+import modules.planner.messages.CCBBAResultsMessage;
 import modules.simulation.ProblemStatement;
 import modules.simulation.SimGroups;
 import modules.spacecraft.instrument.measurements.Measurement;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 
 public class Environment extends Watcher {
@@ -29,9 +35,11 @@ public class Environment extends Watcher {
     private HashMap<Task,TaskCapability> measurementCapabilities;
     private String problemStatementDir;
     private TimeScale utc;
+    private ArrayList<Message> resultsMessages;
+    private String directoryAddress;
 
     // Constructor
-    public Environment(ProblemStatement prob) throws Exception {
+    public Environment(ProblemStatement prob, String directoryAddress) throws Exception {
         // load info from problem statements
         setUpLogger(prob.getLoggerLevel());
         this.startDate = prob.getStartDate().getDate();
@@ -40,6 +48,8 @@ public class Environment extends Watcher {
         this.timeStep = prob.getTimeStep();
         this.problemStatementDir = prob.getProblemStatementDir();
         this.utc = prob.getUtc();
+        this.resultsMessages = new ArrayList<>();
+        this.directoryAddress = directoryAddress;
     }
 
     @Override
@@ -94,8 +104,28 @@ public class Environment extends Watcher {
             Cell[] row = data.getRow(i);
             String name = row[0].getContents();
             double score = Double.parseDouble( row[1].getContents() );
-            double lat = Double.parseDouble( row[2].getContents() );
-            double lon = Double.parseDouble( row[3].getContents() );
+
+            // load lat and lon
+            double lat = 0.0;
+            if(containsNonNumbers( row[2].getContents() )){
+                if(row[2].getContents().equals("RAND")){
+                    NormalDistribution dist = new NormalDistribution(0,25);
+                    lat = dist.sample();
+                }
+            }
+            else{
+                lat = Double.parseDouble( row[2].getContents() );
+            }
+            double lon = 0.0;
+            if(containsNonNumbers( row[3].getContents() )){
+                if(row[3].getContents().equals("RAND")){
+                    lon = (Math.random() - 0.5) * 360;
+                }
+            }
+            else{
+                lon = Double.parseDouble( row[3].getContents() );
+            }
+
             double alt = Double.parseDouble( row[4].getContents() );
             String[] freqString = row[5].getContents().split(",");
             ArrayList<Measurement> freqs = new ArrayList<>(freqString.length);
@@ -118,6 +148,17 @@ public class Environment extends Watcher {
         }
 
         return tasks;
+    }
+    private boolean containsNonNumbers(String str){
+        for(int i = 0; i < str.length(); i++){
+            if(        (str.charAt(i) != '0') && (str.charAt(i) != '1') && (str.charAt(i) != '2') && (str.charAt(i) != '3')
+                    && (str.charAt(i) != '4') && (str.charAt(i) != '5') && (str.charAt(i) != '6') && (str.charAt(i) != '7')
+                    && (str.charAt(i) != '8') && (str.charAt(i) != '9') && (str.charAt(i) != '.') && (str.charAt(i) != '-')
+                    && (str.charAt(i) != '+')&& (str.charAt(i) != 'e')){
+                return true;
+            }
+        }
+        return false;
     }
 
     private AbsoluteDate stringToDate(String startDate) throws Exception {
@@ -236,8 +277,13 @@ public class Environment extends Watcher {
         if(this.currentDate.compareTo(this.endDate) >= 0) {
             // End time reached, terminate sim
 
-            // compile results
+            // compare results from agents
+            boolean resultsMatch = compareResults();
+            if(!resultsMatch) System.out.println("ERROR: resulting plans do not match.");
 
+            // compile results
+            IterationResults ccbbaResults = ((CCBBAResultsMessage) resultsMessages.get(0)).getResults();
+            Results results = new Results( ccbbaResults, this.environmentTasks, this.measurementCapabilities, directoryAddress, resultsMatch );
 
             // save results to text files3
 
@@ -248,6 +294,26 @@ public class Environment extends Watcher {
         }
 
         getLogger().finer("Current simulation time: " + this.currentDate.toString());
+    }
+
+    private boolean compareResults(){
+        ArrayList<IterationResults> results = new ArrayList<>();
+        for(Message message : resultsMessages){
+            CCBBAResultsMessage resMessage = (CCBBAResultsMessage) message;
+            results.add(resMessage.getResults());
+        }
+
+        for(IterationResults res1 : results){
+            for(IterationResults res2 : results){
+                if(res1 == res2){
+                    continue;
+                }
+                if(res1.checkForChanges(res2)){
+                   return false;
+                }
+            }
+        }
+        return true;
     }
 
     // Getters and Setters
@@ -272,5 +338,8 @@ public class Environment extends Watcher {
     }
     public void completeSubtask(Subtask subtask){
         subtask.getParentTask().completeSubtasks(subtask);
+    }
+    public void addResult(Message message){
+        this.resultsMessages.add(message);
     }
 }

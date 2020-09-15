@@ -26,8 +26,6 @@ public class SimScheduler extends Scheduler {
         addActivator(agents);
         agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DO, "execute");
         addActivator(agents);
-        agents = new GenericBehaviorActivator<>(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE, "die");
-        addActivator(agents);
 
         // 3 : give instructions to planners
             // 3.1 - Instructions for predetermined planner

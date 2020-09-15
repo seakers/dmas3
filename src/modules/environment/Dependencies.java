@@ -86,6 +86,8 @@ public class Dependencies {
     }
 
     public boolean depends(Subtask j, Subtask q){
+        int j_i = j.getI_q();
+        int j_q = q.getI_q();
         return D[j.getI_q()][q.getI_q()] >= 1;
     }
     public boolean depends(int j, int q){

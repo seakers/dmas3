@@ -300,7 +300,7 @@ public class ADCS extends Component{
         return Math.acos( relProj.dotProduct(pointVec) / ( relProj.getNorm() * pointVec.getNorm() ) );
     }
 
-    private double getTaskATAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
+    public double getTaskATAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
         // declare unit vectors wrt satellite
         Vector3D satX = orbitFrame.get(0);
         Vector3D satY = orbitFrame.get(1);

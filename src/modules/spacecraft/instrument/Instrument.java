@@ -9,6 +9,7 @@ public abstract class Instrument {
     protected String name;            // Instrument name
     protected double dataRate;        // Data rate [Mbps]
     protected double pPeak;           // Peak Power [W]
+    protected double pAvg;            // Average Power [W]
     protected double pulseWidth;      // pulse width [s]
     protected Measurement freq;       // Sensed frequency [Hz]
     protected double bandwidth;       // Sensed bandwidth [Hz]
@@ -28,6 +29,7 @@ public abstract class Instrument {
         this.name = name;
         this.dataRate = dataRate;
         this.pPeak = pPeak;
+        this.pAvg = pPeak;
         this.pulseWidth = pulseWidth;
         this.freq = freq;
         this.bandwidth = bandwidth;
@@ -142,4 +144,6 @@ public abstract class Instrument {
     public String toString(){return this.name; }
 
     public String getFovType(){return this.ant.getType();}
+
+    public double getPavg(){return pAvg;}
 }

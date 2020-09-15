@@ -16,6 +16,8 @@ public class SAR extends Instrument{
         super(name, dataRate, pPeak, pulseWidth, freq, bandwidth, n, mass, scanningType, scanAnglePlus, scanAngleMinus, type, ant);
         this.nLooks = nLooks;
         this.prf = prf;
+
+        this.pAvg = pPeak*pulseWidth*prf;
     }
 
     public SAR copy() throws Exception {
