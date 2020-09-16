@@ -120,4 +120,5 @@ public class Task {
     public boolean getCompletion(){return this.completion;}
     public Dependencies getDependencies(){return dependencies;}
     public double getMaxScore(){return maxScore;}
+    public String toString(){return getName();}
 }

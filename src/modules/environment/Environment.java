@@ -10,7 +10,7 @@ import madkit.kernel.Watcher;
 import madkit.message.SchedulingMessage;
 import madkit.simulation.probe.PropertyProbe;
 import modules.planner.CCBBA.IterationResults;
-import modules.planner.Results;
+import modules.simulation.results.Results;
 import modules.planner.messages.CCBBAResultsMessage;
 import modules.simulation.ProblemStatement;
 import modules.simulation.SimGroups;
@@ -22,7 +22,6 @@ import org.orekit.time.TimeScale;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.logging.Level;
 
 public class Environment extends Watcher {
@@ -282,7 +281,12 @@ public class Environment extends Watcher {
             if(!resultsMatch) System.out.println("ERROR: resulting plans do not match.");
 
             // compile results
-            IterationResults ccbbaResults = ((CCBBAResultsMessage) resultsMessages.get(0)).getResults();
+            HashMap<AbstractAgent, IterationResults> ccbbaResults = new HashMap<>();
+            for(Message message : resultsMessages){
+                IterationResults results = ((CCBBAResultsMessage) message).getResults();
+                AbstractAgent parentAgent = results.getParentAgent();
+                ccbbaResults.put(parentAgent, results);
+            }
             Results results = new Results( ccbbaResults, this.environmentTasks, this.measurementCapabilities, directoryAddress, resultsMatch );
 
             // save results to text files3

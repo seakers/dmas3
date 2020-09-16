@@ -21,27 +21,11 @@ public class Measurement {
     protected double B;               // bandwidth [Hz]
     protected final double c = 3e8;   // speed of light [m/s]
 
-    // measurement performance information
-    protected double dtheta;          // angular resolution [°]
-    protected double rangeRes;        // range resolution [m]
-    protected double swadth;          // swath width [m]
-    protected double spatialResAT;    // spatial resolution along track [m]
-    protected double spatialResCT;    // spatial resolution cross track [m]
-    protected double snr;             // Signal to Noise Ratio; [dB]
-    protected Spacecraft agent;       // agent that performed the measurement
-
     public Measurement(double freq) {
         this.f = freq;
         this.lambda = this.c/this.f;
         this.band = findBand(this.f);
         this.B = 0;
-
-        dtheta = -1.0;
-        rangeRes = -1.0;
-        swadth = -1.0;
-        spatialResAT = -1.0;
-        spatialResCT = -1.0;
-        snr = -1.0;
     }
 
     public Measurement copy() throws Exception {
@@ -98,13 +82,11 @@ public class Measurement {
         return null;
     }
 
-    protected double rad2deg(double th){ return th*180/Math.PI; }
-    protected double deg2rad(double th){ return th/180*Math.PI; }
+    public String toString(){
+        return this.band + "-band";
+    }
 
     public double getLambda() { return lambda; }
     public double getF() { return f; }
     public String getBand() { return band; }
-    public double calcSpatialResolution(){ return -1.0; }
-    public double calcSNR(){ return -1.0; }
-    protected double calcSwadth(Spacecraft spacecraft, AbsoluteDate date){return -1.0;}
 }

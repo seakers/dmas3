@@ -105,11 +105,6 @@ public class Spacecraft extends AbstractAgent {
         // check if planner has delivered a plan
         ArrayList<PlannerMessage> plannerMessages = readMessagesFromPlanner();
 
-        // Check for life status
-        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-        boolean alive = !(myRoles.contains(SimGroups.AGENT_DIE));
-        if(alive) getLogger().info("Starting doing phase");
-
         if(plannerMessages.size() == 0){
             if (this.plan == null) {
                 // if no plan given by planner and no plan being done, then wait for new plan
@@ -128,7 +123,6 @@ public class Spacecraft extends AbstractAgent {
                 broadcastMessage(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT, message);
             } else if (planClass.equals(PlanNames.DIE)) {
                 // adopt death role, this will be used by planner to only wait until the simulation ends
-//                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_DIE);
 
                 // if everyone's dead, send messages to environment
                 List<AgentAddress> otherAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP,SimGroups.PLANNER);
@@ -198,7 +192,7 @@ public class Spacecraft extends AbstractAgent {
 
         // calculate measurement performance
         MeasurementPerformance performance = new MeasurementPerformance(subtask,instruments, this, date);
-        SubtaskCapability newCapability = new SubtaskCapability(subtask, instruments, measurement, requirements, performance);
+        SubtaskCapability newCapability = new SubtaskCapability(subtask, instruments, measurement, requirements, performance, this);
 
         // update environment
         this.environment.updateMeasurementCapability(newCapability);
@@ -263,4 +257,6 @@ public class Spacecraft extends AbstractAgent {
     public SpacecraftOrbit getOrbit(){return orbit;}
     public AbsoluteDate getCurrentDate(){ return this.environment.getCurrentDate(); }
     public Planner getPlanner(){return planner;}
+    public ArrayList<Subtask> getOverallPath(){return ((CCBBAPlanner) this.planner).getOverallPath();}
+    public String toString(){return this.name;}
 }

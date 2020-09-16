@@ -1,5 +1,5 @@
 import madkit.kernel.AbstractAgent;
-import modules.planner.Results;
+import modules.simulation.results.Results;
 import modules.simulation.Architecture;
 import modules.simulation.ProblemStatement;
 import modules.simulation.Simulation;

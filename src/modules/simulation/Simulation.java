@@ -1,9 +1,9 @@
 package modules.simulation;
 
 import madkit.kernel.AbstractAgent;
+import modules.simulation.results.Results;
 import modules.spacecraft.Spacecraft;
 import modules.environment.Environment;
-import modules.planner.Results;
 
 import java.io.File;
 import java.time.LocalDateTime;

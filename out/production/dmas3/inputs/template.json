@@ -19,8 +19,7 @@
       "orbit": "Orbit1",
       "instances": 1,
       "payload": [
-        "SMAP-RAD",
-        "SMAP-MWR"
+        "SMAP-RAD"
       ],
       "@type": "Spacecraft",
       "planner": "CCBBA"
@@ -30,8 +29,7 @@
       "orbit": "Orbit2",
       "instances": 1,
       "payload": [
-        "SMAP-RAD",
-        "SMAP-MWR"
+        "SAR-1"
       ],
       "@type": "Spacecraft",
       "planner": "CCBBA"
@@ -62,7 +60,7 @@
     {
       "name": "Orbit2",
       "@type": "OrbitalElements",
-      "altitude": 600,
+      "altitude": 500,
       "eccentricity": 0.0001,
       "inclination": 0.0,
       "argumentOfPerigee": 0.0,
@@ -83,6 +81,6 @@
     "start": "2020-01-01T00:00:00Z",
     "duration": "P00Y00M90D",
     "@type": "MissionConcept",
-    "timeStep": 300.0
+    "timeStep": 60.0
   }
 }

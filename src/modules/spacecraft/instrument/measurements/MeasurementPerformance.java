@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 public class MeasurementPerformance {
     private final Measurement mainMeasurement;    // measurement being made
+    private final AbsoluteDate date;              // date of measurement
     private final double spatialResAZ;            // spatial resolution in the azimuth direction [m]
     private final double spatialResEL;            // spatial resolution in the elevation direction[m]
     private final double snr;                     // signal-to-noise ratio [dB]
@@ -22,6 +23,7 @@ public class MeasurementPerformance {
 
     public MeasurementPerformance(Subtask j){
         mainMeasurement = j.getMainMeasurement();
+        date = new AbsoluteDate();
         spatialResAZ = -1.0;
         spatialResEL = -1.0;
         snr = -1.0;
@@ -32,6 +34,7 @@ public class MeasurementPerformance {
 
     public MeasurementPerformance(Subtask j, ArrayList<Instrument> instruments, Spacecraft spacecraft, AbsoluteDate date) throws Exception {
         this.mainMeasurement = j.getMainMeasurement();
+        this.date = date.getDate();
         this.spatialResAZ = calcSpatialResAZ(j,instruments,spacecraft,date);
         this.spatialResEL = calcSpatialResEL(j,instruments,spacecraft,date);
         this.snr = calcSNR(j,instruments,spacecraft,date);
@@ -159,8 +162,9 @@ public class MeasurementPerformance {
     /**
      * Copy constructor
      */
-    private MeasurementPerformance(Measurement measurement, double spatialResAZ, double spatialResEL, double snr, double incidence, double angleCT, double angleAT){
+    private MeasurementPerformance(Measurement measurement, AbsoluteDate date, double spatialResAZ, double spatialResEL, double snr, double incidence, double angleCT, double angleAT){
         this.mainMeasurement = measurement;
+        this.date = date.getDate();
         this.spatialResAZ = spatialResAZ;
         this.spatialResEL = spatialResEL;
         this.snr = snr;
@@ -170,12 +174,13 @@ public class MeasurementPerformance {
 
     }
     public MeasurementPerformance copy(){
-        return new MeasurementPerformance(mainMeasurement, spatialResAZ, spatialResEL, snr, incidence,angleAT,angleCT);
+        return new MeasurementPerformance(mainMeasurement, date, spatialResAZ, spatialResEL, snr, incidence,angleAT,angleCT);
     }
     /**
      * Getters
      */
     public Measurement getMainMeasurement() { return mainMeasurement; }
+    public AbsoluteDate getDate(){return date;}
     public double getSpatialResAz() { return spatialResAZ; }
     public double getSpatialResEl() { return spatialResEL; }
     public double getSNR() { return snr; }

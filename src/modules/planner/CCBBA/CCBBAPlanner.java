@@ -10,6 +10,7 @@ import modules.spacecraft.Spacecraft;
 import modules.planner.Planner;
 import modules.planner.messages.*;
 import modules.spacecraft.instrument.Instrument;
+import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 import modules.spacecraft.maneuvers.Maneuver;
 import org.orekit.time.AbsoluteDate;
 
@@ -31,6 +32,7 @@ public class CCBBAPlanner extends Planner {
     private ArrayList<ArrayList<Spacecraft>> overallOmega;
     private ArrayList<Maneuver> maneuvers;
     private ArrayList<Maneuver> maneuversOverall;
+    private ArrayList<MeasurementPerformance> measurementsOverall;
     private ArrayList<ArrayList<Instrument>> sensorsUsed;
     private IterationResults iterationResults;
     private ArrayList<HashMap<Subtask, IterationDatum>> receivedResults;
@@ -68,12 +70,12 @@ public class CCBBAPlanner extends Planner {
     }
 
     public void phaseOne() throws Exception {
-        // generate bundle
-        getLogger().info("Starting phase one");
-
         // Check for life status
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
         boolean alive = !(myRoles.contains(SimGroups.PLANNER_DIE));
+
+        // generate bundle
+        if(alive) getLogger().info("Starting phase one");
 
         // Save previous iteration's results
         IterationResults prevResults = iterationResults.copy();
@@ -122,7 +124,7 @@ public class CCBBAPlanner extends Planner {
         checkNewCoalitionMembers();
 
         // broadcast results
-        getLogger().info("Phase 1 - Sending new results to spacecraft for broadcast...");
+        if(alive) getLogger().info("Phase 1 - Sending new results to spacecraft for broadcast...");
         AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
         double timestep = this.getTimeStep();
         CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults,
@@ -264,7 +266,7 @@ public class CCBBAPlanner extends Planner {
             AbsoluteDate t_curr = parentSpacecraft.getCurrentDate();
             Plan plan_curr = planList.get(0);
 
-            if(plan_curr.getStartDate().compareTo(t_curr) <= 0){
+            if(plan_curr.getStartDate().durationFrom(t_curr) <= this.getTimeStep() + 1e-3){
                 if(alive) getLogger().info("Time scheduled for plan reached! Performing task...");
                 plan = plan_curr.copy();
                 sendPlanToParentAgent(new PlannerMessage(this.plan));
@@ -849,7 +851,6 @@ public class CCBBAPlanner extends Planner {
                 }
             }
         }
-        int x = 1;
     }
 
     public ArrayList<Subtask> getBundle(){return this.bundle;}
