@@ -53,6 +53,8 @@ public class PathUtility {
 
         // calculate the utility of each subtask
         for(Subtask j : path){
+//            System.out.println("Subtask: " + j.toString());
+
             // Get accesses time intervals to subtask j
             ArrayList<TimeInterval> lineOfSightTimes = parentSpacecraft.getLineOfSightTimeS(j);
             int i_path = path.indexOf(j);
@@ -89,6 +91,8 @@ public class PathUtility {
                 double timeStep = planner.getTimeStep();
                 AbsoluteDate stepDate;
 
+//                System.out.println("Interval: " + startDate.toString() + " -> " + endDate.toString());
+
                 // check if time interval has already passed the simulation time
                 AbsoluteDate simTcurr = parentSpacecraft.getCurrentDate();
                 if(simTcurr.compareTo(endDate) > 0){
@@ -119,9 +123,9 @@ public class PathUtility {
                         stepDate = startDate.getDate();
                     }
                 }
-                if(stepDate.durationFrom(parentSpacecraft.getStartDate()) == 0.0){
-                    stepDate = stepDate.shiftedBy(timeStep);
-                }
+//                if(stepDate.durationFrom(parentSpacecraft.getStartDate()) == 0.0){
+//                    stepDate = stepDate.shiftedBy(timeStep);
+//                }
 
                 // Initialize local search for max utility
                 double S_interval = 0.0;
@@ -188,6 +192,8 @@ public class PathUtility {
 
                                 double utility_combination = S_combination*sig_combination -
                                         maneuverCost_combination - coalPenalties_combination - measurementCost_combination;
+
+//                                System.out.println(utility_combination);
 
                                 if(utility_combination > utility_maneuver){
                                     S_maneuver = S_combination;
@@ -373,8 +379,12 @@ public class PathUtility {
             boolean meetsTminUp = (date.compareTo(minUp) >= 0);
             boolean happensAfterConstraint = date.compareTo(maxTz) > 0;
 
-            if(meetsTmax && (meetsTminLow || meetsTminUp)) return true;
-            else if(meetsTmax && happensAfterConstraint) return true;
+            if(meetsTmax && (meetsTminLow || meetsTminUp)) {
+                return true;
+            }
+            else if(meetsTmax && happensAfterConstraint) {
+                return true;
+            }
             return false;
         }
     }

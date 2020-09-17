@@ -28,14 +28,14 @@ public class IterationDatum {
     private int w_any;                      // permission to bid any
     private int w_all;                      // total permissions to bid on a task
 
-    public IterationDatum(Subtask j, CCBBASettings settings){
+    public IterationDatum(Subtask j, CCBBASettings settings, AbsoluteDate date){
         this.j = j;
         this.i_q = j.getI_q();
         this.y = 0.0;
         this.z = null;
         this.tz_date = null;
         this.c = 0.0;
-        this.s = null;
+        this.s = date.getDate();
         this.cost = 0.0;
         this.score = 0.0;
         this.performance = new MeasurementPerformance(j);
@@ -83,13 +83,6 @@ public class IterationDatum {
         }
         else if((tz_date == null && datum.getTz() != null)
                 || (tz_date != null && datum.getTz() == null)){
-            return false;
-        }
-        else if(s != null && datum.getS() != null) {
-            if (Math.abs(s.durationFrom(datum.getS())) > 1e-3) return false;
-        }
-        else if((s == null && datum.getS() != null)
-                || (s != null && datum.getS() == null)){
             return false;
         }
         else if(Math.abs(cost - datum.getCost()) > 1e-3) return false;

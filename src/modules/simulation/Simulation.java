@@ -12,19 +12,23 @@ import java.time.format.DateTimeFormatter;
 public class Simulation extends AbstractAgent {
     private static Architecture arch;
     private static ProblemStatement prob;
+    private static String archName;
     private Environment environment;
     private Results results;
     private String directoryAddress;
 
     public static void main(String[] args) throws Exception {
-        String inputFile = "template.json";
-        String problem = "SoilMoisture";
+//        String architecture = "template.json";
+//        String problem = "SoilMoisture";
+        String architecture = "TEST";
+        String problem = "TEST";
+        archName = architecture;
 
         // Load scenario problem to evaluate architecture
-        prob = new ProblemStatement(inputFile, problem);
+        prob = new ProblemStatement(architecture+".json", problem);
 
         // Load architecture to be evaluated
-        arch = new Architecture(inputFile, problem);
+        arch = new Architecture(architecture+".json", problem);
 
         // Run simulation and save results
         executeThisAgent(1,false);
@@ -67,7 +71,7 @@ public class Simulation extends AbstractAgent {
 
         directoryAddress = this.prob.getOutputFileDir();
         new File( directoryAddress ).mkdir();
-        directoryAddress += "/results-" + prob.getProblemStatement() + "-"+ dtf.format(now);
+        directoryAddress += "/results-" + archName + "-" + prob.getProblemStatement() + "-" + dtf.format(now);
         new File( directoryAddress).mkdir();
     }
 

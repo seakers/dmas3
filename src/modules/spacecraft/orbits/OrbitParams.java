@@ -7,10 +7,10 @@ public class OrbitParams {
      * Stores Orbital Parameters for a given orbit
      */
     private final String name;              // Orbit name
-    private final double SMA;               // Semi-major axis [km]
-    private final double ECC;               // Eccentricity [km]
+    private final double SMA;               // Semi-major axis [m]
+    private final double ECC;               // Eccentricity [-]
     private final double INC;               // Inclination [deg]
-    private final double RAAN;              // Longitude of the Right Ascending Node
+    private final double RAAN;              // Longitude of the Right Ascending Node [deg]
     private final double APRG;              // Argument of Periapsis [deg]
     private double ANOM;                    // True Anomaly [deg]
     private final double Re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;

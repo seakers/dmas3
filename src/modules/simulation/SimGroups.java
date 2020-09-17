@@ -29,9 +29,13 @@ public class SimGroups {
         // Results Collector Roles
         public static final String RESULTS_ROLE = "results";
 
-        // Agent CCBBA Roles
+        // Planner Agent Roles
         public static final String PLANNER = "agent_planner";
+        public static final String PLANNER_THINK = "planner_think";
+        public static final String PLANNER_DO = "planner_doing";
         public static final String PLANNER_DIE = "planner_die";
+
+        // Agent CCBBA Roles
         public static final String CCBBA_THINK1 = "plan_construction";
         public static final String CCBBA_THINK2 = "plan_sharing";
         public static final String CCBBA_DONE = "plan_achieved";

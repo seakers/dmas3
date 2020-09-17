@@ -40,7 +40,7 @@ public class Bid {
 
             double newPathBid = newPathUtility.getPathUtility() - oldPathUtility.getPathUtility();
 
-            if(newPath.indexOf(j) != newPath.size()-1) newPathBid -= 10.0; // if new bid disrupts previously agreed plan, add penalty
+            if(newPath.indexOf(j) != newPath.size()-1) newPathBid -= 0.0; // if new bid disrupts previously agreed plan, add penalty
 
             if(newPathBid > maxPathBid){
                 this.c = newPathBid;

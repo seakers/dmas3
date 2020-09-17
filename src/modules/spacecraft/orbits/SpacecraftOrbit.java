@@ -102,7 +102,7 @@ public class SpacecraftOrbit extends OrbitData {
 
         //define orbit
         double a = params.getSMA();
-        double e = deg2rad( params.getECC());
+        double e = params.getECC();
         double i = deg2rad( params.getINC());
         double w = deg2rad( params.getAPRG());
         double Om = deg2rad( params.getRAAN());

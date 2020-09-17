@@ -1,0 +1,99 @@
+{
+  "settings": {
+    "simName": "dmas3-figure4",
+    "logger": "FINEST",
+    "planner":{
+	  "@type" : "CCBBA",
+      "planningHorizon": 3,
+      "maxConstraintViolations": 2,
+      "maxBidsSolo": 2,
+      "maxBidsAny": 5,
+      "maxBidsAll": 100,
+      "convergenceIndicator": 20
+    },
+    "spacecraftDesign": true
+  },
+  "spaceSegment": [
+    {
+      "name": "SAT-L1",
+      "orbit": "Orbit1",
+      "instances": 1,
+      "payload": [
+        "L-RAD"
+      ],
+      "@type": "Spacecraft",
+      "planner": "CCBBA"
+    },
+	{
+      "name": "SAT-L2",
+      "orbit": "Orbit2",
+      "instances": 1,
+      "payload": [
+        "L-RAD"
+      ],
+      "@type": "Spacecraft",
+      "planner": "CCBBA"
+    },
+	{
+      "name": "SAT-L3",
+      "orbit": "Orbit3",
+      "instances": 1,
+      "payload": [
+        "L-RAD"
+      ],
+      "@type": "Spacecraft",
+      "planner": "CCBBA"
+    }
+  ],
+  "groundSegment": [
+    {
+      "elevation": 1570,
+      "commBand": [
+        "UHF"
+      ],
+      "longitude": -104.83875274658203,
+      "latitude": 40.5974791834978,
+      "@type": "GroundStation"
+    }
+  ],
+  "orbits": [
+    {
+      "name": "Orbit1",
+      "@type": "OrbitalElements",
+      "altitude": 600,
+      "eccentricity": 0.0001,
+      "inclination": 60.0,
+      "argumentOfPerigee": 0.0,
+      "raan": 0.0,
+      "anomaly": 0.0
+    },
+    {
+      "name": "Orbit2",
+      "@type": "OrbitalElements",
+      "altitude": 600,
+      "eccentricity": 0.0001,
+      "inclination": 60.0,
+      "argumentOfPerigee": 0.0,
+      "raan": 120.0,
+      "anomaly": 0.0
+    },
+    {
+      "name": "Orbit3",
+      "@type": "OrbitalElements",
+      "altitude": 600,
+      "eccentricity": 0.0001,
+      "inclination": 60.0,
+      "argumentOfPerigee": 0.0,
+      "raan": 240.0,
+      "anomaly": 0.0
+    }
+  ],
+  "mission": {
+    "name" : "Template",
+    "acronym": "Temp",
+    "start": "2020-01-01T00:00:00Z",
+    "duration": "P00Y00M30D",
+    "@type": "MissionConcept",
+    "timeStep": 30.0
+  }
+}

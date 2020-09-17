@@ -44,13 +44,14 @@ public class Results {
                 }
             }
             overallResults = new OverallResults(ccbbaResults, environmentTasks, agentResults);
-
-
+        }
+    }
+    public void print(Boolean resultsMatch){
+        if(resultsMatch) {
             // print out to directory
             printSubtasks();
             printAgents();
-
-            int x = 1;
+            printResults();
         }
     }
 

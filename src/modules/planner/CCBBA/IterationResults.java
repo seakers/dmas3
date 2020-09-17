@@ -6,6 +6,7 @@ import modules.environment.Subtask;
 import modules.environment.Task;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.Instrument;
+import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,8 +21,9 @@ public class IterationResults {
         this.results = new HashMap<>();
         this.parentAgent = parentAgent;
         this.parentPlanner = (CCBBAPlanner) parentAgent.getPlanner();
+        AbsoluteDate startDate = parentAgent.getStartDate();
         for(Subtask subtask : subtasks){
-            IterationDatum datum = new IterationDatum(subtask,settings);
+            IterationDatum datum = new IterationDatum(subtask,settings,startDate);
             results.put(subtask, datum);
         }
     }
@@ -258,10 +260,10 @@ public class IterationResults {
         this.results.put(newDatum.getSubtask(), updatedDatum);
     }
 
-    public void resetResults(IterationDatum newDatum){
+    public void resetResults(IterationDatum newDatum, AbsoluteDate currentDate){
         this.parentPlanner.releaseTaskFromBundle(newDatum);
 
-        IterationDatum updatedDatum = new IterationDatum(newDatum.getSubtask(), parentPlanner.getSettings());
+        IterationDatum updatedDatum = new IterationDatum(newDatum.getSubtask(), parentPlanner.getSettings(), currentDate);
         updatedDatum.setW_any( this.getIterationDatum(newDatum).getW_any() );
         updatedDatum.setW_solo( this.getIterationDatum(newDatum).getW_solo() );
         updatedDatum.setW_all( this.getIterationDatum(newDatum).getW_all() );
@@ -270,8 +272,8 @@ public class IterationResults {
         this.results.put(newDatum.getSubtask(), updatedDatum);
     }
 
-    public void resetResults(Subtask j){
-        IterationDatum updatedDatum = new IterationDatum(j, parentPlanner.getSettings());
+    public void resetResults(Subtask j, AbsoluteDate currentDate){
+        IterationDatum updatedDatum = new IterationDatum(j, parentPlanner.getSettings(), currentDate);
         updatedDatum.setW_any( this.getIterationDatum(j).getW_any() );
         updatedDatum.setW_solo( this.getIterationDatum(j).getW_solo() );
         updatedDatum.setW_all( this.getIterationDatum(j).getW_all() );

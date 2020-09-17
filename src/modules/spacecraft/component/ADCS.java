@@ -284,7 +284,12 @@ public class ADCS extends Component{
         Vector3D relProj = satX.scalarMultiply( pointVec.dotProduct(satX) )
                 .add( satZ.scalarMultiply( pointVec.dotProduct(satZ) ) ).normalize();
 
-        return Math.acos( relProj.dotProduct(satZ) / ( relProj.getNorm() * satZ.getNorm() ) );
+        double dot = relProj.dotProduct(satZ) / ( relProj.getNorm() * satZ.getNorm() );
+        if(dot > 1.0 && dot <= 1.0+1e-3){
+            dot = 1.0;
+        }
+
+        return Math.acos( dot );
     }
 
     private double getPointCTAngle(ArrayList<Vector3D> orbitFrame, Vector3D pointVec){
@@ -297,7 +302,12 @@ public class ADCS extends Component{
         Vector3D relProj = satX.scalarMultiply( pointVec.dotProduct(satX) )
                 .add( satZ.scalarMultiply( pointVec.dotProduct(satZ) ) ).normalize();
 
-        return Math.acos( relProj.dotProduct(pointVec) / ( relProj.getNorm() * pointVec.getNorm() ) );
+        double dot =  relProj.dotProduct(pointVec) / ( relProj.getNorm() * pointVec.getNorm() );
+        if(dot > 1.0 && dot <= 1.0+1e-3){
+            dot = 1.0;
+        }
+
+        return Math.acos( dot );
     }
 
     public double getTaskATAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
@@ -313,7 +323,11 @@ public class ADCS extends Component{
         Vector3D relProj = satX.scalarMultiply( taskRelSat.dotProduct(satX) )
                 .add( satZ.scalarMultiply( taskRelSat.dotProduct(satZ) ) ).normalize();
 
-        return Math.acos( relProj.dotProduct(satZ) / ( relProj.getNorm() * satZ.getNorm() ) );
+        double dot = relProj.dotProduct(satZ) / ( relProj.getNorm() * satZ.getNorm() );
+        if(dot > 1.0 && dot <= 1.0+1e-3){
+            dot = 1.0;
+        }
+        return Math.acos( dot );
     }
 
     public double getTaskCTAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
@@ -329,7 +343,11 @@ public class ADCS extends Component{
         Vector3D relProj = satX.scalarMultiply( taskRelSat.dotProduct(satX) )
                 .add( satZ.scalarMultiply( taskRelSat.dotProduct(satZ) ) ).normalize();
 
-        return Math.acos( relProj.dotProduct(taskRelSat) / ( relProj.getNorm() * taskRelSat.getNorm() ) );
+        double dot = relProj.dotProduct(taskRelSat) / ( relProj.getNorm() * taskRelSat.getNorm() );
+        if(dot > 1.0 && dot <= 1.0+1e-3){
+            dot = 1.0;
+        }
+        return Math.acos( dot );
     }
 
     public double getTaskCTAngle(){return 1.0;}

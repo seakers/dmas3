@@ -5,6 +5,7 @@ import jxl.Sheet;
 import jxl.Workbook;
 import madkit.action.SchedulingAction;
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.kernel.Watcher;
 import madkit.message.SchedulingMessage;
@@ -22,6 +23,7 @@ import org.orekit.time.TimeScale;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 
 public class Environment extends Watcher {
@@ -102,8 +104,6 @@ public class Environment extends Watcher {
             // Create a task per each row
             Cell[] row = data.getRow(i);
             String name = row[0].getContents();
-            double score = Double.parseDouble( row[1].getContents() );
-
             // load lat and lon
             double lat = 0.0;
             if(containsNonNumbers( row[2].getContents() )){
@@ -140,6 +140,24 @@ public class Environment extends Watcher {
             String startTimeString = row[11].getContents();
             String endTimeString = row[12].getContents();
             double urgencyFactor = Double.parseDouble( row[13].getContents() );
+
+            // load score
+            double score = 0.0;
+            if(containsNonNumbers( row[1].getContents() )){
+                if(row[1].getContents().equals("RAND")){
+                    if(freqs.size() == 1){
+                        // max score of 33.00, min of 15;
+                        score = Math.random() * 15.0 + 15.0;
+                    }
+                    else {
+                        // max score of 100, min of 30
+                        score = Math.random() * 70.0 + 30.0;
+                    }
+                }
+            }
+            else{
+                score = Double.parseDouble( row[1].getContents() );
+            }
 
             tasks.add( new Task(name, score, lat, lon, alt, freqs,
                     spatialResReq, snrReq, numLooks, stringToDuration(tempResReqMin), stringToDuration(tempResReqMax),
@@ -271,30 +289,46 @@ public class Environment extends Watcher {
     }
 
     protected void tic(){
-        this.currentDate = this.currentDate.shiftedBy(this.timeStep);
+        List<AgentAddress> thinkingAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
+        if(thinkingAgents == null || thinkingAgents.size() == 0) {
+            // only advance time when agents are done planning
+            this.currentDate = this.currentDate.shiftedBy(this.timeStep);
+        }
 
-        if(this.currentDate.compareTo(this.endDate) >= 0) {
+        List<AgentAddress> agents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER);
+        List<AgentAddress> deadAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
+        int n_agents = 0;
+        if(agents != null) n_agents = agents.size();
+        int n_dead = 0;
+        if(deadAgents != null) n_dead = deadAgents.size();
+
+        if(this.currentDate.compareTo(this.endDate) >= 0 || n_agents == n_dead) {
             // End time reached, terminate sim
-
-            // compare results from agents
-            boolean resultsMatch = compareResults();
-            if(!resultsMatch) System.out.println("ERROR: resulting plans do not match.");
-
-            // compile results
-            HashMap<AbstractAgent, IterationResults> ccbbaResults = new HashMap<>();
-            for(Message message : resultsMessages){
-                IterationResults results = ((CCBBAResultsMessage) message).getResults();
-                AbstractAgent parentAgent = results.getParentAgent();
-                ccbbaResults.put(parentAgent, results);
+            List<AgentAddress> agentList = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT);
+            if(agentList.size() != resultsMessages.size()) {
+                System.out.println("ERROR: no resulting plan achieved");
             }
-            Results results = new Results( ccbbaResults, this.environmentTasks, this.measurementCapabilities, directoryAddress, resultsMatch );
+            else {
+                // compare results from agents
+                boolean resultsMatch = compareResults();
+                if (!resultsMatch) System.out.println("ERROR: resulting plans do not match.");
 
-            // save results to text files3
+                // compile results
+                HashMap<AbstractAgent, IterationResults> ccbbaResults = new HashMap<>();
+                for (Message message : resultsMessages) {
+                    IterationResults results = ((CCBBAResultsMessage) message).getResults();
+                    AbstractAgent parentAgent = results.getParentAgent();
+                    ccbbaResults.put(parentAgent, results);
+                }
+                Results results = new Results(ccbbaResults, this.environmentTasks, this.measurementCapabilities, directoryAddress, resultsMatch);
 
+                // save results to text files
+                results.print(resultsMatch);
 
-            // send terminate command to scheduler
-            SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
-            sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
+                // send terminate command to scheduler
+                SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
+                sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
+            }
         }
 
         getLogger().finer("Current simulation time: " + this.currentDate.toString());
