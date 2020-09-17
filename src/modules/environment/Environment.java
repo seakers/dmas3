@@ -305,10 +305,7 @@ public class Environment extends Watcher {
         if(this.currentDate.compareTo(this.endDate) >= 0 || n_agents == n_dead) {
             // End time reached, terminate sim
             List<AgentAddress> agentList = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT);
-            if(agentList.size() != resultsMessages.size()) {
-                System.out.println("ERROR: no resulting plan achieved");
-            }
-            else {
+            if(agentList.size() == resultsMessages.size()) {
                 // compare results from agents
                 boolean resultsMatch = compareResults();
                 if (!resultsMatch) System.out.println("ERROR: resulting plans do not match.");

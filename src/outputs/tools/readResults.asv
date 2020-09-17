@@ -1,0 +1,12 @@
+function [ data ] = readResults(input)
+    directory = "../" + input;
+    folder = dir(directory);
+    for i = 3:length(folder)
+        subfolder = strcat(folder(i).folder,strcat('\',folder(i).name));
+        filename = strcat(subfolder,'\results.out');
+        fileID = fopen(filename, 'r');
+        data_i = fscanf(fileID, '$');
+        x = 1;
+    end
+    data = [];
+end

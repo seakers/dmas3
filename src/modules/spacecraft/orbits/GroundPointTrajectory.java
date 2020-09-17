@@ -50,19 +50,20 @@ public class GroundPointTrajectory extends OrbitData{
             GeodeticPoint taskLocation = new GeodeticPoint(lat, lon, alt);
             TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "Task Location");
 
-            // propagate by step-size
-            AbsoluteDate stepDate = startDate.getDate();
-            while(stepDate.compareTo(endDate) < 0){
-                // calculate PV at this time, save to position vectors
-                PVCoordinates pvStepInertial = staF.getPVCoordinates(stepDate, inertialFrame);
-                PVCoordinates pvStepEarth = staF.getPVCoordinates(stepDate, earthFrame);
-                pv.put(stepDate,pvStepInertial);
-                pvEarth.put(stepDate,pvStepEarth);
-                dates.add(stepDate);
-
-                // advance a step
-                stepDate = stepDate.shiftedBy(timeStep);
-            }
+//            // propagate by step-size
+//            AbsoluteDate stepDate = startDate.getDate();
+//            while(stepDate.compareTo(endDate) < 0){
+//                // calculate PV at this time, save to position vectors
+//                PVCoordinates pvStepInertial = staF.getPVCoordinates(stepDate, inertialFrame);
+//                PVCoordinates pvStepEarth = staF.getPVCoordinates(stepDate, earthFrame);
+//                pv.put(stepDate,pvStepInertial);
+//                pvEarth.put(stepDate,pvStepEarth);
+//                dates.add(stepDate);
+//
+//                // advance a step
+//                stepDate = stepDate.shiftedBy(timeStep);
+//            }
+            pvEarth.put(startDate,staF.getPVCoordinates(startDate, earthFrame));
 
         } catch (OrekitException e) {
             e.printStackTrace();
@@ -72,68 +73,57 @@ public class GroundPointTrajectory extends OrbitData{
 
     @Override
     public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {
-        if(this.pv.containsKey(date)){
-            // if already calculated, return value
-            return this.pv.get(date);
-        }
-        else{
-            // else propagate at that given time
-            // load orekit data
-            File orekitData = new File("./src/data/orekit-data");
-            DataProvidersManager manager = DataProvidersManager.getInstance();
-            manager.addProvider(new DirectoryCrawler(orekitData));
+//        if(this.pv.containsKey(date)){
+        // else propagate at that given time
+        // load orekit data
+        File orekitData = new File("./src/data/orekit-data");
+        DataProvidersManager manager = DataProvidersManager.getInstance();
+        manager.addProvider(new DirectoryCrawler(orekitData));
 
-            //if running on a non-US machine, need the line below
-            Locale.setDefault(new Locale("en", "US"));
+        //if running on a non-US machine, need the line below
+        Locale.setDefault(new Locale("en", "US"));
 
-            //initializes the look up tables for planteary position (required!)
-            OrekitConfig.init(4);
+        //initializes the look up tables for planteary position (required!)
+        OrekitConfig.init(4);
 
-            //must use IERS_2003 and EME2000 frames to be consistent with STK
-            BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                    Constants.WGS84_EARTH_FLATTENING,
-                    earthFrame);
+        //must use IERS_2003 and EME2000 frames to be consistent with STK
+        BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING,
+                earthFrame);
 
-            //define orbit
-            GeodeticPoint taskLocation = new GeodeticPoint(lat, lon, alt);
-            TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "Task Location");
+        //define orbit
+        GeodeticPoint taskLocation = new GeodeticPoint(lat, lon, alt);
+        TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "Task Location");
 
-            // propagate to that time
-            return staF.getPVCoordinates(date, inertialFrame);
-        }
+        // propagate to that time
+        return staF.getPVCoordinates(date, inertialFrame);
     }
 
     @Override
     public PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException {
-        if(this.pvEarth.containsKey(date)){
-            // if already calcualted, return value
-            return this.pvEarth.get(date);
-        }
-        else{
-            // else propagate at that given time
-            // load orekit data
-            File orekitData = new File("./src/data/orekit-data");
-            DataProvidersManager manager = DataProvidersManager.getInstance();
-            manager.addProvider(new DirectoryCrawler(orekitData));
+        // else propagate at that given time
+        // load orekit data
+        File orekitData = new File("./src/data/orekit-data");
+        DataProvidersManager manager = DataProvidersManager.getInstance();
+        manager.addProvider(new DirectoryCrawler(orekitData));
 
-            //if running on a non-US machine, need the line below
-            Locale.setDefault(new Locale("en", "US"));
+        //if running on a non-US machine, need the line below
+        Locale.setDefault(new Locale("en", "US"));
 
-            //initializes the look up tables for planteary position (required!)
-            OrekitConfig.init(4);
+        //initializes the look up tables for planteary position (required!)
+        OrekitConfig.init(4);
 
-            //must use IERS_2003 and EME2000 frames to be consistent with STK
-            BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                    Constants.WGS84_EARTH_FLATTENING,
-                    earthFrame);
+        //must use IERS_2003 and EME2000 frames to be consistent with STK
+        BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING,
+                earthFrame);
 
-            //define orbit
-            GeodeticPoint taskLocation = new GeodeticPoint(lat, lon, alt);
-            TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "Task Location");
+        //define orbit
+        GeodeticPoint taskLocation = new GeodeticPoint(lat, lon, alt);
+        TopocentricFrame staF = new TopocentricFrame(earth, taskLocation, "Task Location");
 
-            // propagate to that time
-            return staF.getPVCoordinates(date, earthFrame);
-        }
+        // propagate to that time
+        return staF.getPVCoordinates(date, earthFrame);
     }
 
     private double deg2rad(double th){ return th*Math.PI/180; }
