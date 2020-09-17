@@ -292,6 +292,8 @@ public class CCBBAPlanner extends Planner {
                     } else if (this.plan.getClass().equals(MeasurementPlan.class)) {
                         this.overallPath.add(path.get(0));
                         this.overallBundle.add(path.get(0));
+                        int i_b = bundle.indexOf(this.path.get(0));
+                        this.bundle.remove(i_b);
                         this.path.remove(0);
                     }
                 }

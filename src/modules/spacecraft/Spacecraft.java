@@ -68,7 +68,7 @@ public class Spacecraft extends AbstractAgent {
 
             //2- Calculate Task Access Times
 //            this.orbit.calcAccessTimes(environment);
-            this.orbit.calcLoSTimes(environment);
+            this.orbit.calcLoSTimes(this,environment);
 
             //3- Design Spacecraft
             this.design.designSpacecraft(this.orbit);
@@ -131,14 +131,10 @@ public class Spacecraft extends AbstractAgent {
                 int n_agents_dead = 0;
                 if(otherAgentsDead != null) n_agents_dead = otherAgentsDead.size();
 
-                CCBBAResultsMessage message = (CCBBAResultsMessage) ((DiePlan) this.plan).getBroadcastMessage();
-                environment.addResult(message);
-
-//                AbsoluteDate endDate = environment.getEndDate().shiftedBy(-environment.getTimeStep());
-//                if (n_agents == n_agents_dead && getCurrentDate().compareTo(endDate) >= 0) {
-//                    CCBBAResultsMessage message = (CCBBAResultsMessage) ((DiePlan) this.plan).getBroadcastMessage();
-//                    environment.addResult(message);
-//                }
+                if (n_agents == n_agents_dead) {
+                    CCBBAResultsMessage message = (CCBBAResultsMessage) ((DiePlan) this.plan).getBroadcastMessage();
+                    environment.addResult(message);
+                }
             } else if (planClass.equals(PlanNames.MANEUVER)) {
                 performManeuver();
             } else if (planClass.equals(PlanNames.MEASURE)) {

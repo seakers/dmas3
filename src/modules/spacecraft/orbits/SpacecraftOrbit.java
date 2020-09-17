@@ -1,5 +1,6 @@
 package modules.spacecraft.orbits;
 
+import modules.spacecraft.Spacecraft;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import modules.spacecraft.instrument.Instrument;
 import modules.environment.Environment;
@@ -33,7 +34,7 @@ public class SpacecraftOrbit extends OrbitData {
         this.payload = payload;
     }
 
-    public void calcLoSTimes(Environment environment) throws  Exception{
+    public void calcLoSTimes(Spacecraft parent, Environment environment) throws  Exception{
         ArrayList<Task> environmentTasks = environment.getEnvironmentTasks();
         this.lineOfSightTimes = new HashMap<>();
 
@@ -47,7 +48,7 @@ public class SpacecraftOrbit extends OrbitData {
             TimeInterval interval = new TimeInterval();
             while (stepDate.compareTo(endDate) < 0) {
                 // calculate if spacecraft's instrument can access task
-                los_i = calcLineOfSight(task, stepDate);
+                los_i = calcLineOfSight(parent, task, stepDate);
 
                 if(!los_im && los_i){
                     // access started
@@ -74,12 +75,79 @@ public class SpacecraftOrbit extends OrbitData {
         }
     }
 
-    public boolean calcLineOfSight(Task task, AbsoluteDate date) throws Exception {
+    public boolean calcLineOfSight(Spacecraft spacecraft, Task task, AbsoluteDate date) throws Exception {
         Vector3D satPos = getPVEarth(date).getPosition();
         Vector3D taskPos = task.getPVEarth(date).getPosition();
 
         // check if in line of sight
-        return lineOfsight(satPos, taskPos);
+        if(!lineOfsight(satPos, taskPos)) return false;
+
+        ArrayList<Vector3D> orbitFrame = calcOrbitFrame(this,date);
+        double fovMin = 1e10;
+        Instrument insMin = null;
+        for(Instrument ins : spacecraft.getDesign().getPayload()){
+            if(ins.getFOV() < fovMin) {
+                insMin = ins;
+                fovMin = ins.getFOV();
+            }
+        }
+        String fovType = insMin.getFovType();
+
+        if(fovType.equals("square") || fovType.equals("circular")){
+            double fov = deg2rad( insMin.getFOV() );
+
+            double ATangleTask = getTaskATAngle(orbitFrame, this.getPVEarth(date).getPosition(), taskPos);
+
+            if(insMin.getScanningType().equals("side")){
+                return (Math.abs(ATangleTask) <= fov/2.0);
+            }
+            else{
+                throw new Exception("Scanning type not yet supported");
+            }
+
+        }
+        else{
+            throw new Exception("FOV type not yet supported");
+        }
+    }
+
+    private double getTaskATAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
+        // declare unit vectors wrt satellite
+        Vector3D satX = orbitFrame.get(0);
+        Vector3D satY = orbitFrame.get(1);
+        Vector3D satZ = orbitFrame.get(2);
+
+        // calculate task position relative to satellite
+        Vector3D taskRelSat = taskPos.subtract(satPos);
+
+        // calc projection of relative position on to sat x-z plane
+        Vector3D relProj = satX.scalarMultiply( taskRelSat.dotProduct(satX) )
+                .add( satZ.scalarMultiply( taskRelSat.dotProduct(satZ) ) ).normalize();
+
+        double dot = relProj.dotProduct(satZ) / ( relProj.getNorm() * satZ.getNorm() );
+        if(dot > 1.0 && dot <= 1.0+1e-3){
+            dot = 1.0;
+        }
+        return Math.acos( dot );
+    }
+
+    private ArrayList<Vector3D> calcOrbitFrame(SpacecraftOrbit orbit, AbsoluteDate startDate) throws Exception {
+        // returns 3 vectors representing the frame of the orbital direction
+        // x points towards velocity, z towards the ground, and y to the right of x
+        Vector3D x_bod = orbit.getPVEarth(startDate).getVelocity().normalize();
+        Vector3D z_bod = orbit.getPVEarth(startDate).getPosition().scalarMultiply(-1).normalize();
+        Vector3D y_bod = z_bod.crossProduct(x_bod);
+
+        ArrayList<Vector3D> orbitFrame = new ArrayList<>();
+        orbitFrame.add(x_bod);
+        orbitFrame.add(y_bod);
+        orbitFrame.add(z_bod);
+
+        if(x_bod.getNorm() > 1+1e-3 || y_bod.getNorm() > 1+1e-3 || z_bod.getNorm() > 1+1e-3 ){
+            throw new Exception("orbital frame calculation gives non-unit vectors");
+        }
+
+        return orbitFrame;
     }
 
     public boolean hasAccess(Instrument ins, Task task){

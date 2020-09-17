@@ -83,6 +83,9 @@ public class PathUtility {
             ArrayList<Instrument> sensors_max = new ArrayList<>();
             MeasurementPerformance performance_max = new MeasurementPerformance(j);
 
+            // calc time in which having the lowest power sensor on for a measurement would cost more than decayed utility
+            AbsoluteDate t_limit = calcTlimit(j,parentSpacecraft);
+
             // get the maximum utility from all line of sight time intervals
             for(TimeInterval interval : lineOfSightTimes){
                 // get date information from access and environment
@@ -123,131 +126,36 @@ public class PathUtility {
                         stepDate = startDate.getDate();
                     }
                 }
-//                if(stepDate.durationFrom(parentSpacecraft.getStartDate()) == 0.0){
-//                    stepDate = stepDate.shiftedBy(timeStep);
-//                }
+                if(stepDate.compareTo(t_limit) > 0){
+                    continue;
+                }
+                if(endDate.compareTo(t_limit) > 0){
+                    endDate = t_limit.getDate();
+                }
 
                 // Initialize local search for max utility
-                double S_interval = 0.0;
-                double sig_interval = 0.0;
-                double maneuverCost_interval = 0.0;
-                double coalPenalties_interval = 0.0;
-                double measurementCost_interval = 0.0;
-                AbsoluteDate ta_interval = stepDate.getDate();
-                Maneuver maneuver_interval = new NoManeuver(bodyFrame, ta_interval);
-                double utility_interval = 0.0;
-                ArrayList<Instrument> sensors_interval = new ArrayList<>();
-                MeasurementPerformance performance_interval = new MeasurementPerformance(j);
+                Utility uInterval = new Utility();
+                // perform linear search
+                while(stepDate.compareTo(endDate) <= 0) {
+                    Utility uDate = new Utility(); uDate.calcUtility(j, path, stepDate, bodyFrame, parentSpacecraft, planner);
 
-                // linear search each interval for maximum utility
-                while(stepDate.compareTo(endDate) <= 0){
-                    // check time if constraints exist
-                    ArrayList<Subtask> timeConstraints = getTimeConstraints(j, path, planner);
-                    boolean dateFulfillsConstraints = meetsTimeConstraints(j,path,stepDate,timeConstraints,planner);
-
-                    double S_date = 0.0;
-                    double sig_date = 0.0;
-                    double maneuverCost_date = 0.0;
-                    double coalPenalties_date = 0.0;
-                    double measurementCost_date = 0.0;
-                    AbsoluteDate ta_date = stepDate.getDate();
-                    Maneuver maneuver_date = new NoManeuver(bodyFrame, stepDate.getDate());
-                    double utility_date = 0.0;
-                    ArrayList<Instrument> sensors_date = new ArrayList<>();
-                    MeasurementPerformance performance_date = new MeasurementPerformance(j);
-
-                    // if constraints are satisfied, then calculate utility at this point in time
-                    if(dateFulfillsConstraints){
-                        // Maneuver list contains the list of maneuvers done allow for all sensors to see subtask j
-                        ArrayList<Maneuver> maneuverList = new ArrayList<>();
-
-                        // visibility list contains list of sensors that can see subtask j with no maneuvers or if
-                        // maneuvers are required to see it
-                        ArrayList<ArrayList<Instrument>> visibilityList = calcVisibilityMatrix(j,path,parentSpacecraft,planner,stepDate,maneuverList);
-
-                        for(ArrayList<Instrument> visibleToSensorsList : visibilityList){
-                            int i = visibilityList.indexOf(visibleToSensorsList);
-                            Maneuver maneuverTemp = maneuverList.get(i);
-
-                            double S_maneuver = 0.0;
-                            double sig_maneuver = 0.0;
-                            double maneuverCost_maneuver = 0.0;
-                            double coalPenalties_maneuver = 0.0;
-                            double measurementcost_maneuver = 0.0;
-                            double utility_maneuver = 0.0;
-                            ArrayList<Instrument> sensors_maneuver = new ArrayList<>();
-                            MeasurementPerformance performance_maneuver = new MeasurementPerformance(j);
-
-                            ArrayList<ArrayList<Instrument>> instrumentCombinations = calcInstrumentCombinations(visibleToSensorsList);
-                            for(ArrayList<Instrument> sensorsUsed : instrumentCombinations){
-                                if(sensorsUsed.size() == 0) continue;
-
-                                MeasurementPerformance performance = new MeasurementPerformance(j,sensorsUsed,parentSpacecraft,stepDate);
-
-                                double S_combination = calcSubtaskScore(j,stepDate,parentSpacecraft);
-                                double sig_combination = calcRequirementSatisfaction(j,performance);
-                                double maneuverCost_combination = calcManeuverCost(maneuverTemp,parentSpacecraft);
-                                double coalPenalties_combination = 0.0;
-                                double measurementCost_combination = calcMeasurementCost(sensorsUsed, planner.getTimeStep());
-
-                                double utility_combination = S_combination*sig_combination -
-                                        maneuverCost_combination - coalPenalties_combination - measurementCost_combination;
-
-//                                System.out.println(utility_combination);
-
-                                if(utility_combination > utility_maneuver){
-                                    S_maneuver = S_combination;
-                                    sig_maneuver = sig_combination;
-                                    maneuverCost_maneuver = maneuverCost_combination;
-                                    coalPenalties_maneuver = coalPenalties_combination;
-                                    measurementcost_maneuver = measurementCost_combination;
-                                    utility_maneuver = utility_combination;
-                                    sensors_maneuver = sensorsUsed;
-                                    performance_maneuver = performance;
-                                }
-                            }
-
-                            if(utility_maneuver > utility_date){
-                                S_date = S_maneuver;
-                                sig_date = sig_maneuver;
-                                maneuverCost_date = maneuverCost_maneuver;
-                                coalPenalties_date = coalPenalties_maneuver;
-                                measurementCost_date = measurementcost_maneuver;
-                                maneuver_date = maneuverTemp;
-                                utility_date = utility_maneuver;
-                                sensors_date = sensors_maneuver;
-                                performance_date = performance_maneuver;
-                            }
-                        }
+                    if(uDate.utility > uInterval.utility) {
+                        uInterval = uDate.copy();
                     }
-
-                    if(utility_date > utility_interval){
-                        S_interval = S_date;
-                        sig_interval = sig_date;
-                        maneuverCost_interval = maneuverCost_date;
-                        coalPenalties_interval = coalPenalties_date;
-                        measurementCost_interval = measurementCost_date;
-                        ta_interval = ta_date.getDate();
-                        maneuver_interval = maneuver_date;
-                        utility_interval = utility_date;
-                        sensors_interval = sensors_date;
-                        performance_interval = performance_date;
-                    }
-
                     stepDate = stepDate.shiftedBy(timeStep).getDate();
                 }
 
-                if(utility_interval > utility_max){
-                    S_max= S_interval;
-                    sig_max = sig_interval;
-                    maneuverCost_max = maneuverCost_interval;
-                    coalPenalties_max = coalPenalties_interval;
-                    measurementCost_max = measurementCost_interval;
-                    ta_max = ta_interval.getDate();
-                    maneuver_max = maneuver_interval;
-                    utility_max = utility_interval;
-                    sensors_max = sensors_interval;
-                    performance_max = performance_interval;
+                if(uInterval.utility > utility_max){
+                    S_max= uInterval.utility;
+                    sig_max = uInterval.sig;
+                    maneuverCost_max = uInterval.maneuverCost;
+                    coalPenalties_max = uInterval.coalPenalties;
+                    measurementCost_max = uInterval.measurementCost;
+                    ta_max = uInterval.ta.getDate();
+                    maneuver_max = uInterval.maneuver;
+                    utility_max = uInterval.utility;
+                    sensors_max = uInterval.sensors;
+                    performance_max = uInterval.performance;
                 }
             }
 
@@ -459,6 +367,31 @@ public class PathUtility {
         return visibilityMatrix;
     }
 
+    private AbsoluteDate calcTlimit(Subtask j, Spacecraft spacecraft) throws Exception {
+        double S_max = j.getParentTask().getMaxScore();
+        double K = j.getLevelOfPartiality();
+        double I = j.getParentTask().getMeasurements().size();
+        double alpha = calcAlpha(K,I);
+
+        double S = (S_max/K)*alpha;
+
+        ArrayList<Instrument> payload = spacecraft.getDesign().getPayload();
+        double costMin = 1e5;
+        for(Instrument ins : payload){
+            double costIns = calcMeasurementCost(ins);
+            if(costIns < costMin) costMin = costIns;
+        }
+
+        AbsoluteDate t_0 = j.getParentTask().getRequirements().getStartDate();
+        double lambda = j.getParentTask().getRequirements().getUrgencyFactor();
+        if( lambda == 0.0 ){
+            return j.getParentTask().getRequirements().getEndDate();
+        }
+        else{
+            return t_0.shiftedBy( (1.0/lambda) * Math.log(S/costMin) );
+        }
+    }
+
     /**
      * Utility Function Calculation
      */
@@ -566,6 +499,15 @@ public class PathUtility {
         }
         return totalAveragePower*v;
     }
+
+    private double calcMeasurementCost(Instrument instrument){
+        double v = 1e-1;
+        double totalAveragePower = 0.0;
+
+        totalAveragePower += instrument.getPavg();
+        return totalAveragePower*v;
+    }
+
     /**
      * Copy Constructors
      * @param utility
@@ -611,4 +553,131 @@ public class PathUtility {
     public ArrayList<Subtask> getPath(){return path;}
     public ArrayList<MeasurementPerformance> getPerformanceList(){return performanceList;}
     public ArrayList<ArrayList<Instrument>> getInstrumentsUsed(){return instrumentsUsed;}
+
+    private class Utility{
+        double S = 0.0;
+        double sig = 0.0;
+        double maneuverCost = 0.0;
+        double coalPenalties= 0.0;
+        double measurementCost = 0.0;
+        AbsoluteDate ta = new AbsoluteDate();
+        Maneuver maneuver = null;
+        double utility = 0.0;
+        ArrayList<Instrument> sensors = new ArrayList<>();
+        MeasurementPerformance performance = null;
+
+        public Utility(){
+
+        }
+
+        private Utility(double s, double sig, double maneuverCost, double coalPenalties, double measurementCost, AbsoluteDate ta, Maneuver maneuver, double utility, ArrayList<Instrument> sensors, MeasurementPerformance performance) {
+            S = s;
+            this.sig = sig;
+            this.maneuverCost = maneuverCost;
+            this.coalPenalties = coalPenalties;
+            this.measurementCost = measurementCost;
+            this.ta = ta.getDate();
+            this.maneuver = maneuver;
+            this.utility = utility;
+            this.sensors = new ArrayList<>(sensors);
+            if(performance == null) this.performance = null;
+            else this.performance = performance.copy();
+        }
+
+        public Utility copy(){
+            return new Utility(S, sig, maneuverCost, coalPenalties, measurementCost, ta, maneuver, utility, sensors, performance);
+        }
+
+        public void calcUtility(Subtask j, ArrayList<Subtask> path, AbsoluteDate stepDate, ArrayList<Vector3D> bodyFrame, Spacecraft parentSpacecraft, CCBBAPlanner planner) throws Exception {
+                // check time if constraints exist
+                ArrayList<Subtask> timeConstraints = getTimeConstraints(j, path, planner);
+                boolean dateFulfillsConstraints = meetsTimeConstraints(j,path,stepDate,timeConstraints,planner);
+
+                double S_date = 0.0;
+                double sig_date = 0.0;
+                double maneuverCost_date = 0.0;
+                double coalPenalties_date = 0.0;
+                double measurementCost_date = 0.0;
+                this.ta = stepDate.getDate();
+                Maneuver maneuver_date = new NoManeuver(bodyFrame, stepDate.getDate());
+                double utility_date = 0.0;
+                ArrayList<Instrument> sensors_date = new ArrayList<>();
+                MeasurementPerformance performance_date = new MeasurementPerformance(j);
+
+                // if constraints are satisfied, then calculate utility at this point in time
+                if(dateFulfillsConstraints){
+                    // Maneuver list contains the list of maneuvers done allow for all sensors to see subtask j
+                    ArrayList<Maneuver> maneuverList = new ArrayList<>();
+
+                    // visibility list contains list of sensors that can see subtask j with no maneuvers or if
+                    // maneuvers are required to see it
+                    ArrayList<ArrayList<Instrument>> visibilityList = calcVisibilityMatrix(j,path,parentSpacecraft,planner,stepDate,maneuverList);
+
+                    for(ArrayList<Instrument> visibleToSensorsList : visibilityList){
+                        int i = visibilityList.indexOf(visibleToSensorsList);
+                        Maneuver maneuverTemp = maneuverList.get(i);
+
+                        double S_maneuver = 0.0;
+                        double sig_maneuver = 0.0;
+                        double maneuverCost_maneuver = 0.0;
+                        double coalPenalties_maneuver = 0.0;
+                        double measurementcost_maneuver = 0.0;
+                        double utility_maneuver = 0.0;
+                        ArrayList<Instrument> sensors_maneuver = new ArrayList<>();
+                        MeasurementPerformance performance_maneuver = new MeasurementPerformance(j);
+
+                        ArrayList<ArrayList<Instrument>> instrumentCombinations = calcInstrumentCombinations(visibleToSensorsList);
+                        for(ArrayList<Instrument> sensorsUsed : instrumentCombinations){
+                            if(sensorsUsed.size() == 0) continue;
+
+                            MeasurementPerformance performance = new MeasurementPerformance(j,sensorsUsed,parentSpacecraft,stepDate);
+
+                            double S_combination = calcSubtaskScore(j,stepDate,parentSpacecraft);
+                            double sig_combination = calcRequirementSatisfaction(j,performance);
+                            double maneuverCost_combination = calcManeuverCost(maneuverTemp,parentSpacecraft);
+                            double coalPenalties_combination = 0.0;
+                            double measurementCost_combination = calcMeasurementCost(sensorsUsed, planner.getTimeStep());
+
+                            double utility_combination = S_combination*sig_combination -
+                                    maneuverCost_combination - coalPenalties_combination - measurementCost_combination;
+
+                            if(utility_combination > utility_maneuver){
+                                S_maneuver = S_combination;
+                                sig_maneuver = sig_combination;
+                                maneuverCost_maneuver = maneuverCost_combination;
+                                coalPenalties_maneuver = coalPenalties_combination;
+                                measurementcost_maneuver = measurementCost_combination;
+                                utility_maneuver = utility_combination;
+                                sensors_maneuver = sensorsUsed;
+                                performance_maneuver = performance;
+                            }
+                        }
+
+                        if(utility_maneuver > utility_date){
+                            S_date = S_maneuver;
+                            sig_date = sig_maneuver;
+                            maneuverCost_date = maneuverCost_maneuver;
+                            coalPenalties_date = coalPenalties_maneuver;
+                            measurementCost_date = measurementcost_maneuver;
+                            maneuver_date = maneuverTemp;
+                            utility_date = utility_maneuver;
+                            sensors_date = sensors_maneuver;
+                            performance_date = performance_maneuver;
+                        }
+                    }
+                }
+
+                if(utility_date > utility){
+                    S = S_date;
+                    sig = sig_date;
+                    maneuverCost = maneuverCost_date;
+                    coalPenalties = coalPenalties_date;
+                    measurementCost = measurementCost_date;
+                    maneuver = maneuver_date;
+                    utility = utility_date;
+                    sensors = sensors_date;
+                    performance = performance_date;
+                }
+        }
+    }
 }

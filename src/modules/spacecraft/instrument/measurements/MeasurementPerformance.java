@@ -164,7 +164,8 @@ public class MeasurementPerformance {
      */
     private MeasurementPerformance(Measurement measurement, AbsoluteDate date, double spatialResAZ, double spatialResEL, double snr, double incidence, double angleCT, double angleAT){
         this.mainMeasurement = measurement;
-        this.date = date.getDate();
+        if(date == null) this.date = null;
+        else this.date = date.getDate();
         this.spatialResAZ = spatialResAZ;
         this.spatialResEL = spatialResEL;
         this.snr = snr;
