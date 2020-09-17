@@ -286,14 +286,13 @@ public class CCBBAPlanner extends Planner {
                 }
 
                 if (this.plan != null) {
-                    if (this.plan.getClass().equals(ManeuverPlan.class)) {
-                        this.maneuversOverall.add(this.maneuvers.get(0));
-                        this.maneuvers.remove(0);
-                    } else if (this.plan.getClass().equals(MeasurementPlan.class)) {
+                     if (this.plan.getClass().equals(MeasurementPlan.class)) {
                         this.overallPath.add(path.get(0));
                         this.overallBundle.add(path.get(0));
                         int i_b = bundle.indexOf(this.path.get(0));
                         this.bundle.remove(i_b);
+                        this.maneuversOverall.add(this.maneuvers.get(0));
+                        this.maneuvers.remove(0);
                         this.path.remove(0);
                     }
                 }
