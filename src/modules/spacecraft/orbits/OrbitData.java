@@ -1,6 +1,8 @@
 package modules.spacecraft.orbits;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -8,9 +10,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import seakers.orekit.util.OrekitConfig;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 public abstract class OrbitData {
     protected HashMap<AbsoluteDate, PVCoordinates> pv;          // Position vector in the inertial frame as a function of time
@@ -19,6 +24,7 @@ public abstract class OrbitData {
     protected AbsoluteDate startDate;                           // Start date of propagation
     protected AbsoluteDate endDate;                             // End date of propagation
     protected double timeStep;                                  // Propagation timestep
+    private double Re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
 
     // Reference frames: must use IERS_2003 and EME2000 frames to be consistent with STK
     protected Frame inertialFrame;
@@ -41,7 +47,6 @@ public abstract class OrbitData {
     // ^gets PV if key exists, if not, propagate/interpolate to get position
 
     public boolean lineOfsight(Vector3D x1, Vector3D x2){
-        double Re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         //calculate angle between vector x1 and vector x2
         double th = Math.acos( x1.dotProduct(x2) / (x1.getNorm() * x2.getNorm()) );
 

@@ -302,7 +302,9 @@ public class Environment extends Watcher {
         int n_dead = 0;
         if(deadAgents != null) n_dead = deadAgents.size();
 
-        if(this.currentDate.compareTo(this.endDate) >= 0 || n_agents == n_dead) {
+        boolean endDateReached = this.currentDate.compareTo(this.endDate) >= 0;
+        if(endDateReached) getLogger().finer("Simulation end-time reached. Terminating sim");
+        if( endDateReached || n_agents == n_dead) {
             // End time reached, terminate sim
             List<AgentAddress> agentList = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT);
             if(agentList.size() == resultsMessages.size()) {
@@ -328,7 +330,7 @@ public class Environment extends Watcher {
             }
         }
 
-        getLogger().finer("Current simulation time: " + this.currentDate.toString());
+//        getLogger().finer("Current simulation time: " + this.currentDate.toString());
     }
 
     private boolean compareResults(){

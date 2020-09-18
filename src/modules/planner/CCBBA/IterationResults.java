@@ -65,7 +65,6 @@ public class IterationResults {
         ArrayList<Bid> bidList = new ArrayList<>();
         Set<Subtask> subtasks = this.results.keySet();
         ArrayList<Subtask> bundle = planner.getBundle();
-        ArrayList<Subtask> path = planner.getPath();
 
         for(Subtask j : subtasks){
             Bid localBid = new Bid(j);
@@ -107,6 +106,11 @@ public class IterationResults {
             boolean depends = dep.depends(j,q);
             boolean violationLimitReached = results.get(q).getV() >= planner.getSettings().O_kq;
             if(depends && violationLimitReached) return  false;
+        }
+
+        // check if datum is available
+        if(planner.getIterationDatum(j).getH() == 0) {
+            return false;
         }
 
         // Check if Pessimistic or Optimistic bidding strategy applies

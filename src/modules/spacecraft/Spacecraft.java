@@ -67,7 +67,6 @@ public class Spacecraft extends AbstractAgent {
             this.orbit.propagateOrbit();
 
             //2- Calculate Task Access Times
-//            this.orbit.calcAccessTimes(environment);
             this.orbit.calcLoSTimes(this,environment);
 
             //3- Design Spacecraft
@@ -229,20 +228,12 @@ public class Spacecraft extends AbstractAgent {
     public Vector3D getPointingWithSlew(double th, Instrument ins, SpacecraftOrbit orbit, AbsoluteDate date) throws Exception {
         return this.design.getAdcs().getPointingWithSlew(th, ins, orbit, date);
     }
-    public double getAlt(AbsoluteDate date) throws OrekitException {
-        return this.orbit.getAlt(date);
-    }
-    public double getTaskCTAngle(ArrayList<Vector3D> orbitFrame, Vector3D satPos, Vector3D taskPos){
-        return  this.design.getAdcs().getTaskCTAngle(orbitFrame, satPos, taskPos);
-    }
     public boolean isAlive(){
         // check life status
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
         return !(myRoles.contains(SimGroups.AGENT_DIE));
     }
 
-    private double rad2deg(double th){ return th*180.0/Math.PI; }
-    private double deg2rad(double th){ return th*Math.PI/180.0; }
 
     /**
      * Getters and setters

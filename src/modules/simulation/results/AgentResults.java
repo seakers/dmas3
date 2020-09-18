@@ -37,7 +37,7 @@ public class AgentResults {
                 IterationDatum datum = results.getIterationDatum(j);
                 AbstractAgent winner = datum.getZ();
                 if(winner == me){
-                    overallCost += datum.getCost();
+                    overallCost += datum.getCost()*1e1;
                     subtasksCompleted.add(j);
                 }
             }
@@ -48,13 +48,14 @@ public class AgentResults {
         // get list of measurements performed by agent
         agentMeasurementCapabilities = new HashMap<>();
         if(overallPath.size() == subtasksDone) {
-            for (Subtask j : overallPath) {
-                SubtaskCapability subtaskCapability = capabilities.get(j.getParentTask()).getSubtaskCapability(j);
-                agentMeasurementCapabilities.put(j, subtaskCapability);
-            }
+
         }
         else{
             int x = 1;
+        }
+        for (Subtask j : subtasksCompleted) {
+            SubtaskCapability subtaskCapability = capabilities.get(j.getParentTask()).getSubtaskCapability(j);
+            agentMeasurementCapabilities.put(j, subtaskCapability);
         }
     }
 

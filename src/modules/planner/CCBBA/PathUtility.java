@@ -491,7 +491,7 @@ public class PathUtility {
     }
 
     private double calcMeasurementCost(ArrayList<Instrument> instruments, double duration){
-        double v = 1e-1;
+        double v = 1.5e-1;
         double totalAveragePower = 0.0;
 
         for(Instrument ins : instruments){

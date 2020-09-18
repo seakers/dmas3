@@ -1,5 +1,6 @@
 % Creates plots used for paper
-clc; clear all;
+clc; clear all; close all;
 
-data = readResults("TEST",3);
-% drawCoalsVsTcorr();
+drawCoalsVsTcorr(30);
+drawScoreVsAgents(2);
+% drawScoreVsHorizon(30);
