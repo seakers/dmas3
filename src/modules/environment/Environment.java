@@ -18,6 +18,7 @@ import modules.simulation.ProblemStatement;
 import modules.simulation.SimGroups;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.measurements.Measurement;
+import modules.spacecraft.instrument.measurements.MeasurementCapability;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;

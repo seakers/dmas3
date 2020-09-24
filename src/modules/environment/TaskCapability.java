@@ -2,6 +2,7 @@ package modules.environment;
 
 import modules.planner.CCBBA.IterationDatum;
 import modules.spacecraft.instrument.measurements.Measurement;
+import modules.spacecraft.instrument.measurements.MeasurementCapability;
 import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 import org.orekit.time.AbsoluteDate;
 

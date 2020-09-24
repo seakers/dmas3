@@ -25,10 +25,10 @@ public class Simulation extends AbstractAgent {
         archName = architecture;
 
         // Load architecture to be evaluated
-        arch = new Architecture(architecture+".json", problem);
+        arch = new Architecture(architecture, problem);
 
         // Load scenario problem to evaluate architecture
-        prob = new ProblemStatement(architecture+".json", problem);
+        prob = new ProblemStatement(architecture, problem);
 
         // Run simulation and save results
         executeThisAgent(1,false);

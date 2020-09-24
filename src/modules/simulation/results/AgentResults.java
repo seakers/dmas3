@@ -2,11 +2,10 @@ package modules.simulation.results;
 
 import madkit.kernel.AbstractAgent;
 import modules.environment.Subtask;
-import modules.environment.MeasurementCapability;
+import modules.spacecraft.instrument.measurements.MeasurementCapability;
 import modules.environment.Task;
 import modules.environment.TaskCapability;
 import modules.planner.CCBBA.IterationDatum;
-import modules.planner.CCBBA.IterationResults;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.Instrument;
 import modules.spacecraft.instrument.measurements.Measurement;

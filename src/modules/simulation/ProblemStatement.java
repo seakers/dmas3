@@ -39,8 +39,8 @@ public class ProblemStatement {
         // read input JSON
         this.problemStatement = problemStatement;
         this.problemStatementDir = "./src/scenarios/" + problemStatement;
-        this.inputFileDir = "./src/inputs/" + inputFile;
-        this.outputFileDir = "./src/outputs/" + problemStatement;
+        this.inputFileDir = "./src/inputs/" + inputFile +".json";
+        this.outputFileDir = "./src/outputs/" + inputFile + "-" + problemStatement;
         this.inputDataSettings = (JSONObject) readJSON().get("settings");
         this.inputDataMission = (JSONObject) readJSON().get("mission");
 

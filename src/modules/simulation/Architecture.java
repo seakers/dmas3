@@ -34,8 +34,8 @@ public class Architecture extends AbstractAgent{
     public Architecture(String inputFile, String problemStatement) throws Exception {
         this.problemStatement = problemStatement;
         this.problemStatementDir = "./src/scenarios/" + problemStatement;
-        this.inputFileName = inputFile;
-        this.inputFileDir = "./src/inputs/" + inputFile;
+        this.inputFileName = inputFile + ".json";
+        this.inputFileDir = "./src/inputs/" + inputFile + ".json";
 
         this.inputDataSpace = (JSONArray) readJSON().get("spaceSegment");
         this.inputDataGround = (JSONArray) readJSON().get("groundSegment");

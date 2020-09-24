@@ -2,13 +2,9 @@ package modules.simulation.results;
 
 import madkit.kernel.AbstractAgent;
 import modules.environment.*;
-import modules.planner.CCBBA.IterationDatum;
-import modules.planner.CCBBA.IterationResults;
-import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.Instrument;
 import modules.spacecraft.instrument.measurements.Measurement;
-import modules.spacecraft.instrument.measurements.MeasurementPerformance;
-import org.hipparchus.util.FastMath;
+import modules.spacecraft.instrument.measurements.MeasurementCapability;
 import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;

@@ -8,6 +8,7 @@ import modules.planner.CCBBA.IterationDatum;
 import modules.planner.plans.*;
 import modules.spacecraft.instrument.Instrument;
 import modules.spacecraft.instrument.measurements.Measurement;
+import modules.spacecraft.instrument.measurements.MeasurementCapability;
 import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 import modules.spacecraft.orbits.OrbitParams;
 import modules.spacecraft.orbits.SpacecraftOrbit;

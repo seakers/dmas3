@@ -4,10 +4,9 @@ import madkit.kernel.AbstractAgent;
 import modules.environment.*;
 import modules.planner.CCBBA.CCBBAPlanner;
 import modules.planner.CCBBA.IterationDatum;
-import modules.planner.CCBBA.IterationResults;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.measurements.Measurement;
-import modules.spacecraft.instrument.measurements.MeasurementPerformance;
+import modules.spacecraft.instrument.measurements.MeasurementCapability;
 
 import java.util.ArrayList;
 import java.util.HashMap;
