@@ -148,7 +148,8 @@ public class CCBBAPlanner extends Planner {
         List<AgentAddress> doingAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP,SimGroups.PLANNER_DO);
         List<AgentAddress> otherAgentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP,SimGroups.PLANNER_DIE);
 
-        int n_planners = otherAgents.size();
+        int n_planners = 0;
+        if(otherAgents != null) n_planners = otherAgents.size();
         int n_planners_do = 0;
         if(doingAgents != null) n_planners_do = doingAgents.size();
         int n_planners_dead = 0;
