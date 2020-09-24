@@ -160,8 +160,8 @@ public class OverallResults {
     public String toString(){
         StringBuilder results = new StringBuilder();
         results.append(utility + "\t" + coalsFormed + "\t" + coalsAvailable + "\t" + scoreAchieved + "\t" + scoreAvailable
-                + "\t" + tasksDone + "\t" + tasksAvailable + "\t" + numAgents + "\t" + planningHorizon + "\t"
-                + overallCostPerAgent  + "\t" + resSat  + "\t" + snrSat + "\t" + revSat);
+                + "\t" + tasksDone + "\t" + tasksAvailable + "\t" + numAgents + "\t" + planningHorizon + "\t" + overallCostPerAgent
+                + "\t" + resSat  + "\t" + snrSat + "\t" + revSat);
         return results.toString();
     }
 }
