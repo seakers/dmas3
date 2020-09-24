@@ -522,6 +522,26 @@ public class PathUtility {
         return totalAveragePower*v;
     }
 
+    private double calcCoalCosts(Subtask j, CCBBAPlanner planner, AbstractAgent parentSpacecraft){
+        boolean coals = true;
+        if(!coals){
+            Task parentTask = j.getParentTask();
+            if(j.getDepMeasurements().size() > 0){
+                // check if agent is performing dependent subtasks, if not then don't allow bid
+                for(Subtask q : parentTask.getSubtasks()){
+                    boolean depends = parentTask.getDependencies().depends(j,q);
+                    boolean winnerNotMe = planner.getIterationDatum(q).getZ() != parentSpacecraft;
+                    boolean noWinner = planner.getIterationDatum(q).getZ() != null;
+
+                    if(depends && noWinner ) return 0.0; // if no one has bid on the dependent, maybe I can
+                    if(depends && winnerNotMe) return 1000.0; // if someone else is bidding on the dependent, then I can't bid
+                }
+            }
+        }
+
+        return 0.0;
+    }
+
     /**
      * Copy Constructors
      * @param utility
@@ -649,7 +669,7 @@ public class PathUtility {
                             double S_combination = calcSubtaskScore(j,stepDate,parentSpacecraft);
                             double sig_combination = calcRequirementSatisfaction(j,performance);
                             double maneuverCost_combination = calcManeuverCost(maneuverTemp,parentSpacecraft);
-                            double coalPenalties_combination = 0.0;
+                            double coalPenalties_combination = calcCoalCosts(j, planner, parentSpacecraft);
                             double measurementCost_combination = calcMeasurementCost(sensorsUsed, planner.getTimeStep());
 
                             double utility_combination = S_combination*sig_combination -
