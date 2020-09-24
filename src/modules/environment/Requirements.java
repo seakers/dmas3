@@ -9,6 +9,8 @@ public class Requirements {
     private double spatialResReq;
     private double swathReq;
     private double lossReq;
+    private double TcorrMin;
+    private double TcorrMax;
     private double temporalResolutionMin;
     private double temporalResolutionMax;
     private int numLooks;
@@ -23,19 +25,24 @@ public class Requirements {
     // Constructors
     public Requirements(){
         spatialResReq = -1.0;
-//        swathReq = -1.0;
         lossReq = -1.0;
         numLooks = -1;
+        TcorrMin = -1.0;
+        TcorrMax = -1.0;
         temporalResolutionMin = -1.0;
         temporalResolutionMax = -1.0;
         urgencyFactor = -1.0;
         startDate = new AbsoluteDate();
         endDate = new AbsoluteDate();
     }
-    public Requirements(double spatialResReq, double lossReq, int numLooks, double temporalResolutionMin, double temporalResolutionMax, double urgencyFactor, AbsoluteDate startDate, AbsoluteDate endDate){
+    public Requirements(double spatialResReq, double lossReq, int numLooks, double tcorrMin, double tcorrMax,
+                        double temporalResolutionMin, double temporalResolutionMax, double urgencyFactor,
+                        AbsoluteDate startDate, AbsoluteDate endDate){
         this.spatialResReq = spatialResReq;
         this.lossReq = lossReq;
         this.numLooks = numLooks;
+        this.TcorrMin = tcorrMin;
+        this.TcorrMax = tcorrMax;
         this.temporalResolutionMin = temporalResolutionMin;
         this.temporalResolutionMax = temporalResolutionMax;
         this.urgencyFactor = urgencyFactor;
@@ -49,7 +56,14 @@ public class Requirements {
 
     // Copy constructor
     public Requirements copy(){
-        return new Requirements(spatialResReq, lossReq, numLooks, temporalResolutionMin, temporalResolutionMax, urgencyFactor, startDate, endDate);
+        return new Requirements(spatialResReq, lossReq, numLooks, TcorrMin, TcorrMax,
+                temporalResolutionMin, temporalResolutionMax, urgencyFactor, startDate, endDate);
+    }
+
+    // Update start time
+    public void updateStartTime(AbsoluteDate date){
+        this.startDate = date.shiftedBy(this.temporalResolutionMin).getDate();
+        int x = 1;
     }
 
     // Getters and setters
@@ -59,6 +73,8 @@ public class Requirements {
     public void setSwathReq(double swathReq) { this.swathReq = swathReq; }
     public double getLossReq() { return lossReq; }
     public void setLossReq(double lossReq) { this.lossReq = lossReq; }
+    public double getTcorrMin(){return TcorrMin;}
+    public double getTcorrMax(){return TcorrMax;}
     public double getTemporalResolutionMin() { return temporalResolutionMin; }
     public double getTemporalResolutionMax() { return temporalResolutionMax; }
     public int getNumLooks() { return numLooks; }

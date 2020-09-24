@@ -1,6 +1,8 @@
 package modules.spacecraft.instrument.measurements;
 
+import modules.environment.Requirements;
 import modules.environment.Subtask;
+import modules.environment.Task;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.Instrument;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -11,28 +13,38 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
 
+import static java.lang.Math.exp;
+
 public class MeasurementPerformance {
-    private final Measurement mainMeasurement;    // measurement being made
-    private final AbsoluteDate date;              // date of measurement
-    private final double spatialResAZ;            // spatial resolution in the azimuth direction [m]
-    private final double spatialResEL;            // spatial resolution in the elevation direction[m]
-    private final double snr;                     // signal-to-noise ratio [dB]
-    private final double incidence;               // incidence angle [°]
-    private final double angleCT;                 // angle of measurement across track [°]
-    private final double angleAT;                 // angle of measurement along track [°]
+    private Task parentTask;
+    private Measurement mainMeasurement;    // measurement being made
+    private AbsoluteDate date;              // date of measurement
+
+    // Measurement Performance Properties
+    private double spatialResAZ;            // spatial resolution in the azimuth direction [m]
+    private double spatialResEL;            // spatial resolution in the elevation direction[m]
+    private double snr;                     // signal-to-noise ratio [dB]
+    private double incidence;               // incidence angle [°]
+    private double angleCT;                 // angle of measurement across track [°]
+    private double angleAT;                 // angle of measurement along track [°]
+    private double revisitTime;             // average revisit time [s]
+
 
     public MeasurementPerformance(Subtask j){
+        parentTask = j.getParentTask();
         mainMeasurement = j.getMainMeasurement();
-        date = new AbsoluteDate();
+        date = null;
         spatialResAZ = -1.0;
         spatialResEL = -1.0;
         snr = -1.0;
         incidence = -1.0;
         angleCT = -1.0;
         angleAT = -1.0;
+        revisitTime = 0.0;
     }
 
     public MeasurementPerformance(Subtask j, ArrayList<Instrument> instruments, Spacecraft spacecraft, AbsoluteDate date) throws Exception {
+        this.parentTask = j.getParentTask();
         this.mainMeasurement = j.getMainMeasurement();
         this.date = date.getDate();
         this.spatialResAZ = calcSpatialResAZ(j,instruments,spacecraft,date);
@@ -44,6 +56,13 @@ public class MeasurementPerformance {
     }
 
     // Helper Functions
+    private double calcRevTime(AbsoluteDate newDate){
+        if(this.date == null) {
+            return -1.0;
+        }
+        return newDate.durationFrom(this.date);
+    }
+
     private double calcAlongTrackAngle(Subtask j, Spacecraft spacecraft, AbsoluteDate date) throws Exception {
         ArrayList<Vector3D> orbitFrame = spacecraft.getDesign().getAdcs().calcOrbitFrame(spacecraft.getOrbit(),date);
         Vector3D satPos = spacecraft.getPVEarth(date).getPosition();
@@ -193,7 +212,6 @@ public class MeasurementPerformance {
     }
     public double getSpatialResAZ() { return spatialResAZ; }
     public double getSpatialResEL() { return spatialResEL; }
-    public double getSnr() { return snr; }
     public double getIncidence() { return incidence; }
     public double getAngleCT() { return angleCT; }
     public double getAngleAT() { return angleAT; }

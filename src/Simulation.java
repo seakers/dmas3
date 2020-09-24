@@ -20,15 +20,15 @@ public class Simulation extends AbstractAgent {
     protected String directoryAddress;
 
     public static void main(String[] args) throws Exception {
-        String architecture = "ScoreVsPlanningHorizon";
-        String problem = "ScoreVsPlanningHorizon_7";
+        String architecture = "TEST";
+        String problem = "TEST";
         archName = architecture;
-
-        // Load scenario problem to evaluate architecture
-        prob = new ProblemStatement(architecture+".json", problem);
 
         // Load architecture to be evaluated
         arch = new Architecture(architecture+".json", problem);
+
+        // Load scenario problem to evaluate architecture
+        prob = new ProblemStatement(architecture+".json", problem);
 
         // Run simulation and save results
         executeThisAgent(1,false);
@@ -44,7 +44,7 @@ public class Simulation extends AbstractAgent {
             createGroup(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
 
             // 3 : launch simulation environment
-            this.environment = new Environment(prob, directoryAddress);
+            this.environment = new Environment(prob, arch, directoryAddress);
             launchAgent(this.environment, false);
 
             // 4 : launch architecture agents

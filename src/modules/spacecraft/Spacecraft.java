@@ -4,6 +4,7 @@ import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import modules.environment.*;
+import modules.planner.CCBBA.IterationDatum;
 import modules.planner.plans.*;
 import modules.spacecraft.instrument.Instrument;
 import modules.spacecraft.instrument.measurements.Measurement;
@@ -21,7 +22,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -187,14 +187,25 @@ public class Spacecraft extends AbstractAgent {
         Measurement measurement = measurementPlan.getMeasurement();
         AbsoluteDate date = measurementPlan.getStartDate();
         Requirements requirements = measurementPlan.getRelevantSubtask().getParentTask().getRequirements();
+        IterationDatum plannerBid = measurementPlan.getPlannerBid();
 
         // calculate measurement performance
         MeasurementPerformance performance = new MeasurementPerformance(subtask,instruments, this, date);
-        SubtaskCapability newCapability = new SubtaskCapability(subtask, instruments, measurement, requirements, performance, this);
+        MeasurementCapability newCapability = new MeasurementCapability(subtask, instruments, measurement, requirements, performance, plannerBid, this);
 
         // update environment
         this.environment.updateMeasurementCapability(newCapability);
-        this.environment.completeSubtask(subtask);
+//        this.environment.completeSubtask(subtask);
+//
+//        // reset scores of subtask
+//        this.planner.resetResults(subtask);
+
+//        // if parent task is completed, then reset the completion
+//        Task parentTask = subtask.getParentTask();
+//        if(subtask.getParentTask().getCompletion()){
+//            parentTask.updateStartDate(this.getCurrentDate());
+//            parentTask.resetCompletion();
+//        }
     }
     private void performManeuver(){
         ManeuverPlan maneuverPlan = (ManeuverPlan) this.plan;

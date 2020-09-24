@@ -45,13 +45,13 @@ public class Dependencies {
                         D[j][q] = 1;
                         if(J.getMainMeasurement().getBand().equals(Q.getMainMeasurement().getBand())) {
                             // if the measurements are of the same band, add lower bound to temporal resolution
-                            T_max[j][q] = requirements.getTemporalResolutionMax() * J.getDepMeasurements().size();
-                            T_min[j][q] = requirements.getTemporalResolutionMin();
+                            T_max[j][q] = requirements.getTcorrMax() * J.getDepMeasurements().size();
+                            T_min[j][q] = requirements.getTcorrMin();
                         }
                         else{
                             // if they are measurements of different bands, there is no lower bound to temporal resolution
-                            T_max[j][q] = requirements.getTemporalResolutionMax();
-                            T_min[j][q] = 0.0;
+                            T_max[j][q] = requirements.getTcorrMax();
+                            T_min[j][q] = requirements.getTcorrMin();
                         }
                         constraintFound = true;
                     }

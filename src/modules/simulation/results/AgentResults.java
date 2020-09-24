@@ -2,17 +2,18 @@ package modules.simulation.results;
 
 import madkit.kernel.AbstractAgent;
 import modules.environment.Subtask;
-import modules.environment.SubtaskCapability;
+import modules.environment.MeasurementCapability;
 import modules.environment.Task;
 import modules.environment.TaskCapability;
 import modules.planner.CCBBA.IterationDatum;
 import modules.planner.CCBBA.IterationResults;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.Instrument;
-import org.orekit.time.AbsoluteDate;
+import modules.spacecraft.instrument.measurements.Measurement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 public class AgentResults {
     private AbstractAgent me;
@@ -20,43 +21,43 @@ public class AgentResults {
     private int subtasksDone = 0;
     private ArrayList<Instrument> instruments;
     private int n_instruments = 0;
-    private HashMap<Subtask, SubtaskCapability> agentMeasurementCapabilities;
+    private HashMap<Subtask, MeasurementCapability> agentMeasurementCapabilities;
     private ArrayList<Subtask> overallPath;
 
-    public AgentResults(Spacecraft spacecraft, HashMap<AbstractAgent, IterationResults> ccbbaResults,
-                        ArrayList<Task> environmentTasks, HashMap<Task, TaskCapability> capabilities){
+    public AgentResults(Spacecraft spacecraft, ArrayList<Task> environmentTasks, HashMap<Task, TaskCapability> capabilities){
         me = spacecraft;
-        IterationResults results = ccbbaResults.get(spacecraft);
+        agentMeasurementCapabilities = new HashMap<>();
         instruments = new ArrayList<>(spacecraft.getDesign().getPayload());
         n_instruments = instruments.size();
 
-        // count subtasks and cost performed by agent
         ArrayList<Subtask> subtasksCompleted = new ArrayList<>();
         for(Task task : environmentTasks){
-            for(Subtask j : task.getSubtasks()){
-                IterationDatum datum = results.getIterationDatum(j);
-                AbstractAgent winner = datum.getZ();
-                if(winner == me){
-                    overallCost += datum.getCost()*1e1;
-                    subtasksCompleted.add(j);
+            TaskCapability taskCap = capabilities.get(task);
+            Set<Measurement> keys = taskCap.getCapabilities().keySet();
+
+            for(Measurement measurement : keys){
+                MeasurementCapability cap = taskCap.getCapabilities().get(measurement);
+
+                if(cap == null){
+                    int x = 1;
+                }
+
+                ArrayList<AbstractAgent> winners = cap.getWinners();
+                ArrayList<Subtask> subtasks = cap.getParentSubtasks();
+                ArrayList<IterationDatum> bids = cap.getPlannerBids();
+                for(AbstractAgent winner : winners){
+                    if(winner == me){
+                        int i = winners.indexOf(winner);
+                        Subtask j = subtasks.get(i);
+                        subtasksCompleted.add(j);
+                        overallCost += bids.get(i).getCost();
+                        agentMeasurementCapabilities.put(j, cap);
+                    }
                 }
             }
         }
         subtasksDone = subtasksCompleted.size();
         overallPath = new ArrayList<>(spacecraft.getOverallPath());
-
-        // get list of measurements performed by agent
-        agentMeasurementCapabilities = new HashMap<>();
-        if(overallPath.size() == subtasksDone) {
-
-        }
-        else{
-            int x = 1;
-        }
-        for (Subtask j : subtasksCompleted) {
-            SubtaskCapability subtaskCapability = capabilities.get(j.getParentTask()).getSubtaskCapability(j);
-            agentMeasurementCapabilities.put(j, subtaskCapability);
-        }
     }
 
     public String toString(){
@@ -73,8 +74,18 @@ public class AgentResults {
         }
         results.append("\t");
         for(Subtask j : overallPath){
-            SubtaskCapability cap = agentMeasurementCapabilities.get(j);
-            results.append(j.toString() + "(" + cap.getPerformance().getDate() + ")\t");
+            MeasurementCapability cap = agentMeasurementCapabilities.get(j);
+            IterationDatum datum = null;
+            if(cap == null){
+                int x = 1; continue;
+            }
+            for(Subtask k : cap.getParentSubtasks()){
+                if(k == j) {
+                    int i = cap.getParentSubtasks().indexOf(k);
+                    datum = cap.getPlannerBids().get(i);
+                }
+            }
+            if(datum != null) results.append(j.toString() + "(" + datum.getTz() + ")\t");
         }
         results.append("\n");
         return results.toString();

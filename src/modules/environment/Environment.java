@@ -11,10 +11,12 @@ import madkit.kernel.Watcher;
 import madkit.message.SchedulingMessage;
 import madkit.simulation.probe.PropertyProbe;
 import modules.planner.CCBBA.IterationResults;
+import modules.simulation.Architecture;
 import modules.simulation.results.Results;
 import modules.planner.messages.CCBBAResultsMessage;
 import modules.simulation.ProblemStatement;
 import modules.simulation.SimGroups;
+import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.measurements.Measurement;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.orekit.time.AbsoluteDate;
@@ -38,9 +40,10 @@ public class Environment extends Watcher {
     private TimeScale utc;
     private ArrayList<Message> resultsMessages;
     private String directoryAddress;
+    private ArrayList<Spacecraft> spaceSegment;
 
     // Constructor
-    public Environment(ProblemStatement prob, String directoryAddress) throws Exception {
+    public Environment(ProblemStatement prob, Architecture arch, String directoryAddress) throws Exception {
         // load info from problem statements
         setUpLogger(prob.getLoggerLevel());
         this.startDate = prob.getStartDate().getDate();
@@ -51,6 +54,7 @@ public class Environment extends Watcher {
         this.utc = prob.getUtc();
         this.resultsMessages = new ArrayList<>();
         this.directoryAddress = directoryAddress;
+        this.spaceSegment = new ArrayList<>(arch.getSpaceSegment());
     }
 
     @Override
@@ -135,11 +139,13 @@ public class Environment extends Watcher {
             double spatialResReq = Double.parseDouble( row[6].getContents() );
             double snrReq = Double.parseDouble( row[7].getContents() );
             int numLooks = (int) Double.parseDouble( row[8].getContents() );
-            String tempResReqMin =  row[9].getContents();
-            String tempResReqMax = row[10].getContents();
-            String startTimeString = row[11].getContents();
-            String endTimeString = row[12].getContents();
-            double urgencyFactor = Double.parseDouble( row[13].getContents() );
+            String tcorrMin  =  row[9].getContents();
+            String tcorrMax  =  row[10].getContents();
+            String tempResReqMin =  row[11].getContents();
+            String tempResReqMax = row[12].getContents();
+            String startTimeString = row[13].getContents();
+            String endTimeString = row[14].getContents();
+            double urgencyFactor = Double.parseDouble( row[15].getContents() );
 
             // load score
             double score = 0.0;
@@ -160,7 +166,8 @@ public class Environment extends Watcher {
             }
 
             tasks.add( new Task(name, score, lat, lon, alt, freqs,
-                    spatialResReq, snrReq, numLooks, stringToDuration(tempResReqMin), stringToDuration(tempResReqMax),
+                    spatialResReq, snrReq, numLooks, stringToDuration(tcorrMin), stringToDuration(tcorrMax),
+                    stringToDuration(tempResReqMin), stringToDuration(tempResReqMax),
                     stringToDate(startTimeString), stringToDate(endTimeString), timeStep, urgencyFactor));
         }
 
@@ -288,7 +295,7 @@ public class Environment extends Watcher {
         getLogger().setLevel(this.loggerLevel);
     }
 
-    protected void tic(){
+    protected void tic() throws Exception {
         List<AgentAddress> thinkingAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
         if(thinkingAgents == null || thinkingAgents.size() == 0) {
             // only advance time when agents are done planning
@@ -306,31 +313,40 @@ public class Environment extends Watcher {
         if(endDateReached) getLogger().finer("Simulation end-time reached. Terminating sim");
         if( endDateReached || n_agents == n_dead) {
             // End time reached, terminate sim
-            List<AgentAddress> agentList = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT);
-            if(agentList.size() == resultsMessages.size()) {
-                // compare results from agents
-                boolean resultsMatch = compareResults();
-                if (!resultsMatch) System.out.println("ERROR: resulting plans do not match.");
+            Results results = new Results(this.environmentTasks, this.spaceSegment, this.measurementCapabilities, directoryAddress);
 
-                // compile results
-                HashMap<AbstractAgent, IterationResults> ccbbaResults = new HashMap<>();
-                for (Message message : resultsMessages) {
-                    IterationResults results = ((CCBBAResultsMessage) message).getResults();
-                    AbstractAgent parentAgent = results.getParentAgent();
-                    ccbbaResults.put(parentAgent, results);
-                }
-                Results results = new Results(ccbbaResults, this.environmentTasks, this.measurementCapabilities, directoryAddress, resultsMatch);
+            // save results to text files
+            results.print();
 
-                // save results to text files
-                results.print(resultsMatch);
+            // send terminate command to scheduler
+            SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
+            sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
 
-                // send terminate command to scheduler
-                SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
-                sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
-            }
+//            List<AgentAddress> agentList = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT);
+//            if(agentList.size() == resultsMessages.size()) {
+//                // compare results from agents
+//                boolean resultsMatch = compareResults();
+//                if (!resultsMatch) System.out.println("ERROR: resulting plans do not match.");
+//
+//                // compile results
+//                HashMap<AbstractAgent, IterationResults> ccbbaResults = new HashMap<>();
+//                for (Message message : resultsMessages) {
+//                    IterationResults results = ((CCBBAResultsMessage) message).getResults();
+//                    AbstractAgent parentAgent = results.getParentAgent();
+//                    ccbbaResults.put(parentAgent, results);
+//                }
+//                Results results = new Results(ccbbaResults, this.environmentTasks, this.measurementCapabilities, directoryAddress, resultsMatch);
+//
+//                // save results to text files
+//                results.print(resultsMatch);
+//
+//                // send terminate command to scheduler
+//                SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
+//                sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
+//            }
         }
 
-//        getLogger().finer("Current simulation time: " + this.currentDate.toString());
+        getLogger().finer("Current simulation time: " + this.currentDate.toString());
     }
 
     private boolean compareResults(){
@@ -369,9 +385,9 @@ public class Environment extends Watcher {
         }
         return subtasks;
     }
-    public void updateMeasurementCapability(SubtaskCapability subtaskCapability){
-        Task task = subtaskCapability.getParentSubtask().getParentTask();
-        this.measurementCapabilities.get(task).updateSubtaskCapability(subtaskCapability);
+    public void updateMeasurementCapability(MeasurementCapability measurementCapability){
+        Task task = measurementCapability.getPlannerBids().get(0).getSubtask().getParentTask();
+        this.measurementCapabilities.get(task).updateSubtaskCapability(measurementCapability);
     }
     public void completeSubtask(Subtask subtask){
         subtask.getParentTask().completeSubtasks(subtask);

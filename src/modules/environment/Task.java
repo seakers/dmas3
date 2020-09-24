@@ -23,7 +23,8 @@ public class Task {
     private boolean completion;
 
     public Task(String name, double score, double lat, double lon, double alt, ArrayList<Measurement> measurements,
-                double spatialResReq, double lossReq, int numLooks, double temporalResolutionMin, double temporalResolutionMax,
+                double spatialResReq, double lossReq, int numLooks, double tcorrMin, double tcorrMax,
+                double temporalResolutionMin, double temporalResolutionMax,
                 AbsoluteDate startDate, AbsoluteDate endDate, double timestep, double urgencyFactor){
         try {
             this.name = name;
@@ -37,7 +38,8 @@ public class Task {
                 }
             }
             this.I = this.measurements.size();
-            this.requirements = new Requirements(spatialResReq, lossReq, numLooks, temporalResolutionMin, temporalResolutionMax, urgencyFactor, startDate, endDate);
+            this.requirements = new Requirements(spatialResReq, lossReq, numLooks, tcorrMin, tcorrMax, temporalResolutionMin,
+                                                 temporalResolutionMax, urgencyFactor, startDate, endDate);
             this.completion = false;
             this.subtasks = generateSubtasks(measurements);
             this.N_j = this.subtasks.size();
@@ -92,7 +94,11 @@ public class Task {
         return combinations;
     }
 
-    public double getLat(){return location.get(0);}
+    public void updateStartDate(AbsoluteDate date){
+        this.requirements.updateStartTime(date);
+    }
+
+        public double getLat(){return location.get(0);}
     public double getLon(){return location.get(1);}
     public double getAlt(){return location.get(2);}
     public Requirements getRequirements(){return requirements;}
@@ -116,6 +122,13 @@ public class Task {
             if(q.getCompletion() == true) subtasksCompleted++;
         }
         if(subtasksCompleted >= this.N_j) this.completion = true;
+    }
+
+    public void resetCompletion(){
+        for(Subtask j : subtasks){
+            j.setCompletion(false);
+        }
+        this.completion = false;
     }
     public boolean getCompletion(){return this.completion;}
     public Dependencies getDependencies(){return dependencies;}

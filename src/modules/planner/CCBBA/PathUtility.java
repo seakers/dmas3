@@ -107,6 +107,16 @@ public class PathUtility {
                     startDate = simTcurr.getDate();
                 }
 
+                // check if interval happens before or after the lifespan of the task
+                AbsoluteDate taskStartTime = j.getParentTask().getRequirements().getStartDate();
+                AbsoluteDate taskEndTime = j.getParentTask().getRequirements().getEndDate();
+                if(endDate.compareTo(taskStartTime) < 0){
+                    continue;
+                }
+                else if(startDate.compareTo(taskEndTime) > 0){
+                    continue;
+                }
+
                 // check if interval happens at or after last measurement
                 if(i_path == 0){
                     stepDate = startDate.getDate();
@@ -126,12 +136,12 @@ public class PathUtility {
                         stepDate = startDate.getDate();
                     }
                 }
-                if(stepDate.compareTo(t_limit) > 0){
-                    continue;
-                }
-                if(endDate.compareTo(t_limit) > 0){
-                    endDate = t_limit.getDate();
-                }
+//                if(stepDate.compareTo(t_limit) > 0){
+//                    continue;
+//                }
+//                if(endDate.compareTo(t_limit) > 0){
+//                    endDate = t_limit.getDate();
+//                }
 
                 // Initialize local search for max utility
                 Utility uInterval = new Utility();
@@ -413,6 +423,10 @@ public class PathUtility {
 
         if(t_a.compareTo(t_end) > 0){
             // selected time is past the end time of the task
+            return 0.0;
+        }
+        else if(t_a.compareTo(t_start) < 0){
+            // selected time is before the start time of the task
             return 0.0;
         }
         else{

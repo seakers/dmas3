@@ -188,7 +188,7 @@ public class IterationResults {
 
             ArrayList<Subtask> Jv = new ArrayList<>();
             for(Subtask k : relatedSubtasks){
-                if(dep.depends(q,j)) Jv.add(k);
+                if(dep.depends(q,k)) Jv.add(k);
             }
             Jv.add(q);
             coalitionMembers.add(Jv);
@@ -282,6 +282,18 @@ public class IterationResults {
         updatedDatum.setW_solo( this.getIterationDatum(j).getW_solo() );
         updatedDatum.setW_all( this.getIterationDatum(j).getW_all() );
         updatedDatum.setC( this.getIterationDatum(j).getC() );
+
+        this.results.put(j, updatedDatum);
+    }
+
+    public void resetResults(Subtask j, AbsoluteDate currentDate, boolean override){
+        IterationDatum updatedDatum = new IterationDatum(j, parentPlanner.getSettings(), currentDate);
+        if(!override) {
+            updatedDatum.setW_any(this.getIterationDatum(j).getW_any());
+            updatedDatum.setW_solo(this.getIterationDatum(j).getW_solo());
+            updatedDatum.setW_all(this.getIterationDatum(j).getW_all());
+            updatedDatum.setC(this.getIterationDatum(j).getC());
+        }
 
         this.results.put(j, updatedDatum);
     }

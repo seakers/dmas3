@@ -2,13 +2,10 @@ package modules.simulation.results;
 
 import madkit.kernel.AbstractAgent;
 import modules.environment.Subtask;
-import modules.environment.SubtaskCapability;
 import modules.environment.Task;
 import modules.environment.TaskCapability;
-import modules.planner.CCBBA.IterationDatum;
 import modules.planner.CCBBA.IterationResults;
 import modules.spacecraft.Spacecraft;
-import modules.spacecraft.instrument.Instrument;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,36 +20,33 @@ public class Results {
     private HashMap<AbstractAgent, AgentResults> agentResults;
     private ArrayList<Subtask> subtasks;
 
-    public Results(HashMap<AbstractAgent, IterationResults> ccbbaResults, ArrayList<Task> environmentTasks,
-                   HashMap<Task, TaskCapability> capabilities, String directoryAddress, boolean resultsMatch){
+    public Results(ArrayList<Task> environmentTasks, ArrayList<Spacecraft> spaceSegment,
+                    HashMap<Task, TaskCapability> capabilities, String directoryAddress) throws Exception {
         this.directoryAddress = directoryAddress;
 
-        if(resultsMatch){
-            // compile all results
-            agentResults = new HashMap<>();
-            for(AbstractAgent agent : ccbbaResults.keySet()){
-                AgentResults agentResult = new AgentResults( (Spacecraft) agent, ccbbaResults, environmentTasks, capabilities);
-                agentResults.put(agent, agentResult);
-            }
+        // compile all results
+        agentResults = new HashMap<>();
+        for(AbstractAgent agent : spaceSegment){
+            AgentResults agentResult = new AgentResults( (Spacecraft) agent, environmentTasks, capabilities);
+            agentResults.put(agent, agentResult);
+        }
 
-            subtasks = new ArrayList<>();
-            subtaskResults = new HashMap<>();
-            for(Task task : environmentTasks){
-                for(Subtask j : task.getSubtasks()){
-                    subtaskResults.put(j, new SubtaskResults(j, ccbbaResults, capabilities));
-                    subtasks.add(j);
-                }
+        subtasks = new ArrayList<>();
+        subtaskResults = new HashMap<>();
+        for(Task task : environmentTasks){
+            for(Subtask j : task.getSubtasks()){
+                subtaskResults.put(j, new SubtaskResults(j, capabilities));
+                subtasks.add(j);
             }
-            overallResults = new OverallResults(ccbbaResults, environmentTasks, agentResults);
         }
+        overallResults = new OverallResults(environmentTasks, spaceSegment, capabilities, agentResults);
+
     }
-    public void print(Boolean resultsMatch){
-        if(resultsMatch) {
-            // print out to directory
-            printSubtasks();
-            printAgents();
-            printResults();
-        }
+    public void print(){
+        // print out to directory
+        printSubtasks();
+        printAgents();
+        printResults();
     }
 
     private void printSubtasks(){
