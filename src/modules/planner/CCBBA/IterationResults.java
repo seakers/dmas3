@@ -298,6 +298,27 @@ public class IterationResults {
         this.results.put(j, updatedDatum);
     }
 
+    public void resetCounters(ArrayList<Subtask> path){
+        ArrayList<Task> parentTasks = new ArrayList<>();
+        for(Subtask j_p : path){
+            if(!parentTasks.contains(j_p.getParentTask())){
+                parentTasks.add(j_p.getParentTask());
+            }
+        }
+
+        CCBBASettings settings = this.parentPlanner.getSettings();
+        for(Subtask j : results.keySet()){
+            if(parentTasks.contains(j.getParentTask())){
+                continue;
+            }
+
+            IterationDatum datum = results.get(j);
+            datum.setW_all(settings.w_all);
+            datum.setW_solo(settings.w_solo);
+            datum.setW_any(settings.w_any);
+        }
+    }
+
     public void leaveResults(IterationDatum newDatum){
         // does nothing
     }

@@ -300,6 +300,7 @@ public class CCBBAPlanner extends Planner {
                          for(Subtask q : parentTask.getSubtasks()){
                              this.resetResults(q);
                          }
+                         this.iterationResults.resetCounters(this.path);
 
                          this.overallPath.add(path.get(0));
                          this.overallBundle.add(path.get(0));
@@ -952,7 +953,6 @@ public class CCBBAPlanner extends Planner {
     public void resetResults(Subtask j){
         AbsoluteDate currentDate = parentSpacecraft.getCurrentDate().getDate();
         this.iterationResults.resetResults(j,currentDate, true);
-
     }
 
     public ArrayList<Subtask> getBundle(){return this.bundle;}
