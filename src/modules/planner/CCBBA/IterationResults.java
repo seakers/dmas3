@@ -66,6 +66,7 @@ public class IterationResults {
         Set<Subtask> subtasks = this.results.keySet();
         ArrayList<Subtask> bundle = planner.getBundle();
 
+        Bid bid_temp = null;
         for(Subtask j : subtasks){
             Bid localBid = new Bid(j);
             int h = 0;
@@ -78,10 +79,14 @@ public class IterationResults {
             }
             this.getIterationDatum(j).setH(h);
 
-            if(h > 0) {
+            if(h == 1) {
                 bidList.add(localBid);
             }
+            
+            if(bidList.size() == 0) bid_temp = localBid;
         }
+        
+        if(bidList.size() == 0) bidList.add(bid_temp);
         return  bidList;
     }
 

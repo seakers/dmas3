@@ -2,7 +2,7 @@ package modules.planner.messages;
 
 import madkit.kernel.Message;
 import madkit.message.MessageFilter;
-import modules.simulation.SimGroups;
+import simulation.SimGroups;
 
 public class AgentFilter implements MessageFilter {
     @Override

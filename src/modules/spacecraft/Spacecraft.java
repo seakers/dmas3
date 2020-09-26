@@ -14,11 +14,10 @@ import modules.spacecraft.orbits.OrbitParams;
 import modules.spacecraft.orbits.SpacecraftOrbit;
 import modules.planner.CCBBA.CCBBAPlanner;
 import modules.planner.Planner;
-import modules.simulation.SimGroups;
+import simulation.SimGroups;
 import modules.planner.messages.*;
 import modules.spacecraft.orbits.TimeInterval;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 

@@ -5,7 +5,7 @@ import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import modules.environment.*;
 import modules.planner.plans.*;
-import modules.simulation.SimGroups;
+import simulation.SimGroups;
 import modules.spacecraft.Spacecraft;
 import modules.planner.Planner;
 import modules.planner.messages.*;
@@ -893,15 +893,15 @@ public class CCBBAPlanner extends Planner {
             int h = datum.getH();
 
             if(h == 1){
-                if(datum.getY()-bidUtility > 1e-3 && datum.getZ() != parentSpacecraft){
+                if(datum.getY() > bidUtility && Math.abs(datum.getY()-bidUtility) > 1e-3 && datum.getZ() != parentSpacecraft){
                     datum.setH(0);
                     h = 0;
                 }
-                else if(datum.getY()-bidUtility > -1e-3){
+                else if( Math.abs(datum.getY()-bidUtility) < 1e-3){
                     // bids are be equal, allow new bid only if it is done earlier the current winner
                     AbsoluteDate bidDate = bid.getT();
                     AbsoluteDate datumDate = datum.getTz();
-                    if(bidDate.compareTo(datumDate) >= 0){
+                    if(datumDate != null && bidDate.compareTo(datumDate) >= 0){
                         datum.setH(0);
                         h = 0;
                     }
@@ -912,16 +912,16 @@ public class CCBBAPlanner extends Planner {
                 }
             }
 
-            if( (h >= 0) && (bidUtility*h-maxBid > 1e-3) ){
+            if( (h > 0) &&  bidUtility*h > maxBid && Math.abs(bidUtility*h-maxBid) > 1e-3){
                 winningBid = bid;
                 maxBid = bid.getC();
             }
-            else if( h>=0 && bidUtility*h-maxBid < 1e-3){
+            else if( h > 0 && Math.abs(bidUtility*h-maxBid) <= 1e-3){
                 // bids are equal, choose bid with the earliest time
                 AbsoluteDate bidDate = bid.getT();
                 AbsoluteDate maxDate = winningBid.getT();
 
-                if(bidDate.compareTo(maxDate) < 0){
+                if(maxDate == null || bidDate.compareTo(maxDate) < 0){
                     // if bid is done before the max and has the same score, choose the new bid
                     winningBid = bid;
                     maxBid = bid.getC();

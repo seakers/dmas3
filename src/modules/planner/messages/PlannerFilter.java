@@ -3,7 +3,6 @@ package modules.planner.messages;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.MessageFilter;
-import modules.simulation.SimGroups;
 
 public class PlannerFilter implements MessageFilter {
     private AgentAddress plannerAddress;

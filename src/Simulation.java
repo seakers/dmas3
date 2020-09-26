@@ -1,9 +1,9 @@
 import madkit.kernel.AbstractAgent;
-import modules.simulation.Architecture;
-import modules.simulation.ProblemStatement;
-import modules.simulation.SimGroups;
-import modules.simulation.SimScheduler;
-import modules.simulation.results.Results;
+import simulation.Architecture;
+import simulation.ProblemStatement;
+import simulation.SimGroups;
+import simulation.SimScheduler;
+import simulation.results.Results;
 import modules.spacecraft.Spacecraft;
 import modules.environment.Environment;
 
@@ -20,8 +20,8 @@ public class Simulation extends AbstractAgent {
     protected String directoryAddress;
 
     public static void main(String[] args) throws Exception {
-        String architecture = "SMAP";
-        String problem = "ASCEND";
+        String architecture = "TEST";
+        String problem = "TEST";
         archName = architecture;
 
         // Load architecture to be evaluated
