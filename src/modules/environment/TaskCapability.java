@@ -116,15 +116,24 @@ public class TaskCapability {
         measurementDates = getMeasurementDates();
 
         double revisitTimeAvg = 0.0;
-        for(AbsoluteDate date : measurementDates){
-            int i_n = measurementDates.indexOf(date);
-            if(i_n == 0) continue;
+        int n = 0;
+        for(int i = 0; i < measurementDates.size(); i++){
+            if(i == 0){
+                continue;
+            }
 
-            AbsoluteDate date_m = measurementDates.get(i_n - 1);
-            revisitTimeAvg = revisitTimeAvg + date.durationFrom(date_m);
+            AbsoluteDate date_i = measurementDates.get(i);
+            AbsoluteDate date_j = measurementDates.get(i-1);
+            if(Math.abs(date_i.durationFrom(date_j)) < 1e-3){
+                continue;
+            }
+
+            revisitTimeAvg = revisitTimeAvg + date_i.durationFrom(date_j);
+            n++;
         }
-        if(measurementDates.size() == 0 || revisitTimeAvg == 0.0) return -1.0;
-        revisitTimeAvg = revisitTimeAvg/measurementDates.size();
+
+        if(n < 1 || revisitTimeAvg == 0.0) return 0.0;
+        revisitTimeAvg = revisitTimeAvg/n;
 
         Requirements req = parentTask.getRequirements();
         double t_max = req.getTemporalResolutionMax();
@@ -159,11 +168,8 @@ public class TaskCapability {
         for(Measurement measurement : this.getCapabilities().keySet()){
             MeasurementCapability measurementCapability_j = this.getCapabilities().get(measurement);
 
-            ArrayList<IterationDatum> datumsCounted = new ArrayList<>();
-            for(Subtask j : measurementCapability_j.getParentSubtasks()){
+            for(IterationDatum datum_j : measurementCapability_j.getPlannerBids()){
                 // if j has dependent measurements, see if they were performed by someone else
-                int i_j = measurementCapability_j.getParentSubtasks().indexOf(j);
-                IterationDatum datum_j = measurementCapability_j.getPlannerBids().get(i_j);
                 AbsoluteDate date = datum_j.getTz().getDate();
                 dates.add(date);
             }

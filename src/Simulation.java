@@ -20,8 +20,8 @@ public class Simulation extends AbstractAgent {
     protected String directoryAddress;
 
     public static void main(String[] args) throws Exception {
-        String architecture = "TEST";
-        String problem = "TEST";
+        String architecture = "SMAP";
+        String problem = "ASCEND";
         archName = architecture;
 
         // Load architecture to be evaluated

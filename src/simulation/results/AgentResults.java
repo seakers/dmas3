@@ -59,8 +59,8 @@ public class AgentResults {
             }
         }
         subtasksDone = subtasksCompleted.size();
-//        overallPath = new ArrayList<>(spacecraft.getOverallPath());
-        overallPath = subtasksCompleted;
+        overallPath = new ArrayList<>(spacecraft.getOverallPath());
+//        overallPath = subtasksCompleted;
     }
 
     public String toString(){
