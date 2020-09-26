@@ -104,9 +104,9 @@ public class Task {
     public Requirements getRequirements(){return requirements;}
     public String getName(){return name;}
     public ArrayList<Measurement> getMeasurements(){return measurements;}
-    public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {
-        return this.pv.getPV(date);
-    }
+//    public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {
+//        return this.pv.getPV(date);
+//    }
     public PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException {
         return this.pv.getPVEarth(date);
     }

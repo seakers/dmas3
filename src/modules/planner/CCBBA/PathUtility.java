@@ -84,7 +84,7 @@ public class PathUtility {
             MeasurementPerformance performance_max = new MeasurementPerformance(j);
 
             // calc time in which having the lowest power sensor on for a measurement would cost more than decayed utility
-            AbsoluteDate t_limit = calcTlimit(j,parentSpacecraft);
+//            AbsoluteDate t_limit = calcTlimit(j,parentSpacecraft);
 
             // get the maximum utility from all line of sight time intervals
             for(TimeInterval interval : lineOfSightTimes){
@@ -501,17 +501,24 @@ public class PathUtility {
         double powerReq = spacecraft.getDesign().getAdcs().getPower();
         double scale = 1.0;
 
-        return M*powerReq*scale;
+        double x = M*powerReq*scale;
+        if(x > 1) {
+            int y = 1;
+        }
+
+//        return M*powerReq*scale;
+        return 0.0;
     }
 
     private double calcMeasurementCost(ArrayList<Instrument> instruments, double duration){
-        double v = 1.5e-1;
+        double v = 1e-2;
         double totalAveragePower = 0.0;
 
         for(Instrument ins : instruments){
             totalAveragePower += ins.getPavg();
         }
         return totalAveragePower*v;
+//        return 0.0;
     }
 
     private double calcMeasurementCost(Instrument instrument){
@@ -519,7 +526,8 @@ public class PathUtility {
         double totalAveragePower = 0.0;
 
         totalAveragePower += instrument.getPavg();
-        return totalAveragePower*v;
+//        return totalAveragePower*v;
+        return 0.0;
     }
 
     private double calcCoalCosts(Subtask j, CCBBAPlanner planner, AbstractAgent parentSpacecraft){
@@ -539,6 +547,13 @@ public class PathUtility {
             }
         }
 
+        return 0.0;
+    }
+
+    private double calcOpportunityScore(double utility){
+        if(utility <= 1e-3){
+            return 5.0-utility;
+        }
         return 0.0;
     }
 
@@ -671,9 +686,11 @@ public class PathUtility {
                             double maneuverCost_combination = calcManeuverCost(maneuverTemp,parentSpacecraft);
                             double coalPenalties_combination = calcCoalCosts(j, planner, parentSpacecraft);
                             double measurementCost_combination = calcMeasurementCost(sensorsUsed, planner.getTimeStep());
+                            double opportunityScore = calcOpportunityScore(S_combination*sig_combination
+                                                                - maneuverCost_combination - coalPenalties_combination - measurementCost_combination);
 
                             double utility_combination = S_combination*sig_combination -
-                                    maneuverCost_combination - coalPenalties_combination - measurementCost_combination;
+                                    maneuverCost_combination - coalPenalties_combination - measurementCost_combination + opportunityScore;
 
                             if(utility_combination > utility_maneuver){
                                 S_maneuver = S_combination;

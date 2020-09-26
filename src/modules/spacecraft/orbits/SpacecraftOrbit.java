@@ -186,8 +186,9 @@ public class SpacecraftOrbit extends OrbitData {
             // calculate PV at this time, save to position vectors
             PVCoordinates pvStepInertial = kepler.propagate(stepDate).getPVCoordinates();
             PVCoordinates pvStepEarth = inertialFrame.getTransformTo(earthFrame, stepDate).transformPVCoordinates(pvStepInertial);
-            pv.put(stepDate,pvStepInertial);
-            pvEarth.put(stepDate,pvStepEarth);
+//            pv.put(stepDate,pvStepInertial);
+//            pvEarth.put(stepDate,pvStepEarth);
+            pvEarth.add(pvStepEarth);
             dates.add(stepDate);
 
             // advance a step
@@ -195,57 +196,69 @@ public class SpacecraftOrbit extends OrbitData {
         }
     }
 
+//    @Override
+//    public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {
+//        if(this.pv.containsKey(date)){
+//            // if already calculated, return value
+//            return this.pv.get(date);
+//        }
+//        else{
+//            // else propagate at that given time
+//            // load orekit data
+//            File orekitData = new File("./src/data/orekit-data");
+//            DataProvidersManager manager = DataProvidersManager.getInstance();
+//            manager.addProvider(new DirectoryCrawler(orekitData));
+//
+//            //if running on a non-US machine, need the line below
+//            Locale.setDefault(new Locale("en", "US"));
+//
+//            //initializes the look up tables for planteary position (required!)
+//            OrekitConfig.init(4);
+//
+//            //define orbit
+//            double a = params.getSMA();
+//            double e = deg2rad( params.getECC());
+//            double i = deg2rad( params.getINC());
+//            double w = deg2rad( params.getAPRG());
+//            double Om = deg2rad( params.getRAAN());
+//            double v = deg2rad( params.getANOM());
+//
+//            double mu = Constants.WGS84_EARTH_MU;
+//            KeplerianOrbit sat1_orbit = new KeplerianOrbit(a, e, i, w, Om, v, PositionAngle.MEAN, inertialFrame, startDate, mu);
+//            Propagator kepler = new KeplerianPropagator(sat1_orbit);
+//
+//            // calculate PV at this time, save to position vectors
+//            PVCoordinates pvStepInertial = kepler.propagate(date).getPVCoordinates();
+//            return pvStepInertial;
+//        }
+//    }
+
     @Override
-    public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {
-        if(this.pv.containsKey(date)){
-            // if already calculated, return value
-            return this.pv.get(date);
+    public PVCoordinates getPVEarth(AbsoluteDate date) {
+//        if(this.pvEarth.containsKey(date)){
+//            // if already calculated, return value
+//            return this.pvEarth.get(date);
+//        }
+//        else{
+//            // else propagate at that given time
+//            PVCoordinates pvStepInertial = getPV(date);
+//            return inertialFrame.getTransformTo(earthFrame, date).transformPVCoordinates(pvStepInertial);
+//        }
+        try {
+            if(date.compareTo(startDate) >= 0 && date.compareTo(endDate) <= 0){
+                int i = (int) (date.durationFrom(startDate)/timeStep);
+                return pvEarth.get(i);
+            } else {
+                throw new Exception("PV of satellite not calculated for time " + date.toString());
+            }
         }
-        else{
-            // else propagate at that given time
-            // load orekit data
-            File orekitData = new File("./src/data/orekit-data");
-            DataProvidersManager manager = DataProvidersManager.getInstance();
-            manager.addProvider(new DirectoryCrawler(orekitData));
-
-            //if running on a non-US machine, need the line below
-            Locale.setDefault(new Locale("en", "US"));
-
-            //initializes the look up tables for planteary position (required!)
-            OrekitConfig.init(4);
-
-            //define orbit
-            double a = params.getSMA();
-            double e = deg2rad( params.getECC());
-            double i = deg2rad( params.getINC());
-            double w = deg2rad( params.getAPRG());
-            double Om = deg2rad( params.getRAAN());
-            double v = deg2rad( params.getANOM());
-
-            double mu = Constants.WGS84_EARTH_MU;
-            KeplerianOrbit sat1_orbit = new KeplerianOrbit(a, e, i, w, Om, v, PositionAngle.MEAN, inertialFrame, startDate, mu);
-            Propagator kepler = new KeplerianPropagator(sat1_orbit);
-
-            // calculate PV at this time, save to position vectors
-            PVCoordinates pvStepInertial = kepler.propagate(date).getPVCoordinates();
-            return pvStepInertial;
+        catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
-    @Override
-    public PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException {
-        if(this.pvEarth.containsKey(date)){
-            // if already calculated, return value
-            return this.pvEarth.get(date);
-        }
-        else{
-            // else propagate at that given time
-            PVCoordinates pvStepInertial = getPV(date);
-            return inertialFrame.getTransformTo(earthFrame, date).transformPVCoordinates(pvStepInertial);
-        }
-    }
-
-    public double getAlt(AbsoluteDate date) throws OrekitException {
+    public double getAlt(AbsoluteDate date) throws Exception {
         // returns the altitude of the spacecraft in [m]
         double pos = this.getPVEarth(date).getPosition().getNorm();
         double Re = this.params.getRe();

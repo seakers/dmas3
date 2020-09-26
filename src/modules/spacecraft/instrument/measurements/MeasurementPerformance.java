@@ -89,7 +89,7 @@ public class MeasurementPerformance {
         return FastMath.toDegrees( Math.PI/2 - (posAngle + lookAngle) );
     }
 
-    private double calcSpatialResAZ(Subtask j, ArrayList<Instrument> instruments, Spacecraft spacecraft, AbsoluteDate date) throws OrekitException {
+    private double calcSpatialResAZ(Subtask j, ArrayList<Instrument> instruments, Spacecraft spacecraft, AbsoluteDate date) throws Exception {
         Vector3D satPos = spacecraft.getPVEarth(date).getPosition();
         Vector3D taskPos = j.getParentTask().getPVEarth(date).getPosition();
 
@@ -123,7 +123,7 @@ public class MeasurementPerformance {
 
         return  resMin;
     }
-    private double calcSpatialResEL(Subtask j, ArrayList<Instrument> instruments, Spacecraft spacecraft, AbsoluteDate date) throws OrekitException {
+    private double calcSpatialResEL(Subtask j, ArrayList<Instrument> instruments, Spacecraft spacecraft, AbsoluteDate date) throws Exception {
         Vector3D satPos = spacecraft.getPVEarth(date).getPosition();
         Vector3D taskPos = j.getParentTask().getPVEarth(date).getPosition();
 

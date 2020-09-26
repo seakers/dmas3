@@ -18,8 +18,9 @@ import java.util.HashMap;
 import java.util.Locale;
 
 public abstract class OrbitData {
-    protected HashMap<AbsoluteDate, PVCoordinates> pv;          // Position vector in the inertial frame as a function of time
-    protected HashMap<AbsoluteDate, PVCoordinates> pvEarth;     // Position vector in the earth frame as a function of time
+//    protected HashMap<AbsoluteDate, PVCoordinates> pv;          // Position vector in the inertial frame as a function of time
+//    protected HashMap<AbsoluteDate, PVCoordinates> pvEarth;     // Position vector in the earth frame as a function of time
+    protected ArrayList<PVCoordinates> pvEarth;
     protected ArrayList<AbsoluteDate> dates;                    // List of dates in propagation
     protected AbsoluteDate startDate;                           // Start date of propagation
     protected AbsoluteDate endDate;                             // End date of propagation
@@ -31,8 +32,9 @@ public abstract class OrbitData {
     protected Frame earthFrame;
 
     public OrbitData(AbsoluteDate startDate, AbsoluteDate endDate, double timeStep) throws OrekitException {
-        this.pv = new HashMap<>();
-        this.pvEarth = new HashMap<>();
+//        this.pv = new HashMap<>();
+//        this.pvEarth = new HashMap<>();
+        this.pvEarth = new ArrayList<>();
         this.startDate  = new AbsoluteDate(); this.startDate = startDate.getDate();
         this.endDate  = new AbsoluteDate(); this.endDate = endDate.getDate();
         this.timeStep = timeStep;
@@ -42,8 +44,8 @@ public abstract class OrbitData {
     }
 
     public abstract void propagateOrbit() throws OrekitException;
-    public abstract PVCoordinates getPV(AbsoluteDate date) throws OrekitException;
-    public abstract PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException;
+//    public abstract PVCoordinates getPV(AbsoluteDate date) throws OrekitException;
+    public abstract PVCoordinates getPVEarth(AbsoluteDate date) throws Exception;
     // ^gets PV if key exists, if not, propagate/interpolate to get position
 
     public boolean lineOfsight(Vector3D x1, Vector3D x2){
@@ -62,25 +64,25 @@ public abstract class OrbitData {
     }
 
     // Getters
-    // -Inertial Vectors
-    public Vector3D getInertialPosition(AbsoluteDate date) throws OrekitException {
-        return getPV(date).getPosition();
-    }
-    public Vector3D getInertialVelocity(AbsoluteDate date) throws OrekitException {
-        return getPV(date).getVelocity();
-    }
-    public Vector3D getInertialAcceleration(AbsoluteDate date) throws OrekitException {
-        return getPV(date).getAcceleration();
-    }
+//    // -Inertial Vectors
+//    public Vector3D getInertialPosition(AbsoluteDate date) throws OrekitException {
+//        return getPV(date).getPosition();
+//    }
+//    public Vector3D getInertialVelocity(AbsoluteDate date) throws OrekitException {
+//        return getPV(date).getVelocity();
+//    }
+//    public Vector3D getInertialAcceleration(AbsoluteDate date) throws OrekitException {
+//        return getPV(date).getAcceleration();
+//    }
 
     // -Earth-centered Vectors
-    public Vector3D getEarthPosition(AbsoluteDate date) throws OrekitException {
+    public Vector3D getEarthPosition(AbsoluteDate date) throws Exception {
         return getPVEarth(date).getPosition();
     }
-    public Vector3D getEarthVelocity(AbsoluteDate date) throws OrekitException {
+    public Vector3D getEarthVelocity(AbsoluteDate date) throws Exception {
         return getPVEarth(date).getVelocity();
     }
-    public Vector3D getEarthAcceleration(AbsoluteDate date) throws OrekitException {
+    public Vector3D getEarthAcceleration(AbsoluteDate date) throws Exception {
         return getPVEarth(date).getAcceleration();
     }
 

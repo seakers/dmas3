@@ -250,8 +250,8 @@ public class Spacecraft extends AbstractAgent {
     /**
      * Getters and setters
      */
-    public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {return this.orbit.getPV(date);}
-    public PVCoordinates getPVEarth(AbsoluteDate date) throws OrekitException {return this.orbit.getPVEarth(date);}
+//    public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {return this.orbit.getPV(date);}
+    public PVCoordinates getPVEarth(AbsoluteDate date) throws Exception {return this.orbit.getPVEarth(date);}
     public SpacecraftDesign getDesign(){ return this.design; }
     public ArrayList<Vector3D> getBodyFrame(){ return this.design.getAdcs().getBodyFrame(); }
     public AbsoluteDate getStartDate(){return this.orbit.getStartDate(); }

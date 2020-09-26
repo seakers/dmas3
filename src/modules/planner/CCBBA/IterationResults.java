@@ -77,7 +77,10 @@ public class IterationResults {
                 if(h == 1 && localBid.getC() <= 0.0) h = 0;
             }
             this.getIterationDatum(j).setH(h);
-            bidList.add(localBid);
+
+            if(h > 0) {
+                bidList.add(localBid);
+            }
         }
         return  bidList;
     }

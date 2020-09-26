@@ -102,7 +102,9 @@ public class CCBBAPlanner extends Planner {
             // Add max bid to bundle and path
             Subtask j_chosen = maxBid.getJ();
             IterationDatum datum_chosen = iterationResults.getIterationDatum(j_chosen);
-            if( maxBid.getC() > 0 && maxBid.getC() > datum_chosen.getY()){
+            if( maxBid.getC() > 0 && maxBid.getC()-datum_chosen.getY() > 1e-3){
+                // New bid outbids current winner, add new bid to bundle
+
                 // Add task to bundle
                 this.bundle.add(j_chosen);
 
@@ -115,8 +117,32 @@ public class CCBBAPlanner extends Planner {
                 // Add new list of sensors used
                 this.sensorsUsed = new ArrayList<>(maxBid.getInstrumentsUsed());
 
-                // update iteration results
+                // Update iteration results
                 this.iterationResults.updateResults(maxBid,parentSpacecraft);
+            }
+            else if(maxBid.getC() > 0 && maxBid.getC()-datum_chosen.getY() < 1e-3){
+                // Bids are the same, choose new bid only if done at an earlier time
+                AbsoluteDate bidDate = maxBid.getT();
+                AbsoluteDate datumDAte = datum_chosen.getTz();
+
+                if(bidDate.compareTo(datumDAte) < 0){
+                    // New bid is performed earlier than current winner, add new bid to bundle
+
+                    // Add task to bundle
+                    this.bundle.add(j_chosen);
+
+                    // Add new path
+                    this.path = new ArrayList<>(maxBid.getWinnerPath());
+
+                    // Add new maneuvers
+                    this.maneuvers = new ArrayList<>(maxBid.getManeuvers());
+
+                    // Add new list of sensors used
+                    this.sensorsUsed = new ArrayList<>(maxBid.getInstrumentsUsed());
+
+                    // Update iteration results
+                    this.iterationResults.updateResults(maxBid,parentSpacecraft);
+                }
             }
             else if(j_chosen != null){
                 datum_chosen.setH(0);
@@ -867,9 +893,18 @@ public class CCBBAPlanner extends Planner {
             int h = datum.getH();
 
             if(h == 1){
-                if(datum.getY() > bidUtility && datum.getZ() != parentSpacecraft){
+                if(datum.getY()-bidUtility > 1e-3 && datum.getZ() != parentSpacecraft){
                     datum.setH(0);
                     h = 0;
+                }
+                else if(datum.getY()-bidUtility > -1e-3){
+                    // bids are be equal, allow new bid only if it is done earlier the current winner
+                    AbsoluteDate bidDate = bid.getT();
+                    AbsoluteDate datumDate = datum.getTz();
+                    if(bidDate.compareTo(datumDate) >= 0){
+                        datum.setH(0);
+                        h = 0;
+                    }
                 }
                 else if(!pathAvailable(bid,prevResults)){
                     datum.setH(0);
@@ -877,9 +912,20 @@ public class CCBBAPlanner extends Planner {
                 }
             }
 
-            if( (h >= 0) && (bidUtility*h > maxBid) ){
+            if( (h >= 0) && (bidUtility*h-maxBid > 1e-3) ){
                 winningBid = bid;
-                maxBid = bid.getScore();
+                maxBid = bid.getC();
+            }
+            else if( h>=0 && bidUtility*h-maxBid < 1e-3){
+                // bids are equal, choose bid with the earliest time
+                AbsoluteDate bidDate = bid.getT();
+                AbsoluteDate maxDate = winningBid.getT();
+
+                if(bidDate.compareTo(maxDate) < 0){
+                    // if bid is done before the max and has the same score, choose the new bid
+                    winningBid = bid;
+                    maxBid = bid.getC();
+                }
             }
         }
 

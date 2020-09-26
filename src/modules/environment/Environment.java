@@ -144,21 +144,66 @@ public class Environment extends Watcher {
             String tcorrMax  =  row[10].getContents();
             String tempResReqMin =  row[11].getContents();
             String tempResReqMax = row[12].getContents();
-            String startTimeString = row[13].getContents();
-            String endTimeString = row[14].getContents();
             double urgencyFactor = Double.parseDouble( row[15].getContents() );
+
+            // load start time
+            String startTimeString;
+            AbsoluteDate startTimeDate;
+            if(containsNonDate( row[13].getContents() )){
+                if(row[13].getContents().equals("RAND")){
+                    double simDuration = endDate.durationFrom(startDate);
+                    double startFromEnd = -1*Math.random()*simDuration;
+                    startTimeDate = endDate.shiftedBy(startFromEnd).getDate();
+                }
+                else if(row[13].getContents().equals("SIM")){
+                    startTimeDate = startDate.getDate();
+                }
+                else{
+                    throw new Exception(name + " start time date formate not suppored");
+                }
+            }
+            else{
+                startTimeString = row[13].getContents();
+                startTimeDate = stringToDate(startTimeString);
+            }
+
+            // load end time
+            String endTimeString;
+            AbsoluteDate endTimeDate;
+            if(containsNonDate(  row[14].getContents() )){
+                if(row[14].getContents().equals("RAND")){
+                    double simDuration = endDate.durationFrom(startDate);
+                    double startFromEnd = -1*Math.random()*simDuration;
+                    endTimeDate = startTimeDate.shiftedBy(startFromEnd).getDate();
+                }
+                else if(row[14].getContents().equals("SIM")){
+                    endTimeDate = endDate.getDate();
+                }
+                else{
+                    throw new Exception(name + " end time date formate not suppored");
+                }
+            }
+            else{
+                endTimeString = row[14].getContents();
+                endTimeDate = stringToDate(endTimeString);
+            }
+
 
             // load score
             double score = 0.0;
             if(containsNonNumbers( row[1].getContents() )){
                 if(row[1].getContents().equals("RAND")){
                     if(freqs.size() == 1){
-                        // max score of 33.00, min of 15;
+                        // max score of 30.00, min of 15;
                         score = Math.random() * 15.0 + 15.0;
                     }
+                    if(freqs.size() == 2){
+                        // max score of 70.0, min of 30
+                        score = Math.random() * 40.0 + 30.0;
+                    }
                     else {
-                        // max score of 100, min of 30
-                        score = Math.random() * 70.0 + 30.0;
+                        // max score of 100, min of 70
+                        score = Math.random() * 30.0 + 70.0;
                     }
                 }
             }
@@ -169,7 +214,7 @@ public class Environment extends Watcher {
             tasks.add( new Task(name, score, lat, lon, alt, freqs,
                     spatialResReq, snrReq, numLooks, stringToDuration(tcorrMin), stringToDuration(tcorrMax),
                     stringToDuration(tempResReqMin), stringToDuration(tempResReqMax),
-                    stringToDate(startTimeString), stringToDate(endTimeString), timeStep, urgencyFactor));
+                    startTimeDate, endTimeDate, timeStep, urgencyFactor));
         }
 
         return tasks;
@@ -180,6 +225,19 @@ public class Environment extends Watcher {
                     && (str.charAt(i) != '4') && (str.charAt(i) != '5') && (str.charAt(i) != '6') && (str.charAt(i) != '7')
                     && (str.charAt(i) != '8') && (str.charAt(i) != '9') && (str.charAt(i) != '.') && (str.charAt(i) != '-')
                     && (str.charAt(i) != '+')&& (str.charAt(i) != 'e')){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean containsNonDate(String str){
+        // 2020-01-01T00:00:00Z
+        for(int i = 0; i < str.length(); i++){
+            if(        (str.charAt(i) != '0') && (str.charAt(i) != '1') && (str.charAt(i) != '2') && (str.charAt(i) != '3')
+                    && (str.charAt(i) != '4') && (str.charAt(i) != '5') && (str.charAt(i) != '6') && (str.charAt(i) != '7')
+                    && (str.charAt(i) != '8') && (str.charAt(i) != '9') && (str.charAt(i) != '.') && (str.charAt(i) != '-')
+                    && (str.charAt(i) != ':') && (str.charAt(i) != 'Z') && (str.charAt(i) != 'T')){
                 return true;
             }
         }
