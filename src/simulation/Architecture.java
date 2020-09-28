@@ -30,17 +30,19 @@ public class Architecture extends AbstractAgent{
     private JSONArray inputOrbitData;
     private ArrayList<Spacecraft> spaceSegment;
     private HashMap<String, AbstractAgent> groundSegment;
+    private boolean rand;
 
-    public Architecture(String inputFile, String problemStatement) throws Exception {
+    public Architecture(String inputFile, String problemStatement, boolean rand) throws Exception {
         this.problemStatement = problemStatement;
         this.problemStatementDir = "./src/scenarios/" + problemStatement;
         this.inputFileName = inputFile + ".json";
         this.inputFileDir = "./src/inputs/" + inputFile + ".json";
+        this.rand = rand;
 
         this.inputDataSpace = (JSONArray) readJSON().get("spaceSegment");
         this.inputDataGround = (JSONArray) readJSON().get("groundSegment");
         this.inputOrbitData = (JSONArray) readJSON().get("orbits");
-        this.spaceSegment = new ArrayList<>(); this.spaceSegment.addAll( initiateSpaceSegment() );
+        this.spaceSegment = new ArrayList<>(); this.spaceSegment.addAll( initiateSpaceSegment(rand) );
         this.groundSegment = null;
     }
 
@@ -56,7 +58,7 @@ public class Architecture extends AbstractAgent{
         return null;
     }
 
-    private ArrayList<Spacecraft> initiateSpaceSegment() throws Exception {
+    private ArrayList<Spacecraft> initiateSpaceSegment(boolean rand) throws Exception {
         // Read Instrument excel data and generate instruments and antennas
         Workbook instrumentDataXls = Workbook.getWorkbook(new File(problemStatementDir + "/Instrument Capabilities.xls"));
 

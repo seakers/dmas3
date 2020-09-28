@@ -71,11 +71,11 @@ public class CCBBAPlanner extends Planner {
 
     public void phaseOne() throws Exception {
         // Check for life status
-        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+//        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
 //        boolean alive = !(myRoles.contains(SimGroups.PLANNER_DIE));
 
-        if(myRoles.contains(SimGroups.PLANNER_DO)) leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DO);
-        if(!myRoles.contains(SimGroups.PLANNER_THINK)) requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
+//        if(myRoles.contains(SimGroups.PLANNER_DO)) leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DO);
+//        if(!myRoles.contains(SimGroups.PLANNER_THINK)) requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
 
         // generate bundle
 //        if(alive) getLogger().info("Starting phase one");
@@ -168,10 +168,10 @@ public class CCBBAPlanner extends Planner {
     public void phaseTwo() throws Exception {
         // Check for life status
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-        boolean alive = !(myRoles.contains(SimGroups.PLANNER_DIE));
+//        boolean alive = !(myRoles.contains(SimGroups.PLANNER_DIE));
 
         List<AgentAddress> otherAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP,SimGroups.PLANNER);
-        List<AgentAddress> doingAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP,SimGroups.PLANNER_DO);
+        List<AgentAddress> doingAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP,SimGroups.CCBBA_DONE);
         List<AgentAddress> otherAgentsDead = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP,SimGroups.PLANNER_DIE);
 
         int n_planners = 0;
@@ -253,11 +253,11 @@ public class CCBBAPlanner extends Planner {
         // Check for life status
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
         boolean alive = !(myRoles.contains(SimGroups.PLANNER_DIE));
-        boolean doing = myRoles.contains(SimGroups.PLANNER_DO);
+//        boolean doing = myRoles.contains(SimGroups.PLANNER_DO);
 //        if(alive && !doing) getLogger().info("Starting doing phase");
 
         //
-        if(!doing) requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DO);
+//        if(!doing) requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DO);
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
 
         // check if other agents have new plans that affect bids
@@ -297,20 +297,25 @@ public class CCBBAPlanner extends Planner {
                     this.parentSpacecraft.getCurrentDate().shiftedBy(this.environment.getTimeStep()));
             sendPlanToParentAgent(new PlannerMessage(this.plan));
 
-            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
-            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
+            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
+            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
         }
         else if(newPathSize > 0){
             // if no changes were made to tasks in the bundle, then do the first task in the path
             AbsoluteDate t_curr = parentSpacecraft.getCurrentDate();
+            int y = 1;
             for(int i = 0; i < planList.size(); i++) {
-                 Plan plan_curr = planList.get(0);
+                Plan plan_curr = planList.get(0);
+                parentSpacecraft.updateLatestPlanInEnvironment(plan_curr);
 
                 if (plan_curr.getStartDate().durationFrom(t_curr) <= this.getTimeStep() + 1e-3) {
                     if (alive && i == 0) getLogger().info("Time scheduled for plan reached! Performing plan...");
                     plan = plan_curr.copy();
                     sendPlanToParentAgent(new PlannerMessage(this.plan));
                     planList.remove(0);
+                }
+                else{
+                    break;
                 }
 
                 if (this.plan != null) {
@@ -352,7 +357,6 @@ public class CCBBAPlanner extends Planner {
                         else{
                             // tasks are not available
                             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
-                            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
 
                             // no more subtasks available for agent, send parent agent to death state
                             requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
@@ -375,20 +379,19 @@ public class CCBBAPlanner extends Planner {
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
                 }
                 else if(bundle.size() > 0){
-                    // tasks remaining in bundle, continue performing plan
+                    // tasks remaining in bundle and no changes were made, continue performing plan
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
-                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
                 }
                 else{
                     // tasks are not available
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
-                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
-
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
                 }
             }
         }
         else if(newPathSize == 0){
+            parentSpacecraft.updateLatestPlanInEnvironment(null);
+
             // no more tasks in plan, check if tasks available
             if(iterationResults.subtasksAvailable()){
                 phaseOne();
@@ -401,7 +404,6 @@ public class CCBBAPlanner extends Planner {
                 else {
                     // tasks are not available
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
-                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
 
                     // no more subtasks available for agent, send parent agent to death state
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);

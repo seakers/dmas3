@@ -23,12 +23,12 @@ public class Simulation extends AbstractAgent {
     public static void main(String[] args) throws Exception {
         simStart = System.nanoTime();
 
-        String architecture = "TEST";
-        String problem = "TEST";
+        String architecture = "SMAP";
+        String problem = "ASCEND";
         archName = architecture;
 
         // Load architecture to be evaluated
-        arch = new Architecture(architecture, problem);
+        arch = new Architecture(architecture, problem, false);
 
         // Load scenario problem to evaluate architecture
         prob = new ProblemStatement(architecture, problem);

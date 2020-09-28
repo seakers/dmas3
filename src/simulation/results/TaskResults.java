@@ -3,6 +3,7 @@ package simulation.results;
 import modules.environment.Task;
 import modules.environment.TaskCapability;
 import modules.planner.CCBBA.IterationDatum;
+import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.measurements.Measurement;
 import modules.spacecraft.instrument.measurements.MeasurementCapability;
 import org.orekit.time.AbsoluteDate;
@@ -90,7 +91,7 @@ public class TaskResults {
 
         for(int i = 0; i < dates.size(); i++){
             IterationDatum dat = datumsOrdered.get(i);
-            results.append( "\t\t" + dat.getSubtask() + "\t\t{" + dat.getTz() + "}\t" + dat.getZ().getName() + "\n");
+            results.append( "\t\t" + dat.getSubtask() + "\t\t{" + dat.getTz() + "}\t" + ((Spacecraft) dat.getZ()).getName() + "\n");
         }
 
         results.append("---------------------------------------------------------------------------------\n");

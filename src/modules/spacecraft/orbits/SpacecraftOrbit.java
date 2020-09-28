@@ -1,5 +1,6 @@
 package modules.spacecraft.orbits;
 
+import modules.environment.Subtask;
 import modules.spacecraft.Spacecraft;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import modules.spacecraft.instrument.Instrument;
@@ -196,43 +197,6 @@ public class SpacecraftOrbit extends OrbitData {
         }
     }
 
-//    @Override
-//    public PVCoordinates getPV(AbsoluteDate date) throws OrekitException {
-//        if(this.pv.containsKey(date)){
-//            // if already calculated, return value
-//            return this.pv.get(date);
-//        }
-//        else{
-//            // else propagate at that given time
-//            // load orekit data
-//            File orekitData = new File("./src/data/orekit-data");
-//            DataProvidersManager manager = DataProvidersManager.getInstance();
-//            manager.addProvider(new DirectoryCrawler(orekitData));
-//
-//            //if running on a non-US machine, need the line below
-//            Locale.setDefault(new Locale("en", "US"));
-//
-//            //initializes the look up tables for planteary position (required!)
-//            OrekitConfig.init(4);
-//
-//            //define orbit
-//            double a = params.getSMA();
-//            double e = deg2rad( params.getECC());
-//            double i = deg2rad( params.getINC());
-//            double w = deg2rad( params.getAPRG());
-//            double Om = deg2rad( params.getRAAN());
-//            double v = deg2rad( params.getANOM());
-//
-//            double mu = Constants.WGS84_EARTH_MU;
-//            KeplerianOrbit sat1_orbit = new KeplerianOrbit(a, e, i, w, Om, v, PositionAngle.MEAN, inertialFrame, startDate, mu);
-//            Propagator kepler = new KeplerianPropagator(sat1_orbit);
-//
-//            // calculate PV at this time, save to position vectors
-//            PVCoordinates pvStepInertial = kepler.propagate(date).getPVCoordinates();
-//            return pvStepInertial;
-//        }
-//    }
-
     @Override
     public PVCoordinates getPVEarth(AbsoluteDate date) {
 //        if(this.pvEarth.containsKey(date)){
@@ -264,6 +228,15 @@ public class SpacecraftOrbit extends OrbitData {
         double Re = this.params.getRe();
 
         return pos-Re;
+    }
+
+    public void removeLineOfSightTimes(Subtask j, ArrayList<TimeInterval> intervalsToRemove){
+        ArrayList<TimeInterval> intervals = this.lineOfSightTimes.get(j.getParentTask());
+        for(TimeInterval removedInterval : intervalsToRemove){
+            if(intervals.size() > 1) intervals.remove(removedInterval);
+            else if(intervals.contains(removedInterval)) intervals = new ArrayList<>();
+        }
+        int x = 1;
     }
 
     private double rad2deg(double th){ return th*180.0/Math.PI; }

@@ -226,6 +226,10 @@ public class Spacecraft extends AbstractAgent {
     public ArrayList<TimeInterval> getLineOfSightTimeS(Subtask j){
         return this.orbit.getLineOfSightTimes().get(j.getParentTask());
     }
+    public void removeLineOfSightTimes(Subtask j, ArrayList<TimeInterval> intervalsToRemove){
+        this.orbit.removeLineOfSightTimes(j,intervalsToRemove);
+    }
+
     public boolean isVisible(Instrument ins, ArrayList<Vector3D> bodyFrame, AbsoluteDate date, Vector3D objectPos) throws Exception {
         return this.design.getAdcs().isVisible(ins,bodyFrame,orbit,date,objectPos);
     }
@@ -243,6 +247,9 @@ public class Spacecraft extends AbstractAgent {
         // check life status
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
         return !(myRoles.contains(SimGroups.AGENT_DIE));
+    }
+    public void updateLatestPlanInEnvironment(Plan plan){
+        this.environment.updateLatestPlan(this.planner, plan);
     }
 
 

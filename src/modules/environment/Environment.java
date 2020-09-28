@@ -11,6 +11,8 @@ import madkit.kernel.Watcher;
 import madkit.message.SchedulingMessage;
 import madkit.simulation.probe.PropertyProbe;
 import modules.planner.CCBBA.IterationResults;
+import modules.planner.Planner;
+import modules.planner.plans.Plan;
 import simulation.Architecture;
 import simulation.results.Results;
 import modules.planner.messages.CCBBAResultsMessage;
@@ -46,6 +48,7 @@ public class Environment extends Watcher {
     private ArrayList<Spacecraft> spaceSegment;
     private long simulationTime;
     private int terminate = -1;
+    private HashMap<Planner, Plan> latestPlans;
 
     // Constructor
     public Environment(ProblemStatement prob, Architecture arch, String directoryAddress, long start) throws Exception {
@@ -61,6 +64,7 @@ public class Environment extends Watcher {
         this.directoryAddress = directoryAddress;
         this.spaceSegment = new ArrayList<>(arch.getSpaceSegment());
         this.simulationTime = start;
+        latestPlans = new HashMap<>();
     }
 
     @Override
@@ -360,13 +364,32 @@ public class Environment extends Watcher {
     }
 
     protected void tic() throws Exception {
-        List<AgentAddress> thinkingAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
-        if(thinkingAgents == null || thinkingAgents.size() == 0) {
-            // only advance time when agents are done planning
-            this.currentDate = this.currentDate.shiftedBy(this.timeStep);
+        List<AgentAddress> agents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER);
+        List<AgentAddress> doingAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
+        if(doingAgents == null || doingAgents.size() == agents.size()) {
+            if(latestPlans.size() > 0) {
+                // only advance time when agents are done planning
+                AbsoluteDate minDate = null;
+                for (Planner planner : latestPlans.keySet()) {
+                    if(latestPlans.get(planner) != null){
+                        AbsoluteDate planStart = latestPlans.get(planner).getStartDate();
+
+                        if (minDate == null) minDate = planStart;
+                        else if (planStart != null && planStart.compareTo(minDate) < 0) minDate = planStart;
+                    }
+                }
+                if(minDate == null){
+                    this.currentDate = this.currentDate.shiftedBy(this.timeStep*60);
+                }
+                else {
+                    this.currentDate = minDate;
+                }
+            }
+            else{
+                this.currentDate = this.currentDate.shiftedBy(this.timeStep*1);
+            }
         }
 
-        List<AgentAddress> agents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER);
         List<AgentAddress> deadAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
         List<AgentAddress> spacecraftSensing = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_SENSE);
         int n_agents = 0;
@@ -397,7 +420,7 @@ public class Environment extends Watcher {
             sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
         }
 
-        if(prevDate == null || currentDate.durationFrom(prevDate) >= 3600.0) {
+        if(prevDate == null || currentDate.durationFrom(prevDate) >= 60.0) {
             getLogger().finer("Current simulation time: " + this.currentDate.toString());
             prevDate = currentDate.getDate();
         }
@@ -448,5 +471,8 @@ public class Environment extends Watcher {
     }
     public void addResult(Message message){
         this.resultsMessages.add(message);
+    }
+    public void updateLatestPlan(Planner planner, Plan plan){
+        this.latestPlans.put(planner,plan);
     }
 }

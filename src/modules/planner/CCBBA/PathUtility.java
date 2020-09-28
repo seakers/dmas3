@@ -87,6 +87,8 @@ public class PathUtility {
 //            AbsoluteDate t_limit = calcTlimit(j,parentSpacecraft);
 
             // get the maximum utility from all line of sight time intervals
+            ArrayList<TimeInterval> intervalsToRemove = new ArrayList<>();
+
             for(TimeInterval interval : lineOfSightTimes){
                 // get date information from access and environment
                 AbsoluteDate startDate = interval.getAccessStart();
@@ -100,10 +102,12 @@ public class PathUtility {
                 AbsoluteDate simTcurr = parentSpacecraft.getCurrentDate();
                 if(simTcurr.compareTo(endDate) > 0){
                     // if current simulation time is past the interval, then skip to next interval
+                    intervalsToRemove.add(interval);
                     continue;
                 }
                 else if(simTcurr.compareTo(startDate) > 0){
                     // if current simulation time is within the access interval, chane start time to current sim time
+                    interval.setAccessStart(simTcurr.getDate());
                     startDate = simTcurr.getDate();
                 }
 
@@ -111,9 +115,11 @@ public class PathUtility {
                 AbsoluteDate taskStartTime = j.getParentTask().getRequirements().getStartDate();
                 AbsoluteDate taskEndTime = j.getParentTask().getRequirements().getEndDate();
                 if(endDate.compareTo(taskStartTime) < 0){
+                    intervalsToRemove.add(interval);
                     continue;
                 }
                 else if(startDate.compareTo(taskEndTime) > 0){
+                    intervalsToRemove.add(interval);
                     continue;
                 }
 
@@ -136,12 +142,6 @@ public class PathUtility {
                         stepDate = startDate.getDate();
                     }
                 }
-//                if(stepDate.compareTo(t_limit) > 0){
-//                    continue;
-//                }
-//                if(endDate.compareTo(t_limit) > 0){
-//                    endDate = t_limit.getDate();
-//                }
 
                 // Initialize local search for max utility
                 Utility uInterval = new Utility();
@@ -168,6 +168,9 @@ public class PathUtility {
                     performance_max = uInterval.performance;
                 }
             }
+
+            // remove times that are not able to be evaluated anymore
+            parentSpacecraft.removeLineOfSightTimes(j,intervalsToRemove);
 
             double S = S_max;
             double sig = sig_max;
@@ -552,7 +555,7 @@ public class PathUtility {
 
     private double calcOpportunityScore(double utility){
         if(utility <= 1e-3){
-            return 5.0-utility;
+            return 10.0-utility;
         }
         return 0.0;
     }

@@ -41,18 +41,22 @@ public class TaskCapability {
     }
 
     private double calcResSat() throws Exception {
-        double spatialResAvg = 0.0;
+        double spatialResAvg = -1.0;
         double n = 0.0;
         for(Measurement measurement : parentTask.getMeasurements()){
             MeasurementCapability measurementCapability = subtaskCapabilities.get(measurement);
 
             for(MeasurementPerformance performance : measurementCapability.getPerformance()){
-                spatialResAvg += performance.getSpatialRes();
-                n += 1.0;
+                if(performance.getSpatialRes() >= 0) {
+                    if(n == 0.0) spatialResAvg = performance.getSpatialRes();
+                    else spatialResAvg += performance.getSpatialRes();
+                    n += 1.0;
+                }
             }
         }
 
-        if(Math.abs(n) < 1e-3) return -1.0;
+        if(Math.abs(spatialResAvg) < 1e-3) return 0.0;
+        else if(n == 0) return 0.0;
         spatialResAvg = spatialResAvg/n;
 
         Requirements req = parentTask.getRequirements();
@@ -87,7 +91,7 @@ public class TaskCapability {
             }
         }
 
-        if(Math.abs(n) < 1e-3) return -1.0;
+        if(Math.abs(n) < 1e-3) return 0.0;
         snrAvg = snrAvg/n;
 
 

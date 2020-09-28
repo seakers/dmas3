@@ -59,9 +59,9 @@ public class OverallResults {
             TaskCapability taskCapability = capabilities.get(task);
             taskCapability.calcReqSat();
 
-            if(taskCapability.getResSat() >= 0) resSat += taskCapability.getResSat();
-            if(taskCapability.getSnrSat() >= 0) snrSat += taskCapability.getSnrSat();
-            if(taskCapability.getRevSat() >= 0) revSat += taskCapability.getRevSat();
+            resSat += taskCapability.getResSat();
+            snrSat += taskCapability.getSnrSat();
+            revSat += taskCapability.getRevSat();
             n += 1.0;
         }
 
@@ -172,7 +172,7 @@ public class OverallResults {
     }
 
     public String toString(){
-        this.runTime = (System.nanoTime() - this.runTime) * ((long) 1e9);
+        this.runTime = (System.nanoTime() - this.runTime);
         StringBuilder results = new StringBuilder();
         results.append(utility + "\t" + coalsFormed + "\t" + coalsAvailable + "\t" + scoreAchieved + "\t" + scoreAvailable
                 + "\t" + tasksDone + "\t" + tasksAvailable + "\t" + numAgents + "\t" + planningHorizon + "\t" + overallCostPerAgent

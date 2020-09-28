@@ -348,8 +348,12 @@ public class IterationResults {
             for(Subtask j : myKeyset){
                 IterationDatum myDatum = this.getIterationDatum(j);
                 IterationDatum itsDatum = receivedResults.getIterationDatum(j);
-                if(!myDatum.equals(itsDatum)) return true;
-                else if(myDatum.getV() != 0) return true;
+                if(!myDatum.equals(itsDatum)){
+                    return true;
+                }
+                else if(myDatum.getV() != 0) {
+                    return true;
+                }
             }
             return false;
         }
