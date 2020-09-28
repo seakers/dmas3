@@ -20,7 +20,7 @@ public class Results {
     private ArrayList<Subtask> subtasks;
 
     public Results(ArrayList<Task> environmentTasks, ArrayList<Spacecraft> spaceSegment,
-                    HashMap<Task, TaskCapability> capabilities, String directoryAddress) throws Exception {
+                    HashMap<Task, TaskCapability> capabilities, String directoryAddress, long simulationTime) throws Exception {
         this.directoryAddress = directoryAddress;
 
         // compile all results
@@ -38,7 +38,7 @@ public class Results {
                 subtasks.add(j);
             }
         }
-        overallResults = new OverallResults(environmentTasks, spaceSegment, capabilities, agentResults);
+        overallResults = new OverallResults(environmentTasks, spaceSegment, capabilities, agentResults, simulationTime);
 
     }
     public void print(){

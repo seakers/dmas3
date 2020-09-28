@@ -24,6 +24,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 
 import java.io.File;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +43,10 @@ public class Environment extends Watcher {
     private ArrayList<Message> resultsMessages;
     private String directoryAddress;
     private ArrayList<Spacecraft> spaceSegment;
+    private long simulationTime;
 
     // Constructor
-    public Environment(ProblemStatement prob, Architecture arch, String directoryAddress) throws Exception {
+    public Environment(ProblemStatement prob, Architecture arch, String directoryAddressm, long start) throws Exception {
         // load info from problem statements
         setUpLogger(prob.getLoggerLevel());
         this.startDate = prob.getStartDate().getDate();
@@ -56,6 +58,7 @@ public class Environment extends Watcher {
         this.resultsMessages = new ArrayList<>();
         this.directoryAddress = directoryAddress;
         this.spaceSegment = new ArrayList<>(arch.getSpaceSegment());
+        this.simulationTime = start;
     }
 
     @Override
@@ -372,7 +375,7 @@ public class Environment extends Watcher {
         if(endDateReached) getLogger().finer("Simulation end-time reached. Terminating sim");
         if( endDateReached || n_agents == n_dead) {
             // End time reached, terminate sim
-            Results results = new Results(this.environmentTasks, this.spaceSegment, this.measurementCapabilities, directoryAddress);
+            Results results = new Results(this.environmentTasks, this.spaceSegment, this.measurementCapabilities, this.directoryAddress, this.simulationTime);
 
             // save results to text files
             results.print();

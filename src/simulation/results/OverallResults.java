@@ -25,18 +25,32 @@ public class OverallResults {
     private double resSat = 0;
     private double snrSat = 0;
     private double revSat = 0;
+    private int numMeasurements = 0;
+    private long runTime = (long) 0.0;
 
     public OverallResults(ArrayList<Task> environmentTasks, ArrayList<Spacecraft> spaceSegment,
-                          HashMap<Task, TaskCapability> capabilities, HashMap<AbstractAgent, AgentResults> agentResults) throws Exception {
+                          HashMap<Task, TaskCapability> capabilities, HashMap<AbstractAgent, AgentResults> agentResults,
+                          long simulationTime) throws Exception {
         ArrayList<Spacecraft> agentList = spaceSegment;
         numAgents = agentResults.size();
         planningHorizon = ( (CCBBAPlanner) ( (Spacecraft) agentList.get(0)).getPlanner()).getSettings().M;
+        this.runTime = simulationTime;
 
         countCoals(environmentTasks, capabilities);
         countScore(environmentTasks, capabilities);
         countTasks(environmentTasks, capabilities);
         countCost(agentResults);
         countReqSat(environmentTasks, capabilities);
+        countNumMeasurements(environmentTasks, capabilities);
+    }
+
+    private void countNumMeasurements(ArrayList<Task> environmentTasks,HashMap<Task, TaskCapability> capabilities) throws Exception {
+        for(Task task : environmentTasks) {
+            for(Measurement measurement : capabilities.get(task).getCapabilities().keySet()){
+                MeasurementCapability cap = capabilities.get(task).getCapabilities().get(measurement);
+                numMeasurements += cap.getNumMeasurements();
+            }
+        }
     }
 
     private void countReqSat(ArrayList<Task> environmentTasks,HashMap<Task, TaskCapability> capabilities) throws Exception {
@@ -158,10 +172,11 @@ public class OverallResults {
     }
 
     public String toString(){
+        this.runTime = (System.nanoTime() - this.runTime) * ((long) 1e9);
         StringBuilder results = new StringBuilder();
         results.append(utility + "\t" + coalsFormed + "\t" + coalsAvailable + "\t" + scoreAchieved + "\t" + scoreAvailable
                 + "\t" + tasksDone + "\t" + tasksAvailable + "\t" + numAgents + "\t" + planningHorizon + "\t" + overallCostPerAgent
-                + "\t" + resSat  + "\t" + snrSat + "\t" + revSat);
+                + "\t" + resSat  + "\t" + snrSat + "\t" + revSat + "\t" + numMeasurements + "\t" + runTime);
         return results.toString();
     }
 }

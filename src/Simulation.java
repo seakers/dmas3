@@ -18,10 +18,13 @@ public class Simulation extends AbstractAgent {
     protected Environment environment;
     protected Results results;
     protected String directoryAddress;
+    protected static long simStart;
 
     public static void main(String[] args) throws Exception {
-        String architecture = "SMAP";
-        String problem = "ASCEND";
+        simStart = System.nanoTime();
+
+        String architecture = "TEST";
+        String problem = "TEST";
         archName = architecture;
 
         // Load architecture to be evaluated
@@ -44,7 +47,7 @@ public class Simulation extends AbstractAgent {
             createGroup(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
 
             // 3 : launch simulation environment
-            this.environment = new Environment(prob, arch, directoryAddress);
+            this.environment = new Environment(prob, arch, directoryAddress, simStart);
             launchAgent(this.environment, false);
 
             // 4 : launch architecture agents
