@@ -15,8 +15,10 @@ import java.util.HashMap;
 public class Results {
     private String directoryAddress;
     private OverallResults overallResults;
+    private HashMap<Task, TaskResults> taskResults;
     private HashMap<Subtask, SubtaskResults> subtaskResults;
     private HashMap<AbstractAgent, AgentResults> agentResults;
+    private ArrayList<Task> tasks;
     private ArrayList<Subtask> subtasks;
 
     public Results(ArrayList<Task> environmentTasks, ArrayList<Spacecraft> spaceSegment,
@@ -30,22 +32,50 @@ public class Results {
             agentResults.put(agent, agentResult);
         }
 
-        subtasks = new ArrayList<>();
-        subtaskResults = new HashMap<>();
+//        subtasks = new ArrayList<>();
+//        subtaskResults = new HashMap<>();
+//        for(Task task : environmentTasks){
+//            for(Subtask j : task.getSubtasks()){
+//                subtaskResults.put(j, new SubtaskResults(j, capabilities));
+//                subtasks.add(j);
+//            }
+//        }
+        taskResults = new HashMap<>();
+        tasks = new ArrayList<>();
         for(Task task : environmentTasks){
-            for(Subtask j : task.getSubtasks()){
-                subtaskResults.put(j, new SubtaskResults(j, capabilities));
-                subtasks.add(j);
-            }
+            taskResults.put(task, new TaskResults(capabilities.get(task)));
+            tasks.add(task);
         }
+
         overallResults = new OverallResults(environmentTasks, spaceSegment, capabilities, agentResults, simulationTime);
 
     }
     public void print(){
         // print out to directory
-        printSubtasks();
+//        printSubtasks();
+        printTasks();
         printAgents();
         printResults();
+    }
+
+    private void printTasks(){
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = this.directoryAddress + "/task_list.out";
+        fileWriter = null;
+        try {
+            fileWriter = new FileWriter( outAddress, false );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        for(Task v : tasks){
+            printWriter.print(taskResults.get(v).toString());
+        }
+
+        //close file
+        printWriter.close();
     }
 
     private void printSubtasks(){

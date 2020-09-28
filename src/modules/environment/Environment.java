@@ -35,6 +35,7 @@ public class Environment extends Watcher {
     private AbsoluteDate startDate;
     private AbsoluteDate endDate;
     private AbsoluteDate currentDate;
+    private AbsoluteDate prevDate;
     private double timeStep;
     private ArrayList<Task> environmentTasks;
     private HashMap<Task,TaskCapability> measurementCapabilities;
@@ -44,9 +45,10 @@ public class Environment extends Watcher {
     private String directoryAddress;
     private ArrayList<Spacecraft> spaceSegment;
     private long simulationTime;
+    private int terminate = -1;
 
     // Constructor
-    public Environment(ProblemStatement prob, Architecture arch, String directoryAddressm, long start) throws Exception {
+    public Environment(ProblemStatement prob, Architecture arch, String directoryAddress, long start) throws Exception {
         // load info from problem statements
         setUpLogger(prob.getLoggerLevel());
         this.startDate = prob.getStartDate().getDate();
@@ -366,6 +368,7 @@ public class Environment extends Watcher {
 
         List<AgentAddress> agents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER);
         List<AgentAddress> deadAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
+        List<AgentAddress> spacecraftSensing = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_SENSE);
         int n_agents = 0;
         if(agents != null) n_agents = agents.size();
         int n_dead = 0;
@@ -373,7 +376,16 @@ public class Environment extends Watcher {
 
         boolean endDateReached = this.currentDate.compareTo(this.endDate) >= 0;
         if(endDateReached) getLogger().finer("Simulation end-time reached. Terminating sim");
-        if( endDateReached || n_agents == n_dead) {
+
+        boolean agentsDead = n_agents == n_dead && spacecraftSensing != null;
+        if(agentsDead) {
+            terminate++;
+            if(terminate > 1) {
+                getLogger().finer("No more tasks available for agents. Terminating sim");
+            }
+        }
+
+        if( endDateReached || (terminate > 1)) {
             // End time reached, terminate sim
             Results results = new Results(this.environmentTasks, this.spaceSegment, this.measurementCapabilities, this.directoryAddress, this.simulationTime);
 
@@ -383,32 +395,12 @@ public class Environment extends Watcher {
             // send terminate command to scheduler
             SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
             sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
-
-//            List<AgentAddress> agentList = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT);
-//            if(agentList.size() == resultsMessages.size()) {
-//                // compare results from agents
-//                boolean resultsMatch = compareResults();
-//                if (!resultsMatch) System.out.println("ERROR: resulting plans do not match.");
-//
-//                // compile results
-//                HashMap<AbstractAgent, IterationResults> ccbbaResults = new HashMap<>();
-//                for (Message message : resultsMessages) {
-//                    IterationResults results = ((CCBBAResultsMessage) message).getResults();
-//                    AbstractAgent parentAgent = results.getParentAgent();
-//                    ccbbaResults.put(parentAgent, results);
-//                }
-//                Results results = new Results(ccbbaResults, this.environmentTasks, this.measurementCapabilities, directoryAddress, resultsMatch);
-//
-//                // save results to text files
-//                results.print(resultsMatch);
-//
-//                // send terminate command to scheduler
-//                SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
-//                sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
-//            }
         }
 
-        getLogger().finer("Current simulation time: " + this.currentDate.toString());
+        if(prevDate == null || currentDate.durationFrom(prevDate) >= 3600.0) {
+            getLogger().finer("Current simulation time: " + this.currentDate.toString());
+            prevDate = currentDate.getDate();
+        }
     }
 
     private boolean compareResults(){

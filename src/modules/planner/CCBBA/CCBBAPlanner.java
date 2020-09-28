@@ -72,7 +72,7 @@ public class CCBBAPlanner extends Planner {
     public void phaseOne() throws Exception {
         // Check for life status
         var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
-        boolean alive = !(myRoles.contains(SimGroups.PLANNER_DIE));
+//        boolean alive = !(myRoles.contains(SimGroups.PLANNER_DIE));
 
         if(myRoles.contains(SimGroups.PLANNER_DO)) leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DO);
         if(!myRoles.contains(SimGroups.PLANNER_THINK)) requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
@@ -92,7 +92,7 @@ public class CCBBAPlanner extends Planner {
         // construct bundle
 //        if(alive) getLogger().info("Phase 1 - Constructing bundle...");
 
-        while((bundle.size() < settings.M) && (iterationResults.subtasksAvailable()) && alive){
+        while((bundle.size() < settings.M) && (iterationResults.subtasksAvailable())){
             // Calculate bids for all available subtasks
             ArrayList<Bid> bidList = iterationResults.calcBidList(this, this.parentSpacecraft);
 
@@ -347,34 +347,19 @@ public class CCBBAPlanner extends Planner {
                         if(bundle.size() > 0){
                             // tasks available, creating new plan
                             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
+                            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
                         }
                         else{
                             // tasks are not available
                             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
                             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
-//
-//                            // no more subtasks available for agent, send parent agent to death state
-//                            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
-//
-//                            // send final results to agent
-//                            AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
-//                            double timestep = this.getTimeStep();
-//                            CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults,
-//                                    parentSpacecraft.getPVEarth(currentDate));
-//                            this.plan = new DiePlan(resultsMessage, currentDate, currentDate.shiftedBy(timestep));
-//                            sendPlanToParentAgent(new PlannerMessage(this.plan));
+
+                            // no more subtasks available for agent, send parent agent to death state
+                            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
                         }
                     } else {
-//                        // no more subtasks available for agent, send parent agent to death state
-//                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
-//
-//                        // send final results to agent
-//                        AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
-//                        double timestep = this.getTimeStep();
-//                        CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults,
-//                                parentSpacecraft.getPVEarth(currentDate));
-//                        this.plan = new DiePlan(resultsMessage, currentDate, currentDate.shiftedBy(timestep));
-//                        sendPlanToParentAgent(new PlannerMessage(this.plan));
+                        // no more subtasks available for agent, send parent agent to death state
+                        requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
                     }
                 }
                 this.plan = null;
@@ -389,10 +374,17 @@ public class CCBBAPlanner extends Planner {
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
                 }
-                else {
+                else if(bundle.size() > 0){
+                    // tasks remaining in bundle, continue performing plan
+                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
+                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
+                }
+                else{
                     // tasks are not available
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
+
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
                 }
             }
         }
@@ -411,29 +403,9 @@ public class CCBBAPlanner extends Planner {
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_THINK);
 
-//                    // no more subtasks available for agent, send parent agent to death state
-//                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
-//
-//                    // send final results to agent
-//                    AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
-//                    double timestep = this.getTimeStep();
-//                    CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults,
-//                            parentSpacecraft.getPVEarth(currentDate));
-//                    this.plan = new DiePlan(resultsMessage, currentDate, currentDate.shiftedBy(timestep));
-//                    sendPlanToParentAgent(new PlannerMessage(this.plan));
+                    // no more subtasks available for agent, send parent agent to death state
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
                 }
-            }
-            else{
-//                // no more subtasks available for agent, send parent agent to death state
-//                requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
-//
-//                // send final results to agent
-//                AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
-//                double timestep = this.getTimeStep();
-//                CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults,
-//                        parentSpacecraft.getPVEarth(currentDate));
-//                this.plan = new DiePlan(resultsMessage,currentDate,currentDate.shiftedBy(timestep));
-//                sendPlanToParentAgent(new PlannerMessage(this.plan));
             }
             this.plan = null;
         }
