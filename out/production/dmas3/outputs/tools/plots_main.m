@@ -5,4 +5,4 @@ clc; clear all; close all;
 % drawScoreVsAgents(2);
 % drawScoreVsHorizon(30);
 
-drawUtilityVsArchs(18);
+drawUtilityVsArchs(20);
