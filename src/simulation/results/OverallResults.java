@@ -109,17 +109,22 @@ public class OverallResults {
             for (Measurement measurement : taskCapability.getCapabilities().keySet()) {
                 MeasurementCapability measurementCapability_j = taskCapability.getCapabilities().get(measurement);
 
-                for (Subtask j : measurementCapability_j.getParentSubtasks()) {
+                for (IterationDatum datum_j : measurementCapability_j.getPlannerBids()) {
                     // if j has dependent measurements, see if they were performed by someone else
-                    int i_j = measurementCapability_j.getParentSubtasks().indexOf(j);
-                    IterationDatum datum_j = measurementCapability_j.getPlannerBids().get(i_j);
                     scoreAchieved += datum_j.getScore();
                     utility += datum_j.getY();
+                    scoreAvailable += calcMaxScore(datum_j.getSubtask());
                 }
                 n_max = Math.max(measurementCapability_j.getNumMeasurements(), n_max);
             }
-            scoreAvailable += n_max*task.getMaxScore();
         }
+    }
+
+    private double calcMaxScore(Subtask j){
+        double Smax = j.getParentTask().getMaxScore();
+        double K = j.getLevelOfPartiality();
+
+        return Smax/K;
     }
 
     private void countCoals(ArrayList<Task> environmentTasks,HashMap<Task, TaskCapability> capabilities){
@@ -131,21 +136,17 @@ public class OverallResults {
             for(Measurement measurement : taskCapability.getCapabilities().keySet()){
                 MeasurementCapability measurementCapability_j = taskCapability.getCapabilities().get(measurement);
 
-                for(Subtask j : measurementCapability_j.getParentSubtasks()){
+                for(IterationDatum datum_j : measurementCapability_j.getPlannerBids()){
                     // if j has dependent measurements, see if they were performed by someone else
-                    int i_j = measurementCapability_j.getParentSubtasks().indexOf(j);
-                    IterationDatum datum_j = measurementCapability_j.getPlannerBids().get(i_j);
-
                     if(datumsCounted.contains(datum_j)) continue;
 
                     ArrayList<IterationDatum> myCoalition = new ArrayList<>();
+                    Subtask j = datum_j.getSubtask();
 
                     for(Measurement measurement_q : j.getDepMeasurements()){
                         MeasurementCapability measurementCapability_q = taskCapability.getCapabilities().get(measurement_q);
-                        for(Subtask q : measurementCapability_q.getParentSubtasks()){
-                            int i_q = measurementCapability_q.getParentSubtasks().indexOf(q);
-                            IterationDatum datum_q = measurementCapability_q.getPlannerBids().get(i_q);
-
+                        for(IterationDatum datum_q : measurementCapability_q.getPlannerBids()){
+                            Subtask q = datum_q.getSubtask();
                             if(dep.depends(j,q)){
                                 boolean difWinners = datum_j.getZ() != datum_q.getZ();
                                 boolean timeSat =
