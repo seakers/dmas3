@@ -5,8 +5,8 @@ function [] = drawUtilityVsArchs(n)
     data_1 = readResults("SMAP-ASCEND",n);
     data_2 = readResults("BIOMASS-ASCEND",n);
     data_3 = readResults("SENTINEL-ASCEND",n);
-    data_4 = readResults("ASCEND_All-ASCEND",n);
-    data_5 = readResults("ASCEND_All_NO_COALS-ASCEND",n);
+    data_4 = readResults("ASCEND_NoColab-ASCEND",n);
+    data_5 = readResults("ASCEND_ALL-ASCEND",n);
     
     data_all{1} = data_1;
     data_all{2} = data_2;
@@ -19,15 +19,17 @@ function [] = drawUtilityVsArchs(n)
     snr = zeros(n,m);
     temporal = zeros(n,m);
     coals = zeros(n,m);
+    n_measurements = zeros(n,m);
     for i = 1:m
         utility(:,i) = data_all{i}(:,1)./data_all{i}(:,5)*100;
         spatial(:,i) = data_all{i}(:,11)*100;
         snr(:,i) = data_all{i}(:,12)*100;
         temporal(:,i) = data_all{i}(:,13)*100;
         coals(:,i) = data_all{i}(:,2)./data_all{i}(:,3)*100;
+        n_measurements(:,i) = data_all{i}(:,14)./30;
     end
     
-    x = ['SMAP', 'BIOMASS', 'SENTINEL-1', 'All no coals', 'All'];
+    x = {'SMAP', 'BIOMASS', 'SENTINEL-1', 'All No Coals', 'All'};
     
     % Utility Plot
     figure
@@ -58,9 +60,17 @@ function [] = drawUtilityVsArchs(n)
     
     % Coalitions formed Plot
     figure 
-    boxplot(utility(:,4:5),x(4:5));
+    boxplot(coals(:,4:5),x(4:5));
     title({'Coalitios Formed vs'; 'System Architecture'})
     grid on;
     ylabel({'Coalitions Formed'; 'Coalitions Availabe [%]'});
     xlabel('Architecture Selected')
+    
+    % Number of Measurements
+    figure
+    boxplot(n_measurements,x);
+    title("Number of Measurements vs System Architecture")
+    grid on;
+    ylabel({'Number of measurements/' ; 'Tasks Available'});
+    xlabel('Architecture Selected');
 end
