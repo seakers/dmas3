@@ -71,7 +71,7 @@ public class CCBBAPlanner extends Planner {
 
     public void phaseOne() throws Exception {
         // Check for life status
-//        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
+        var myRoles = getMyRoles(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);
 //        boolean alive = !(myRoles.contains(SimGroups.PLANNER_DIE));
 
 //        if(myRoles.contains(SimGroups.PLANNER_DO)) leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DO);
@@ -156,10 +156,12 @@ public class CCBBAPlanner extends Planner {
 //        if(alive) getLogger().info("Phase 1 - Sending new results to spacecraft for broadcast...");
         AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
         double timestep = this.getTimeStep();
-        CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults,
-                                                                        parentSpacecraft.getPVEarth(currentDate));
-        this.plan = new BroadcastPlan(resultsMessage,currentDate,currentDate.shiftedBy(timestep));
-        sendPlanToParentAgent(new PlannerMessage(this.plan));
+        CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults, parentSpacecraft.getPVEarth(currentDate));
+
+        if(!myRoles.contains(SimGroups.CCBBA_DONE)) {
+            this.plan = new BroadcastPlan(resultsMessage, currentDate, currentDate.shiftedBy(timestep));
+            sendPlanToParentAgent(new PlannerMessage(this.plan));
+        }
 
         leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
         requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
@@ -240,6 +242,13 @@ public class CCBBAPlanner extends Planner {
 
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
                     requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
+
+                    AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
+                    double timestep = this.getTimeStep();
+                    CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults, parentSpacecraft.getPVEarth(currentDate));
+
+                    this.plan = new BroadcastPlan(resultsMessage, currentDate, currentDate.shiftedBy(timestep));
+                    sendPlanToParentAgent(new PlannerMessage(this.plan));
                 }
             }
         }
@@ -321,15 +330,16 @@ public class CCBBAPlanner extends Planner {
                 if (this.plan != null) {
                      if (this.plan.getClass().equals(MeasurementPlan.class)) {
                          Subtask j = path.get(0);
-                         j.getParentTask().completeSubtasks(j);
-
                          Task parentTask = j.getParentTask();
+
+                         j.getParentTask().completeSubtasks(j);
+                         for(Subtask q : parentTask.getSubtasks()){
+                             if(q.getCompletion()) this.resetResults(q);
+                         }
+
                          if(j.getParentTask().getCompletion()){
                              parentTask.updateStartDate(this.parentSpacecraft.getCurrentDate());
                              parentTask.resetCompletion();
-                         }
-                         for(Subtask q : parentTask.getSubtasks()){
-                             this.resetResults(q);
                          }
                          this.iterationResults.resetCounters(this.path);
 
@@ -353,6 +363,9 @@ public class CCBBAPlanner extends Planner {
                             // tasks available, creating new plan
                             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
                             leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
+
+                            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+                            leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
                         }
                         else{
                             // tasks are not available
@@ -377,6 +390,9 @@ public class CCBBAPlanner extends Planner {
                     // tasks available, creating new plan
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
+
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
                 }
                 else if(bundle.size() > 0){
                     // tasks remaining in bundle and no changes were made, continue performing plan
@@ -400,6 +416,9 @@ public class CCBBAPlanner extends Planner {
                     // tasks available, creating new plan
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
                     leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
+
+                    requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK1);
+                    leaveRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_THINK2);
                 }
                 else {
                     // tasks are not available
@@ -411,6 +430,12 @@ public class CCBBAPlanner extends Planner {
             }
             this.plan = null;
         }
+        AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
+        double timestep = this.getTimeStep();
+        CCBBAResultsMessage resultsMessage = new CCBBAResultsMessage(this.iterationResults, parentSpacecraft.getPVEarth(currentDate));
+
+        this.plan = new BroadcastPlan(resultsMessage, currentDate, currentDate.shiftedBy(timestep));
+        sendPlanToParentAgent(new PlannerMessage(this.plan));
     }
 
     private ArrayList<Plan> createPlanList(){
@@ -535,9 +560,9 @@ public class CCBBAPlanner extends Planner {
                             iterationResults.updateResults(itsDatum);
                         }
                     } else if ((myZ != me) && (myZ != it) && (myZ != itsZ) && (myZ != null)) {
-                        if ((itsS.compareTo(myS) > 0) && (itsY > myY)) {
+                        if ((itsY > myY)) {
                             // update
-                            iterationResults.updateResults(itsDatum);
+//                            iterationResults.updateResults(itsDatum);
                         }
                     } else if (myZ == null) {
                         // leave
@@ -577,7 +602,7 @@ public class CCBBAPlanner extends Planner {
         AbsoluteDate currentDate = parentSpacecraft.getCurrentDate();
 
         for (Subtask j : this.bundle) {
-            if(j.getCompletion()) continue;
+//            if(j.getCompletion()) continue;
 
             // create list of new coalition members
             ArrayList<ArrayList<AbstractAgent>> newOmega = getNewCoalitionMembers(j);

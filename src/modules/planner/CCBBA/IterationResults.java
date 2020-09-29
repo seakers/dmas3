@@ -268,6 +268,7 @@ public class IterationResults {
         updatedDatum.setW_solo( this.getIterationDatum(newDatum).getW_solo() );
         updatedDatum.setW_all( this.getIterationDatum(newDatum).getW_all() );
         updatedDatum.setC( this.getIterationDatum(newDatum).getC() );
+//        updatedDatum.setS( ( (Spacecraft) this.parentAgent).getCurrentDate().getDate() );
 
         this.results.put(newDatum.getSubtask(), updatedDatum);
     }
@@ -301,6 +302,7 @@ public class IterationResults {
             updatedDatum.setW_solo(this.getIterationDatum(j).getW_solo());
             updatedDatum.setW_all(this.getIterationDatum(j).getW_all());
             updatedDatum.setC(this.getIterationDatum(j).getC());
+            updatedDatum.setS( currentDate.getDate() );
         }
 
         this.results.put(j, updatedDatum);

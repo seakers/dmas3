@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class Architecture extends AbstractAgent{
     private String problemStatement;
@@ -30,19 +31,19 @@ public class Architecture extends AbstractAgent{
     private JSONArray inputOrbitData;
     private ArrayList<Spacecraft> spaceSegment;
     private HashMap<String, AbstractAgent> groundSegment;
-    private boolean rand;
+    private boolean random;
 
-    public Architecture(String inputFile, String problemStatement, boolean rand) throws Exception {
+    public Architecture(String inputFile, String problemStatement, boolean random) throws Exception {
         this.problemStatement = problemStatement;
         this.problemStatementDir = "./src/scenarios/" + problemStatement;
         this.inputFileName = inputFile + ".json";
         this.inputFileDir = "./src/inputs/" + inputFile + ".json";
-        this.rand = rand;
+        this.random = random;
 
         this.inputDataSpace = (JSONArray) readJSON().get("spaceSegment");
         this.inputDataGround = (JSONArray) readJSON().get("groundSegment");
         this.inputOrbitData = (JSONArray) readJSON().get("orbits");
-        this.spaceSegment = new ArrayList<>(); this.spaceSegment.addAll( initiateSpaceSegment(rand) );
+        this.spaceSegment = new ArrayList<>(); this.spaceSegment.addAll( initiateSpaceSegment(random) );
         this.groundSegment = null;
     }
 
@@ -58,7 +59,7 @@ public class Architecture extends AbstractAgent{
         return null;
     }
 
-    private ArrayList<Spacecraft> initiateSpaceSegment(boolean rand) throws Exception {
+    private ArrayList<Spacecraft> initiateSpaceSegment(boolean random) throws Exception {
         // Read Instrument excel data and generate instruments and antennas
         Workbook instrumentDataXls = Workbook.getWorkbook(new File(problemStatementDir + "/Instrument Capabilities.xls"));
 
@@ -164,31 +165,88 @@ public class Architecture extends AbstractAgent{
 
         // Assign payloads and orbits to each spacecraft
         ArrayList<Spacecraft> spaceSegment = new ArrayList<>();
-        for(int i = 0; i < inputDataSpace.size(); i++){
-            // Unpack JSON data
-            JSONObject sat_i = (JSONObject) inputDataSpace.get(i);
-            String name = sat_i.get("name").toString();
-            String orbitName = sat_i.get("orbit").toString();
-            String plannerName = sat_i.get("planner").toString();
-            JSONArray payloadData = (JSONArray) sat_i.get("payload");
 
-            ArrayList<Instrument> payload  = new ArrayList<>();
-            for(int j = 0; j < payloadData.size(); j++){
-                String instrumentName = payloadData.get(j).toString();
-                if(!instrumentList.containsKey(instrumentName)){
-                    throw new Exception("INPUT ERROR. " + instrumentName + " not found in problem statement folder");
+        if(!random) {
+            for (int i = 0; i < inputDataSpace.size(); i++) {
+                // Unpack JSON data
+                JSONObject sat_i = (JSONObject) inputDataSpace.get(i);
+                String name = sat_i.get("name").toString();
+                String orbitName = sat_i.get("orbit").toString();
+                String plannerName = sat_i.get("planner").toString();
+                JSONArray payloadData = (JSONArray) sat_i.get("payload");
+
+                ArrayList<Instrument> payload = new ArrayList<>();
+                for (int j = 0; j < payloadData.size(); j++) {
+                    String instrumentName = payloadData.get(j).toString();
+                    if (!instrumentList.containsKey(instrumentName)) {
+                        throw new Exception("INPUT ERROR. " + instrumentName + " not found in problem statement folder");
+                    }
+                    Instrument instrument = instrumentList.get(instrumentName);
+                    payload.add(instrument);
                 }
-                Instrument instrument = instrumentList.get(instrumentName);
-                payload.add(instrument);
-            }
-            OrbitParams orbit = orbitList.get(orbitName);
+                OrbitParams orbit = orbitList.get(orbitName);
 
-            // Create spacecraft agent
-            Spacecraft spacecraft = new Spacecraft(name, payload, orbit, plannerName);
-            spaceSegment.add(spacecraft);
+                // Create spacecraft agent
+                Spacecraft spacecraft = new Spacecraft(name, payload, orbit, plannerName);
+                spaceSegment.add(spacecraft);
+            }
+        }
+        else{
+            int i = 1;
+            ArrayList<Instrument> ins = getOrderedInstruments(instrumentList);
+            for(String orbitName : orbitList.keySet()){
+                String name = "Sat-" + i;
+                String plannerName = "CCBBA";
+                ArrayList<Instrument> payload = generateRandomPayload(ins);
+                OrbitParams orbit = orbitList.get(orbitName);
+
+                // Create spacecraft agent
+                if(payload.size() > 0) {
+                    Spacecraft spacecraft = new Spacecraft(name, payload, orbit, plannerName);
+                    spaceSegment.add(spacecraft);
+                }
+                i++;
+            }
         }
         if(spaceSegment.size() == 0) throw new Exception("No spacecraft loaded onto simulation");
         else return spaceSegment;
+    }
+
+    private ArrayList<Instrument> getOrderedInstruments(HashMap<String, Instrument> instrumentList){
+        ArrayList<Instrument> instruments = new ArrayList<>();
+        for(String ins : instrumentList.keySet()){
+            instruments.add(instrumentList.get(ins));
+        }
+        return instruments;
+    }
+
+    private ArrayList<Instrument> generateRandomPayload(ArrayList<Instrument> instrumentList){
+        ArrayList<Instrument> payload = new ArrayList<>();
+        int n = instrumentList.size();
+        int n_max = 0;
+        for(int i = 0; i < n; i++){
+            n_max += Math.pow(2,i);
+        }
+
+        int seed = new Random().nextInt(n_max);
+        String seedBin = Integer.toBinaryString(n_max);
+        String archString = Integer.toBinaryString(seed);
+
+        if(archString.length() < seedBin.length()){
+            String zeros = "";
+            for(int i = 0; i < seedBin.length() - archString.length(); i++){
+                zeros += '0';
+            }
+            archString = zeros + archString;
+        }
+
+        for(int i = 0; i < archString.length(); i++){
+            if(archString.charAt(i) == '1'){
+                payload.add(instrumentList.get(i));
+            }
+        }
+
+        return payload;
     }
 
     public ArrayList<Spacecraft> getSpaceSegment(){return this.spaceSegment;}

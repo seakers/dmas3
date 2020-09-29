@@ -16,7 +16,7 @@
   "spaceSegment": [
     {
       "name": "L-SAT",
-      "orbit": "Orbit",
+      "orbit": "Orbit-1",
       "instances": 1,
       "payload": [
         "L-RAD"
@@ -26,7 +26,7 @@
     },
     {
       "name": "S-SAT",
-      "orbit": "Orbit",
+      "orbit": "Orbit-1",
       "instances": 1,
       "payload": [
         "S-RAD"
@@ -48,7 +48,7 @@
   ],
   "orbits": [
     {
-      "name": "Orbit",
+      "name": "Orbit-1",
       "@type": "OrbitalElements",
       "altitude": 600,
       "eccentricity": 0.0001,
@@ -56,6 +56,16 @@
       "argumentOfPerigee": 0.0,
       "raan": 0.0,
       "anomaly": 99.86482220462925
+    },
+    {
+      "name": "Orbit-2",
+      "@type": "OrbitalElements",
+      "altitude": 600,
+      "eccentricity": 0.0001,
+      "inclination": 0.0,
+      "argumentOfPerigee": 0.0,
+      "raan": 0.0,
+      "anomaly": 79.86482220462925
     }
   ],
   "mission": {

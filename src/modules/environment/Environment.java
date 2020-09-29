@@ -366,7 +366,7 @@ public class Environment extends Watcher {
     protected void tic() throws Exception {
         List<AgentAddress> agents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER);
         List<AgentAddress> doingAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
-        if(doingAgents == null || doingAgents.size() == agents.size()) {
+        if(doingAgents != null && doingAgents.size() == agents.size()) {
             if(latestPlans.size() > 0) {
                 // only advance time when agents are done planning
                 AbsoluteDate minDate = null;
@@ -391,7 +391,7 @@ public class Environment extends Watcher {
         }
 
         List<AgentAddress> deadAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
-        List<AgentAddress> spacecraftSensing = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_SENSE);
+//        List<AgentAddress> spacecraftSensing = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_SENSE);
         int n_agents = 0;
         if(agents != null) n_agents = agents.size();
         int n_dead = 0;
@@ -400,7 +400,7 @@ public class Environment extends Watcher {
         boolean endDateReached = this.currentDate.compareTo(this.endDate) >= 0;
         if(endDateReached) getLogger().finer("Simulation end-time reached. Terminating sim");
 
-        boolean agentsDead = n_agents == n_dead && spacecraftSensing != null;
+        boolean agentsDead = n_agents == n_dead;
         if(agentsDead) {
             terminate++;
             if(terminate > 1) {
