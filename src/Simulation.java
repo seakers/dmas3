@@ -23,7 +23,7 @@ public class Simulation extends AbstractAgent {
     public static void main(String[] args) throws Exception {
         simStart = System.nanoTime();
 
-        String architecture = "SMAP";
+        String architecture = "ASCEND_ALL";
         String problem = "ASCEND";
         archName = architecture;
 

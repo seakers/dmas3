@@ -122,9 +122,11 @@ public class OverallResults {
 
     private double calcMaxScore(Subtask j){
         double Smax = j.getParentTask().getMaxScore();
-        double K = j.getLevelOfPartiality();
-
-        return Smax/K;
+        if(j.getDepMeasurements().size() > 0) {
+            double K = j.getLevelOfPartiality();
+            return Smax/K;
+        }
+        else return Smax;
     }
 
     private void countCoals(ArrayList<Task> environmentTasks,HashMap<Task, TaskCapability> capabilities){
