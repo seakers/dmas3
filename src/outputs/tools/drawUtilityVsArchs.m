@@ -22,9 +22,9 @@ function [] = drawUtilityVsArchs(n)
     n_measurements = zeros(n,m);
     for i = 1:m
         utility(:,i) = data_all{i}(:,1)./data_all{i}(:,5)*100;
-        spatial(:,i) = data_all{i}(:,11)*100;
-        snr(:,i) = data_all{i}(:,12)*100;
-        temporal(:,i) = data_all{i}(:,13)*100;
+        spatial(:,i) = data_all{i}(:,11);
+        snr(:,i) = data_all{i}(:,12);
+        temporal(:,i) = data_all{i}(:,13);
         coals(:,i) = data_all{i}(:,2)./data_all{i}(:,3)*100;
         n_measurements(:,i) = data_all{i}(:,14)./30;
     end
@@ -38,12 +38,14 @@ function [] = drawUtilityVsArchs(n)
     grid on;
     ylabel({'Utility Scored/' ; 'Score Available [%]'});
     xlabel('Architecture Selected');
+    ylim([0,100])
     
     % Requirement Satisfaction Plot
     figure
     subplot(3,1,1);
     boxplot(spatial);
     title({'Requirement Satisfaction vs'; 'System Architecture'})
+    ylim([0,1])
     grid on;
     ylabel({'Average Spatial'; 'Resolution Satisfaction'});
     set(gca,'xticklabel',{[]})
@@ -52,11 +54,13 @@ function [] = drawUtilityVsArchs(n)
     grid on;
     ylabel({'Average Signal-to-Noise' ; 'Ratio Satisfaction'});
     set(gca,'xticklabel',{[]})
+    ylim([0,1])
     subplot(3,1,3);
     boxplot(temporal,x);
     grid on;
     ylabel({'Average Temporal';'Resoution Satisfaction'});
     xlabel('Architecture Selected')
+    ylim([0,1])
     
     % Coalitions formed Plot
     figure 
@@ -65,6 +69,7 @@ function [] = drawUtilityVsArchs(n)
     grid on;
     ylabel({'Coalitions Formed'; 'Coalitions Availabe [%]'});
     xlabel('Architecture Selected')
+    ylim([0,100])
     
     % Number of Measurements
     figure
