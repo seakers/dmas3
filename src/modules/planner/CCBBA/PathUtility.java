@@ -534,7 +534,7 @@ public class PathUtility {
     }
 
     private double calcCoalCosts(Subtask j, CCBBAPlanner planner, AbstractAgent parentSpacecraft){
-        boolean coals = true;
+        boolean coals = false;
         if(!coals){
             Task parentTask = j.getParentTask();
             if(j.getDepMeasurements().size() > 0){
