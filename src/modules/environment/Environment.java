@@ -121,19 +121,39 @@ public class Environment extends Watcher {
             // load lat and lon
             double lat = 0.0;
             if(containsNonNumbers( row[2].getContents() )){
-                if(row[2].getContents().equals("RAND")){
+                if(containsBounds( row[2].getContents())){
+                    String str = row[2].getContents();
+                    String[] bounds = str.substring(1,str.length()-1).split(",");
+                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    double mean = (max + min)/2;
+                    double sd = max - mean;
+
+                    NormalDistribution dist = new NormalDistribution(mean,sd);
+                    lat = dist.sample();
+                }
+                else if(row[2].getContents().equals("RAND")){
                     NormalDistribution dist = new NormalDistribution(0,25);
                     lat = dist.sample();
                 }
+                else throw new Exception("Input format not supported");
             }
             else{
                 lat = Double.parseDouble( row[2].getContents() );
             }
             double lon = 0.0;
             if(containsNonNumbers( row[3].getContents() )){
-                if(row[3].getContents().equals("RAND")){
+                if(containsBounds( row[3].getContents())){
+                    String str = row[3].getContents();
+                    String[] bounds = str.substring(1,str.length()-1).split(",");
+                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    lon = Math.random() * (max - min) + min;
+                }
+                else if(row[3].getContents().equals("RAND")){
                     lon = (Math.random() - 0.5) * 360;
                 }
+                else throw new Exception("Input format not supported");
             }
             else{
                 lon = Double.parseDouble( row[3].getContents() );
@@ -146,8 +166,38 @@ public class Environment extends Watcher {
                 double f = Double.parseDouble(freqString[j]);
                 freqs.add(new Measurement(f));
             }
-            double spatialResReq = Double.parseDouble( row[6].getContents() );
-            double snrReq = Double.parseDouble( row[7].getContents() );
+
+            double spatialResReq = 0.0;
+            if(containsNonNumbers( row[6].getContents()) ){
+                if(containsBounds( row[6].getContents())){
+                    String str = row[6].getContents();
+                    String[] bounds = str.substring(1,str.length()-1).split(",");
+                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    spatialResReq = Math.random() * (max - min) + min;
+                }
+                else throw new Exception("Input format not supported");
+            }
+            else{
+                spatialResReq = Double.parseDouble(row[6].getContents());
+            }
+
+            double snrReq = 0.0;
+            if(containsNonNumbers( row[7].getContents() )){
+                if(containsBounds( row[7].getContents())){
+                    String str = row[7].getContents();
+                    String[] bounds = str.substring(1,str.length()-1).split(",");
+                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    snrReq = Math.random() * (max - min) + min;
+                }
+                else throw new Exception("Input format not supported");
+            }
+            else {
+                snrReq = Double.parseDouble(row[7].getContents());
+            }
+
+
             int numLooks = (int) Double.parseDouble( row[8].getContents() );
             String tcorrMin  =  row[9].getContents();
             String tcorrMax  =  row[10].getContents();
@@ -201,12 +251,19 @@ public class Environment extends Watcher {
             // load score
             double score = 0.0;
             if(containsNonNumbers( row[1].getContents() )){
-                if(row[1].getContents().equals("RAND")){
+                if(containsBounds( row[1].getContents())){
+                    String str = row[1].getContents();
+                    String[] bounds = str.substring(1,str.length()-1).split(",");
+                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
+                    score = Math.random() * (max - min) + min;
+                }
+                else if(row[1].getContents().equals("RAND")){
                     if(freqs.size() == 1){
                         // max score of 30.00, min of 15;
                         score = Math.random() * 15.0 + 15.0;
                     }
-                    if(freqs.size() == 2){
+                    else if(freqs.size() == 2){
                         // max score of 70.0, min of 30
                         score = Math.random() * 40.0 + 30.0;
                     }
@@ -233,7 +290,7 @@ public class Environment extends Watcher {
             if(        (str.charAt(i) != '0') && (str.charAt(i) != '1') && (str.charAt(i) != '2') && (str.charAt(i) != '3')
                     && (str.charAt(i) != '4') && (str.charAt(i) != '5') && (str.charAt(i) != '6') && (str.charAt(i) != '7')
                     && (str.charAt(i) != '8') && (str.charAt(i) != '9') && (str.charAt(i) != '.') && (str.charAt(i) != '-')
-                    && (str.charAt(i) != '+')&& (str.charAt(i) != 'e')){
+                    && (str.charAt(i) != '+') && (str.charAt(i) != 'e') && (str.charAt(i) != 'E') && (str.charAt(i) != ' ')){
                 return true;
             }
         }
@@ -249,6 +306,17 @@ public class Environment extends Watcher {
                     && (str.charAt(i) != ':') && (str.charAt(i) != 'Z') && (str.charAt(i) != 'T')){
                 return true;
             }
+        }
+        return false;
+    }
+
+    private boolean containsBounds(String str){
+        if(str.charAt(0) == '[' && str.charAt(str.length()-1) == ']'){
+            String[] bounds = str.substring(1,str.length()-1).split(",");
+            for(int i = 0; i < bounds.length; i++){
+                if(containsNonNumbers(bounds[i])) return false;
+            }
+            return true;
         }
         return false;
     }

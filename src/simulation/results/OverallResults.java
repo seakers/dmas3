@@ -7,6 +7,7 @@ import modules.planner.CCBBA.IterationDatum;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.measurements.Measurement;
 import modules.spacecraft.instrument.measurements.MeasurementCapability;
+import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +26,9 @@ public class OverallResults {
     private double resSat = 0;
     private double snrSat = 0;
     private double revSat = 0;
+    private double resAvg = 0.0;
+    private double snrAvg = 0.0;
+    private double revAvg = 0.0;
     private int numMeasurements = 0;
     private long runTime = (long) 0.0;
 
@@ -59,15 +63,27 @@ public class OverallResults {
             TaskCapability taskCapability = capabilities.get(task);
             taskCapability.calcReqSat();
 
+            if(taskCapability.getSpatRes() == -1.0) continue;
+
+            resAvg += taskCapability.getSpatRes();
+            snrAvg += taskCapability.getSnr();
+            revAvg += taskCapability.getRevTime();
+
             resSat += taskCapability.getResSat();
             snrSat += taskCapability.getSnrSat();
             revSat += taskCapability.getRevSat();
             n += 1.0;
         }
 
-        resSat = resSat/n;
-        snrSat = snrSat/n;
-        revSat = revSat/n;
+        if(n != 0.0) {
+            resAvg = resAvg / n;
+            snrAvg = snrAvg / n;
+            revAvg = revAvg / n;
+
+            resSat = resSat / n;
+            snrSat = snrSat / n;
+            revSat = revSat / n;
+        }
     }
 
     private void countCost(HashMap<AbstractAgent, AgentResults> agentResults){
@@ -100,10 +116,12 @@ public class OverallResults {
         }
     }
 
-    private void countScore(ArrayList<Task> environmentTasks,HashMap<Task, TaskCapability> capabilities){
+    private void countScore(ArrayList<Task> environmentTasks,HashMap<Task, TaskCapability> capabilities) throws Exception {
         for(Task task : environmentTasks) {
             TaskCapability taskCapability = capabilities.get(task);
-            Dependencies dep = task.getDependencies();
+            taskCapability.calcReqSat();
+
+            ArrayList<ArrayList<IterationDatum>> coalBids = taskCapability.getCoalitionBids();
 
             int n_max = -1;
             for (Measurement measurement : taskCapability.getCapabilities().keySet()) {
@@ -113,20 +131,15 @@ public class OverallResults {
                     // if j has dependent measurements, see if they were performed by someone else
                     scoreAchieved += datum_j.getScore();
                     utility += datum_j.getY();
-                    scoreAvailable += calcMaxScore(datum_j.getSubtask());
                 }
                 n_max = Math.max(measurementCapability_j.getNumMeasurements(), n_max);
             }
-        }
-    }
 
-    private double calcMaxScore(Subtask j){
-        double Smax = j.getParentTask().getMaxScore();
-        if(j.getDepMeasurements().size() > 0) {
-            double K = j.getLevelOfPartiality();
-            return Smax/K;
+            for(ArrayList<IterationDatum> coal : coalBids){
+                double Smax = coal.get(0).getSubtask().getParentTask().getMaxScore();
+                scoreAvailable += Smax;
+            }
         }
-        else return Smax;
     }
 
     private void countCoals(ArrayList<Task> environmentTasks,HashMap<Task, TaskCapability> capabilities){
@@ -179,7 +192,8 @@ public class OverallResults {
         StringBuilder results = new StringBuilder();
         results.append(utility + "\t" + coalsFormed + "\t" + coalsAvailable + "\t" + scoreAchieved + "\t" + scoreAvailable
                 + "\t" + tasksDone + "\t" + tasksAvailable + "\t" + numAgents + "\t" + planningHorizon + "\t" + overallCostPerAgent
-                + "\t" + resSat  + "\t" + snrSat + "\t" + revSat + "\t" + numMeasurements + "\t" + runTime);
+                + "\t" + resSat  + "\t" + snrSat + "\t" + revSat + "\t" + numMeasurements + "\t" + runTime
+                + "\t" + resAvg + "\t" + snrAvg + "\t" + revAvg);
         return results.toString();
     }
 }

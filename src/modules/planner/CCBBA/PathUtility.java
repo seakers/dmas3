@@ -7,6 +7,7 @@ import modules.environment.Subtask;
 import modules.environment.Task;
 import modules.spacecraft.Spacecraft;
 import modules.spacecraft.instrument.Instrument;
+import modules.spacecraft.instrument.measurements.Measurement;
 import modules.spacecraft.instrument.measurements.MeasurementPerformance;
 import modules.spacecraft.maneuvers.AttitudeManeuver;
 import modules.spacecraft.maneuvers.Maneuver;
@@ -380,30 +381,30 @@ public class PathUtility {
         return visibilityMatrix;
     }
 
-    private AbsoluteDate calcTlimit(Subtask j, Spacecraft spacecraft) throws Exception {
-        double S_max = j.getParentTask().getMaxScore();
-        double K = j.getLevelOfPartiality();
-        double I = j.getParentTask().getMeasurements().size();
-        double alpha = calcAlpha(K,I);
-
-        double S = (S_max/K)*alpha;
-
-        ArrayList<Instrument> payload = spacecraft.getDesign().getPayload();
-        double costMin = 1e5;
-        for(Instrument ins : payload){
-            double costIns = calcMeasurementCost(ins);
-            if(costIns < costMin) costMin = costIns;
-        }
-
-        AbsoluteDate t_0 = j.getParentTask().getRequirements().getStartDate();
-        double lambda = j.getParentTask().getRequirements().getUrgencyFactor();
-        if( lambda == 0.0 ){
-            return j.getParentTask().getRequirements().getEndDate();
-        }
-        else{
-            return t_0.shiftedBy( (1.0/lambda) * Math.log(S/costMin) );
-        }
-    }
+//    private AbsoluteDate calcTlimit(Subtask j, Spacecraft spacecraft) throws Exception {
+//        double S_max = j.getParentTask().getMaxScore();
+//        double K = j.getLevelOfPartiality();
+//        double I = j.getParentTask().getMeasurements().size();
+//        double alpha = calcAlpha(K,I);
+//
+//        double S = (S_max/K)*alpha;
+//
+//        ArrayList<Instrument> payload = spacecraft.getDesign().getPayload();
+//        double costMin = 1e5;
+//        for(Instrument ins : payload){
+//            double costIns = calcMeasurementCost(ins);
+//            if(costIns < costMin) costMin = costIns;
+//        }
+//
+//        AbsoluteDate t_0 = j.getParentTask().getRequirements().getStartDate();
+//        double lambda = j.getParentTask().getRequirements().getUrgencyFactor();
+//        if( lambda == 0.0 ){
+//            return j.getParentTask().getRequirements().getEndDate();
+//        }
+//        else{
+//            return t_0.shiftedBy( (1.0/lambda) * Math.log(S/costMin) );
+//        }
+//    }
 
     /**
      * Utility Function Calculation
@@ -413,7 +414,7 @@ public class PathUtility {
         double K = j.getLevelOfPartiality();
         double I = j.getParentTask().getMeasurements().size();
         double e = calcUrgency(j,t_a,parentSparecraft);
-        double alpha = calcAlpha(K,I);
+        double alpha = calcAlpha(j);
 
         return (S_max/K)*e*alpha;
     }
@@ -442,14 +443,66 @@ public class PathUtility {
         }
     }
 
-    private double calcAlpha(double K, double I) throws Exception{
-        if(K > I) throw new Exception("level of partiality greater than measurements required. Check Task formation");
+    private double calcAlpha(Subtask j) throws Exception{
+        Measurement measurement = j.getMainMeasurement();
+        ArrayList<Measurement> depMeasurements = j.getDepMeasurements();
+        ArrayList<Measurement> measurementsToDo = new ArrayList<>(depMeasurements); measurementsToDo.add(measurement);
 
-        if(K/I == 1){
-            return 1.0;
+        boolean soilMoisture = false;
+        for(Measurement m : measurementsToDo){
+            if(m.getBand().equals("C") || m.getBand().equals("L") || m.getBand().equals("P")){
+                soilMoisture = true;
+            }
+            else{
+                soilMoisture = false;
+                break;
+            }
+        }
+
+
+        if(soilMoisture) {
+            ArrayList<String> bands = new ArrayList<>();
+            for(Measurement m : measurementsToDo){
+                bands.add(m.getBand());
+            }
+
+            if(bands.size() == 1){
+                if(bands.contains("L") || bands.contains("P")){
+                    return 0.4;
+                }
+                else if(bands.contains("C")){
+                    return 0.1;
+                }
+                else return 0.0;
+            }
+            else if(bands.size() == 2){
+                if(bands.contains("L") && bands.contains("P")){
+                    return 0.87;
+                }
+                else if(bands.contains("C") && (bands.contains("L") || bands.contains("P"))){
+                    return 0.5;
+                }
+                else return 0.0;
+            }
+            else if(bands.size() == 3 && bands.contains("C") && bands.contains("L") && bands.contains("P")){
+                return 1.0;
+            }
+            else{
+                return 0.0;
+            }
         }
         else{
-            return 1.0/(I+1.0);
+            double K = j.getLevelOfPartiality();
+            double I = j.getParentTask().getMeasurements().size();
+
+            if (K > I)
+                throw new Exception("level of partiality greater than measurements required. Check Task formation");
+
+            if (K / I == 1) {
+                return 1.0;
+            } else {
+                return 1.0 / (I + 1.0);
+            }
         }
     }
 

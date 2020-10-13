@@ -61,7 +61,8 @@ public class MeasurementCapability {
         this.winners.addAll(newCapability.getWinners());
         this.parentSubtasks.addAll(newCapability.getParentSubtasks());
         this.instrumentsUsed.addAll(newCapability.getInstrumentsUsed());
-        this.performance = new ArrayList<>(); this.performance.addAll(newCapability.getPerformance());
+//        this.performance = new ArrayList<>();
+        this.performance.addAll(newCapability.getPerformance());
         this.plannerBids.addAll(newCapability.getPlannerBids());
     }
 

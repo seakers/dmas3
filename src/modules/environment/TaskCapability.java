@@ -14,8 +14,13 @@ import static java.lang.Math.exp;
 public class TaskCapability {
     private final Task parentTask;
     private final HashMap<Measurement, MeasurementCapability> subtaskCapabilities;
+    private ArrayList<ArrayList<MeasurementPerformance>> coalitionCapabilities;
+    private ArrayList<ArrayList<IterationDatum>> coalitionBids;
 
     // Requirement Satisfaction Parameters
+    private double spatRes;
+    private double snr;
+    private double revTime;
     private double resSat;
     private double snrSat;
     private double revisitSat;
@@ -29,35 +34,106 @@ public class TaskCapability {
             subtaskCapabilities.put(measurement, measurementCapability);
         }
 
+        coalitionCapabilities = new ArrayList<>();
+        coalitionBids = new ArrayList<>();
+
+        spatRes = -1.0;
+        snr = -1.0;
+        revTime = -1.0;
         resSat = -1.0;
         snrSat = -1.0;
         revisitSat = -1.0;
     }
 
     public void calcReqSat() throws Exception {
+        coalitionCapabilities = calcCoalitionCapabilities();
+
         resSat = calcResSat();
         snrSat = calcSNRSat();
         revisitSat = calcRevisitSat();
     }
 
-    private double calcResSat() throws Exception {
-        double spatialResAvg = -1.0;
-        double n = 0.0;
+    private ArrayList<ArrayList<MeasurementPerformance>> calcCoalitionCapabilities(){
+        ArrayList<ArrayList<MeasurementPerformance>> coalCaps = new ArrayList<>();
+        ArrayList<ArrayList<IterationDatum>> coalBids = new ArrayList<>();
+
+        Dependencies dep = parentTask.getDependencies();
+
         for(Measurement measurement : parentTask.getMeasurements()){
             MeasurementCapability measurementCapability = subtaskCapabilities.get(measurement);
+            ArrayList<IterationDatum> bids = measurementCapability.getPlannerBids();
+            ArrayList<MeasurementPerformance> perfs = measurementCapability.getPerformance();
 
-            for(MeasurementPerformance performance : measurementCapability.getPerformance()){
-                if(performance.getSpatialRes() >= 0) {
-                    if(n == 0.0) spatialResAvg = performance.getSpatialRes();
-                    else spatialResAvg += performance.getSpatialRes();
-                    n += 1.0;
+            for(int i = 0; i < perfs.size(); i++){
+                Subtask j = bids.get(i).getSubtask();
+                IterationDatum bid_j = bids.get(i);
+                AbsoluteDate date_j = bid_j.getTz();
+
+                boolean coalFound = false;
+                for(ArrayList<IterationDatum> coal : coalBids){
+
+                    for(IterationDatum bid_q : coal){
+                        Subtask q = bid_q.getSubtask();
+                        AbsoluteDate date_q = bid_q.getTz();
+
+                        if(dep.depends(j,q) &&
+                            dep.Tmax(j,q) >= Math.abs( date_j.durationFrom(date_q) ) &&
+                            dep.Tmin(j,q) <= Math.abs( date_j.durationFrom(date_q) )){
+                            // j and q are part of the same measurement
+                            coalFound = true;
+                        }
+                        else coalFound = false;
+                    }
+
+                    if(coalFound){
+                        coal.add(bid_j);
+                        coalCaps.get(coalBids.indexOf(coal)).add(perfs.get(i));
+                        break;
+                    }
+                }
+
+                if(coalBids.size() == 0 || !coalFound){
+                    ArrayList<MeasurementPerformance> tempCoal = new ArrayList<>();
+                    tempCoal.add(perfs.get(i));
+
+                    ArrayList<IterationDatum> tempCoalBid = new ArrayList<>();
+                    tempCoalBid.add(bids.get(i));
+
+                    coalCaps.add(tempCoal);
+                    coalBids.add(tempCoalBid);
                 }
             }
         }
 
-        if(Math.abs(spatialResAvg) < 1e-3) return 0.0;
+        this.coalitionBids = coalBids;
+        return coalCaps;
+    }
+
+    private double calcResSat() throws Exception {
+        double spatialResAvg = -1.0;
+        double n = 0.0;
+
+        for(ArrayList<MeasurementPerformance> cap : coalitionCapabilities){
+            double res = 1.0;
+            int n_res = 0;
+            for(MeasurementPerformance perf : cap){
+                res *= perf.getSpatialRes();
+                n_res++;
+            }
+
+            if(res != 1.0){
+                res = Math.pow(res, 1/((double) n_res));
+                if(n == 0.0) spatialResAvg = res;
+                else spatialResAvg += res;
+                n += 1.0;
+            }
+        }
+
+        if(Math.abs(spatialResAvg) < 0.0) return 0.0;
         else if(n == 0) return 0.0;
         spatialResAvg = spatialResAvg/n;
+
+        spatRes = spatialResAvg;
 
         Requirements req = parentTask.getRequirements();
         double spatialResReq = req.getSpatialResReq();
@@ -79,7 +155,7 @@ public class TaskCapability {
         return sigmoid_spat;
     }
 
-    private double calcSNRSat(){
+    private double calcSNRSat() throws Exception {
         double snrAvg = 0.0;
         double n = 0.0;
         for(Measurement measurement : parentTask.getMeasurements()){
@@ -92,8 +168,10 @@ public class TaskCapability {
         }
 
         if(Math.abs(n) < 1e-3) return 0.0;
+        else if(n == 0) return 0.0;
         snrAvg = snrAvg/n;
 
+        snr = snrAvg;
 
         Requirements req = parentTask.getRequirements();
         double snrReq = req.getLossReq();
@@ -138,6 +216,8 @@ public class TaskCapability {
 
         if(n < 1 || revisitTimeAvg == 0.0) return 0.0;
         revisitTimeAvg = revisitTimeAvg/n;
+
+        revTime = revisitTimeAvg;
 
         Requirements req = parentTask.getRequirements();
         double t_max = req.getTemporalResolutionMax();
@@ -207,4 +287,9 @@ public class TaskCapability {
     public double getResSat() { return resSat; }
     public double getSnrSat() { return snrSat; }
     public double getRevSat() { return revisitSat; }
+    public double getSpatRes(){ return spatRes;}
+    public double getSnr()    { return snr;}
+    public double getRevTime(){ return revTime;}
+    public ArrayList<ArrayList<MeasurementPerformance>> getCoalitionCapabilities(){return  this.coalitionCapabilities;}
+    public ArrayList<ArrayList<IterationDatum>> getCoalitionBids(){return this.coalitionBids;}
 }
