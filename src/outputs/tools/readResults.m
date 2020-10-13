@@ -3,14 +3,14 @@
 function [ data ] = readResults(input, n)
     directory = "../" + input;
     folder = dir(directory);
-    data = zeros(n,15);
+    data = zeros(n,18);
     i_curr = 1;
     for i = 3:length(folder)
         subfolder = strcat(folder(i).folder,strcat('\',folder(i).name));
         filename = strcat(subfolder,'\results.out');
         fileID = fopen(filename, 'r');
         if fileID >= 0 && n >= i_curr
-            data_i = fscanf(fileID, '%f\t%d\t%d\t%f\t%f\t%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%d\t%f');
+            data_i = fscanf(fileID, '%f\t%d\t%d\t%f\t%f\t%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%d\t%f\t%f\t%f\t%f');
             data(i_curr,:) = data_i;
             i_curr = i_curr + 1;
         end

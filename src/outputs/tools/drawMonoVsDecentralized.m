@@ -1,18 +1,12 @@
-function [] = drawUtilityVsArchs(n)
-    m = 5;
+function [] = drawMonoVsDecentralized(n)
+    m = 2;
     data_all = {};
     
-    data_1 = readResults("SMAP-ASCEND",n);
-    data_2 = readResults("BIOMASS-ASCEND",n);
-    data_3 = readResults("SENTINEL-ASCEND",n);
-    data_4 = readResults("ASCEND_NoColab-ASCEND",n);
-    data_5 = readResults("ASCEND_ALL-ASCEND",n);
+    data_1 = readResults("Monolithic-ASCEND",n);
+    data_2 = readResults("Distributed-ASCEND",n);
     
     data_all{1} = data_1;
     data_all{2} = data_2;
-    data_all{3} = data_3;
-    data_all{4} = data_4;
-    data_all{5} = data_5;
     
     utility = zeros(n,m);
     score = zeros(n,m);
@@ -25,15 +19,14 @@ function [] = drawUtilityVsArchs(n)
     spatialSat = zeros(n,m);
     snrSat = zeros(n,m);
     temporalSat = zeros(n,m);
-    
     coals = zeros(n,m);
     n_measurements = zeros(n,m);
     for i = 1:m
         utility(:,i) = data_all{i}(:,1)./data_all{i}(:,5)*100;
         score(:,i)= data_all{i}(:,4)./data_all{i}(:,5)*100;
-        scoreTotal(:,i)= data_all{i}(:,4);
+        scoreTotal(:,i) = data_all{i}(:,4);
         
-        spatial(:,i) = data_all{i}(:,16)/1000;
+        spatial(:,i) = data_all{i}(:,16)-1000;
         snr(:,i) = data_all{i}(:,17);
         temporal(:,i) = data_all{i}(:,18)/60;
         
@@ -45,8 +38,8 @@ function [] = drawUtilityVsArchs(n)
         n_measurements(:,i) = data_all{i}(:,14)./30;
     end
     
-    x = {'SMAP', 'BIOMASS', 'SENTINEL-1', 'All No Coals', 'All'};
-    
+    x = {'Monolithic', 'Distributed'};
+
     % Utility Plot
     figure
     boxplot(utility,x);
