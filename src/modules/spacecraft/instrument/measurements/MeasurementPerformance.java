@@ -114,14 +114,14 @@ public class MeasurementPerformance {
             }
         }
 
-        double resMin = Double.POSITIVE_INFINITY;
+        double resMax = 0.0;
         for (double resolution : resolutions) {
-            if (resolution < resMin) {
-                resMin = resolution;
+            if (resolution > resMax) {
+                resMax = resolution;
             }
         }
 
-        return  resMin;
+        return  resMax;
     }
     private double calcSpatialResEL(Subtask j, ArrayList<Instrument> instruments, Spacecraft spacecraft, AbsoluteDate date) throws Exception {
         Vector3D satPos = spacecraft.getPVEarth(date).getPosition();
@@ -148,14 +148,14 @@ public class MeasurementPerformance {
             }
         }
 
-        double resMin = Double.POSITIVE_INFINITY;
+        double resMax = 0.0;
         for (double resolution : resolutions) {
-            if (resolution < resMin) {
-                resMin = resolution;
+            if (resolution > resMax) {
+                resMax = resolution;
             }
         }
 
-        return  resMin;
+        return  resMax;
     }
     private double calcSNR(Subtask j, ArrayList<Instrument> instruments, Spacecraft spacecraft, AbsoluteDate date) throws Exception {
         PVCoordinates satPv = spacecraft.getPVEarth(date);

@@ -206,9 +206,6 @@ public class TaskCapability {
 
             AbsoluteDate date_i = measurementDates.get(i);
             AbsoluteDate date_j = measurementDates.get(i-1);
-            if(Math.abs(date_i.durationFrom(date_j)) < 1e-3){
-                continue;
-            }
 
             revisitTimeAvg = revisitTimeAvg + date_i.durationFrom(date_j);
             n++;

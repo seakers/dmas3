@@ -68,7 +68,7 @@ public class Radiometer extends Instrument{
         double h = scPosition.getNorm() - Re;
         double dth = this.dtheta * Math.PI / 180;
 
-        return h* ( Math.tan(th+dth/2.0) - Math.tan(th-dth/2.0) );
+        return h * ( Math.tan(th+dth/2.0) - Math.tan(th-dth/2.0) );
     }
 
 }

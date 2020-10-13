@@ -587,7 +587,7 @@ public class PathUtility {
     }
 
     private double calcCoalCosts(Subtask j, CCBBAPlanner planner, AbstractAgent parentSpacecraft){
-        boolean coals = false;
+        boolean coals = true;
         if(!coals){
             Task parentTask = j.getParentTask();
             if(j.getDepMeasurements().size() > 0){
@@ -733,7 +733,18 @@ public class PathUtility {
 
                         ArrayList<ArrayList<Instrument>> instrumentCombinations = calcInstrumentCombinations(visibleToSensorsList);
                         for(ArrayList<Instrument> sensorsUsed : instrumentCombinations){
-                            if(sensorsUsed.size() == 0) continue;
+                            boolean skip = false;
+                            for(Instrument ins : sensorsUsed){
+                                if(ins.getName().equals("SMAP-RAD") || ins.getName().equals("SMAP-MWR")){
+                                    if(sensorsUsed.size() < 2){
+                                        skip = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if(skip) continue;
+                            else if(sensorsUsed.size() == 0) continue;
 
                             MeasurementPerformance performance = new MeasurementPerformance(j,sensorsUsed,parentSpacecraft,stepDate);
 

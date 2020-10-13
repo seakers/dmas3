@@ -51,7 +51,7 @@ public class Requirements {
         this.spatialResReqWeight = 0.5;
         this.lossReqWeight = 1.0 - this.spatialResReqWeight;
         this.spatialResReqSlope = 2.5e-3;
-        this.lossReqWeight = 1.0;
+        this.lossReqSlope = 0.15;
     }
 
     // Copy constructor

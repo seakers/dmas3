@@ -68,7 +68,7 @@ public class SAR extends Instrument{
 
     @Override
     public double getSpatialResEL(Vector3D scPosition, Vector3D targetPosition) {
-        return calcRangeRes(scPosition,targetPosition);
+        return calcRangeRes(scPosition,targetPosition) * nLooks;
     }
 
     public double getnLooks(){return this.nLooks;}
