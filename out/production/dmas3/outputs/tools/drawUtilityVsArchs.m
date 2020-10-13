@@ -15,16 +15,32 @@ function [] = drawUtilityVsArchs(n)
     data_all{5} = data_5;
     
     utility = zeros(n,m);
+    score = zeros(n,m);
+    scoreTotal = zeros(n,m);
+    
     spatial = zeros(n,m);
     snr = zeros(n,m);
     temporal = zeros(n,m);
+    
+    spatialSat = zeros(n,m);
+    snrSat = zeros(n,m);
+    temporalSat = zeros(n,m);
+    
     coals = zeros(n,m);
     n_measurements = zeros(n,m);
     for i = 1:m
         utility(:,i) = data_all{i}(:,1)./data_all{i}(:,5)*100;
-        spatial(:,i) = data_all{i}(:,11);
-        snr(:,i) = data_all{i}(:,12);
-        temporal(:,i) = data_all{i}(:,13);
+        score(:,i)= data_all{i}(:,4)./data_all{i}(:,5)*100;
+        scoreTotal(:,i)= data_all{i}(:,4);
+        
+        spatial(:,i) = data_all{i}(:,16)/1000;
+        snr(:,i) = data_all{i}(:,17);
+        temporal(:,i) = data_all{i}(:,18)/60;
+        
+        spatialSat(:,i) = data_all{i}(:,11);
+        snrSat(:,i) = data_all{i}(:,12);
+        temporalSat(:,i) = data_all{i}(:,13);
+        
         coals(:,i) = data_all{i}(:,2)./data_all{i}(:,3)*100;
         n_measurements(:,i) = data_all{i}(:,14)./30;
     end
@@ -40,36 +56,64 @@ function [] = drawUtilityVsArchs(n)
     xlabel('Architecture Selected');
     ylim([0,100])
     
-    % Requirement Satisfaction Plot
+    % Score Percentage Plot
+    figure
+    boxplot(score,x);
+    title("Score Achieved vs System Architecture")
+    grid on;
+    ylabel({'Score Achieved/' ; 'Score Available [%]'});
+    xlabel('Architecture Selected');
+    ylim([0,100])
+    
+    % Score Plot
+    figure
+    boxplot(scoreTotal,x);
+    title("Total Score Achieved vs System Architecture")
+    grid on;
+    ylabel({'Score Achieved'});
+    xlabel('Architecture Selected');
+    ylim([0,100])
+    
+    % Performance Plots
     figure
     subplot(3,1,1);
     boxplot(spatial);
+    title({'System Performance vs'; 'System Architecture'})
+    grid on;
+    ylabel({'Average Spatial', 'Resolution [km]'});
+    set(gca,'xticklabel',{[]})
+    subplot(3,1,2);
+    boxplot(snr);
+    grid on;
+    ylabel({'Average SNR [dB]'});
+    set(gca,'xticklabel',{[]})
+    subplot(3,1,3);
+    boxplot(temporal,x);
+    grid on;
+    ylabel({'Average Revisit','Time [min]'});
+    xlabel('Architecture Selected')
+    
+    % Requirement Satisfaction Plots
+    figure
+    subplot(3,1,1);
+    boxplot(spatialSat);
     title({'Requirement Satisfaction vs'; 'System Architecture'})
     ylim([0,1])
     grid on;
     ylabel({'Average Spatial'; 'Resolution Satisfaction'});
     set(gca,'xticklabel',{[]})
     subplot(3,1,2);
-    boxplot(snr);
+    boxplot(snrSat);
     grid on;
     ylabel({'Average Signal-to-Noise' ; 'Ratio Satisfaction'});
     set(gca,'xticklabel',{[]})
     ylim([0,1])
     subplot(3,1,3);
-    boxplot(temporal,x);
+    boxplot(temporalSat,x);
     grid on;
-    ylabel({'Average Temporal';'Resoution Satisfaction'});
+    ylabel({'Average Revisit';'Time Satisfaction'});
     xlabel('Architecture Selected')
     ylim([0,1])
-    
-    % Coalitions formed Plot
-    figure 
-    boxplot(coals(:,4:5),x(4:5));
-    title({'Coalitios Formed vs'; 'System Architecture'})
-    grid on;
-    ylabel({'Coalitions Formed'; 'Coalitions Availabe [%]'});
-    xlabel('Architecture Selected')
-    ylim([0,100])
     
     % Number of Measurements
     figure

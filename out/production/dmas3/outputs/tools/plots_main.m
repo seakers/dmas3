@@ -6,3 +6,4 @@ clc; clear all; close all;
 % drawScoreVsHorizon(30);
 
 drawUtilityVsArchs(20);
+drawMonoVsDecentralized(20);
