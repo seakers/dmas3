@@ -1,0 +1,82 @@
+{
+  "settings": {
+    "simName": "ASCEND-TRADESPACE",
+    "logger": "FINEST",
+    "planner":{
+	  "@type" : "CCBBA",
+      "planningHorizon": 3,
+      "maxConstraintViolations": 2,
+      "maxBidsSolo": 2,
+      "maxBidsAny": 5,
+      "maxBidsAll": 100,
+      "convergenceIndicator": 20
+    },
+    "spacecraftDesign": true
+  },
+  "spaceSegment": [
+    {}
+  ],
+  "groundSegment": [
+    {}
+  ],
+  "orbits": [
+    {
+      "name": "Orbit-SMAP",
+      "@type": "OrbitalElements",
+      "altitude": 685,
+      "eccentricity": 0.0001,
+      "inclination": 98.13,
+      "argumentOfPerigee": 0.0,
+      "raan": 270.0,
+      "anomaly": 0
+    },
+    {
+      "name": "Orbit-BIOMASS",
+      "@type": "OrbitalElements",
+      "altitude": 660,
+      "eccentricity": 0.0001,
+      "inclination": 98.032,
+      "argumentOfPerigee": 0.0,
+      "raan": 270.0,
+      "anomaly": 0
+    },
+    {
+      "name": "Orbit-SENTINEL-A",
+      "@type": "OrbitalElements",
+      "altitude": 693,
+      "eccentricity": 0.0001,
+      "inclination": 98.166,
+      "argumentOfPerigee": 0.0,
+      "raan": 90.0,
+      "anomaly": 0
+    },
+    {
+      "name": "Orbit-SENTINEL-B",
+      "@type": "OrbitalElements",
+      "altitude": 693,
+      "eccentricity": 0.0001,
+      "inclination": 98.166,
+      "argumentOfPerigee": 0.0,
+      "raan": 90.0,
+      "anomaly": 180
+    },
+    {
+      "name": "Orbit-LEO-600",
+      "@type": "OrbitalElements",
+      "altitude": 600,
+      "eccentricity": 0.0001,
+      "inclination": 60,
+      "argumentOfPerigee": 0.0,
+      "raan": 90.0,
+      "anomaly": 180
+    }
+  ],
+  "mission": {
+    "name" : "Template",
+    "acronym": "Temp",
+    "start": "2020-01-01T00:00:00Z",
+    "duration": "P00Y00M7D",
+    "@type": "MissionConcept",
+    "timeStep": 1.0
+  }
+}
