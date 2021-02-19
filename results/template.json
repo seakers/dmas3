@@ -1,0 +1,68 @@
+{
+  "name" : "CONSTELATION-X_SCENARIO-Y",
+  "nSims": 100,
+  "planner" : "CCBBA"
+  "dates" : {
+    "start" : "DD/MM/YYYY-hh:mm:ss",
+    "end" : "DD/MM/YYYY-hh:mm:ss"
+  }
+  "covDef" : "uniform",
+
+  "results" : {
+    "revTime" : {
+      "max" : 100,
+      "min" : 10,
+      "avg" : 50,
+      "std" : 10
+    },
+    "covPtg" : 0.1,
+    "tasks" : {
+      "numTasks" : {
+        "max" : 100,
+        "min" : 10,
+        "avg" : 50,
+        "std" : 10
+      },
+      "numTasksDone" : {
+        "max" : 100,
+        "min" : 10,
+        "avg" : 50,
+        "std" : 10
+      },
+      "responseTime" : {
+        "max" : 100,
+        "min" : 10,
+        "avg" : 50,
+        "std" : 10
+      }
+    },
+    "utility" : {
+      "totalUtility" : {
+        "max" : 100,
+        "min" : 10,
+        "avg" : 50,
+        "std" : 10
+      },
+      "utilPtg" : {
+        "max" : 100,
+        "min" : 10,
+        "avg" : 50,
+        "std" : 10
+      }
+    },
+    "coalitions" : {
+      "coalsAvb" : {
+        "max" : 100,
+        "min" : 10,
+        "avg" : 50,
+        "std" : 10
+      },
+      "coalsFormed" : {
+        "max" : 100,
+        "min" : 10,
+        "avg" : 50,
+        "std" : 10
+      }
+    }
+  }
+}

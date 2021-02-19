@@ -657,7 +657,7 @@ extends <a href="../../madkit/kernel/Agent.html" title="class in madkit.kernel">
  while (isAlive()) {
      if (GVT &gt; getSimulationDuration()) {
         if (logger != null)
-            logger.info(&quot;Quitting: Simulation has reached end time &quot; + getSimulationDuration());
+            logger.info(&quot;Quitting: modules.simulation.Simulation has reached end time &quot; + getSimulationDuration());
         return;
      }
      pause(getDelay());
