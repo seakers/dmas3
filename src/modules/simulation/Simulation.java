@@ -12,7 +12,7 @@ public class Simulation extends Agent{
     ArrayList<MeasurementRequest> requests;
 
     public Simulation(JSONObject input, OrbitData orbitData, int simID){
-        // 0- generate 
+        // 0- generate
 
 //        // 1- create the simulation group
 //        createGroup(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP);

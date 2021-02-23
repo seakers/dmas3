@@ -2,56 +2,17 @@ package modules.simulation;
 
 import static constants.JSONFields.*;
 
-import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
 import madkit.kernel.Agent;
-import modules.instruments.SAR;
-import org.hipparchus.util.FastMath;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataProvidersManager;
-import org.orekit.data.DirectoryCrawler;
-import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.TopocentricFrame;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.Propagator;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
-import seakers.orekit.analysis.Analysis;
-import seakers.orekit.event.CrossLinkEventAnalysis;
-import seakers.orekit.event.EventAnalysis;
-import seakers.orekit.event.FieldOfViewAndGndStationEventAnalysis;
-import seakers.orekit.object.*;
-import seakers.orekit.object.communications.ReceiverAntenna;
-import seakers.orekit.object.communications.TransmitterAntenna;
-import seakers.orekit.object.fieldofview.NadirSimpleConicalFOV;
-import seakers.orekit.object.fieldofview.OffNadirRectangularFOV;
-import seakers.orekit.propagation.PropagatorFactory;
-import seakers.orekit.propagation.PropagatorType;
-import seakers.orekit.scenario.Scenario;
-import seakers.orekit.util.OrekitConfig;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 public class Dmas extends Agent {
@@ -83,7 +44,9 @@ public class Dmas extends Agent {
 
             // 5- Coverage and Crosslink Calculation
             orbitData = new OrbitData(input, orekitDataDir, databaseDir, coverageDir, constellationsDir, scenarioDir);
-            orbitData.propagate();
+            orbitData.coverageCalc();
+//            orbitData.propagate();
+            orbitData.trajectoryCalc();
 
             // 6- Generate simulation scenarios
             int n_sims = Integer.parseInt( input.get(N_SIMS).toString() );

@@ -5,6 +5,7 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import modules.instruments.SAR;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.json.simple.JSONObject;
 import org.orekit.bodies.BodyShape;
@@ -20,30 +21,31 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import seakers.orekit.analysis.Analysis;
 import seakers.orekit.coverage.access.TimeIntervalArray;
 import seakers.orekit.event.CrossLinkEventAnalysis;
 import seakers.orekit.event.EventAnalysis;
 import seakers.orekit.event.FieldOfViewAndGndStationEventAnalysis;
-import seakers.orekit.event.GroundEventAnalysis;
+import seakers.orekit.event.FieldOfViewEventAnalysis;
 import seakers.orekit.object.*;
 import seakers.orekit.object.communications.ReceiverAntenna;
 import seakers.orekit.object.communications.TransmitterAntenna;
+import seakers.orekit.object.fieldofview.FieldOfViewDefinition;
 import seakers.orekit.object.fieldofview.NadirSimpleConicalFOV;
 import seakers.orekit.object.fieldofview.OffNadirRectangularFOV;
 import seakers.orekit.propagation.PropagatorFactory;
 import seakers.orekit.propagation.PropagatorType;
 import seakers.orekit.scenario.Scenario;
-import seakers.orekit.scenario.ScenarioIO;
 import seakers.orekit.util.OrekitConfig;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -65,22 +67,53 @@ public class OrbitData {
     /**
      * Constants used in orbit propagation
      */
-    private Frame earthFrame;
-    private Frame inertialFrame;
-    private BodyShape earthShape;
-    private TimeScale utc;
+    private final Frame earthFrame;
+    private final Frame inertialFrame;
+    private final BodyShape earthShape;
+    private final TimeScale utc;
     private double mu;
 
     /**
-     * List of instruments in instrument database from which sats can choose to create their payload
+     * Loaded information from json file as strings
+     * @param consStr : name of chosen constellation
+     * @param gsNetworkStr : name of chosen Ground Station Network
+     * @param scenarioStr : name of chosen scenario
+     * @param startDateStr : start date of simulation
+     * @param endDateStr : end date of simulation
+     */
+    String consStr;
+    String gsNetworkStr;
+    String scenarioStr;
+    String startDateStr;
+    String endDateStr;
+
+    /**
+     * Directory address to where orbit data will be saved to or loaded from if needed
+     */
+    String directoryAddress;
+
+    /**
+     * Start and End dates for simulation
+     */
+    private final AbsoluteDate startDate;
+    private final AbsoluteDate endDate;
+
+    /**
+     * List of instruments in instrument database from which satellites can choose to create their payload
      */
     private final HashMap<String, Instrument> instrumentList;
 
     /**
+     * Propagator used in coverage and trajectory calculations
+     */
+    private final PropagatorFactory pfJ2;
+    private final PropagatorFactory pfKep;
+
+    /**
      * Coverage results from propagation
-     * @accessesCL : Cross Link access opportunity
-     * @accessesGP : Ground Point access opportunity
-     * @accessesGS : Ground Station access opportunity
+     * @param accessesCL : Cross Link access opportunity
+     * @param accessesGP : Ground Point access opportunity
+     * @param accessesGS : Ground Station access opportunity
      */
     private HashMap<Constellation, HashMap<Satellite, HashMap<Satellite, TimeIntervalArray>>> accessesCL;
     private HashMap<CoverageDefinition, HashMap<Satellite,
@@ -90,17 +123,17 @@ public class OrbitData {
     /**
      *  Constellations of sensing and communication satellites chosen for simulation
      */
-    ArrayList<Constellation> constellations = null;
+    ArrayList<Constellation> constellations;
 
     /**
      *  Coverage definitions chosen for simulation
      */
-    HashSet<CoverageDefinition> covDefs = null;
+    HashSet<CoverageDefinition> covDefs;
 
     /**
      *  Ground Station to Satellite assignment for chosen ground communications network and constellations
      */
-    HashMap<Satellite, Set<GndStation>> stationAssignment = null;
+    HashMap<Satellite, Set<GndStation>> stationAssignment;
 
     /**
      * Constructor
@@ -112,7 +145,7 @@ public class OrbitData {
      * @param scenarioDir Location of scenario databases
      */
     public OrbitData(JSONObject input, String orekitDataDir, String databaseDir,
-                     String coverageDir, String constellationsDir, String scenarioDir){
+                     String coverageDir, String constellationsDir, String scenarioDir) throws Exception {
         this.input = input;
         this.orekitDataDir = orekitDataDir;
         this.databaseDir = databaseDir;
@@ -120,8 +153,123 @@ public class OrbitData {
         this.constellationsDir = constellationsDir;
         this.scenarioDir = scenarioDir;
 
+        // load Orekit data
+        loadOrekitData();
+        earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+        inertialFrame = FramesFactory.getEME2000();
+        earthShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, earthFrame);
+        utc = TimeScalesFactory.getUTC();
+        mu = Constants.WGS84_EARTH_MU;
+
+        // read json file inputs
+        consStr = input.get(CONSTELLATION).toString();
+        gsNetworkStr = input.get(GROUND_STATIONS).toString();
+        scenarioStr = input.get(SCENARIO).toString();
+        startDateStr = input.get(START_DATE).toString();
+        endDateStr = input.get(END_DATE).toString();
+
+        // if data has been calculated before, import data
+        String dirName = consStr + "_" + gsNetworkStr + "_" + scenarioStr + "_" + startDateStr + "_" + endDateStr;
+        directoryAddress = coverageDir + dirName;
+
+        // Create dates from input file
+        startDate = stringToDate(startDateStr);
+        endDate = stringToDate(endDateStr);
+
         // Import Instrument database
         instrumentList = loadInstruments(input);
+
+        // Read scenario information from excel data and generate orbital parameters and coverage definitions
+        constellations = loadConstellation(consStr, startDate, endDate);
+        covDefs = loadCoverageDefinitions(scenarioStr, constellations);
+        stationAssignment = loadGroundStations(gsNetworkStr, constellations);
+
+        // Create and set up propagator
+        Properties propertiesPropagator = setPropagatorProperties();
+        pfJ2 = new PropagatorFactory(PropagatorType.J2,propertiesPropagator);
+        pfKep = new PropagatorFactory(PropagatorType.KEPLERIAN,propertiesPropagator);
+    }
+
+    /**
+     * Propagates orbit and saves position vector and ground track lat-lon to csv file
+     * All in the Earth Frame
+     */
+    public void trajectoryCalc(){
+        double timestep = 60.0;
+        HashMap<Satellite, ArrayList<PVCoordinates>> pv = new HashMap<>();
+        HashMap<Satellite, ArrayList<GeodeticPoint>> gt = new HashMap<>();
+
+        for(Constellation cons : constellations){
+            for(Satellite sat : cons.getSatellites()){
+
+                FileWriter fileWriter = null;
+                PrintWriter printWriter;
+                String outAddress = directoryAddress + "/" + sat.getName() + "_pv.csv";
+                File f = new File(outAddress);
+                fileWriter = null;
+
+                if(!f.exists()) {
+                    // calc trajectory data
+                    Propagator prop = null;
+                    if(Math.abs( sat.getOrbit().getI() ) <= 0.1){
+                        // if orbit is equatorial, use Keplerian propagator
+                        prop = pfKep.createPropagator(sat.getOrbit(), sat.getGrossMass());
+                    }
+                    else{
+                        // else use J2 propagator
+                        prop = pfJ2.createPropagator(sat.getOrbit(), sat.getGrossMass());
+                    }
+
+                    ArrayList<PVCoordinates> pvSat = new ArrayList<>();
+                    ArrayList<GeodeticPoint> gtSat = new ArrayList<>();
+                    ArrayList<Double> time = new ArrayList<>();
+                    for (double t = 0; t < endDate.durationFrom(startDate); t += timestep) {
+
+                        try {
+                            SpacecraftState stat = prop.propagate(startDate.shiftedBy(t));
+                            pvSat.add(stat.getPVCoordinates(earthFrame));
+
+                            Vector3D pos = stat.getPVCoordinates(earthFrame).getPosition().normalize();
+                            double lat = FastMath.atan2(pos.getZ(), FastMath.sqrt(pos.getX() * pos.getX() + pos.getY() * pos.getY()));
+                            double lon = FastMath.atan2(pos.getY(), pos.getX());
+                            gtSat.add(new GeodeticPoint(lat, lon, 0.0));
+
+                            time.add(t);
+                        } catch (OrekitException | NullPointerException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    // save data
+                    try{
+                        fileWriter = new FileWriter(outAddress, false);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    printWriter = new PrintWriter(fileWriter);
+
+                    for (int i = 0; i < pvSat.size(); i++) {
+                        String posStr = genOutStr(pvSat.get(i), gtSat.get(i), time.get(i));
+                        printWriter.print(posStr);
+                    }
+
+                    //close file
+                    printWriter.close();
+                }
+            }
+        }
+    }
+
+    private String genOutStr(PVCoordinates pv, GeodeticPoint gt, double epoch){
+        StringBuilder out = new StringBuilder();
+        double x = pv.getPosition().getX();
+        double y = pv.getPosition().getY();
+        double z = pv.getPosition().getZ();
+        double lat = FastMath.toDegrees( gt.getLatitude() );
+        double lon = FastMath.toDegrees( gt.getLongitude() );
+
+        out.append(epoch + "," + x + "," + y + "," + z + "," + lat + "," + lon + "\n");
+        return out.toString();
     }
 
     /**
@@ -129,81 +277,54 @@ public class OrbitData {
      * as well as calculating time windows for cross-links between satellites
      * @throws Exception
      */
-    public void propagate() throws Exception {
-        // load Orekit data
-        loadOrekitData();
-        earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
-        inertialFrame = FramesFactory.getEME2000();
-        earthShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                Constants.WGS84_EARTH_FLATTENING, earthFrame);
-        utc = TimeScalesFactory.getUTC();
-        mu = Constants.WGS84_EARTH_MU;
-
-        // read json file inputs
-        String consStr = input.get(CONSTELLATION).toString();
-        String gsNetworkStr = input.get(GROUND_STATIONS).toString();
-        String scenarioStr = input.get(SCENARIO).toString();
-        String startDateStr = input.get(START_DATE).toString();
-        String endDateStr = input.get(END_DATE).toString();
-
-        // Create dates from input file
-        AbsoluteDate startDate = stringToDate(startDateStr);
-        AbsoluteDate endDate = stringToDate(endDateStr);
-
-        // Read scenario information from excel data and generate orbital parameters and coverage definitions
-        constellations = loadConstellation(consStr, startDate, endDate);
-        covDefs = loadCoverageDefinitions(scenarioStr, constellations);
-        stationAssignment = loadGroundStations(gsNetworkStr, constellations);
-
-        // if data has been calculated before, import data
-        String dirName = consStr + "_" + gsNetworkStr + "_" + scenarioStr + "_" + startDateStr + "_" + endDateStr;
-        String directoryAddress = coverageDir + dirName;
-
+    public void coverageCalc() throws Exception {
         File f = new File(directoryAddress);
         if(f.exists()){
             // import data
-
-            int x = 1;
-
             // TODO: Enable creating new directory and saving/accessing coverage data
         }
         else{ // Else, calculate information
             // create directory
-//            new File( directoryAddress ).mkdir(); TODO: uncomment once data io is implemented
-
-            // propagate scenario to calculate accesses and cross-links
-            Scenario scen = propagateScenario(constellations, covDefs, stationAssignment, startDate, endDate);
-
-            // save data in object variables for sims to use
-            ArrayList<EventAnalysis> events = (ArrayList<EventAnalysis>) scen.getEventAnalyses();
-            this.accessesCL = ((CrossLinkEventAnalysis) events.get(0)).getAllAccesses();
-
-            this.accessesGP = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccesses();
-            this.accessesGS = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccessesGS();
+            new File( directoryAddress ).mkdir(); // TODO: move propagation to else statement once data io is implemented
         }
+
+        // propagate scenario to calculate accesses and cross-links
+        Scenario scen = coverageScenario(constellations, covDefs, stationAssignment, startDate, endDate);
+
+        // save data in object variables for sims to use
+        ArrayList<EventAnalysis> events = (ArrayList<EventAnalysis>) scen.getEventAnalyses();
+        this.accessesCL = ((CrossLinkEventAnalysis) events.get(0)).getAllAccesses();
+
+        this.accessesGP = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccesses();
+        this.accessesGS = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccessesGS();
+
+        printAccesses();
+    }
+
+    /**
+     * Saves ground point and ground station access information for future simulations of the same constellation
+     */
+    private void printAccesses(){
+        //TODO : find a way to print object to a file that can be opened by a later java program run
     }
 
     /**
      * Calculates accesses and cross-links
      * @param constellations List of constellations being simulated
      * @param covDefs List of coverage definitions to be evaluated
-     * @param stationAssignment Assigment of Ground Stations to Satellites
+     * @param stationAssignments Assigment of Ground Stations to Satellites
      * @param startDate Simulation start date
      * @param endDate Simulation end date
      * @return
      */
-    private Scenario propagateScenario(ArrayList<Constellation> constellations, HashSet<CoverageDefinition> covDefs,
-                                       HashMap<Satellite, Set<GndStation>> stationAssignment, AbsoluteDate startDate,
-                                       AbsoluteDate endDate){
+    private Scenario coverageScenario(ArrayList<Constellation> constellations, HashSet<CoverageDefinition> covDefs,
+                                      HashMap<Satellite, Set<GndStation>> stationAssignments, AbsoluteDate startDate,
+                                      AbsoluteDate endDate){
         // Initiate Orekit threads
         OrekitConfig.init(4);
 
         // Setup logger
         setLogger();
-
-        // Set propagator properties
-        Properties propertiesPropagator = setPropagatorProperties();
-        PropagatorFactory pf = new PropagatorFactory(PropagatorType.KEPLERIAN,propertiesPropagator);
 
         // Set event analysis properties
         Properties propertiesEventAnalysis = new Properties();
@@ -214,11 +335,13 @@ public class OrbitData {
         //set the analyses
         ArrayList<EventAnalysis> eventAnalyses = new ArrayList<>();
         ArrayList<Analysis<?>> analyses = new ArrayList<>();
+        ArrayList<PropagatorFactory> pfs = new ArrayList<>(); pfs.add(pfJ2); pfs.add(pfKep);
 
         CrossLinkEventAnalysis crossLinkEvents = new CrossLinkEventAnalysis(startDate,endDate,inertialFrame,
-                constellations,pf,true,false);
+                constellations,pfs,true,false);
+
         FieldOfViewAndGndStationEventAnalysis fovEvents = new FieldOfViewAndGndStationEventAnalysis(startDate, endDate,
-                inertialFrame, covDefs, stationAssignment,pf, true, false);
+                inertialFrame, covDefs, stationAssignment,pfJ2, true, false);
 
         eventAnalyses.add(crossLinkEvents);
         eventAnalyses.add(fovEvents);
@@ -226,7 +349,7 @@ public class OrbitData {
         Scenario scen = new Scenario.Builder(startDate, endDate, utc).
                 eventAnalysis(eventAnalyses).analysis(analyses).
                 covDefs(covDefs).name("Coverage_GndStations_and_Crosslinks").properties(propertiesEventAnalysis).
-                propagatorFactory(pf).build();
+                propagatorFactory(pfKep).build();
         try {
             long start1 = System.nanoTime();
             scen.call();
@@ -421,6 +544,7 @@ public class OrbitData {
         double anom = FastMath.toRadians( Double.parseDouble( row[columnIndexes.get("Anomaly [deg]")].getContents() ) );
         ArrayList<Instrument> payload = new ArrayList<>();
         String payloadStr = row[columnIndexes.get("Payload")].getContents();
+
         String[] contents = payloadStr.split(", ");
         for(int i = 0; i < contents.length; i++){
             Instrument ins = instrumentList.get(contents[i]);
@@ -428,7 +552,7 @@ public class OrbitData {
             payload.add(ins);
         }
 
-        Orbit orb = new KeplerianOrbit(alt, ecc, inc, 0.0, raan, anom, PositionAngle.MEAN, inertialFrame, startDate, mu);
+        Orbit orb = new KeplerianOrbit(alt + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, ecc, inc, 0.0, raan, anom, PositionAngle.MEAN, inertialFrame, startDate, mu);
         HashSet<CommunicationBand> satBands = new HashSet<>(); satBands.add(CommunicationBand.UHF);
         Satellite sat = new Satellite(name, orb, null, payload,
                 new ReceiverAntenna(6., satBands), new TransmitterAntenna(6., satBands), Propagator.DEFAULT_MASS, Propagator.DEFAULT_MASS);
@@ -529,7 +653,7 @@ public class OrbitData {
     private HashMap<Satellite, Set<GndStation>> loadGroundStations(String gsNetworkStr,
                                                                    ArrayList<Constellation> constellations)
             throws IOException, BiffException, OrekitException {
-        HashMap<Satellite, Set<GndStation>> stationAssignment = new HashMap<>();
+        HashMap<Satellite, Set<GndStation>> assignment = new HashMap<>();
         Set<GndStation> groundStations = new HashSet<>();
 
         Workbook groundStationsWorkbook = Workbook.getWorkbook(new File(databaseDir + "GroundStationDatabase.xls"));
@@ -544,12 +668,12 @@ public class OrbitData {
         }
 
         for(Constellation cons : constellations){
-            for(Satellite sat : cons.getSatellites()){
-                stationAssignment.put(sat,groundStations);
+            for (Satellite sat : cons.getSatellites()) {
+                assignment.put(sat, groundStations);
             }
         }
 
-        return stationAssignment;
+        return assignment;
     }
 
     /**
@@ -646,7 +770,7 @@ public class OrbitData {
         return indexes;
     }
 
-    private SAR loadSAR(String name, double mass, Workbook instrumentsWorkbook){
+    private Instrument loadSAR(String name, double mass, Workbook instrumentsWorkbook){
         Sheet instrumentSheet = instrumentsWorkbook.getSheet(name);
         Cell[] parameters = instrumentSheet.getColumn(0);
         Cell[] values = instrumentSheet.getColumn(1);
@@ -671,11 +795,10 @@ public class OrbitData {
         switch(scan){
             case "conical":
                 fieldOfRegard = new OffNadirRectangularFOV(0.0,
-                        FastMath.toRadians(fov_ct/2.0 + 2*lookAngle) , FastMath.toRadians(fov_at/2.0),
-                        0.0, earthShape);
+                        FastMath.toRadians(fov_ct/2.0 + 2*lookAngle) , FastMath .toRadians(fov_at/2.0), 0.0, earthShape);
 
-                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf,
-                        nLooks, rb, nominalOps, antenna);
+//                return  new Instrument(name, fieldOfRegard,mass,peakPower*dc);
+                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, nLooks, rb, nominalOps, antenna);
             case "side":
                 fieldOfRegard = new OffNadirRectangularFOV(FastMath.toRadians(lookAngle),
                         FastMath.toRadians(fov_ct/2.0 + scanningAngle) , FastMath.toRadians(fov_at/2.0),
