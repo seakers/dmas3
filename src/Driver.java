@@ -9,6 +9,6 @@ public class Driver extends Dmas {
      */
     public static void main(String[] args) throws OrekitException {
         inputFile = "template.json";
-        executeThisAgent();
+        executeThisAgent(1, true);
     }
 }

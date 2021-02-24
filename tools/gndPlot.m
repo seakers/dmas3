@@ -40,6 +40,11 @@ function [] = gndPlot(varargin)
         j = j + 1;
     end
     
+    % Load Ground Points
+    gndPts = CovDef(jsonData);
+    
+    % Generate Plot
+    
     worldmap world
     load coastlines
     
@@ -52,7 +57,6 @@ function [] = gndPlot(varargin)
     height=1000;
     set(gcf,'position',[x0,y0,width,height])
 
-    % plotm(lat, lon, 'blue')
     t0 = tic;
     t = sats{1}.T;
     n_draw = 10;
@@ -65,6 +69,9 @@ function [] = gndPlot(varargin)
         points{j} = plotm(0,0);
         circles{j} = circlem(0,0,0);
     end
+    
+    plotm([gndPts.DefData{:,3}], [gndPts.DefData{:,4}], '.', 'Color', [1, 1, 1]*.75);
+    x = 1;
   
 %     for i = 1:length(t)    
 %         if i <= n_draw
@@ -116,80 +123,4 @@ function [] = gndPlot(varargin)
     end
 
     disp('DONE')
-    
-%     pos = [];
-% 
-%     n_points = 100;
-%     t = linspace(0,1000,n_points);
-%     lon1 = linspace(-180, 180, n_points);
-%     lat1 = 45 * sin(t*pi()/180);
-% 
-%     lon2 = linspace(-180, 180, n_points);
-%     lat2 = 45 * sin(t*pi()/180 - pi()/2);
-% 
-%     n_draw = 10;
-% 
-%     n_contacts = 10;
-%     cntc = [0 100;
-%             200 300;
-%             400 500;
-%             600 700;
-%             800 900];
-% 
-%     [latcells, loncells] = polysplit(coastlat, coastlon);
-%     plotm(coastlat, coastlon, 'black')
-%     hold on
-%     x0=200;
-%     y0=200;
-%     width=1000;
-%     height=1000;
-%     set(gcf,'position',[x0,y0,width,height])
-% 
-%     % plotm(lat, lon, 'blue')
-%     t0 = tic;
-%     j = 1;
-%     for i = 1:n_points    
-%         if i <= n_draw
-%            lin1 = plotm(lat1(1:i),lon1(1:i),'blue');
-%            lin2 = plotm(lat2(1:i),lon2(1:i),'red');
-%         else
-%            lin1 = plotm(lat1(i-n_draw:i),lon1(i-n_draw:i),'blue');
-%            lin2 = plotm(lat2(i-n_draw:i),lon2(i-n_draw:i),'red');
-%         end
-%         pnt1 = plotm(lat1(i),lon1(i),'bs','MarkerSize', 10);
-%         pnt2 = plotm(lat2(i),lon2(i),'rs','MarkerSize', 10);
-%         crcl1 = circlem(lat1(i),lon1(i),1000,'EdgeColor','b');
-%         crcl2 = circlem(lat2(i),lon2(i),1000,'EdgeColor','r');
-% 
-%         if j <= length(cntc)
-%             c = cntc(j,:);
-%             if t(i) >= c(1) && t(i) < c(2)
-%                 cln = linem( [lat1(i);lat2(i)], [lon1(i);lon2(i)]);
-%             elseif t(i) >= c(2)
-%                 j = j+1;
-%             end
-%         end
-% 
-%         drawnow;
-%         while toc(t0) < 1/30
-%             %wait     
-%         end
-%         delete(lin1);
-%         delete(lin2);
-%         delete(pnt1);
-%         delete(pnt2);
-%         delete(crcl1);
-%         delete(crcl2);
-%         delete(cln);
-% 
-%         t0 = tic;
-%     end
-%     plotm(lat1, lon1, 'blue')
-%     plotm(lat2, lon2, 'red')
-%     circlem(lat1,lon1,1000,'EdgeColor','b');
-%     circlem(lat2,lon2,1000,'EdgeColor','r');
-%     drawnow;
-% 
-%     disp('DONE')
-
 end

@@ -33,11 +33,9 @@ import seakers.orekit.coverage.access.TimeIntervalArray;
 import seakers.orekit.event.CrossLinkEventAnalysis;
 import seakers.orekit.event.EventAnalysis;
 import seakers.orekit.event.FieldOfViewAndGndStationEventAnalysis;
-import seakers.orekit.event.FieldOfViewEventAnalysis;
 import seakers.orekit.object.*;
 import seakers.orekit.object.communications.ReceiverAntenna;
 import seakers.orekit.object.communications.TransmitterAntenna;
-import seakers.orekit.object.fieldofview.FieldOfViewDefinition;
 import seakers.orekit.object.fieldofview.NadirSimpleConicalFOV;
 import seakers.orekit.object.fieldofview.OffNadirRectangularFOV;
 import seakers.orekit.propagation.PropagatorFactory;
@@ -191,13 +189,54 @@ public class OrbitData {
     }
 
     /**
+     * Prints csv file of all ground points of all desired coverage definitions to be used for plotting
+     * All in lat-lon
+     */
+    public void printGP(){
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = directoryAddress + "/" + "CovDefs.csv";
+        File f = new File(outAddress);
+        fileWriter = null;
+        if(!f.exists()) {
+            // if file does not exist yet, save data
+            try{
+                fileWriter = new FileWriter(outAddress, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            printWriter = new PrintWriter(fileWriter);
+
+            for (CoverageDefinition covDef : covDefs) {
+                for (CoveragePoint point : covDef.getPoints()) {
+                    String pointStr = genPtStr(covDef, point);
+                    printWriter.print(pointStr);
+                }
+            }
+            printWriter.close();
+        }
+    }
+
+    private String genPtStr(CoverageDefinition covDef, CoveragePoint pt){
+        StringBuilder out = new StringBuilder();
+
+        String defName = covDef.getName();
+        String ptName = pt.getName();
+        double lat = FastMath.toDegrees( pt.getPoint().getLatitude() );
+        double lon = FastMath.toDegrees( pt.getPoint().getLongitude() );
+        double alt = FastMath.toDegrees( pt.getPoint().getAltitude() );
+
+        out.append(defName + "," + ptName + "," + lat + "," + lon + "," + alt + "\n");
+        return out.toString();
+    }
+
+
+    /**
      * Propagates orbit and saves position vector and ground track lat-lon to csv file
      * All in the Earth Frame
      */
     public void trajectoryCalc(){
         double timestep = 60.0;
-        HashMap<Satellite, ArrayList<PVCoordinates>> pv = new HashMap<>();
-        HashMap<Satellite, ArrayList<GeodeticPoint>> gt = new HashMap<>();
 
         for(Constellation cons : constellations){
             for(Satellite sat : cons.getSatellites()){
@@ -249,7 +288,7 @@ public class OrbitData {
                     printWriter = new PrintWriter(fileWriter);
 
                     for (int i = 0; i < pvSat.size(); i++) {
-                        String posStr = genOutStr(pvSat.get(i), gtSat.get(i), time.get(i));
+                        String posStr = genPVstr(pvSat.get(i), gtSat.get(i), time.get(i));
                         printWriter.print(posStr);
                     }
 
@@ -260,7 +299,14 @@ public class OrbitData {
         }
     }
 
-    private String genOutStr(PVCoordinates pv, GeodeticPoint gt, double epoch){
+    /**
+     * Generates string containing position vector and lat-lon of a satellite
+     * @param pv Position vector of satellite
+     * @param gt Ground point of satellite
+     * @param epoch
+     * @return
+     */
+    private String genPVstr(PVCoordinates pv, GeodeticPoint gt, double epoch){
         StringBuilder out = new StringBuilder();
         double x = pv.getPosition().getX();
         double y = pv.getPosition().getY();
@@ -335,10 +381,9 @@ public class OrbitData {
         //set the analyses
         ArrayList<EventAnalysis> eventAnalyses = new ArrayList<>();
         ArrayList<Analysis<?>> analyses = new ArrayList<>();
-        ArrayList<PropagatorFactory> pfs = new ArrayList<>(); pfs.add(pfJ2); pfs.add(pfKep);
 
         CrossLinkEventAnalysis crossLinkEvents = new CrossLinkEventAnalysis(startDate,endDate,inertialFrame,
-                constellations,pfs,true,false);
+                constellations,pfJ2,true,false);
 
         FieldOfViewAndGndStationEventAnalysis fovEvents = new FieldOfViewAndGndStationEventAnalysis(startDate, endDate,
                 inertialFrame, covDefs, stationAssignment,pfJ2, true, false);
@@ -629,7 +674,7 @@ public class OrbitData {
         String lonsStr = column[rowIndexes.get("RegionLon [deg]")].getContents();
 
         String[] latBounds = latsStr.substring(1,latsStr.length()-1).split(",");
-        String[] longBounds = lonsStr.substring(1,latsStr.length()-1).split(",");
+        String[] longBounds = lonsStr.substring(1,lonsStr.length()-1).split(",");
 
         double minLatitude = Math.min( Double.parseDouble(latBounds[0]), Double.parseDouble(latBounds[1]) );
         double maxLatitude = Math.max( Double.parseDouble(latBounds[0]), Double.parseDouble(latBounds[1]) );

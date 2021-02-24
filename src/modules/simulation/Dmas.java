@@ -31,26 +31,37 @@ public class Dmas extends Agent {
     public void activate(){
         try {
             // 1- Check input format
+            getLogger().info("Loading " + inputFile + " input file...");
             if(inputFile == null) throw new InputMismatchException("No input file selected.");
 
             // 2- Read input file
             JSONObject input = parseJSON(inputFile);
 
             // 3- Create results directory
-//            createSimDirectory(input);
+            createSimDirectory(input);
 
             // 4- Set Logger Level
             setLogger(input);
 
-            // 5- Coverage and Crosslink Calculation
+            // 5- Coverage and Cross Link Calculation
+            getLogger().info("Loading constellation and scenario data...");
             orbitData = new OrbitData(input, orekitDataDir, databaseDir, coverageDir, constellationsDir, scenarioDir);
+            getLogger().info("Calculating coverage...");
             orbitData.coverageCalc();
-//            orbitData.propagate();
+            getLogger().info("Propagating satellite trajectories...");
             orbitData.trajectoryCalc();
+            getLogger().info("Printing coverage definition ground points...");
+            orbitData.printGP();
 
             // 6- Generate simulation scenarios
             int n_sims = Integer.parseInt( input.get(N_SIMS).toString() );
-            if(n_sims <= 0) throw new InputMismatchException("Invalid value for " + N_SIMS);
+            if(n_sims <= 0) throw new InputMismatchException("Invalid value for " + N_SIMS + ". Must run at least once.");
+            else if(n_sims == 1) {
+                getLogger().info("Generating single scenario...");
+            }
+            else{
+                getLogger().info("Generating " + n_sims + " scenarios...");
+            }
 
             ArrayList<Simulation> sims = new ArrayList<>();
             for(int i = 0; i < n_sims; i++){
@@ -58,7 +69,10 @@ public class Dmas extends Agent {
             }
 
             // 7- Execute simulations
-            for(Simulation sim : sims) launchAgent(sim);
+            for(Simulation sim : sims){
+                if(sims.indexOf(sim) == 1) launchAgent(sim, true);
+                else launchAgent(sim, false);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -68,6 +82,13 @@ public class Dmas extends Agent {
     @Override
     public void live(){}
 
+    /**
+     * Reads JSON input file and creates a JSON object to be used across the simulation
+     * @param fileName : string containing the name of the desired input file within the /inputs folder
+     * @return input : JSON Object of loaded input json file
+     * @throws IOException
+     * @throws ParseException
+     */
     private JSONObject parseJSON(String fileName) throws IOException, ParseException {
         JSONParser parser = new JSONParser();
         String fileAddress = inputDir + fileName;
@@ -81,18 +102,30 @@ public class Dmas extends Agent {
         return input;
     }
 
+    /**
+     * Creates a directory where all runs of this simulation will save their results
+     * @param input imported JSON input file
+     */
     private void createSimDirectory(JSONObject input){
+        getLogger().info("Creating simulation results directory...");
+
         LocalDateTime now = LocalDateTime.now();
 
         String simName = input.get(SIM_NAME).toString();
         String directoryAddress = resultsDir + simName + "_" + now.toString();
-        new File( directoryAddress ).mkdir();
+        if(!new File( directoryAddress ).exists()) {
+            new File(directoryAddress).mkdir();
+            getLogger().config("Simulation results directory created at " + directoryAddress + ".");
+        }
+        else{
+            getLogger().config("Simulation results directory already exists at " + directoryAddress + ".");
+        }
     }
 
-    private void createCoverageDirectory(JSONObject input){
-
-    }
-
+    /**
+     * Sets logger level for all agents in the simulation
+     * @param input imported JSON input file
+     */
     private void setLogger(JSONObject input){
         String lvl = input.get(LEVEL).toString();
 
