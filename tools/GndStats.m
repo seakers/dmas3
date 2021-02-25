@@ -1,6 +1,5 @@
-classdef CovDef
-    %COVDEF Summary of this class goes here
-    %   Detailed explanation goes here
+classdef GndStats
+%   Detailed explanation goes here
     
     properties
         DirName;
@@ -9,15 +8,16 @@ classdef CovDef
     end
     
     methods
-        function obj = CovDef(jsonData)
+        function obj = GndStats(jsonData)
             %COVDEF Construct an instance of this class
             obj.DirName = string(jsonData.constellation) + "_"...
                         + string(jsonData.groundStationNetwork) + "_"...
                         + string(jsonData.scenario) + "_"...
                         + string(jsonData.startDate) + "_"...
                         + string(jsonData.endDate) + "/";
-            obj.DataPath = "../data/coverage/" + obj.DirName + "CovDefs.csv";
-            obj.DefData = readcell(obj.DataPath);
+            obj.DataPath = "../data/databases/GroundStationDatabase.xls";
+            obj.DefData = readcell(obj.DataPath, 'Sheet', jsonData.groundStationNetwork);
+            obj.DefData(1,:) = [];
         end
         
     end

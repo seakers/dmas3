@@ -3,15 +3,19 @@ function [] = gndPlot(varargin)
     clc; close all;
        
     % Read JSON input file
-    [fileName,fileDir,~] = uigetfile('../inputs/*.json*','Select Input File');
+    [fileName,fileDir,~] = uigetfile('../inputs/*.json*',...
+        'Select Input File');
     filePath = [fileDir fileName];
     
     jsonData = jsondecode( fileread(filePath) );
     
+    simName = jsonData.simName;
+    resDir = uigetdir('../results/','Select Results Directory');
+    
     % Load Ortbit Data
     sensingSatsData = readcell( '../data/constellations/' + string(jsonData.constellation) + '.xls', 'Sheet', 'Remote Sensing');
-    [n_sense ~] = size(sensingSatsData);
     commsSatsData = readcell( '../data/constellations/' + string(jsonData.constellation) + '.xls', 'Sheet', 'Communications');
+    [n_sense ~] = size(sensingSatsData);
     [n_comms ~] = size(commsSatsData);
     
     satNames = [];
@@ -40,8 +44,12 @@ function [] = gndPlot(varargin)
         j = j + 1;
     end
     
-    % Load Ground Points
+    % Load Ground Points and Stations
     gndPts = CovDef(jsonData);
+    gndStats = GndStats(jsonData);
+    
+    % Load Measurement Requests
+    requests = measReqs(resDir);
     
     % Generate Plot
     
@@ -70,47 +78,66 @@ function [] = gndPlot(varargin)
         circles{j} = circlem(0,0,0);
     end
     
-    plotm([gndPts.DefData{:,3}], [gndPts.DefData{:,4}], '.', 'Color', [1, 1, 1]*.75);
-    x = 1;
+    plotm([gndPts.DefData{:,3}], [gndPts.DefData{:,4}], '.', 'Color', [1, 1, 1]*.75,'MarkerSize',5);
+    reqPoints = plotm(requests.Lat, requests.Lon, '*', 'Color', [1, 1, 1]*.75,'MarkerSize', 7.5);
+    plotm([gndStats.DefData{:,3}], [gndStats.DefData{:,4}], 'vk','MarkerSize',7.5);
+    
   
-%     for i = 1:length(t)    
-%         if i <= n_draw
-%            for j = 1:length(sats)
-%                sat = sats{j};
-%                lines{j} = plotm(sat.Lat(1:i),sat.Lon(1:i));
-%            end
-%         else
-%            for j = 1:length(sats)
-%                sat = sats{j};
-%                lines{j} = plotm(sat.Lat(i-n_draw:i),sat.Lon(i-n_draw:i));
-%            end
-%         end
-%         
-%         for j = 1:length(sats)
-%            sat = sats{j};
-%            points{j} = plotm(sat.Lat(i),sat.Lon(i),'s', 'MarkerSize', 10);
-%            circles{j} = circlem(sat.Lat(i),sat.Lon(i),...
-%                sat.R_fov, 'units', validateLengthUnit('kilometer'),...
-%                'facecolor', 'b',...
-%                'FaceAlpha', 0.5,...
-%                'EdgeAlpha', 0.5);
-%         end
-%         
-%         drawnow;
-%         
-%         while toc(t0) < 1/30
-%             %wait     
-%         end
-%         
-%         for j = 1:length(sats)
-%             delete(lines{j})
-%             delete(points{j})
-%             delete(circles{j})
-%         end
-% 
-%         t0 = tic;
-%         
-%     end
+    for i = 1:10:length(t)    
+        if i <= n_draw
+           for j = 1:length(sats)
+               sat = sats{j};
+               lines{j} = plotm(sat.Lat(1:i),sat.Lon(1:i));
+           end
+        else
+           for j = 1:length(sats)
+               sat = sats{j};
+               lines{j} = plotm(sat.Lat(i-n_draw:i),sat.Lon(i-n_draw:i));
+           end
+        end
+        
+        for j = 1:length(sats)
+           sat = sats{j};
+           points{j} = plotm(sat.Lat(i),sat.Lon(i),'s', 'MarkerSize', 10);
+           circles{j} = circlem(sat.Lat(i),sat.Lon(i),...
+               sat.R_fov, 'units', validateLengthUnit('kilometer'),...
+               'facecolor', 'b',...
+               'FaceAlpha', 0.5,...
+               'EdgeAlpha', 0.5);
+        end
+        
+        activeTasks = [];
+        for j = 1:length(requests.ReqData(:,1))
+            if t(i) >= requests.ReqData(j,6) ...
+                    && t(i) <= requests.ReqData(j,7)
+                activeTasks = [activeTasks; 
+                               requests.Lat(j), requests.Lon(j)]; 
+            end
+        end
+        if length(activeTasks) > 0
+            reqPoints = plotm(activeTasks(:,1), activeTasks(:,2), '*r',...
+                                'MarkerSize', 7.5);
+        end
+        
+        drawnow;
+        
+        while toc(t0) < 1/10
+            %wait     
+        end
+        
+        for j = 1:length(sats)
+            delete(lines{j})
+            delete(points{j})
+            delete(circles{j})
+        end
+        delete(reqPoints);
+        reqPoints = plotm(requests.Lat, requests.Lon, '*', 'Color', [1, 1, 1]*.75,'MarkerSize', 7.5);
+
+        t0 = tic;
+        tcurr = t(i)/60;
+        title(["Current Time: "+tcurr+" [mins]";
+               "Number of ActiveTasks: "+length(activeTasks)]);
+    end
     
     for j = 1:length(sats)
        sat = sats{j};

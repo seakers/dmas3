@@ -1,49 +1,35 @@
 package modules.measurements;
 
+import madkit.kernel.AbstractAgent;
+import madkit.kernel.Agent;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
+import java.util.HashMap;
+
 public class Measurement {
-    private AbsoluteDate availableDate = null;
-    private AbsoluteDate measurementDate = null;
-    private double utility = -1.0;
-    private double res = -1.0;
-    private double acc = -1.0;
+    private final AbstractAgent measuringAgent;
+    private final MeasurementRequest request;
+    private final HashMap<Requirement, RequirementPerformance> performance;
+    private final AbsoluteDate measurementDate;
+    private final double utility;
 
-    public Measurement(){
-        // TODO create proper measurement metrics
+    public Measurement(AbstractAgent measuringAgent, MeasurementRequest request, HashMap<Requirement, RequirementPerformance> performance, AbsoluteDate measurementDate, double utility) {
+        this.measuringAgent = measuringAgent;
+        this.request = request;
+        this.performance = performance;
+        this.measurementDate = measurementDate;
+        this.utility = utility;
     }
 
-    public void randomize() throws OrekitException {
-        TimeScale utc = TimeScalesFactory.getUTC();
-        availableDate = new AbsoluteDate(2021, 1, 1, 0, 0, 0, utc);
-        double duration = 24*3600 * Math.random();
-        measurementDate = availableDate.shiftedBy(duration);
-        utility = 100 * Math.random();
-        res = 1000 * Math.random();
-        acc = Math.random();
-    }
-
-
-    public AbsoluteDate getAvailableDate() {
-        return availableDate;
-    }
-
-    public AbsoluteDate getMeasurementDate() {
-        return measurementDate;
-    }
-
-    public double getUtility(){
-        return  utility;
-    }
-
-    public double getRes() {
-        return res;
-    }
-
-    public double getAcc() {
-        return acc;
-    }
+    /**
+     * Getters
+     */
+    public AbstractAgent getMeasuringAgent() { return measuringAgent; }
+    public MeasurementRequest getRequest() { return request; }
+    public HashMap<Requirement, RequirementPerformance> getPerformance() { return performance; }
+    public AbsoluteDate getMeasurementDate() { return measurementDate; }
+    public double getUtility() { return utility; }
 }

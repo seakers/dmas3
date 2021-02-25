@@ -188,6 +188,8 @@ public class OrbitData {
         pfKep = new PropagatorFactory(PropagatorType.KEPLERIAN,propertiesPropagator);
     }
 
+
+
     /**
      * Prints csv file of all ground points of all desired coverage definitions to be used for plotting
      * All in lat-lon
@@ -197,7 +199,7 @@ public class OrbitData {
         PrintWriter printWriter;
         String outAddress = directoryAddress + "/" + "CovDefs.csv";
         File f = new File(outAddress);
-        fileWriter = null;
+
         if(!f.exists()) {
             // if file does not exist yet, save data
             try{
@@ -229,7 +231,6 @@ public class OrbitData {
         out.append(defName + "," + ptName + "," + lat + "," + lon + "," + alt + "\n");
         return out.toString();
     }
-
 
     /**
      * Propagates orbit and saves position vector and ground track lat-lon to csv file
@@ -842,7 +843,6 @@ public class OrbitData {
                 fieldOfRegard = new OffNadirRectangularFOV(0.0,
                         FastMath.toRadians(fov_ct/2.0 + 2*lookAngle) , FastMath .toRadians(fov_at/2.0), 0.0, earthShape);
 
-//                return  new Instrument(name, fieldOfRegard,mass,peakPower*dc);
                 return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, nLooks, rb, nominalOps, antenna);
             case "side":
                 fieldOfRegard = new OffNadirRectangularFOV(FastMath.toRadians(lookAngle),
@@ -878,4 +878,11 @@ public class OrbitData {
     public ArrayList<Constellation> getConstellations() { return constellations; }
     public HashSet<CoverageDefinition> getCovDefs() { return covDefs; }
     public HashMap<Satellite, Set<GndStation>> getStationAssignment() { return stationAssignment; }
+
+    /**
+     * Other getters
+     */
+    public String getScenarioDir(){ return scenarioDir; }
+    public AbsoluteDate getStartDate(){ return startDate; }
+    public AbsoluteDate getEndDate() { return endDate; }
 }

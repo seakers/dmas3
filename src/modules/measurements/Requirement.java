@@ -1,19 +1,37 @@
 package modules.measurements;
 
+import java.util.InputMismatchException;
+
 public class Requirement {
+    private final String name;
     private final double goal;
     private final double breakThrough;
     private final double threshold;
     private final String units;
 
-    public Requirement(double goal, double breakThrough, double threshold, String units){
+    public Requirement(String name, double goal, double breakThrough, double threshold, String units){
+        this.name = name;
         this.goal = goal;
         this.breakThrough = breakThrough;
         this.threshold = threshold;
+
+        boolean match = false;
+        for(String unit : Units.ALL){
+            if(unit.equals(units)) {
+                match = true;
+                break;
+            }
+        }
+        if(!match) throw new InputMismatchException("Requirement units " + units + " not yet supported.");
         this.units = units;
     }
 
     public Requirement copy(){
-        return new Requirement(goal, breakThrough, threshold, units);
+        return new Requirement(name, goal, breakThrough, threshold, units);
     }
+    public String getName(){ return name; }
+    public double getGoal() { return goal; }
+    public double getBreakThrough() { return breakThrough; }
+    public double getThreshold() { return threshold; }
+    public String getUnits() { return units; }
 }
