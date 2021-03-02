@@ -99,7 +99,7 @@ public class OrbitData {
     /**
      * List of instruments in instrument database from which satellites can choose to create their payload
      */
-    private final HashMap<String, Instrument> instrumentList;
+    private final HashMap<String, HashMap<Boolean, Instrument>> instrumentList;
 
     /**
      * Propagator used in coverage and trajectory calculations
@@ -116,6 +116,8 @@ public class OrbitData {
     private HashMap<Constellation, HashMap<Satellite, HashMap<Satellite, TimeIntervalArray>>> accessesCL;
     private HashMap<CoverageDefinition, HashMap<Satellite,
             HashMap<TopocentricFrame, TimeIntervalArray>>> accessesGP;
+    private HashMap<CoverageDefinition, HashMap<Satellite, HashMap<Instrument,
+            HashMap<TopocentricFrame, TimeIntervalArray>>>> accessesGPInst;
     private HashMap<Satellite, HashMap<GndStation, TimeIntervalArray>> accessesGS;
 
     /**
@@ -343,6 +345,7 @@ public class OrbitData {
         this.accessesCL = ((CrossLinkEventAnalysis) events.get(0)).getAllAccesses();
 
         this.accessesGP = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccesses();
+        this.accessesGPInst = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccessesInst();
         this.accessesGS = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccessesGS();
 
         printAccesses();
@@ -387,7 +390,7 @@ public class OrbitData {
                 constellations,pfJ2,true,false);
 
         FieldOfViewAndGndStationEventAnalysis fovEvents = new FieldOfViewAndGndStationEventAnalysis(startDate, endDate,
-                inertialFrame, covDefs, stationAssignment,pfJ2, true, false);
+                inertialFrame, covDefs, stationAssignment,pfJ2, true, false, true);
 
         eventAnalyses.add(crossLinkEvents);
         eventAnalyses.add(fovEvents);
@@ -541,10 +544,13 @@ public class OrbitData {
             Workbook constelWorkbook = Workbook.getWorkbook(new File(constellationsDir + consStr + ".xls"));
 
             // Load Sensing Satellites
-            ArrayList<Satellite> satsSense = new ArrayList<>();
             Sheet sensingSats = constelWorkbook.getSheet("Remote Sensing");
             HashMap<String, Integer> rowIndexes = readIndexes(sensingSats.getRow(0));
+
+            // - Nominal operations
+            ArrayList<Satellite> satsSense = new ArrayList<>();
             for(int i = 1; i < sensingSats.getRows(); i++){
+                // - Nominal operations
                 Satellite sat = importSensingSat(sensingSats.getRow(i), rowIndexes, startDate);
                 satsSense.add(sat);
             }
@@ -592,10 +598,15 @@ public class OrbitData {
         String payloadStr = row[columnIndexes.get("Payload")].getContents();
 
         String[] contents = payloadStr.split(", ");
+        boolean nominal = false;
         for(int i = 0; i < contents.length; i++){
-            Instrument ins = instrumentList.get(contents[i]);
-            if(ins == null) throw new InputMismatchException("Constellation input error. " + contents[i] + " not found in instrument database.");
-            payload.add(ins);
+            for(int j = 0; j < 2; j++){
+                if(j > 0) nominal = true;
+                Instrument ins = instrumentList.get(contents[i]).get(nominal);
+
+                if(ins == null) throw new InputMismatchException("Constellation input error. " + contents[i] + " not found in instrument database.");
+                payload.add(ins);
+            }
         }
 
         Orbit orb = new KeplerianOrbit(alt + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, ecc, inc, 0.0, raan, anom, PositionAngle.MEAN, inertialFrame, startDate, mu);
@@ -655,6 +666,7 @@ public class OrbitData {
         for(int i = 1; i < regionsSheet.getRows(); i++){
             Cell[] row = regionsSheet.getRow(i);
             CoverageDefinition covDef = importCoverageDefinition(row, rowIndexes);
+
             covDef.assignConstellation(constellations);
             covDefs.add(covDef);
         }
@@ -748,8 +760,8 @@ public class OrbitData {
      * @param input
      * @return
      */
-    private HashMap<String, Instrument> loadInstruments(JSONObject input){
-        HashMap<String, Instrument> instrumentList = new HashMap<>();
+    private HashMap<String, HashMap<Boolean, Instrument>> loadInstruments(JSONObject input){
+        HashMap<String, HashMap<Boolean, Instrument>> instrumentList = new HashMap<>();
 
         try {
             Workbook instrumentsWorkbook = Workbook.getWorkbook( new File(databaseDir + "InstrumentDatabase.xls"));
@@ -758,9 +770,16 @@ public class OrbitData {
             HashMap<String, Integer> columnIndexes = readIndexes(sensingSats.getRow(0));
 
             for(int i = 1; i < sensingSats.getRows(); i++){
+                HashMap<Boolean, Instrument> insSet = new HashMap<>();
+
                 Cell[] row = sensingSats.getRow(i);
-                Instrument ins = readInstrument(row, columnIndexes, instrumentsWorkbook);
-                instrumentList.put(ins.getName(), ins);
+                Instrument insNom = readInstrument(row, columnIndexes, instrumentsWorkbook, true);
+                insSet.put(true,insNom);
+
+                Instrument insFOR = readInstrument(row, columnIndexes, instrumentsWorkbook, false);
+                insSet.put(false,insFOR);
+
+                instrumentList.put(insNom.getName(), insSet);
             }
 
         } catch (IOException e) {
@@ -782,7 +801,7 @@ public class OrbitData {
      * @return Instrument object
      * @throws OrekitException
      */
-    private Instrument readInstrument(Cell[] row, HashMap<String, Integer> columnIndexes, Workbook instrumentsWorkbook) throws OrekitException {
+    private Instrument readInstrument(Cell[] row, HashMap<String, Integer> columnIndexes, Workbook instrumentsWorkbook, boolean nominal) throws OrekitException {
         Instrument ins;
 
         String id = row[columnIndexes.get("ID")].getContents();
@@ -795,7 +814,7 @@ public class OrbitData {
 
         switch(type){
             case "SAR" :
-                ins = loadSAR(name, mass, instrumentsWorkbook);
+                ins = loadSAR(name, mass, instrumentsWorkbook, nominal);
                 break;
             default:
                 throw new InputMismatchException("Instrument Database input error on instrument " + name + ". " + type + " type sensor not yet supported");
@@ -816,7 +835,7 @@ public class OrbitData {
         return indexes;
     }
 
-    private Instrument loadSAR(String name, double mass, Workbook instrumentsWorkbook){
+    private Instrument loadSAR(String name, double mass, Workbook instrumentsWorkbook, boolean nominal){
         Sheet instrumentSheet = instrumentsWorkbook.getSheet(name);
         Cell[] parameters = instrumentSheet.getColumn(0);
         Cell[] values = instrumentSheet.getColumn(1);
@@ -837,6 +856,7 @@ public class OrbitData {
         double fov_ct = Double.parseDouble( values[parameterIndexes.get("FOV-CT")].getContents() );
         double lookAngle = Double.parseDouble( values[parameterIndexes.get("LookAngle")].getContents() );
 
+        if(!nominal) name += "_FOR";
         OffNadirRectangularFOV fieldOfRegard;
         switch(scan){
             case "conical":
@@ -844,19 +864,28 @@ public class OrbitData {
                         FastMath.toRadians(fov_ct/2.0 + 2*lookAngle) , FastMath .toRadians(fov_at/2.0), 0.0, earthShape);
 
                 return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, nLooks, rb, nominalOps, antenna);
-            case "side":
-                fieldOfRegard = new OffNadirRectangularFOV(FastMath.toRadians(lookAngle),
-                        FastMath.toRadians(fov_ct/2.0 + scanningAngle) , FastMath.toRadians(fov_at/2.0),
-                        0.0, earthShape);
 
+            case "side":
+                if(nominal) {
+                    fieldOfRegard = new OffNadirRectangularFOV(FastMath.toRadians(lookAngle),
+                            FastMath.toRadians(fov_ct / 2.0 ), FastMath.toRadians(fov_at / 2.0),
+                            0.0, earthShape);
+                }
+                else{
+                    fieldOfRegard = new OffNadirRectangularFOV(FastMath.toRadians(lookAngle),
+                            FastMath.toRadians((fov_ct + scanningAngle) / 2.0 ), FastMath.toRadians(fov_at / 2.0),
+                            0.0, earthShape);
+                }
                 return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf,
                         nLooks, rb, nominalOps, antenna);
+
             case "none":
                 fieldOfRegard = new OffNadirRectangularFOV(FastMath.toRadians( lookAngle ),
                         FastMath.toRadians(fov_ct/2.0) , FastMath.toRadians(fov_at/2.0) , 0.0, earthShape);
 
                 return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf,
                         nLooks, rb, nominalOps, antenna);
+
             default:
                 throw new InputMismatchException("Instrument Database input error on instrument " + name + ". " + scan + " scanning type not yet supported");
         }
@@ -869,6 +898,8 @@ public class OrbitData {
             HashMap<Satellite, TimeIntervalArray>>> getAccessesCL() { return accessesCL; }
     public HashMap<CoverageDefinition, HashMap<Satellite,
             HashMap<TopocentricFrame, TimeIntervalArray>>> getAccessesGP() { return accessesGP; }
+    public HashMap<CoverageDefinition, HashMap<Satellite, HashMap<Instrument,
+            HashMap<TopocentricFrame, TimeIntervalArray>>>> getAccessesGPIns() { return accessesGPInst; }
     public HashMap<Satellite,
             HashMap<GndStation, TimeIntervalArray>> getAccessesGS() { return accessesGS; }
 
@@ -885,4 +916,29 @@ public class OrbitData {
     public String getScenarioDir(){ return scenarioDir; }
     public AbsoluteDate getStartDate(){ return startDate; }
     public AbsoluteDate getEndDate() { return endDate; }
+
+    public Constellation getSensingSats(){
+        for(Constellation cons : constellations){
+            if(cons.getName().contains("_sensing")) return cons;
+        }
+        return null;
+    }
+    public Constellation getCommsSats(){
+        for(Constellation cons : constellations){
+            if(cons.getName().contains("_comms")) return cons;
+        }
+        return null;
+    }
+    public ArrayList<Satellite> getUniqueSats(){
+        ArrayList<Satellite> satList = new ArrayList<>();
+
+        for(Constellation cons : constellations){
+            for(Satellite sat : cons.getSatellites()){
+                if(!satList.contains(sat)) satList.add(sat);
+            }
+        }
+
+        return satList;
+    }
+
 }

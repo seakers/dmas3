@@ -38,6 +38,14 @@ public class Environment extends Watcher {
     private HashMap<String, HashMap<String, Requirement>> measurementTypes;
     private ArrayList<MeasurementRequest> requests;
 
+    /**
+     * Constructor
+     * @param input JSON input file for simulation
+     * @param orbitData coverage and trajectory data for chosen constellation and coverage definitions
+     * @param parentSim simulation that houses this environment
+     * @throws IOException
+     * @throws BiffException
+     */
     public Environment(JSONObject input, OrbitData orbitData, Simulation parentSim) throws IOException, BiffException {
         // Save coverage and cross link data
         this.input = input;
@@ -46,6 +54,11 @@ public class Environment extends Watcher {
         this.simDirectoryAddress = parentSim.getSimDirectoryAddress();
     }
 
+    /**
+     * Initializes the measurement requests to be performed during the simulation. Claims environment role in simulation
+     * and creates proves so that ground stations and satellites can observe the environment. Triggered only when envi-
+     * ronment agent is launched.
+     */
     @Override
     protected void activate(){
 
@@ -79,6 +92,11 @@ public class Environment extends Watcher {
         }
     }
 
+    /**
+     * Creates list of measurement requests to be made in the duration of the simulation
+     * @param scenarioWorkbook open excelsheet workbook containing scenario information
+     * @return requests : ArrayList containing generated measurement requests
+     */
     private ArrayList<MeasurementRequest> generateRequests(Workbook scenarioWorkbook){
         ArrayList<MeasurementRequest> requests = new ArrayList<>();
 
@@ -107,7 +125,7 @@ public class Environment extends Watcher {
                         AbsoluteDate startDate = dates.get(1);
                         AbsoluteDate endDate = dates.get(2);
 
-                        MeasurementRequest request = new MeasurementRequest(j, location, announceDate, startDate, endDate, type, requirements);
+                        MeasurementRequest request = new MeasurementRequest(j, location, announceDate, startDate, endDate, type, requirements, orbitData.getStartDate());
                         requests.add(request);
                     }
                 }
@@ -117,6 +135,12 @@ public class Environment extends Watcher {
         return requests;
     }
 
+    /**
+     * Generates random dates for the announcement, start, and ending of a measurement request. Duration determined by
+     * temporal requirement of measurement.
+     * @param tempRequirement
+     * @return
+     */
     private ArrayList<AbsoluteDate> randomDates(Requirement tempRequirement){
         AbsoluteDate simStartDate = orbitData.getStartDate();
         AbsoluteDate simEndDate = orbitData.getEndDate();
@@ -144,6 +168,11 @@ public class Environment extends Watcher {
         return dates;
     }
 
+    /**
+     * Chooses a random point from the coverage definition that belongs to the type of measurement to be generated
+     * @param covDef coverage definition of desired measurement
+     * @return pt : a coverage point belonging to covDef
+     */
     private CoveragePoint randomPoint(CoverageDefinition covDef){
         int i_rand = (int) (Math.random()*covDef.getNumberOfPoints());
         int i = 0;
@@ -156,6 +185,12 @@ public class Environment extends Watcher {
         return null;
     }
 
+    /**
+     * Reads scenario information excel sheet and generates list of requirements for the different types of measurements
+     * to be requested in the simulation
+     * @param scenarioWorkbook excel sheet workbook containing information of the chosen scenario
+     * @return requirements : hashmap giving a list of requirements of a given type of measurement
+     */
     private HashMap<String, HashMap<String, Requirement>> loadRequirements( Workbook scenarioWorkbook ){
         HashMap<String, HashMap<String, Requirement>> requirements = new HashMap<>();
 
@@ -180,10 +215,18 @@ public class Environment extends Watcher {
         return requirements;
     }
 
+    /**
+     * Reads measurement requirements from scenario excel sheet row
+     * @param reqRow row from scenario excel sheet containing info about a particular requirement including its type,
+     *               bounds, and units.
+     * @param reqIndexes hashmap that returns the index of a particular metric in reqRow
+     * @return a new object of type requirement containing the information from the excel sheet
+     */
     private Requirement readRequirement(Cell[] reqRow, HashMap<String, Integer> reqIndexes){
         String name = reqRow[reqIndexes.get("Requirement")].getContents();
-        String units = reqRow[reqIndexes.get("Units")].getContents();
         String boundsStr = reqRow[reqIndexes.get("Bounds")].getContents();
+        String units = reqRow[reqIndexes.get("Units")].getContents();
+
         String[] bounds = boundsStr.substring(1,boundsStr.length()-1).split(",");
 
         double goal = Math.min( Double.parseDouble( bounds[2] ), Double.parseDouble( bounds[0]));
@@ -210,6 +253,10 @@ public class Environment extends Watcher {
 
     }
 
+    /**
+     * Prints the list of generated measurement requests to a csv file located in the results folder of this
+     * simulation run
+     */
     private void printRequests(){
         FileWriter fileWriter = null;
         PrintWriter printWriter;
@@ -225,7 +272,7 @@ public class Environment extends Watcher {
             printWriter = new PrintWriter(fileWriter);
 
             for(MeasurementRequest request : requests){
-                String reqStr = genReqStr(request);
+                String reqStr = request.toString();
                 printWriter.print(reqStr);
             }
 
@@ -233,41 +280,7 @@ public class Environment extends Watcher {
         }
     }
 
-    private String genReqStr(MeasurementRequest req){
-        StringBuilder out = new StringBuilder();
 
-        int id = req.getId();
-        String type = req.getType();
-        CoveragePoint location = req.getLocation();
-        double lat = FastMath.toDegrees( location.getPoint().getLatitude() );
-        double lon = FastMath.toDegrees( location.getPoint().getLongitude() );
-        double announceDate = req.getAnnounceDate().durationFrom( this.orbitData.getStartDate() );
-        double startDate = req.getStartDate().durationFrom( this.orbitData.getStartDate() );
-        double endDate = req.getEndDate().durationFrom( this.orbitData.getStartDate() );
-
-        HashMap<String, Requirement> requirements = req.getRequirements();
-
-        out.append(id + "," + type + "," + lat + "," + lon + "," + announceDate + "," + startDate + "," + endDate + ",");
-
-        int i = 0;
-        for(String requirementName : requirements.keySet()){
-            Requirement requirement = requirements.get(requirementName);
-
-            String name = requirement.getName();
-            double goal = requirement.getGoal();
-            double breakThrough = requirement.getBreakThrough();
-            double threshold = requirement.getThreshold();
-            String units = requirement.getUnits();
-
-            out.append(name + "," + goal + "," +breakThrough + "," + threshold + "," + units);
-
-            if(i < requirements.keySet().size() - 1) out.append(",");
-            i++;
-        }
-        out.append("\n");
-
-        return out.toString();
-    }
 
     class AgentsProbe extends PropertyProbe<AbstractAgent, Environment> {
 

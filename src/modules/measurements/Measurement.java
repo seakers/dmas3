@@ -14,6 +14,7 @@ public class Measurement {
     private final MeasurementRequest request;
     private final HashMap<Requirement, RequirementPerformance> performance;
     private final AbsoluteDate measurementDate;
+    private AbsoluteDate downloadDate;
     private final double utility;
 
     public Measurement(AbstractAgent measuringAgent, MeasurementRequest request, HashMap<Requirement, RequirementPerformance> performance, AbsoluteDate measurementDate, double utility) {
@@ -21,7 +22,12 @@ public class Measurement {
         this.request = request;
         this.performance = performance;
         this.measurementDate = measurementDate;
+        this.downloadDate = null;
         this.utility = utility;
+    }
+
+    public void setDownloadDate(AbsoluteDate downloadDate){
+        this.downloadDate = downloadDate.getDate();
     }
 
     /**

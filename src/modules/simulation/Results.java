@@ -13,17 +13,7 @@ public class Results {
     }
 
     public void generateRandomResults() throws OrekitException {
-        measurements = new ArrayList<>();
-        int n = (int) (100.0 * Math.random());
 
-        for(int i = 1; i < n; i++){
-            Measurement newMeasurement = new Measurement();
-            if(Math.random() > 0.2){
-                newMeasurement.randomize();
-            }
-
-            measurements.add(newMeasurement);
-        }
     }
 
     public ArrayList<Measurement> getMeasurements() {
