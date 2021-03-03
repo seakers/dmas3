@@ -8,12 +8,12 @@ public class SimGroups {
      */
     public final String MY_COMMUNITY;
     public static final String SIMU_GROUP = "simu";
-    public static final String SCH_ROLE = "scheduler";
+    public static final String SCHEDULER = "scheduler";
 
     /**
      * Environment roles
      */
-    public static final String ENV_ROLE = "environment";
+    public static final String ENVIRONMENT = "environment";
 
     /**
      * Roles a Satellite can take

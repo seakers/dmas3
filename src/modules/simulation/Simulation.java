@@ -4,20 +4,21 @@ import constants.JSONFields;
 import jxl.read.biff.BiffException;
 import madkit.kernel.Agent;
 import modules.agents.CommsSatellite;
+import modules.agents.GndStatAgent;
 import modules.agents.SensingSatellite;
 import modules.environment.Environment;
-import modules.measurements.MeasurementRequest;
+import modules.planner.*;
 import org.json.simple.JSONObject;
-import seakers.orekit.event.CrossLinkEventAnalysis;
 import seakers.orekit.object.Constellation;
+import seakers.orekit.object.GndStation;
 import seakers.orekit.object.Satellite;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 
-import static constants.JSONFields.SIM_NAME;
+import static constants.JSONFields.*;
 
 public class Simulation extends Agent{
     private int simID;
@@ -31,6 +32,7 @@ public class Simulation extends Agent{
     private Environment environment;
 
     private ArrayList<Agent> spaceSegment;
+    private ArrayList<Agent> gndSegment;
 
     public Simulation(JSONObject input, OrbitData orbitData, String directoryAddress, int simID){
         this.simID = simID;
@@ -39,7 +41,7 @@ public class Simulation extends Agent{
         this.directoryAddress = directoryAddress;
         this.simDirectoryAddress = directoryAddress + "/run_" + simID;
 
-        if(simID == 0 && input.get(JSONFields.GUI).equals(true)) createFrame = true;
+        if(simID == 0 && ((JSONObject) input.get(SETTINGS)).get(JSONFields.GUI).equals(true)) createFrame = true;
 
         // Create simulation directory
         createDirectory();
@@ -65,8 +67,14 @@ public class Simulation extends Agent{
                 launchAgent(satAgent, createFrame);
             }
 
-            // 4- launch simulation scheduler
-//            launchAgent(new SimScheduler(), false);
+            // 4 - launch ground station agents
+            gndSegment = generateGroundSegment();
+            for(Agent satAgent : gndSegment){
+                launchAgent(satAgent, false);
+            }
+
+            // 5- launch simulation scheduler
+            launchAgent(new SimScheduler(myGroups), false);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -95,18 +103,30 @@ public class Simulation extends Agent{
 
         Constellation senseSats = orbitData.getSensingSats();
         Constellation commsSats = orbitData.getCommsSats();
-        ArrayList<Satellite> uniqueSats = orbitData.getUniqueSats();
 
         for(Satellite sat : senseSats.getSatellites()){
-            SensingSatellite sensingSat = new SensingSatellite();
+            AbstractPlanner planner = loadSensingPlanner();
+            SensingSatellite sensingSat = new SensingSatellite(senseSats, sat, orbitData, planner, myGroups);
             spaceSegment.add(sensingSat);
         }
         for(Satellite sat : commsSats.getSatellites()){
-            CommsSatellite commsSat = new CommsSatellite();
+            AbstractPlanner planner = loadCommsPlanner();
+            CommsSatellite commsSat = new CommsSatellite(commsSats, sat, orbitData, planner, myGroups);
             spaceSegment.add(commsSat);
         }
 
         return spaceSegment;
+    }
+
+    private ArrayList<Agent> generateGroundSegment(){
+        ArrayList<Agent> gndSegment = new ArrayList<>();
+
+        for(GndStation gnd : orbitData.getUniqueGndStations()){
+            GndStatAgent gndStatAgent = new GndStatAgent(orbitData, myGroups);
+            gndSegment.add(gndStatAgent);
+        }
+
+        return gndSegment;
     }
 
     private void logWelcome() {
@@ -120,6 +140,31 @@ public class Simulation extends Agent{
         getLogger().severeLog(str);
     }
 
-        public SimGroups getSimGroups(){ return myGroups; }
+    private AbstractPlanner loadSensingPlanner(){
+        AbstractPlanner planner;
+        String plannerStr = ((JSONObject) input.get(PLNR)).get(PLNR_NAME).toString();
+
+        switch (plannerStr){
+            case AbstractPlanner.NONE:
+                planner = new BasicPlanner();
+                break;
+            case AbstractPlanner.TIME:
+                planner = new TimePriorityPlanner();
+                break;
+            case AbstractPlanner.CCBBA:
+                planner = new CCBBAPlanner();
+                break;
+            default:
+                throw new InputMismatchException("Input error. Planner " + plannerStr + " not yet supported.");
+        }
+
+        return planner;
+    }
+
+    private AbstractPlanner loadCommsPlanner(){
+        return new RelayPlanner();
+    }
+
+    public SimGroups getSimGroups(){ return myGroups; }
     public String getSimDirectoryAddress(){ return simDirectoryAddress; }
 }

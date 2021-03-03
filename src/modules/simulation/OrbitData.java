@@ -4,7 +4,7 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-import modules.instruments.SAR;
+import modules.instrument.SAR;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.json.simple.JSONObject;
@@ -162,11 +162,11 @@ public class OrbitData {
         mu = Constants.WGS84_EARTH_MU;
 
         // read json file inputs
-        consStr = input.get(CONSTELLATION).toString();
-        gsNetworkStr = input.get(GROUND_STATIONS).toString();
-        scenarioStr = input.get(SCENARIO).toString();
-        startDateStr = input.get(START_DATE).toString();
-        endDateStr = input.get(END_DATE).toString();
+        consStr = ((JSONObject) input.get(SIM)).get(CONS).toString();
+        gsNetworkStr = ((JSONObject) input.get(SIM)).get(GND_STATS).toString();
+        scenarioStr = ((JSONObject) input.get(SIM)).get(SCENARIO).toString();
+        startDateStr = ((JSONObject) input.get(SIM)).get(START_DATE).toString();
+        endDateStr = ((JSONObject) input.get(SIM)).get(END_DATE).toString();
 
         // if data has been calculated before, import data
         String dirName = consStr + "_" + gsNetworkStr + "_" + scenarioStr + "_" + startDateStr + "_" + endDateStr;
@@ -177,7 +177,7 @@ public class OrbitData {
         endDate = stringToDate(endDateStr);
 
         // Import Instrument database
-        instrumentList = loadInstruments(input);
+        instrumentList = loadInstruments();
 
         // Read scenario information from excel data and generate orbital parameters and coverage definitions
         constellations = loadConstellation(consStr, startDate, endDate);
@@ -417,7 +417,7 @@ public class OrbitData {
      * sets logger level according to input file
      */
     private void setLogger(){
-        String lvl = input.get(LEVEL).toString();
+        String lvl = ((JSONObject) input.get(SETTINGS)).get(LEVEL).toString();
         Level level;
         switch(lvl){
             case "OFF":
@@ -760,7 +760,7 @@ public class OrbitData {
      * @param input
      * @return
      */
-    private HashMap<String, HashMap<Boolean, Instrument>> loadInstruments(JSONObject input){
+    private HashMap<String, HashMap<Boolean, Instrument>> loadInstruments(){
         HashMap<String, HashMap<Boolean, Instrument>> instrumentList = new HashMap<>();
 
         try {
@@ -939,6 +939,18 @@ public class OrbitData {
         }
 
         return satList;
+    }
+
+    public ArrayList<GndStation> getUniqueGndStations(){
+        ArrayList<GndStation> statList = new ArrayList<>();
+
+        for(Satellite sat : stationAssignment.keySet()){
+            for(GndStation stat : stationAssignment.get(sat)){
+                if(!statList.contains(stat)) statList.add(stat);
+            }
+        }
+
+        return statList;
     }
 
 }

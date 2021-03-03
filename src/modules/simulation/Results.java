@@ -1,6 +1,6 @@
 package modules.simulation;
 
-import modules.measurements.Measurement;
+import modules.measurement.Measurement;
 import org.orekit.errors.OrekitException;
 
 import java.util.ArrayList;

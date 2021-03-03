@@ -8,12 +8,11 @@ import jxl.read.biff.BiffException;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
-import modules.measurements.MeasurementRequest;
-import modules.measurements.Requirement;
+import modules.measurement.MeasurementRequest;
+import modules.measurement.Requirement;
 import modules.simulation.OrbitData;
 import modules.simulation.SimGroups;
 import modules.simulation.Simulation;
-import org.hipparchus.util.FastMath;
 import org.json.simple.JSONObject;
 import org.orekit.time.AbsoluteDate;
 import seakers.orekit.object.CoverageDefinition;
@@ -23,9 +22,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.InputMismatchException;
+import java.util.*;
+
+import static constants.JSONFields.SIM;
 
 /**
  * Environment class in charge of generating measurement requests and making them available to satellites upon requests and coverage/time availability
@@ -37,6 +36,7 @@ public class Environment extends Watcher {
     private String simDirectoryAddress;
     private HashMap<String, HashMap<String, Requirement>> measurementTypes;
     private ArrayList<MeasurementRequest> requests;
+    private double GVT;
 
     /**
      * Constructor
@@ -52,6 +52,7 @@ public class Environment extends Watcher {
         this.orbitData = orbitData;
         this.parentSim = parentSim;
         this.simDirectoryAddress = parentSim.getSimDirectoryAddress();
+        this.GVT = orbitData.getStartDate().durationFrom(orbitData.getStartDate().getDate());
     }
 
     /**
@@ -65,7 +66,7 @@ public class Environment extends Watcher {
         try {
             // load scenario data
             String scenarioDir = orbitData.getScenarioDir();
-            String scenarioStr = input.get(JSONFields.SCENARIO).toString();
+            String scenarioStr = ((JSONObject) input.get(SIM)).get(JSONFields.SCENARIO).toString();
             Workbook scenarioWorkbook = Workbook.getWorkbook(new File( scenarioDir + scenarioStr + ".xls"));
 
             // load requirements
@@ -79,11 +80,12 @@ public class Environment extends Watcher {
 
             // request my role so that the viewers can probe me
             SimGroups myGroups = parentSim.getSimGroups();
-            requestRole(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.ENV_ROLE);
+            requestRole(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.ENVIRONMENT);
 
             // give probe access to agents - Any agent within the group agent can access this environment's properties
             addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "environment"));
             addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT, "environment"));
+            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SCHEDULER, "environment"));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -280,8 +282,6 @@ public class Environment extends Watcher {
         }
     }
 
-
-
     class AgentsProbe extends PropertyProbe<AbstractAgent, Environment> {
 
         public AgentsProbe(String community, String group, String role, String fieldName) {
@@ -294,4 +294,40 @@ public class Environment extends Watcher {
             setPropertyValue(agent, Environment.this);
         }
     }
+
+    /**
+     * Returns the list of measurements requests in chronological order
+     */
+    public Queue<MeasurementRequest> getOrderedRequests(){
+        ArrayList<MeasurementRequest> orderedRequests = new ArrayList<>();
+        for(MeasurementRequest req : this.requests){
+            if(orderedRequests.size() == 0) {
+                orderedRequests.add(req);
+                continue;
+            }
+
+            int i = 0;
+            for(MeasurementRequest reqOrd : orderedRequests){
+                if(req.getStartDate().compareTo(reqOrd.getStartDate()) <= 0) break;
+                i += 1;
+            }
+            orderedRequests.add(i,req);
+        }
+
+        Queue<MeasurementRequest> reqQueue = new LinkedList<>();
+        for(MeasurementRequest req : orderedRequests){
+            reqQueue.add(req);
+        }
+        return reqQueue;
+    }
+
+    /**
+     * Updates simulation time
+     */
+    public void tic(){
+        // TODO  allow for time to step forward to next action peformed by a ground station, satellite, or comms satellite
+        this.GVT += 1.0;
+    }
+
+    public double getGVT(){ return this.GVT; }
 }

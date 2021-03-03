@@ -60,7 +60,7 @@ public class Dmas extends Agent {
             orbitData.printGP();
 
             // 6- Generate simulation scenarios
-            int n_sims = Integer.parseInt( input.get(N_SIMS).toString() );
+            int n_sims = Integer.parseInt( ((JSONObject) input.get(SIM)).get(N_SIMS).toString() );
             if(n_sims <= 0) throw new InputMismatchException(
                     "Invalid value for " + N_SIMS + ". Must run at least once.");
             else if(n_sims == 1) getLogger().info("Generating single scenario...");
@@ -75,7 +75,7 @@ public class Dmas extends Agent {
             for(Simulation sim : sims){
                 boolean createFrame = false;
                 if(sims.indexOf(sim) == 0
-                        && input.get(JSONFields.GUI).equals(true)) createFrame = true;
+                        && ((JSONObject) input.get(SETTINGS)).get(GUI).equals(true)) createFrame = true;
                 if(sims.indexOf(sim) == 1) launchAgent(sim, createFrame);
                 else launchAgent(sim, false);
             }
@@ -111,11 +111,6 @@ public class Dmas extends Agent {
         String fileAddress = inputDir + fileName;
         JSONObject input = (JSONObject) parser.parse(new FileReader(fileAddress));
 
-        for(String field : FIELDS){
-            if(input.get(field) == null) throw new InputMismatchException("Input file format error. "
-                    + field + " field not found");
-        }
-
         return input;
     }
 
@@ -125,11 +120,11 @@ public class Dmas extends Agent {
      */
     private void logInput(JSONObject input){
         getLogger().config("Simulation Inputs:\n" +
-                "Constellation: \t" + input.get(CONSTELLATION).toString() + "\n" +
-                "Ground Station\nNetwork: \t\t" + input.get(GROUND_STATIONS).toString() + "\n" +
-                "Scenario: \t\t" + input.get(SCENARIO).toString() + "\n" +
-                "Start Date: \t" + input.get(START_DATE).toString() + "\n" +
-                "End Date: \t\t" + input.get(END_DATE).toString() + "\n");
+                "Constellation: \t" + ((JSONObject) input.get(SIM)).get(CONS).toString() + "\n" +
+                "Gnd Stat Net: \t" + ((JSONObject) input.get(SIM)).get(GND_STATS).toString() + "\n" +
+                "Scenario: \t\t" + ((JSONObject) input.get(SIM)).get(SCENARIO).toString() + "\n" +
+                "Start Date: \t" + ((JSONObject) input.get(SIM)).get(START_DATE).toString() + "\n" +
+                "End Date: \t\t" + ((JSONObject) input.get(SIM)).get(END_DATE).toString() + "\n");
     }
 
     /**
@@ -141,7 +136,7 @@ public class Dmas extends Agent {
 
         LocalDateTime now = LocalDateTime.now();
 
-        String simName = input.get(SIM_NAME).toString();
+        String simName = ((JSONObject) input.get(SIM)).get(SIM_NAME).toString();
 
         directoryAddress = resultsDir + simName + "_" + now.toString();
         if(!new File( directoryAddress ).exists()) {
@@ -158,7 +153,7 @@ public class Dmas extends Agent {
      * @param input imported JSON input file
      */
     private void setLogger(JSONObject input){
-        String lvl = input.get(LEVEL).toString();
+        String lvl = ((JSONObject) input.get(SETTINGS)).get(LEVEL).toString();
 
         switch(lvl){
             case "OFF":

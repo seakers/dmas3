@@ -1,16 +1,25 @@
 {
-  "simName": "TestSim",
+  "simulation" : {
+    "name": "TestSim",
+    "constellation": "ConstellationTemplate",
+    "groundStationNetwork": "NEN",
+    "scenario": "ScenarioTemplate",
+    "startDate": "2020-01-01T00:00:00Z",
+    "endDate": "2020-01-02T00:00:00Z",
+    "crossLinks" : false,
+    "n_sims": 1
+  },
 
-  "constellation": "ConstellationTemplate",
-  "groundStationNetwork": "NEN",
-  "scenario": "ScenarioTemplate",
-  "planner": "CCBBA",
-  "startDate": "2020-01-01T00:00:00Z",
-  "endDate": "2020-01-02T00:00:00Z",
+  "planner": {
+    "name" : "none",
+    "planningHorizon" : 60.0,
+    "requestThreshold" : 1
+  },
 
-  "n_sims": 1,
-  "gui" : true,
-  "printResults" : true,
-  "loggerLevel" : "FINER",
-  "debug" : true
+  "settings" : {
+    "gui" : true,
+    "printResults" : true,
+    "loggerLevel" : "FINER",
+    "debug" : true
+  }
 }
