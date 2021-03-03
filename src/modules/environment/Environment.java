@@ -10,7 +10,7 @@ import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
 import modules.measurement.MeasurementRequest;
 import modules.measurement.Requirement;
-import modules.simulation.OrbitData;
+import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
 import modules.simulation.Simulation;
 import org.json.simple.JSONObject;
@@ -24,19 +24,23 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
-import static constants.JSONFields.SIM;
+import static constants.JSONFields.*;
 
 /**
  * Environment class in charge of generating measurement requests and making them available to satellites upon requests and coverage/time availability
  */
 public class Environment extends Watcher {
-    private JSONObject input;
-    private OrbitData orbitData;
-    private Simulation parentSim;
-    private String simDirectoryAddress;
+    private final JSONObject input;
+    private final OrbitData orbitData;
+    private final AbsoluteDate startDate;
+    private final AbsoluteDate endDate;
+    private final Simulation parentSim;
+    private final String simDirectoryAddress;
     private HashMap<String, HashMap<String, Requirement>> measurementTypes;
     private ArrayList<MeasurementRequest> requests;
+    private ArrayList<MeasurementRequest> orderedRequests;
     private double GVT;
+    private final double dt;
 
     /**
      * Constructor
@@ -50,9 +54,12 @@ public class Environment extends Watcher {
         // Save coverage and cross link data
         this.input = input;
         this.orbitData = orbitData;
+        this.startDate = orbitData.getStartDate();
+        this.endDate = orbitData.getEndDate();
         this.parentSim = parentSim;
         this.simDirectoryAddress = parentSim.getSimDirectoryAddress();
         this.GVT = orbitData.getStartDate().durationFrom(orbitData.getStartDate().getDate());
+        this.dt = Double.parseDouble( ((JSONObject) input.get(SETTINGS)).get(TIMESTEP).toString() );
     }
 
     /**
@@ -66,7 +73,7 @@ public class Environment extends Watcher {
         try {
             // load scenario data
             String scenarioDir = orbitData.getScenarioDir();
-            String scenarioStr = ((JSONObject) input.get(SIM)).get(JSONFields.SCENARIO).toString();
+            String scenarioStr = ((JSONObject) input.get(SIM)).get(SCENARIO).toString();
             Workbook scenarioWorkbook = Workbook.getWorkbook(new File( scenarioDir + scenarioStr + ".xls"));
 
             // load requirements
@@ -74,6 +81,7 @@ public class Environment extends Watcher {
 
             // generate measurement requests
             this.requests = generateRequests(scenarioWorkbook);
+            this.orderedRequests = getOrderedRequests();
 
             // print measurement requests
             printRequests();
@@ -298,7 +306,7 @@ public class Environment extends Watcher {
     /**
      * Returns the list of measurements requests in chronological order
      */
-    public Queue<MeasurementRequest> getOrderedRequests(){
+    private ArrayList<MeasurementRequest> getOrderedRequests(){
         ArrayList<MeasurementRequest> orderedRequests = new ArrayList<>();
         for(MeasurementRequest req : this.requests){
             if(orderedRequests.size() == 0) {
@@ -314,7 +322,7 @@ public class Environment extends Watcher {
             orderedRequests.add(i,req);
         }
 
-        Queue<MeasurementRequest> reqQueue = new LinkedList<>();
+        ArrayList<MeasurementRequest> reqQueue = new ArrayList<>();
         for(MeasurementRequest req : orderedRequests){
             reqQueue.add(req);
         }
@@ -322,12 +330,30 @@ public class Environment extends Watcher {
     }
 
     /**
+     * Returns the list of all available measurements requests in chronological order
+     */
+    public LinkedList<MeasurementRequest> getAvailableRequests(){
+        LinkedList<MeasurementRequest> availableRequests = new LinkedList<>();
+
+        for(MeasurementRequest request : this.orderedRequests){
+            if(this.getCurrentDate().compareTo(request.getAnnounceDate()) >= 0
+                    && this.getCurrentDate().compareTo(request.getEndDate()) <= 0){
+                availableRequests.add(request);
+            }
+        }
+
+        return availableRequests;
+    }
+
+    /**
      * Updates simulation time
      */
     public void tic(){
-        // TODO  allow for time to step forward to next action peformed by a ground station, satellite, or comms satellite
-        this.GVT += 1.0;
+        // TODO  allow for time to step forward to next action performed by a ground station, satellite, or comms satellite
+        this.GVT += this.dt;
     }
 
     public double getGVT(){ return this.GVT; }
+    public double getDt(){ return dt; }
+    public AbsoluteDate getCurrentDate(){ return this.startDate.shiftedBy(this.GVT); }
 }

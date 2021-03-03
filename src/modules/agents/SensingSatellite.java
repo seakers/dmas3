@@ -1,7 +1,7 @@
 package modules.agents;
 
 import modules.planner.AbstractPlanner;
-import modules.simulation.OrbitData;
+import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
 import seakers.orekit.object.Constellation;
 import seakers.orekit.object.Satellite;

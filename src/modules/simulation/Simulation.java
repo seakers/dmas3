@@ -7,8 +7,10 @@ import modules.agents.CommsSatellite;
 import modules.agents.GndStatAgent;
 import modules.agents.SensingSatellite;
 import modules.environment.Environment;
+import modules.orbitData.OrbitData;
 import modules.planner.*;
 import org.json.simple.JSONObject;
+import org.orekit.time.AbsoluteDate;
 import seakers.orekit.object.Constellation;
 import seakers.orekit.object.GndStation;
 import seakers.orekit.object.Satellite;
@@ -28,6 +30,9 @@ public class Simulation extends Agent{
     private String directoryAddress;
     private String simDirectoryAddress;
 
+    private AbsoluteDate startDate;
+    private AbsoluteDate endDate;
+
     private SimGroups myGroups;
     private Environment environment;
 
@@ -38,6 +43,8 @@ public class Simulation extends Agent{
         this.simID = simID;
         this.input = input;
         this.orbitData = orbitData;
+        this.startDate = orbitData.getStartDate();
+        this.endDate = orbitData.getEndDate();
         this.directoryAddress = directoryAddress;
         this.simDirectoryAddress = directoryAddress + "/run_" + simID;
 
@@ -74,7 +81,7 @@ public class Simulation extends Agent{
             }
 
             // 5- launch simulation scheduler
-            launchAgent(new SimScheduler(myGroups), false);
+            launchAgent(new SimScheduler(myGroups, startDate, endDate), true);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -122,7 +129,7 @@ public class Simulation extends Agent{
         ArrayList<Agent> gndSegment = new ArrayList<>();
 
         for(GndStation gnd : orbitData.getUniqueGndStations()){
-            GndStatAgent gndStatAgent = new GndStatAgent(orbitData, myGroups);
+            GndStatAgent gndStatAgent = new GndStatAgent(gnd, orbitData, myGroups);
             gndSegment.add(gndStatAgent);
         }
 

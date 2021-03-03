@@ -6,7 +6,7 @@ import modules.actions.SimulationActions;
 import modules.measurement.Measurement;
 import modules.measurement.MeasurementRequest;
 import modules.planner.AbstractPlanner;
-import modules.simulation.OrbitData;
+import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
 import org.orekit.frames.TopocentricFrame;
 import seakers.orekit.coverage.access.TimeIntervalArray;

@@ -17,6 +17,7 @@ public class JSONFields {
         public static final String PLN_THRSHLD = "plannerThreshold";
 
     public static final String SETTINGS = "settings";
+        public static final String TIMESTEP = "dt";
         public static final String GUI = "gui";
         public static final String PRINT = "printResults";
         public static final String LEVEL = "loggerLevel";

@@ -25,19 +25,19 @@ public class SimScheduler extends Scheduler {
         // 1 : make agents listen/sense
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "sense");
         addActivator(agents);
-        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GS_SENSE, "sense");
+        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT, "sense");
         addActivator(agents);
 
         // 2 : make agents update/create plans
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "think");
         addActivator(agents);
-        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GS_THINK, "think");
+        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT, "think");
         addActivator(agents);
 
         // 3 : let agents execute plans
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "execute");
         addActivator(agents);
-        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GS_DO, "execute");
+        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT, "execute");
         addActivator(agents);
 
         // 4 : update sim time

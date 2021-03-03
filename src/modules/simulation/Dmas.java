@@ -2,8 +2,8 @@ package modules.simulation;
 
 import static constants.JSONFields.*;
 
-import constants.JSONFields;
 import madkit.kernel.Agent;
+import modules.orbitData.OrbitData;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -52,10 +52,13 @@ public class Dmas extends Agent {
             // 5- Coverage and Cross Link Calculation
             getLogger().info("Loading constellation and scenario data...");
             orbitData = new OrbitData(input, orekitDataDir, databaseDir, coverageDir, constellationsDir, scenarioDir);
+
             getLogger().info("Calculating coverage...");
             orbitData.coverageCalc();
+
             getLogger().info("Propagating satellite trajectories...");
             orbitData.trajectoryCalc();
+
             getLogger().info("Printing coverage definition ground points...");
             orbitData.printGP();
 

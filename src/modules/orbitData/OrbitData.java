@@ -1,10 +1,11 @@
-package modules.simulation;
+package modules.orbitData;
 
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import modules.instrument.SAR;
+import modules.simulation.Dmas;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.json.simple.JSONObject;
@@ -14,6 +15,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
+import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -29,6 +31,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import seakers.orekit.analysis.Analysis;
+import seakers.orekit.coverage.access.RiseSetTime;
 import seakers.orekit.coverage.access.TimeIntervalArray;
 import seakers.orekit.event.CrossLinkEventAnalysis;
 import seakers.orekit.event.EventAnalysis;
@@ -239,7 +242,7 @@ public class OrbitData {
      * All in the Earth Frame
      */
     public void trajectoryCalc(){
-        double timestep = 60.0;
+        double timestep = Double.parseDouble( ((JSONObject) input.get(SETTINGS)).get(TIMESTEP).toString() );
 
         for(Constellation cons : constellations){
             for(Satellite sat : cons.getSatellites()){
@@ -330,32 +333,487 @@ public class OrbitData {
         File f = new File(directoryAddress);
         if(f.exists()){
             // import data
-            // TODO: Enable creating new directory and saving/accessing coverage data
+            this.accessesCL = loadCrossLinkAccesses();
+            this.accessesGP = loadGroundPointAccesses();
+            this.accessesGPInst = loadGroundPointInstrumentAccesses();
+            this.accessesGS = loadGroundStationAccesses();
         }
         else{ // Else, calculate information
             // create directory
-            new File( directoryAddress ).mkdir(); // TODO: move propagation to else statement once data io is implemented
+            new File( directoryAddress ).mkdir();
+
+            // propagate scenario to calculate accesses and cross-links
+            Scenario scen = coverageScenario(constellations, covDefs, stationAssignment, startDate, endDate);
+
+            // save data in object variables for sims to use
+            ArrayList<EventAnalysis> events = (ArrayList<EventAnalysis>) scen.getEventAnalyses();
+            this.accessesCL = ((CrossLinkEventAnalysis) events.get(0)).getAllAccesses();
+
+            this.accessesGP = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccesses();
+            this.accessesGPInst = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccessesInst();
+            this.accessesGS = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccessesGS();
+
+            printAccesses();
+        }
+    }
+
+    private HashMap<Constellation, HashMap<Satellite, HashMap<Satellite, TimeIntervalArray>>> loadCrossLinkAccesses() throws Exception {
+        // Initialize map
+        HashMap<Constellation, HashMap<Satellite, HashMap<Satellite, TimeIntervalArray>>> access = new HashMap<>();
+        for(Constellation cons : constellations){
+            access.put(cons, new HashMap<>());
+            for(Satellite sat : cons.getSatellites()){
+                access.get(cons).put(sat, new HashMap<>());
+                for(Constellation consTgt : constellations){
+                    for(Satellite target : consTgt.getSatellites()){
+                        access.get(cons).get(sat).put(target, new TimeIntervalArray(startDate, endDate));
+
+                    }
+                }
+            }
         }
 
-        // propagate scenario to calculate accesses and cross-links
-        Scenario scen = coverageScenario(constellations, covDefs, stationAssignment, startDate, endDate);
+        //parsing a CSV file into Scanner class constructor
+        String outAddress = directoryAddress + "/" + "CrossLinks.csv";
+        Scanner sc = new Scanner( new File(outAddress) );
+        sc.useDelimiter("\n");   //sets the delimiter pattern
+        while (sc.hasNext())  //returns a boolean value
+        {
+            String line = sc.next();
+            String[] fields = line.split(",");
 
-        // save data in object variables for sims to use
-        ArrayList<EventAnalysis> events = (ArrayList<EventAnalysis>) scen.getEventAnalyses();
-        this.accessesCL = ((CrossLinkEventAnalysis) events.get(0)).getAllAccesses();
+            String satStr = fields[0];
+            String targetStr = fields[1];
+            double t_0 = Double.parseDouble( fields[2] );
+            double t_f = Double.parseDouble( fields[3] );
 
-        this.accessesGP = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccesses();
-        this.accessesGPInst = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccessesInst();
-        this.accessesGS = ((FieldOfViewAndGndStationEventAnalysis) events.get(1)).getAllAccessesGS();
+            Satellite sat = getSat(satStr);
+            Satellite target = getSat(targetStr);
+            Constellation cons = getCons(sat);
 
-        printAccesses();
+            access.get(cons).get(sat).get(target).addRiseTime(t_0);
+            access.get(cons).get(sat).get(target).addSetTime(t_f);
+        }
+        sc.close();  //closes the scanner
+
+        return access;
     }
+
+    private HashMap<CoverageDefinition, HashMap<Satellite,
+            HashMap<TopocentricFrame, TimeIntervalArray>>>  loadGroundPointAccesses() throws Exception {
+        // Initialize map
+        HashMap<CoverageDefinition, HashMap<Satellite,
+                HashMap<TopocentricFrame, TimeIntervalArray>>>  access = new HashMap<>();
+        for(CoverageDefinition covDef : covDefs){
+            access.put(covDef, new HashMap<>());
+            for(Satellite sat : this.getUniqueSats()){
+                access.get(covDef).put(sat, new HashMap<>());
+                for(CoveragePoint pt : covDef.getPoints()){
+                    access.get(covDef).get(sat).put(pt, new TimeIntervalArray(startDate, endDate));
+                }
+            }
+        }
+
+        //parsing a CSV file into Scanner class constructor
+        String outAddress = directoryAddress + "/" + "GPCoverage.csv";
+        Scanner sc = new Scanner( new File(outAddress) );
+        sc.useDelimiter("\n");   //sets the delimiter pattern
+        while (sc.hasNext())  //returns a boolean value
+        {
+            String line = sc.next();
+            String[] fields = line.split(",");
+
+            String covDefStr = fields[0];
+            String satStr = fields[1];
+            String targetStr = fields[2];
+            double t_0 = Double.parseDouble( fields[3] );
+            double t_f = Double.parseDouble( fields[4] );
+
+            CoverageDefinition covDef = getCovDef(covDefStr);
+            Satellite sat = getSat(satStr);
+            CoveragePoint target = getPoint(covDefStr, targetStr);
+
+
+            access.get(covDef).get(sat).get(target).addRiseTime(t_0);
+            access.get(covDef).get(sat).get(target).addSetTime(t_f);
+        }
+        sc.close();  //closes the scanner
+
+        return access;
+    }
+
+    private HashMap<CoverageDefinition, HashMap<Satellite, HashMap<Instrument,
+            HashMap<TopocentricFrame, TimeIntervalArray>>>>  loadGroundPointInstrumentAccesses() throws Exception {
+        // Initialize map
+        HashMap<CoverageDefinition, HashMap<Satellite, HashMap<Instrument,
+                HashMap<TopocentricFrame, TimeIntervalArray>>>>  access = new HashMap<>();
+
+        for(CoverageDefinition covDef : covDefs){
+            access.put(covDef, new HashMap<>());
+            for(Satellite sat : this.getUniqueSats()){
+                access.get(covDef).put(sat, new HashMap<>());
+                for(Instrument inst : sat.getPayload()) {
+                    access.get(covDef).get(sat).put(inst, new HashMap<>());
+                    for (CoveragePoint pt : covDef.getPoints()) {
+                        access.get(covDef).get(sat).get(inst).put(pt, new TimeIntervalArray(startDate, endDate));
+                    }
+                }
+            }
+        }
+
+        //parsing a CSV file into Scanner class constructor
+        String outAddress = directoryAddress + "/" + "GPInstrumentCoverage.csv";
+        Scanner sc = new Scanner( new File(outAddress) );
+        sc.useDelimiter("\n");   //sets the delimiter pattern
+        while (sc.hasNext())  //returns a boolean value
+        {
+            String line = sc.next();
+            String[] fields = line.split(",");
+
+            String covDefStr = fields[0];
+            String satStr = fields[1];
+            String targetStr = fields[2];
+            String instrumentStr = fields[3];
+            double t_0 = Double.parseDouble( fields[4] );
+            double t_f = Double.parseDouble( fields[5] );
+
+            CoverageDefinition covDef = getCovDef(covDefStr);
+            Satellite sat = getSat(satStr);
+            CoveragePoint target = getPoint(covDefStr, targetStr);
+            Instrument inst = getInstrument(instrumentStr);
+
+            access.get(covDef).get(sat).get(inst).get(target).addRiseTime(t_0);
+            access.get(covDef).get(sat).get(inst).get(target).addSetTime(t_f);
+        }
+        sc.close();  //closes the scanner
+
+        return access;
+    }
+
+    private HashMap<Satellite, HashMap<GndStation, TimeIntervalArray>>  loadGroundStationAccesses() throws Exception {
+        // Initialize map
+        HashMap<Satellite, HashMap<GndStation, TimeIntervalArray>>  access = new HashMap<>();
+
+        for(Satellite sat : this.getUniqueSats()){
+            access.put(sat, new HashMap<>());
+            for(GndStation gnd : this.getUniqueGndStations()) {
+                access.get(sat).put(gnd, new TimeIntervalArray(startDate, endDate));
+            }
+        }
+
+        //parsing a CSV file into Scanner class constructor
+        String outAddress = directoryAddress + "/" + "GSCoverage.csv";
+        Scanner sc = new Scanner( new File(outAddress) );
+        sc.useDelimiter("\n");   //sets the delimiter pattern
+        while (sc.hasNext())  //returns a boolean value
+        {
+            String line = sc.next();
+            String[] fields = line.split(",");
+
+            String satStr = fields[0];
+            String targetStr = fields[1];
+            double t_0 = Double.parseDouble( fields[2] );
+            double t_f = Double.parseDouble( fields[3] );
+
+            Satellite sat = getSat(satStr);
+            GndStation gnd = getGndStation(targetStr);
+
+            access.get(sat).get(gnd).addRiseTime(t_0);
+            access.get(sat).get(gnd).addSetTime(t_f);
+        }
+        sc.close();  //closes the scanner
+
+        return access;
+    }
+
+    private GndStation getGndStation(String name) throws Exception {
+        for(GndStation gnd : this.getUniqueGndStations()){
+            if(gnd.getBaseFrame().getName().equals(name)) return gnd;
+        }
+
+        throw new Exception("Ground Station Network" + name + " in pre-calculated coverage does not match chosen network");
+    }
+
+    private Instrument getInstrument(String name){
+        if(name.contains("_FOR")) {
+            name = name.substring(0, name.length()-4);
+            return instrumentList.get(name).get(false);
+        }
+        else return instrumentList.get(name).get(true);
+    }
+
+    private CoveragePoint getPoint(String covDefName, String pointName) throws Exception {
+        CoverageDefinition covDef = getCovDef(covDefName);
+        for(CoveragePoint pt : covDef.getPoints()){
+            if(pt.getName().equals(pointName)) return pt;
+        }
+
+        throw new Exception("Coverage Point " + pointName + " in " + covDefName + " coverage definition in pre-calculated coverage does not match chosen definition");
+    }
+
+    private CoverageDefinition getCovDef(String name) throws Exception {
+        for(CoverageDefinition covDef : covDefs){
+            if(covDef.getName().equals(name)) return covDef;
+        }
+
+        throw new Exception("Coverage Definition " + name + " in pre-calculated coverage does not match chosen definition");
+    }
+
+    private Satellite getSat(String name) throws Exception {
+        for(Constellation cons : this.constellations){
+            for(Satellite sat : cons.getSatellites()){
+                if(sat.getName().equals(name)) return sat;
+            }
+        }
+
+        throw new Exception("Satellite " + name + " in pre-calculated coverage does not match chosen constellation");
+    }
+
+    private Constellation getCons(Satellite sat) throws Exception {
+        for(Constellation cons : constellations){
+            for(Satellite satCons : cons.getSatellites()){
+                if(satCons.equals(sat)) return cons;
+            }
+        }
+
+        throw new Exception("Satellite " + sat.getName() + " not found in constellation");
+    }
+
+//    private GndStation getGndStation(String name) throws Exception{
+//        for(Satellite sat : this.stationAssignment.keySet()){
+//            for(GndStation gndStation : this.stationAssignment.get(sat)){
+//                if(gndStation.getName().equals(name)) return gndStation;
+//            }
+//        }
+//
+//        throw new Exception("Ground Station " + name + " in pre-calculated coverage does not match chosen network");
+//    }
 
     /**
      * Saves ground point and ground station access information for future simulations of the same constellation
      */
     private void printAccesses(){
-        //TODO : find a way to print object to a file that can be opened by a later java program run
+        printCrossLinks();
+        printGPAccesses();
+        printGPInstAccesses();
+        printGSAccesses();
+    }
+
+    /**
+     * Prints out cross links to coverage data directory
+     */
+    private void printCrossLinks(){
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = directoryAddress + "/" + "CrossLinks.csv";
+
+        try{
+            fileWriter = new FileWriter(outAddress, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        for(Constellation cons : accessesCL.keySet()){
+            for(Satellite sat : accessesCL.get(cons).keySet()){
+                for(Satellite target : accessesCL.get(cons).get(sat).keySet()){
+                    TimeIntervalArray access = accessesCL.get(cons).get(sat).get(target);
+                    double t_0 = 0.0;
+                    double t_f = 0.0;
+                    for(RiseSetTime time : access.getRiseSetTimes()){
+                        if(time.isRise()){
+                            t_0 = time.getTime();
+                        }
+                        else{
+                            t_f = time.getTime();
+
+                            String accessStr = genCLAccessStr(sat, target, t_0, t_f);
+                            printWriter.print(accessStr);
+                        }
+                    }
+                }
+            }
+        }
+
+        printWriter.close();
+    }
+
+    /**
+     * Generates a string containing information about an access between two sats
+     * @param sat Observing satellite
+     * @param target Target Satellite
+     * @param t_0 Start epoch of access
+     * @param t_f End epoch of access
+     * @return string of the format "<sat name>, <target name>, <start epoch>, <end epoch>"
+     */
+    private String genCLAccessStr(Satellite sat, Satellite target, double t_0, double t_f){
+        StringBuilder out = new StringBuilder();
+        out.append(sat.getName() + "," + target.getName() + "," + t_0 + "," + t_f + "\n");
+        return out.toString();
+    }
+
+    /**
+     * Prints out cross links to coverage data directory
+     */
+    private void printGPAccesses(){
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = directoryAddress + "/" + "GPCoverage.csv";
+
+        try{
+            fileWriter = new FileWriter(outAddress, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        for(CoverageDefinition covDef : accessesGP.keySet()){
+            for(Satellite sat : accessesGP.get(covDef).keySet()){
+                for(TopocentricFrame target : accessesGP.get(covDef).get(sat).keySet()){
+                    TimeIntervalArray access = accessesGP.get(covDef).get(sat).get(target);
+                    double t_0 = 0.0;
+                    double t_f = 0.0;
+
+                    for(RiseSetTime time : access.getRiseSetTimes()){
+                        if(time.isRise()){
+                            t_0 = time.getTime();
+                        }
+                        else{
+                            t_f = time.getTime();
+
+                            String accessStr = genGPAccessStr(covDef, sat, target, t_0, t_f);
+                            printWriter.print(accessStr);
+                        }
+                    }
+                }
+            }
+        }
+
+        printWriter.close();
+    }
+
+    /**
+     * Generates a string containing information about an access between two sats
+     * @param covDef Coverage definition
+     * @param sat Observing satellite
+     * @param target Target ground point
+     * @param t_0 Start epoch of access
+     * @param t_f End epoch of access
+     * @return string of the format "<covdef name>, <sat name>, <target name>, <start epoch>, <end epoch>"
+     */
+    private String genGPAccessStr(CoverageDefinition covDef, Satellite sat, TopocentricFrame target, double t_0, double t_f){
+        StringBuilder out = new StringBuilder();
+        out.append(covDef.getName() + "," + sat.getName() + "," + target.getName() + "," + t_0 + "," + t_f + "\n");
+        return out.toString();
+    }
+
+    /**
+     * Prints out cross links to coverage data directory
+     */
+    private void printGPInstAccesses(){
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = directoryAddress + "/" + "GPInstrumentCoverage.csv";
+
+        try{
+            fileWriter = new FileWriter(outAddress, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        for(CoverageDefinition covDef : accessesGPInst.keySet()){
+            for(Satellite sat : accessesGPInst.get(covDef).keySet()){
+                for(Instrument inst : accessesGPInst.get(covDef).get(sat).keySet()) {
+                    for (TopocentricFrame target : accessesGPInst.get(covDef).get(sat).get(inst).keySet()) {
+                        TimeIntervalArray access = accessesGPInst.get(covDef).get(sat).get(inst).get(target);
+                        double t_0 = 0.0;
+                        double t_f = 0.0;
+
+                        for (RiseSetTime time : access.getRiseSetTimes()) {
+                            if (time.isRise()) {
+                                t_0 = time.getTime();
+                            } else {
+                                t_f = time.getTime();
+
+                                String accessStr = genGPInstAccessStr(covDef, sat, target, inst, t_0, t_f);
+                                printWriter.print(accessStr);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        printWriter.close();
+    }
+
+    /**
+     * Generates a string containing information about an access between two sats
+     * @param covDef Coverage definition
+     * @param sat Observing satellite
+     * @param target Target ground point
+     * @param inst Intrument used to make said measurement
+     * @param t_0 Start epoch of access
+     * @param t_f End epoch of access
+     * @return string of the format "<covdef name>, <sat name>, <target name>, <instrument name>, <start epoch>, <end epoch>"
+     */
+    private String genGPInstAccessStr(CoverageDefinition covDef, Satellite sat, TopocentricFrame target, Instrument inst, double t_0, double t_f){
+        StringBuilder out = new StringBuilder();
+        out.append(covDef.getName() + "," + sat.getName() + "," + target.getName()
+                + "," + inst.getName() + "," + t_0 + "," + t_f + "\n");
+        return out.toString();
+    }
+
+    /**
+     * Prints out cross links to coverage data directory
+     */
+    private void printGSAccesses(){
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = directoryAddress + "/" + "GSCoverage.csv";
+
+        try{
+            fileWriter = new FileWriter(outAddress, false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        printWriter = new PrintWriter(fileWriter);
+
+        for(Satellite sat : accessesGS.keySet()){
+            for (GndStation target : accessesGS.get(sat).keySet()) {
+                TimeIntervalArray access = accessesGS.get(sat).get(target);
+                double t_0 = 0.0;
+                double t_f = 0.0;
+
+                for (RiseSetTime time : access.getRiseSetTimes()) {
+                    if (time.isRise()) {
+                        t_0 = time.getTime();
+                    } else {
+                        t_f = time.getTime();
+
+                        String accessStr = genGSAccessStr(sat, target, t_0, t_f);
+                        printWriter.print(accessStr);
+                    }
+                }
+            }
+        }
+
+        printWriter.close();
+    }
+
+    /**
+     * Generates a string containing information about an access between two sats
+     * @param sat Observing satellite
+     * @param target Target ground station
+     * @param t_0 Start epoch of access
+     * @param t_f End epoch of access
+     * @return string of the format "<covdef name>, <sat name>, <target name>, <instrument name>, <start epoch>, <end epoch>"
+     */
+    private String genGSAccessStr(Satellite sat, GndStation target, double t_0, double t_f){
+        StringBuilder out = new StringBuilder();
+        out.append(sat.getName() + "," + target.getBaseFrame().getName() + "," + t_0 + "," + t_f + "\n");
+        return out.toString();
     }
 
     /**
@@ -640,6 +1098,12 @@ public class OrbitData {
         Instrument ins = new Instrument(name+"_comms", fieldOfRegard, Propagator.DEFAULT_MASS, 1.0);
         payload.add(ins);
 
+        if(!instrumentList.containsKey(ins.getName())){
+            instrumentList.put(ins.getName(), new HashMap<>());
+            instrumentList.get(ins.getName()).put(true, ins);
+//            instrumentList.get(ins.getName()).put(false, ins);
+        }
+
         Orbit orb = new KeplerianOrbit(alt, ecc, inc, 0.0, raan, anom, PositionAngle.MEAN, inertialFrame, startDate, mu);
         HashSet<CommunicationBand> satBands = new HashSet<>(); satBands.add(CommunicationBand.UHF);
 
@@ -757,7 +1221,7 @@ public class OrbitData {
 
     /**
      * Reads database and imports instruments to be used for coverage calculations
-     * @param input
+     * @param
      * @return
      */
     private HashMap<String, HashMap<Boolean, Instrument>> loadInstruments(){
@@ -934,7 +1398,7 @@ public class OrbitData {
 
         for(Constellation cons : constellations){
             for(Satellite sat : cons.getSatellites()){
-                if(!satList.contains(sat)) satList.add(sat);
+                satList.add(sat);
             }
         }
 
