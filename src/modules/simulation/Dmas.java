@@ -2,6 +2,7 @@ package modules.simulation;
 
 import static constants.JSONFields.*;
 
+import madkit.kernel.AbstractAgent;
 import madkit.kernel.Agent;
 import modules.orbitData.OrbitData;
 import org.json.simple.JSONObject;
@@ -16,7 +17,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 
-public class Dmas extends Agent {
+public class Dmas extends AbstractAgent {
     public static String inputFile = null;
     private static final String inputDir = "./inputs/";
     private static final String resultsDir = "./results/";
@@ -50,6 +51,8 @@ public class Dmas extends Agent {
             createDirectory(input);
 
             // 5- Coverage and Cross Link Calculation
+            double tic = System.nanoTime();
+
             getLogger().info("Loading constellation and scenario data...");
             orbitData = new OrbitData(input, orekitDataDir, databaseDir, coverageDir, constellationsDir, scenarioDir);
 
@@ -61,6 +64,9 @@ public class Dmas extends Agent {
 
             getLogger().info("Printing coverage definition ground points...");
             orbitData.printGP();
+
+            double toc = (System.nanoTime() - tic);
+            getLogger().fine("Coverage metrics loaded. Runtime of " + toc + " ns");
 
             // 6- Generate simulation scenarios
             int n_sims = Integer.parseInt( ((JSONObject) input.get(SIM)).get(N_SIMS).toString() );
@@ -87,9 +93,6 @@ public class Dmas extends Agent {
             e.printStackTrace();
         }
     }
-
-    @Override
-    public void live(){}
 
     private void logWelcome(){
         String str = "\n    ____  __  ______   __________\n" +

@@ -14,34 +14,16 @@ public class SensingSatellite extends SatelliteAgent {
 
     @Override
     public void sense() {
-        getLogger().info("\t Hello! I am a sensing satellite. I am sensing...\n");
-        for (int i = 10; i > 0; i--) {
-            pause(1000); // pauses the agent's thread for 1000 ms
-        }
+        getLogger().info("\t Hello! This is " + this.getName() + ". I am sensing...");
     }
 
     @Override
     public void think() {
-        getLogger().info("\t Hello! I am a sensing satellite. I am thinking...\n");
-        for (int i = 10; i > 0; i--) {
-            pause(1000); // pauses the agent's thread for 1000 ms
-        }
+        getLogger().info("\t Hello! This is " + this.getName() + ". I am thinking...");
     }
 
     @Override
     public void execute() {
-        getLogger().info("\t Hello! I am a sensing satellite. I am executing...\n");
-        for (int i = 10; i > 0; i--) {
-            pause(1000); // pauses the agent's thread for 1000 ms
-        }
-    }
-
-    @Override
-    protected void live() {
-        getLogger().info("\t Hello! I am a sensing satellite \n");
-        getLogger().info("I currently have do nothing. It was fun to meet you though! Goodbye!");
-        for (int i = 10; i > 0; i--) {
-            pause(1000); // pauses the agent's thread for 1000 ms
-        }
+        getLogger().info("\t Hello! This is " + this.getName() + ". I am executing...");
     }
 }

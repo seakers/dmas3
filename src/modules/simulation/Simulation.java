@@ -2,9 +2,12 @@ package modules.simulation;
 
 import constants.JSONFields;
 import jxl.read.biff.BiffException;
+import madkit.kernel.AbstractAgent;
 import madkit.kernel.Agent;
+import madkit.kernel.AgentAddress;
 import modules.agents.CommsSatellite;
-import modules.agents.GndStatAgent;
+import modules.agents.GndStationAgent;
+import modules.agents.SatelliteAgent;
 import modules.agents.SensingSatellite;
 import modules.environment.Environment;
 import modules.orbitData.OrbitData;
@@ -18,11 +21,13 @@ import seakers.orekit.object.Satellite;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.InputMismatchException;
 
 import static constants.JSONFields.*;
 
-public class Simulation extends Agent{
+public class Simulation extends AbstractAgent{
+    private String name;
     private int simID;
     private JSONObject input;
     private OrbitData orbitData;
@@ -36,10 +41,11 @@ public class Simulation extends Agent{
     private SimGroups myGroups;
     private Environment environment;
 
-    private ArrayList<Agent> spaceSegment;
-    private ArrayList<Agent> gndSegment;
+    private ArrayList<SatelliteAgent> spaceSegment;
+    private ArrayList<GndStationAgent> gndSegment;
 
     public Simulation(JSONObject input, OrbitData orbitData, String directoryAddress, int simID){
+        this.name = ((JSONObject) input.get(SIM)).get(SCENARIO).toString() + "-" + simID;
         this.simID = simID;
         this.input = input;
         this.orbitData = orbitData;
@@ -48,7 +54,7 @@ public class Simulation extends Agent{
         this.directoryAddress = directoryAddress;
         this.simDirectoryAddress = directoryAddress + "/run_" + simID;
 
-        if(simID == 0 && ((JSONObject) input.get(SETTINGS)).get(JSONFields.GUI).equals(true)) createFrame = true;
+        if(simID == 0 && ((JSONObject) input.get(SETTINGS)).get(GUI).equals(true)) createFrame = true;
 
         // Create simulation directory
         createDirectory();
@@ -64,23 +70,22 @@ public class Simulation extends Agent{
             myGroups = new SimGroups(input, simID);
             createGroup(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP);
 
-            // 2- launch simulation environment
+            // 2- generate agents
             environment = new Environment(input, orbitData, this);
-            launchAgent(this.environment, createFrame);
-
-            // 3- launch satellite agents
             spaceSegment = generateSpaceSegment();
-            for(Agent satAgent : spaceSegment){
-                launchAgent(satAgent, createFrame);
-            }
-
-            // 4 - launch ground station agents
             gndSegment = generateGroundSegment();
-            for(Agent satAgent : gndSegment){
-                launchAgent(satAgent, false);
-            }
 
-            // 5- launch simulation scheduler
+            // 3- launch agents
+            launchAgent(environment, createFrame);
+            for(AbstractAgent satAgent : spaceSegment) launchAgent(satAgent, createFrame);
+            for(AbstractAgent gndAgent : gndSegment) launchAgent(gndAgent, false);
+
+            // 4 - give agent addresses to all agents
+            HashMap<Satellite, AgentAddress> satAddresses = this.getSatAddresses();
+            HashMap<GndStation, AgentAddress> gndAddresses = this.getGndAddresses();
+            this.registerAddresses(satAddresses, gndAddresses);
+
+            // 5- launch simulation
             launchAgent(new SimScheduler(myGroups, startDate, endDate), true);
 
         } catch (IOException e) {
@@ -90,8 +95,37 @@ public class Simulation extends Agent{
         }
     }
 
-    @Override
-    public void live(){}
+    private void registerAddresses(HashMap<Satellite, AgentAddress> satAdd, HashMap<GndStation, AgentAddress> gndAdd){
+        for(SatelliteAgent sat : spaceSegment){
+            sat.registerAddresses(satAdd, gndAdd);
+        }
+        for(GndStationAgent gnd : gndSegment){
+            gnd.registerAddresses(satAdd, gndAdd);
+        }
+    }
+
+    private HashMap<Satellite, AgentAddress> getSatAddresses(){
+        HashMap<Satellite, AgentAddress> addresses = new HashMap<>();
+
+        for(SatelliteAgent sat : spaceSegment){
+            addresses.put(sat.getSat(), sat.getAgentAddressIn(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE));
+        }
+
+        return addresses;
+    }
+
+    private HashMap<GndStation, AgentAddress> getGndAddresses(){
+        HashMap<GndStation, AgentAddress> addresses = new HashMap<>();
+        for(GndStationAgent gnd : gndSegment){
+            AgentAddress address = gnd.getAgentAddressIn(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT);
+            if(address == null) {
+                int x = 1;
+            }
+            addresses.put(gnd.getGnd(), address);
+        }
+
+        return addresses;
+    }
 
     private void createDirectory(){
         getLogger().info("Creating simulation results directory...");
@@ -105,8 +139,8 @@ public class Simulation extends Agent{
         }
     }
 
-    private ArrayList<Agent> generateSpaceSegment(){
-        ArrayList<Agent> spaceSegment = new ArrayList<>();
+    private ArrayList<SatelliteAgent> generateSpaceSegment(){
+        ArrayList<SatelliteAgent> spaceSegment = new ArrayList<>();
 
         Constellation senseSats = orbitData.getSensingSats();
         Constellation commsSats = orbitData.getCommsSats();
@@ -125,11 +159,11 @@ public class Simulation extends Agent{
         return spaceSegment;
     }
 
-    private ArrayList<Agent> generateGroundSegment(){
-        ArrayList<Agent> gndSegment = new ArrayList<>();
+    private ArrayList<GndStationAgent> generateGroundSegment(){
+        ArrayList<GndStationAgent> gndSegment = new ArrayList<>();
 
         for(GndStation gnd : orbitData.getUniqueGndStations()){
-            GndStatAgent gndStatAgent = new GndStatAgent(gnd, orbitData, myGroups);
+            GndStationAgent gndStatAgent = new GndStationAgent(gnd, orbitData, myGroups);
             gndSegment.add(gndStatAgent);
         }
 
@@ -155,12 +189,12 @@ public class Simulation extends Agent{
             case AbstractPlanner.NONE:
                 planner = new BasicPlanner();
                 break;
-            case AbstractPlanner.TIME:
-                planner = new TimePriorityPlanner();
-                break;
-            case AbstractPlanner.CCBBA:
-                planner = new CCBBAPlanner();
-                break;
+//            case AbstractPlanner.TIME:
+//                planner = new TimePriorityPlanner();
+//                break;
+//            case AbstractPlanner.CCBBA:
+//                planner = new CCBBAPlanner();
+//                break;
             default:
                 throw new InputMismatchException("Input error. Planner " + plannerStr + " not yet supported.");
         }

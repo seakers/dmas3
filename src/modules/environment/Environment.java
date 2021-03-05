@@ -1,6 +1,5 @@
 package modules.environment;
 
-import constants.JSONFields;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
@@ -8,8 +7,9 @@ import jxl.read.biff.BiffException;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
-import modules.measurement.MeasurementRequest;
-import modules.measurement.Requirement;
+import modules.measurements.Measurement;
+import modules.measurements.MeasurementRequest;
+import modules.measurements.Requirement;
 import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
 import modules.simulation.Simulation;
@@ -30,6 +30,7 @@ import static constants.JSONFields.*;
  * Environment class in charge of generating measurement requests and making them available to satellites upon requests and coverage/time availability
  */
 public class Environment extends Watcher {
+    private final String name;
     private final JSONObject input;
     private final OrbitData orbitData;
     private final AbsoluteDate startDate;
@@ -39,6 +40,7 @@ public class Environment extends Watcher {
     private HashMap<String, HashMap<String, Requirement>> measurementTypes;
     private ArrayList<MeasurementRequest> requests;
     private ArrayList<MeasurementRequest> orderedRequests;
+    private ArrayList<Measurement> measurements;
     private double GVT;
     private final double dt;
 
@@ -52,6 +54,7 @@ public class Environment extends Watcher {
      */
     public Environment(JSONObject input, OrbitData orbitData, Simulation parentSim) throws IOException, BiffException {
         // Save coverage and cross link data
+        this.name = ((JSONObject) input.get(SIM)).get(SCENARIO).toString() + " - Environment";
         this.input = input;
         this.orbitData = orbitData;
         this.startDate = orbitData.getStartDate();
@@ -60,6 +63,7 @@ public class Environment extends Watcher {
         this.simDirectoryAddress = parentSim.getSimDirectoryAddress();
         this.GVT = orbitData.getStartDate().durationFrom(orbitData.getStartDate().getDate());
         this.dt = Double.parseDouble( ((JSONObject) input.get(SETTINGS)).get(TIMESTEP).toString() );
+        this.measurements = new ArrayList<>();
     }
 
     /**
@@ -346,6 +350,27 @@ public class Environment extends Watcher {
     }
 
     /**
+     * Returns the list of all available measurements requests within a given time window and
+     * returns them in chronological order
+     */
+    public LinkedList<MeasurementRequest> getAvailableRequests(AbsoluteDate startDate, AbsoluteDate endDate){
+        LinkedList<MeasurementRequest> availableRequests = new LinkedList<>();
+
+        for(MeasurementRequest request : this.orderedRequests){
+            if(request.getEndDate().compareTo(startDate) >= 0 &&
+                request.getAnnounceDate().compareTo(endDate) <= 0){
+                availableRequests.add(request);
+            }
+        }
+
+        return availableRequests;
+    }
+
+    public void registerMeasurements(ArrayList<Measurement> measurements){
+        this.measurements.addAll(measurements);
+    }
+
+    /**
      * Updates simulation time
      */
     public void tic(){
@@ -355,5 +380,7 @@ public class Environment extends Watcher {
 
     public double getGVT(){ return this.GVT; }
     public double getDt(){ return dt; }
+    public AbsoluteDate getStartDate(){return this.startDate;}
+    public AbsoluteDate getEndDate(){return this.endDate;}
     public AbsoluteDate getCurrentDate(){ return this.startDate.shiftedBy(this.GVT); }
 }

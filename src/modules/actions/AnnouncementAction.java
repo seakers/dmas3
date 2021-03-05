@@ -1,14 +1,24 @@
 package modules.actions;
 
+import madkit.kernel.AbstractAgent;
 import madkit.kernel.Agent;
+import madkit.kernel.Message;
+import modules.measurements.MeasurementRequest;
 import org.orekit.time.AbsoluteDate;
 import seakers.orekit.object.Satellite;
 
-public class AnnouncementAction extends SimulationActions{
-    private Satellite target;
+import java.util.LinkedList;
 
-    public AnnouncementAction(Agent agent, Satellite target, AbsoluteDate startDate, AbsoluteDate endDate) {
+public class AnnouncementAction extends SimulationAction {
+    private final Satellite target;
+    private final Message announcement;
+
+    public AnnouncementAction(AbstractAgent agent, Satellite target, Message announcement, AbsoluteDate startDate, AbsoluteDate endDate) {
         super(agent, startDate, endDate);
         this.target = target;
+        this.announcement = announcement;
     }
+
+    public Satellite getTarget(){return this.target;}
+    public Message getAnnouncement(){ return  this.announcement; }
 }

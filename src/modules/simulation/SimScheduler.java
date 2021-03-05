@@ -42,6 +42,7 @@ public class SimScheduler extends Scheduler {
 
         // 4 : update sim time
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.ENVIRONMENT, "tic");
+        addActivator(agents);
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SCHEDULER, "tic");
         addActivator(agents);
 
