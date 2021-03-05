@@ -4,6 +4,8 @@ import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import modules.actions.AnnouncementAction;
+import modules.actions.MessageAction;
+import modules.actions.SimulationAction;
 import modules.environment.Environment;
 import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
@@ -20,7 +22,16 @@ import seakers.orekit.object.GndStation;
 import seakers.orekit.object.Satellite;
 
 import java.util.*;
+import java.util.logging.Level;
 
+/**
+ * Ground Station Agent class
+ * Represents a ground station during the simulation. It's duties involve accessing
+ * satellites, announcing newly available urgent tasks, and registering measurement
+ * downloads from satellites.
+ *
+ * @author a.aguilar
+ */
 public class GndStationAgent extends AbstractAgent {
     /**
      * Ground station assigned to this agent
@@ -45,7 +56,7 @@ public class GndStationAgent extends AbstractAgent {
     /**
      * current plan to be performed
      */
-    private LinkedList<AnnouncementAction> plan;
+    private LinkedList<SimulationAction> plan;
 
     /**
      * Environment in which this agent exists in.
@@ -58,7 +69,14 @@ public class GndStationAgent extends AbstractAgent {
     private HashMap<Satellite, AgentAddress> satAddresses;
     private HashMap<GndStation, AgentAddress> gndAddresses;
 
-    public GndStationAgent(GndStation gnd, OrbitData orbitData, SimGroups myGroups){
+    /**
+     * Creates an instance of a ground station
+     * @param gnd : ground station represented by this agent
+     * @param orbitData : coverage data for everyone in the mission
+     * @param myGroups : groups and communities in the simulation
+     * @param loggerLevel : logger level
+     */
+    public GndStationAgent(GndStation gnd, OrbitData orbitData, SimGroups myGroups, Level loggerLevel){
         this.setName(gnd.getBaseFrame().getName());
         this.gnd = gnd;
         this.orbitData = orbitData;
@@ -69,12 +87,16 @@ public class GndStationAgent extends AbstractAgent {
             TimeIntervalArray arr = orbitData.getAccessesGS().get(sat).get(gnd);
             this.satAccesses.put(sat, arr);
         }
+
+        getLogger().setLevel(loggerLevel);
     }
 
+    /**
+     * Runs when agent is launched. Assigns role of ground station to this agent
+     */
     @Override
     protected void activate(){
         requestRole(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT);
-        this.plan = this.initPlan();
     }
 
     /**
@@ -85,10 +107,10 @@ public class GndStationAgent extends AbstractAgent {
     }
 
     /**
-     * Does nothing. Initial plan does not change.
+     * Does nothing. Initial plan does not change throughout simulation.
      */
     public void think(){
-        // NA
+        if(plan == null) this.plan = this.initPlan();
     }
 
     /**
@@ -101,12 +123,12 @@ public class GndStationAgent extends AbstractAgent {
         && environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) <= 0){
 
             // retrieve action and target
-            AnnouncementAction action = plan.poll();
-            Satellite target = action.getTarget();
-            AgentAddress targetAddress = satAddresses.get(target);
+            MessageAction action = (MessageAction) plan.poll();
+            assert action != null;
+            AgentAddress targetAddress =  action.getTarget();
 
             // get all available tasks that can be announced
-            MeasurementRequestMessage message = (MeasurementRequestMessage) action.getAnnouncement();
+            MeasurementRequestMessage message = (MeasurementRequestMessage) action.getMessage();
 
             // send it to the target agent
             sendMessage(targetAddress,message);
@@ -141,10 +163,10 @@ public class GndStationAgent extends AbstractAgent {
     /**
      * Initiates final plan for ground station, which consists of sending messages to accessing satellites
      * announcing urgent measurement requests.
-     * @return List of actions to be performed during execute phase
+     * @return plan : linked list of actions to be performed during execute phase
      */
-    private LinkedList<AnnouncementAction> initPlan(){
-        LinkedList<AnnouncementAction> plan = new LinkedList<>();
+    private LinkedList<SimulationAction> initPlan(){
+        LinkedList<SimulationAction> plan = new LinkedList<>();
         ArrayList<GndAccess> orderedAccesses = this.orderSatAccesses();
 
         for(GndAccess acc : orderedAccesses){
@@ -162,9 +184,10 @@ public class GndStationAgent extends AbstractAgent {
                     endDate = req.getEndDate();
                 else endDate = acc.getEndDate();
 
-                MeasurementRequestMessage announcement = new MeasurementRequestMessage(accessAnnouncements);
+                AgentAddress target = satAddresses.get(acc.getSat());
+                MeasurementRequestMessage announcement = new MeasurementRequestMessage(req);
 
-                AnnouncementAction ann = new AnnouncementAction(this, acc.getSat(), announcement, startDate, endDate);
+                MessageAction ann = new MessageAction(this, target, announcement, startDate, endDate);
                 plan.add(ann);
             }
         }
@@ -172,6 +195,10 @@ public class GndStationAgent extends AbstractAgent {
         return plan;
     }
 
+    /**
+     * Collects satellite access data and orders it in chronological order
+     * @return ordered : array list containing ordered accesses with all satellites
+     */
     private ArrayList<GndAccess> orderSatAccesses(){
         ArrayList<GndAccess> ordered = new ArrayList();
         HashMap<Satellite, ArrayList<GndAccess>> unordered = new HashMap<>();
@@ -222,10 +249,18 @@ public class GndStationAgent extends AbstractAgent {
         return ordered;
     }
 
+    /**
+     * Saves addresses of all agents in the simulation for future use
+     * @param satAdd : map of each satellite to an address
+     * @param gndAdd : map of each ground station to an address
+     */
     public void registerAddresses(HashMap<Satellite, AgentAddress> satAdd, HashMap<GndStation, AgentAddress> gndAdd){
         this.satAddresses = new HashMap<>(satAdd);
         this.gndAddresses = new HashMap<>(gndAdd);
     }
 
+    /**
+     * @return gnd : ground station represented by this agent
+     */
     public GndStation getGnd(){return gnd;}
 }

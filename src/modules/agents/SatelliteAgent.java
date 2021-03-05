@@ -16,7 +16,17 @@ import seakers.orekit.coverage.access.TimeIntervalArray;
 import seakers.orekit.object.*;
 
 import java.util.*;
+import java.util.logging.Level;
 
+/**
+ * Abstract Satellite Agent
+ * Represent a generic satellite with varying degrees of autonomy, depending on the planner
+ * assigned to the satellite. It operates as a states machine, where it senses its environment,
+ * thinks about the newly perveiced status of the world, and then performs an action based on
+ * said observations.
+ *
+ * @author a.aguilar
+ */
 public abstract class SatelliteAgent extends AbstractAgent {
     /**
      * orekit satellite represented by this agent
@@ -82,7 +92,7 @@ public abstract class SatelliteAgent extends AbstractAgent {
      * @param orbitData
      * @param planner
      */
-    public SatelliteAgent(Constellation cons, Satellite sat, OrbitData orbitData, AbstractPlanner planner, SimGroups myGroups){
+    public SatelliteAgent(Constellation cons, Satellite sat, OrbitData orbitData, AbstractPlanner planner, SimGroups myGroups, Level loggerLevel){
         this.setName(sat.getName());
         this.sat = sat;
         this.accessesCL = new HashMap<>( orbitData.getAccessesCL().get(cons).get(sat) );
@@ -98,6 +108,7 @@ public abstract class SatelliteAgent extends AbstractAgent {
         this.planner = planner;
         this.plan = new LinkedList<>();
         this.myGroups = myGroups;
+        getLogger().setLevel(loggerLevel);
     }
 
     @Override
@@ -199,4 +210,24 @@ public abstract class SatelliteAgent extends AbstractAgent {
     public AgentAddress getMyAddress(){return this.satAddresses.get(this.sat);}
     public HashMap<Satellite, AgentAddress> getSatAddresses(){ return this.satAddresses; }
     public LinkedList<SimulationAction> getPlan(){ return this.plan; }
+
+    public AgentAddress getTargetAddress(Satellite sat){
+        return satAddresses.get(sat);
+    }
+    public AgentAddress getTargetAddress(GndStation gnd){
+        return gndAddresses.get(gnd);
+    }
+
+    public Satellite getTargetSatFromAddress(AgentAddress address){
+        for(Satellite sat : satAddresses.keySet()){
+            if(satAddresses.get(sat).equals(address)) return sat;
+        }
+        return null;
+    }
+    public GndStation getTargetGndFromAddress(AgentAddress address){
+        for(GndStation gnd : gndAddresses.keySet()){
+            if(gndAddresses.get(gnd).equals(address)) return gnd;
+        }
+        return null;
+    }
 }

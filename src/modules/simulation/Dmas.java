@@ -16,20 +16,84 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 
-
+/**
+ *     ____  __  ______   __________
+ *    / __ \/  |/  /   | / ___/__  /
+ *   / / / / /|_/ / /| | \__ \ /_ <
+ *  / /_/ / /  / / ___ |___/ /__/ /
+ * /_____/_/  /_/_/  |_/____/____/
+ * SEAK Lab - Texas A&M University
+ *
+ * Distributed Multi-Agent Satellite System Simulation
+ *
+ * Main class for DMAS3 simulation. It simulates and evaluates the performance of an Earth
+ * Observation Satellite System Architecture by considering the different levels of autonomy
+ * that can be given to Earth-Observing Spacecraft.
+ *
+ * This class loads input files as well as coverage and instrument databases to create as
+ * many simulations as desired and help evaluate the performance of a constellation under a
+ * particular Earth-observation problem.
+ *
+ * To run, create an extended object of this class that contains a main() function. In it,
+ * ensure that the name of the desired input file is assigned to the inputFile string variable.
+ *
+ * @author a.aguilar
+ */
 public class Dmas extends AbstractAgent {
+    /**
+     * Name of input file to be opened
+     */
     public static String inputFile = null;
+
+    /**
+     * Location of input file directory
+     */
     private static final String inputDir = "./inputs/";
+
+    /**
+     * Location of results directory
+     */
     private static final String resultsDir = "./results/";
+
+    /**
+     * Location of coverage data directory
+     */
     private static final String coverageDir = "./data/coverage/";
+
+    /**
+     * Location of constellation data directory
+     */
     private static final String constellationsDir = "./data/constellations/";
+
+    /**
+     * Location of database directory
+     */
     private static final String databaseDir = "./data/databases/";
+
+    /**
+     * Location of scenario directory
+     */
     private static final String scenarioDir = "./data/scenarios/";
+
+    /**
+     * Location of orekit data directory
+     */
     private static final String orekitDataDir = "./src/orekit-data";
+
+    /**
+     * Location of the directory where the simulation outputs will be printed to
+     */
     private static String directoryAddress;
 
+    /**
+     * Coverage and access data from loaded scenario and constellation
+     */
     private OrbitData orbitData;
 
+    /**
+     * Triggered when DMAS is activated. Reads input files and databases to generates different
+     * simulations based on the inputs.
+     */
     @Override
     public void activate(){
         try {
@@ -53,17 +117,17 @@ public class Dmas extends AbstractAgent {
             // 5- Coverage and Cross Link Calculation
             double tic = System.nanoTime();
 
-            getLogger().info("Loading constellation and scenario data...");
-            orbitData = new OrbitData(input, orekitDataDir, databaseDir, coverageDir, constellationsDir, scenarioDir);
+                getLogger().info("Loading constellation and scenario data...");
+                orbitData = new OrbitData(input, orekitDataDir, databaseDir, coverageDir, constellationsDir, scenarioDir);
 
-            getLogger().info("Calculating coverage...");
-            orbitData.coverageCalc();
+                getLogger().info("Calculating coverage...");
+                orbitData.coverageCalc();
 
-            getLogger().info("Propagating satellite trajectories...");
-            orbitData.trajectoryCalc();
+                getLogger().info("Propagating satellite trajectories...");
+                orbitData.trajectoryCalc();
 
-            getLogger().info("Printing coverage definition ground points...");
-            orbitData.printGP();
+                getLogger().info("Printing coverage definition ground points...");
+                orbitData.printGP();
 
             double toc = (System.nanoTime() - tic);
             getLogger().fine("Coverage metrics loaded. Runtime of " + toc + " ns");
@@ -94,6 +158,9 @@ public class Dmas extends AbstractAgent {
         }
     }
 
+    /**
+     * Prints out welcome message on terminal
+     */
     private void logWelcome(){
         String str = "\n    ____  __  ______   __________\n" +
                 "   / __ \\/  |/  /   | / ___/__  /\n" +
@@ -193,9 +260,5 @@ public class Dmas extends AbstractAgent {
                 throw new InputMismatchException("Input file format error. " + lvl
                         + " not currently supported for field " + LEVEL);
         }
-    }
-
-    public String getDirectoryAddress(){
-        return directoryAddress;
     }
 }

@@ -28,48 +28,100 @@ import static constants.JSONFields.*;
 
 /**
  * Environment class in charge of generating measurement requests and making them available to satellites upon requests and coverage/time availability
+ *
+ * @author a.aguilar
  */
 public class Environment extends Watcher {
+    /**
+     * Name of the environment
+     */
     private final String name;
+
+    /**
+     * json file object containing input information
+     */
     private final JSONObject input;
+
+    /**
+     * coverage data of all satellites and ground stations in the scenario
+     */
     private final OrbitData orbitData;
+
+    /**
+     * Simulation start and end dates
+     */
     private final AbsoluteDate startDate;
     private final AbsoluteDate endDate;
-    private final Simulation parentSim;
+
+    /**
+     * Organization groups and roles available for agents in the simulation
+     */
+    private final SimGroups myGroups;
+
+    /**
+     * Directory where results of this simulation will be printed to
+     */
     private final String simDirectoryAddress;
+
+    /**
+     * Types of measurements to be performed in the simulation
+     */
     private HashMap<String, HashMap<String, Requirement>> measurementTypes;
+
+    /**
+     * List of measurement requests to be done during the simulation
+     */
     private ArrayList<MeasurementRequest> requests;
+
+    /**
+     * List of measurement request to be done during the simulation in chronological order
+     */
     private ArrayList<MeasurementRequest> orderedRequests;
+
+    /**
+     * List of measurements performed by satellites throughout the simulation
+     */
     private ArrayList<Measurement> measurements;
+
+    /**
+     * Simulation Global Time
+     */
     private double GVT;
+
+    /**
+     * Simulation fixed time-step*
+     *  *this time step can be varied to accelerate simulation runtime
+     */
     private final double dt;
 
     /**
-     * Constructor
-     * @param input JSON input file for simulation
-     * @param orbitData coverage and trajectory data for chosen constellation and coverage definitions
-     * @param parentSim simulation that houses this environment
+     * Creates an instance of and Environment to be simulated
+     * @param input : JSON input file for simulation
+     * @param orbitData : coverage and trajectory data for chosen constellation and coverage definitions
+     * @param myGroups : organization groups and roles available for agents in the simulation
      * @throws IOException
      * @throws BiffException
      */
-    public Environment(JSONObject input, OrbitData orbitData, Simulation parentSim) throws IOException, BiffException {
+    public Environment(JSONObject input, OrbitData orbitData, SimGroups myGroups, String simDirectoryAddress) throws IOException, BiffException {
         // Save coverage and cross link data
         this.name = ((JSONObject) input.get(SIM)).get(SCENARIO).toString() + " - Environment";
         this.input = input;
         this.orbitData = orbitData;
         this.startDate = orbitData.getStartDate();
         this.endDate = orbitData.getEndDate();
-        this.parentSim = parentSim;
-        this.simDirectoryAddress = parentSim.getSimDirectoryAddress();
+        this.myGroups = myGroups;
+        this.simDirectoryAddress = simDirectoryAddress;
         this.GVT = orbitData.getStartDate().durationFrom(orbitData.getStartDate().getDate());
         this.dt = Double.parseDouble( ((JSONObject) input.get(SETTINGS)).get(TIMESTEP).toString() );
         this.measurements = new ArrayList<>();
     }
 
     /**
-     * Initializes the measurement requests to be performed during the simulation. Claims environment role in simulation
-     * and creates proves so that ground stations and satellites can observe the environment. Triggered only when envi-
-     * ronment agent is launched.
+     * Initializes the measurement requests to be performed during the simulation. Claims environment
+     * role in simulation and creates proves so that ground stations and satellites can observe the
+     * environment.
+     *
+     * Triggered only when environment agent is launched.
      */
     @Override
     protected void activate(){
@@ -91,7 +143,6 @@ public class Environment extends Watcher {
             printRequests();
 
             // request my role so that the viewers can probe me
-            SimGroups myGroups = parentSim.getSimGroups();
             requestRole(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.ENVIRONMENT);
 
             // give probe access to agents - Any agent within the group agent can access this environment's properties
@@ -108,7 +159,7 @@ public class Environment extends Watcher {
 
     /**
      * Creates list of measurement requests to be made in the duration of the simulation
-     * @param scenarioWorkbook open excelsheet workbook containing scenario information
+     * @param scenarioWorkbook : open excel sheet workbook containing scenario information
      * @return requests : ArrayList containing generated measurement requests
      */
     private ArrayList<MeasurementRequest> generateRequests(Workbook scenarioWorkbook){
@@ -150,10 +201,11 @@ public class Environment extends Watcher {
     }
 
     /**
-     * Generates random dates for the announcement, start, and ending of a measurement request. Duration determined by
-     * temporal requirement of measurement.
-     * @param tempRequirement
-     * @return
+     * Generates random dates for the announcement, start, and ending of a measurement request.
+     * Duration determined by temporal requirement of measurement.
+     * @param tempRequirement : temporal requirement for measurement
+     * @return dates : array of dates containing when the request starts, when it can be announced,
+     * and when it stops being available.
      */
     private ArrayList<AbsoluteDate> randomDates(Requirement tempRequirement){
         AbsoluteDate simStartDate = orbitData.getStartDate();
@@ -183,8 +235,9 @@ public class Environment extends Watcher {
     }
 
     /**
-     * Chooses a random point from the coverage definition that belongs to the type of measurement to be generated
-     * @param covDef coverage definition of desired measurement
+     * Chooses a random point from the coverage definition that belongs to the type of measurement
+     * to be generated
+     * @param covDef : coverage definition of desired measurement
      * @return pt : a coverage point belonging to covDef
      */
     private CoveragePoint randomPoint(CoverageDefinition covDef){
@@ -200,9 +253,9 @@ public class Environment extends Watcher {
     }
 
     /**
-     * Reads scenario information excel sheet and generates list of requirements for the different types of measurements
-     * to be requested in the simulation
-     * @param scenarioWorkbook excel sheet workbook containing information of the chosen scenario
+     * Reads scenario information excel sheet and generates list of requirements for the different
+     * types of measurements to be requested in the simulation
+     * @param scenarioWorkbook : excel sheet workbook containing information of the chosen scenario
      * @return requirements : hashmap giving a list of requirements of a given type of measurement
      */
     private HashMap<String, HashMap<String, Requirement>> loadRequirements( Workbook scenarioWorkbook ){
@@ -231,9 +284,9 @@ public class Environment extends Watcher {
 
     /**
      * Reads measurement requirements from scenario excel sheet row
-     * @param reqRow row from scenario excel sheet containing info about a particular requirement including its type,
-     *               bounds, and units.
-     * @param reqIndexes hashmap that returns the index of a particular metric in reqRow
+     * @param reqRow : row from scenario excel sheet containing info about a particular requirement
+     *               including its type, bounds, and units.
+     * @param reqIndexes : hashmap that returns the index of a particular metric in reqRow
      * @return a new object of type requirement containing the information from the excel sheet
      */
     private Requirement readRequirement(Cell[] reqRow, HashMap<String, Integer> reqIndexes){
@@ -252,7 +305,7 @@ public class Environment extends Watcher {
 
     /**
      * Creates a hashmap that stores the indexes of the different parameters for databases
-     * @param row first row or column of data that contains field names
+     * @param row : first row or column of data that contains field names
      * @return hashmap that, given a parameter name, returns the column or row index of said parameter
      */
     private HashMap<String, Integer> readIndexes(Cell[] row){
@@ -263,13 +316,9 @@ public class Environment extends Watcher {
         return indexes;
     }
 
-    public void update(){
-
-    }
-
     /**
-     * Prints the list of generated measurement requests to a csv file located in the results folder of this
-     * simulation run
+     * Prints the list of generated measurement requests to a csv file located in the results folder of .
+     * this simulation run
      */
     private void printRequests(){
         FileWriter fileWriter = null;
@@ -294,6 +343,9 @@ public class Environment extends Watcher {
         }
     }
 
+    /**
+     * Prove Class that allows for other agents to access the properties and methods of the environment.
+     */
     class AgentsProbe extends PropertyProbe<AbstractAgent, Environment> {
 
         public AgentsProbe(String community, String group, String role, String fieldName) {
@@ -378,6 +430,9 @@ public class Environment extends Watcher {
         this.GVT += this.dt;
     }
 
+    /**
+     * General property getters
+     */
     public double getGVT(){ return this.GVT; }
     public double getDt(){ return dt; }
     public AbsoluteDate getStartDate(){return this.startDate;}

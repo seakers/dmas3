@@ -7,12 +7,15 @@ import org.orekit.time.AbsoluteDate;
 
 public class MessageAction extends SimulationAction {
     private final Message message;
-    private final AgentAddress targetAddress;
+    private final AgentAddress target;
 
-    public MessageAction(AbstractAgent agent, Message message, AgentAddress targetAddress, AbsoluteDate startDate, AbsoluteDate endDate) {
+    public MessageAction(AbstractAgent agent, AgentAddress target, Message message, AbsoluteDate startDate, AbsoluteDate endDate) {
         super(agent, startDate, endDate);
 
         this.message = message;
-        this.targetAddress = targetAddress;
+        this.target = target;
     }
+
+    public Message getMessage() { return message; }
+    public AgentAddress getTarget() { return target; }
 }

@@ -8,15 +8,15 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class MeasurementRequestMessage extends Message {
-    private LinkedList<MeasurementRequest> availableRequests;
+    private MeasurementRequest request;
     private ArrayList<AgentAddress> receivers;
 
-    public MeasurementRequestMessage(LinkedList<MeasurementRequest> availableRequests){
-        this.availableRequests = new LinkedList<>( availableRequests );
+    public MeasurementRequestMessage(MeasurementRequest request){
+        this.request = request;
         this.receivers = new ArrayList<>();
     }
 
-    public LinkedList<MeasurementRequest> getAvailableRequests(){return this.availableRequests;}
+    public MeasurementRequest getRequest(){return this.request;}
     public void addReceiver(AgentAddress address) { this.receivers.add(address); }
     public boolean receivedBy(AgentAddress address){ return this.receivers.contains(address); }
 }
