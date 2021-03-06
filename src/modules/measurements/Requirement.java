@@ -3,6 +3,10 @@ package modules.measurements;
 import java.util.InputMismatchException;
 
 public class Requirement {
+    public static final String SPATIAL = "spatial";
+    public static final String TEMPORAL = "temporal";
+    public static final String ACCURACY = "accuracy";
+
     private final String name;
     private final double goal;
     private final double breakThrough;

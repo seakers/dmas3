@@ -29,20 +29,9 @@ import java.util.logging.Level;
  */
 public class CommsSatellite extends SatelliteAgent {
 
-    /**
-     * Message Inboxes of different types. One for relay messages and one for measurement
-     * request messages
-     */
-    ArrayList<Message> relayMessages;
-    ArrayList<Message> requestMessages;
-
     public CommsSatellite(Constellation cons, Satellite sat, OrbitData orbitData,
                           AbstractPlanner planner, SimGroups myGroups, Level loggerLevel) {
         super(cons, sat, orbitData, planner, myGroups, loggerLevel);
-
-        // initializes inboxes
-        relayMessages = new ArrayList<>();
-        requestMessages = new ArrayList<>();
     }
 
     /**
@@ -53,42 +42,36 @@ public class CommsSatellite extends SatelliteAgent {
         getLogger().finer("\t Hello! This is " + this.getName() + ". I am sensing...");
 
         // read messages from ground stations
-        List<Message> gndMessages = nextMessages( new GndFilter(gndAddresses) );
-        for(Message message : gndMessages){
-            if (MeasurementRequestMessage.class.equals(message.getClass())) {
-                MeasurementRequestMessage reqMessage = (MeasurementRequestMessage) message;
-
-                // check if this task announcement has already been made by this satellite
-                if(reqMessage.receivedBy( this.getMyAddress() )) continue;
-
-                // if not, add to received messages
-                reqMessage.addReceiver( this.getMyAddress() );
-                requestMessages.add(reqMessage);
-            }
-            else {
-                throw new Exception("Received message of type "
-                        + message.getClass().toString() + " not yet supported");
-            }
-        }
+        readGndStationMessages();
 
         // read messages from satellites
-        List<Message> satMessages = nextMessages( new SatFilter(satAddresses) );
-        for(Message message : satMessages){
+        readSatelliteMessages();
+    }
+
+    /**
+     * Reads incoming messages and selects those coming from satellites. Packages them to
+     * the requestMessages and relayMessages properties to later be given to the planner.
+     * @throws Exception : Throws an exception if a satellite receives a message of a type it
+     * is not meant to handle
+     */
+    protected void readSatelliteMessages() throws Exception {
+        List<Message> satMessages = nextMessages(new SatFilter());
+
+        for(Message message : satMessages) {
             if (RelayMessage.class.equals(message.getClass())) {
                 RelayMessage relayMessage = (RelayMessage) message;
                 relayMessages.add(relayMessage);
-            }
-            else if (MeasurementRequestMessage.class.equals(message.getClass())) {
+
+            } else if (MeasurementRequestMessage.class.equals(message.getClass())) {
                 MeasurementRequestMessage reqMessage = (MeasurementRequestMessage) message;
 
                 // check if this task announcement has already been made by this satellite
-                if(reqMessage.receivedBy( this.getMyAddress() )) continue;
+                if (reqMessage.receivedBy(this.getMyAddress())) continue;
 
                 // if not, add to received messages
-                reqMessage.addReceiver( this.getMyAddress() );
+                reqMessage.addReceiver(this.getMyAddress());
                 requestMessages.add(reqMessage);
-            }
-            else {
+            } else {
                 throw new Exception("Received message of type "
                         + message.getClass().toString() + " not yet supported");
             }
@@ -139,7 +122,6 @@ public class CommsSatellite extends SatelliteAgent {
             // log to terminal
             logMessageSent(targetAddress, message);
         }
-
     }
 
     /**
@@ -167,13 +149,5 @@ public class CommsSatellite extends SatelliteAgent {
         }
 
         getLogger().fine("\tSending  " + targetName + " message of type " + messageType + "...");
-    }
-
-    /**
-     * Empties out processed messages from inbox
-     */
-    private void emptyMessages(){
-        relayMessages = new ArrayList<>();
-        requestMessages = new ArrayList<>();
     }
 }

@@ -1,15 +1,13 @@
 package modules.measurements;
 
 public class RequirementPerformance {
-    private final double spatResAT;
-    private final double spatResCT;
-    private final double accuracy;
-    private final double SNR;
+    private final Requirement parentRequirement;
+    private final double score;
+    private final String units;
 
-    public RequirementPerformance(double spatResAT, double spatResCT, double accuracy, double snr){
-        this.spatResAT = spatResAT;
-        this.spatResCT = spatResCT;
-        this.accuracy = accuracy;
-        SNR = snr;
+    public RequirementPerformance(Requirement requirement, double score){
+        this.parentRequirement = requirement;
+        this.score = score;
+        this.units = requirement.getUnits();
     }
 }

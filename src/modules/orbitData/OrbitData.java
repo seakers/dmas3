@@ -4,6 +4,8 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+import modules.antennas.AbstractAntenna;
+import modules.antennas.ParabolicAntenna;
 import modules.instruments.SAR;
 import modules.simulation.Dmas;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -302,6 +304,48 @@ public class OrbitData {
                 }
             }
         }
+    }
+
+    public Vector3D getSatPosition(Satellite sat, AbsoluteDate date) throws Exception {
+        // choose an orbit propagator
+        Propagator prop;
+        if(Math.abs( sat.getOrbit().getI() ) <= 0.1){
+            // if orbit is equatorial, use Keplerian propagator
+            prop = pfKep.createPropagator(sat.getOrbit(), sat.getGrossMass());
+        }
+        else{
+            // else use J2 propagator
+            prop = pfJ2.createPropagator(sat.getOrbit(), sat.getGrossMass());
+        }
+
+        double t = date.durationFrom(startDate);
+        if(t < 0) throw new Exception("Date of measurement is before simulation start time");
+
+        SpacecraftState stat = prop.propagate(startDate.shiftedBy(t));
+        return stat.getPVCoordinates(earthFrame).getPosition();
+    }
+
+    public Vector3D getSatVelocity(Satellite sat, AbsoluteDate date) throws Exception {
+        // choose an orbit propagator
+        Propagator prop;
+        if(Math.abs( sat.getOrbit().getI() ) <= 0.1){
+            // if orbit is equatorial, use Keplerian propagator
+            prop = pfKep.createPropagator(sat.getOrbit(), sat.getGrossMass());
+        }
+        else{
+            // else use J2 propagator
+            prop = pfJ2.createPropagator(sat.getOrbit(), sat.getGrossMass());
+        }
+
+        double t = date.durationFrom(startDate);
+        if(t < 0) throw new Exception("Date of measurement is before simulation start time");
+
+        SpacecraftState stat = prop.propagate(startDate.shiftedBy(t));
+        return stat.getPVCoordinates(earthFrame).getVelocity();
+    }
+
+    public Vector3D getPointPosition(TopocentricFrame point, AbsoluteDate date) throws Exception {
+        return point.getPVCoordinates(date, earthFrame).getPosition();
     }
 
     /**
@@ -1309,15 +1353,17 @@ public class OrbitData {
         double dc = Double.parseDouble( values[parameterIndexes.get("DutyCycle")].getContents() );
         double pw = Double.parseDouble( values[parameterIndexes.get("PulseWidth")].getContents() );
         double prf = Double.parseDouble( values[parameterIndexes.get("PRF")].getContents() );
+        double bw = Double.parseDouble( values[parameterIndexes.get("BandWidth")].getContents() );
         double nLooks = Double.parseDouble( values[parameterIndexes.get("nLooks")].getContents() );
         String nominalOps = values[parameterIndexes.get("NominalOps")].getContents();
-        String antenna = values[parameterIndexes.get("Antenna")].getContents();
         double rb = Double.parseDouble( values[parameterIndexes.get("Datarate")].getContents() );
         String scan = values[parameterIndexes.get("Scanning")].getContents();
         double scanningAngle = Double.parseDouble( values[parameterIndexes.get("ScanningAngle")].getContents() );
         double fov_at = Double.parseDouble( values[parameterIndexes.get("FOV-AT")].getContents() );
         double fov_ct = Double.parseDouble( values[parameterIndexes.get("FOV-CT")].getContents() );
         double lookAngle = Double.parseDouble( values[parameterIndexes.get("LookAngle")].getContents() );
+
+        AbstractAntenna antenna = loadAntenna(values, parameterIndexes);
 
         if(!nominal) name += "_FOR";
         OffNadirRectangularFOV fieldOfRegard;
@@ -1326,7 +1372,7 @@ public class OrbitData {
                 fieldOfRegard = new OffNadirRectangularFOV(0.0,
                         FastMath.toRadians(fov_ct/2.0 + 2*lookAngle) , FastMath .toRadians(fov_at/2.0), 0.0, earthShape);
 
-                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, nLooks, rb, nominalOps, antenna);
+                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, bw, nLooks, rb, nominalOps, antenna);
 
             case "side":
                 if(nominal) {
@@ -1339,18 +1385,29 @@ public class OrbitData {
                             FastMath.toRadians((fov_ct + scanningAngle) / 2.0 ), FastMath.toRadians(fov_at / 2.0),
                             0.0, earthShape);
                 }
-                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf,
+                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, bw,
                         nLooks, rb, nominalOps, antenna);
 
             case "none":
                 fieldOfRegard = new OffNadirRectangularFOV(FastMath.toRadians( lookAngle ),
                         FastMath.toRadians(fov_ct/2.0) , FastMath.toRadians(fov_at/2.0) , 0.0, earthShape);
 
-                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf,
+                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, bw,
                         nLooks, rb, nominalOps, antenna);
 
             default:
                 throw new InputMismatchException("Instrument Database input error on instrument " + name + ". " + scan + " scanning type not yet supported");
+        }
+    }
+
+    private AbstractAntenna loadAntenna(Cell[] values, HashMap<String, Integer> parameterIndexes){
+        String type = values[parameterIndexes.get("AntennaType")].getContents();
+        switch (type.toLowerCase()){
+            case AbstractAntenna.PARAB:
+                double diameter = Double.parseDouble( values[parameterIndexes.get("Diameter")].getContents() );
+                return new ParabolicAntenna(diameter);
+            default:
+                throw new InputMismatchException("Instrument antenna of type " + type + " not yet supported");
         }
     }
 

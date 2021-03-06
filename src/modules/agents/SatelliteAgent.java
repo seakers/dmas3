@@ -2,10 +2,13 @@ package modules.agents;
 
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
+import madkit.kernel.Message;
 import modules.environment.Environment;
 import modules.actions.SimulationAction;
 import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
+import modules.messages.MeasurementRequestMessage;
+import modules.messages.filters.GndFilter;
 import modules.planner.AbstractPlanner;
 import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
@@ -22,7 +25,7 @@ import java.util.logging.Level;
  * Abstract Satellite Agent
  * Represent a generic satellite with varying degrees of autonomy, depending on the planner
  * assigned to the satellite. It operates as a states machine, where it senses its environment,
- * thinks about the newly perveiced status of the world, and then performs an action based on
+ * thinks about the newly perceived status of the world, and then performs an action based on
  * said observations.
  *
  * @author a.aguilar
@@ -44,7 +47,7 @@ public abstract class SatelliteAgent extends AbstractAgent {
     /**
      * list of measurements requests received by this satellite at the current simulation time
      */
-    protected ArrayList<MeasurementRequest> requestsReceived;
+    protected ArrayList<MeasurementRequest> requestsDetected;
 
     /**
      * list of measurements performed by spacecraft pending to be downloaded to a the next visible ground station
@@ -85,14 +88,23 @@ public abstract class SatelliteAgent extends AbstractAgent {
     protected HashMap<GndStation, AgentAddress> gndAddresses;
 
     /**
+     * Message Inboxes of different types. One for relay messages and one for measurement
+     * request messages
+     */
+    protected ArrayList<Message> relayMessages;
+    protected ArrayList<Message> requestMessages;
+    protected ArrayList<Message> plannerMessages;
+
+    /**
      * Creates an instance of a satellite agent. Requires a planner to already be created
      * and this must have the same orekit satellite assignment to this agent.
-     * @param cons
-     * @param sat
-     * @param orbitData
-     * @param planner
+     * @param cons : constellation to who this sat belongs to
+     * @param sat : orekit satellite to be represented by this agent
+     * @param orbitData : coverage data of scenario
+     * @param planner : planner chosen to be assigned to this satellite
      */
-    public SatelliteAgent(Constellation cons, Satellite sat, OrbitData orbitData, AbstractPlanner planner, SimGroups myGroups, Level loggerLevel){
+    public SatelliteAgent(Constellation cons, Satellite sat, OrbitData orbitData,
+                          AbstractPlanner planner, SimGroups myGroups, Level loggerLevel){
         this.setName(sat.getName());
         this.sat = sat;
         this.accessesCL = new HashMap<>( orbitData.getAccessesCL().get(cons).get(sat) );
@@ -109,11 +121,19 @@ public abstract class SatelliteAgent extends AbstractAgent {
         this.plan = new LinkedList<>();
         this.myGroups = myGroups;
         getLogger().setLevel(loggerLevel);
+
+        // initializes inboxes
+        relayMessages = new ArrayList<>();
+        requestMessages = new ArrayList<>();
+        plannerMessages = new ArrayList<>();
     }
 
+    /**
+     * Triggered when launching spacecraft agent. Assigns a satellite role to this agent and initializes planner
+     */
     @Override
     protected void activate(){
-        requestRole(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE);
+        requestRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SATELLITE);
         this.plan = planner.initPlan();
     }
 
@@ -203,6 +223,10 @@ public abstract class SatelliteAgent extends AbstractAgent {
         this.satAddresses = new HashMap<>(satAdd);
         this.gndAddresses = new HashMap<>(gndAdd);
     }
+
+    /**
+     * Satellite agent property getters
+     */
     public String getName(){
         return sat.getName();
     }
@@ -210,7 +234,6 @@ public abstract class SatelliteAgent extends AbstractAgent {
     public AgentAddress getMyAddress(){return this.satAddresses.get(this.sat);}
     public HashMap<Satellite, AgentAddress> getSatAddresses(){ return this.satAddresses; }
     public LinkedList<SimulationAction> getPlan(){ return this.plan; }
-
     public AgentAddress getTargetAddress(Satellite sat){
         return satAddresses.get(sat);
     }
@@ -218,16 +241,72 @@ public abstract class SatelliteAgent extends AbstractAgent {
         return gndAddresses.get(gnd);
     }
 
+    /**
+     * Returns the target satellite from a given agent address
+     * @param address : agent address to be searched
+     * @return orekit sat object if agent address matches an existing sat. Returns null otherwise
+     */
     public Satellite getTargetSatFromAddress(AgentAddress address){
         for(Satellite sat : satAddresses.keySet()){
             if(satAddresses.get(sat).equals(address)) return sat;
         }
         return null;
     }
+
+    /**
+     * Returns the target ground station from a given agent address
+     * @param address : agent address to be searched
+     * @return orekit ground station object if agent address matches an existing sat. Returns
+     * null otherwise
+     */
     public GndStation getTargetGndFromAddress(AgentAddress address){
         for(GndStation gnd : gndAddresses.keySet()){
             if(gndAddresses.get(gnd).equals(address)) return gnd;
         }
         return null;
+    }
+
+    /**
+     * Reads incoming messages and selects those coming from ground stations. Packages them to
+     * the requestMessages property to later be given to to the planner
+     * @throws Exception : Throws an exception if a ground station sent a message of a type it
+     * is not meant to handle
+     */
+    protected void readGndStationMessages() throws Exception {
+        List<Message> gndMessages = nextMessages(new GndFilter());
+        for (Message message : gndMessages) {
+            if (MeasurementRequestMessage.class.equals(message.getClass())) {
+                MeasurementRequestMessage reqMessage = (MeasurementRequestMessage) message;
+
+                // check if this task announcement has already been made by this satellite
+                if (reqMessage.receivedBy(this.getMyAddress())) continue;
+
+                // if not, add to received messages
+                reqMessage.addReceiver(this.getMyAddress());
+                requestMessages.add(reqMessage);
+            } else {
+                throw new Exception("Received message of type "
+                        + message.getClass().toString() + " from ground station. " +
+                        "Message handling of this type is not yet supported");
+            }
+        }
+    }
+
+    /**
+     * Reads incoming messages and selects those coming from satellites. Packages them to
+     * the requestMessages, relayMessages, and plannerMessages properties to later be given
+     * to the planner.
+     * @throws Exception : Throws an exception if a satellite receives a message of a type it
+     * is not meant to handle
+     */
+    abstract protected void readSatelliteMessages() throws Exception;
+
+    /**
+     * Empties out processed messages from inbox
+     */
+    protected void emptyMessages(){
+        relayMessages = new ArrayList<>();
+        requestMessages = new ArrayList<>();
+        plannerMessages = new ArrayList<>();
     }
 }

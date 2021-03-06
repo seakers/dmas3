@@ -36,22 +36,22 @@ public class GndStationAgent extends AbstractAgent {
     /**
      * Ground station assigned to this agent
      */
-    private GndStation gnd;
+    private final GndStation gnd;
 
     /**
      * Coverage data
      */
-    private OrbitData orbitData;
+    private final OrbitData orbitData;
 
     /**
      * Names of groups and roles within simulation community
      */
-    private SimGroups myGroups;
+    private final SimGroups myGroups;
 
     /**
      * Stores the accesses of each satellite with this ground station
      */
-    private HashMap<Satellite, TimeIntervalArray> satAccesses;
+    private final HashMap<Satellite, TimeIntervalArray> satAccesses;
 
     /**
      * current plan to be performed
@@ -141,7 +141,7 @@ public class GndStationAgent extends AbstractAgent {
      */
     private ArrayList<Measurement> readMeasurementMessages(){
         ArrayList<Measurement> measurements = new ArrayList<>();
-        List<Message> messages = nextMessages(new SatFilter(satAddresses));
+        List<Message> messages = nextMessages(new SatFilter());
 
         // read every message received from a satellite
         for(Message message : messages){

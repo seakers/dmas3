@@ -7,16 +7,21 @@ import jxl.read.biff.BiffException;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
-import modules.measurements.Measurement;
-import modules.measurements.MeasurementRequest;
-import modules.measurements.Requirement;
+import modules.agents.SatelliteAgent;
+import modules.antennas.AbstractAntenna;
+import modules.instruments.SAR;
+import modules.measurements.*;
 import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
 import modules.simulation.Simulation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.json.simple.JSONObject;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
 import seakers.orekit.object.CoverageDefinition;
 import seakers.orekit.object.CoveragePoint;
+import seakers.orekit.object.Instrument;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -420,6 +425,122 @@ public class Environment extends Watcher {
 
     public void registerMeasurements(ArrayList<Measurement> measurements){
         this.measurements.addAll(measurements);
+    }
+
+    /**
+     *
+     */
+    public HashMap<Requirement, RequirementPerformance> calculatePerformance(SatelliteAgent agent,
+                                                                             Instrument instrument,
+                                                                             MeasurementRequest request) throws Exception {
+        return calculatePerformance(agent, instrument, request, this.getCurrentDate());
+    }
+
+    public HashMap<Requirement, RequirementPerformance> calculatePerformance(SatelliteAgent agent,
+                                                                             Instrument instrument,
+                                                                             MeasurementRequest request,
+                                                                             AbsoluteDate date) throws Exception {
+        HashMap<Requirement, RequirementPerformance> measurementPerformance = new HashMap<>();
+
+        HashMap<String, Requirement> requirements = null;
+        if(request == null){
+            requirements = new HashMap<>();
+            requirements.put(Requirement.SPATIAL, new Requirement(Requirement.SPATIAL, 500, 500, 500, Units.KM));
+        }
+        else{
+            requirements = request.getRequirements();
+        }
+
+        for(String reqName : requirements.keySet()){
+            Requirement req = requirements.get(reqName);
+            TopocentricFrame target = request.getLocation();
+            double score;
+            switch(req){
+                case Requirement.SPATIAL:
+                    score = calcSpatialResolution(agent, target, instrument, date);
+                    break;
+                case Requirement.TEMPORAL:
+                    double startDelay = date.durationFrom(request.getStartDate());
+                    double unitsFactor = getUnitsFactor( req.getUnits() );
+                    score = startDelay * unitsFactor;
+                    break;
+                case Requirement.ACCURACY:
+                    score = calcAccuracy(agent, target, instrument, date);
+                    break;
+                default:
+                    throw new Exception("Performance requirement of type " + req.getName() + " not yet supported.");
+            }
+
+            measurementPerformance.put(req, new RequirementPerformance(req, score));
+        }
+
+        return measurementPerformance;
+    }
+
+    private double calcSpatialResolution(SatelliteAgent agent, TopocentricFrame target,
+                                         Instrument instrument, AbsoluteDate date) throws Exception {
+        double satResAT;
+        double satResCT;
+
+        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
+        Vector3D pointPos = orbitData.getPointPosition(target,date);
+        Vector3D relPos = pointPos.subtract(satPos);
+
+        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )
+                                                /(satPos.getNorm() * relPos.getNorm()) );
+
+        if(instrument.getClass().equals(SAR.class)){
+            String antennaType = ((SAR) instrument).getAntenna().getType();
+
+            switch(antennaType){
+                case AbstractAntenna.PARAB:
+                    double D = ((SAR) instrument).getAntenna().getDimensions().get(0);
+                    double nLooks = ((SAR) instrument).getnLooks();
+                    double bw = ((SAR) instrument).getBandwidth();
+                    double rangeRes = 3e8/( 2 * bw * Math.sin(lookAngle));
+
+                    satResAT =  D * Math.sqrt( nLooks ) / 2.0;
+                    satResCT = rangeRes;
+                    break;
+                default:
+                    throw new Exception("Instrument antenna of type " + antennaType + " not yet supported");
+            }
+        }
+        else{
+            throw new Exception("Instrument of type " + instrument.getClass() + " not yet supported");
+        }
+
+        return Math.max(satResAT, satResCT);
+    }
+
+    private double calcAccuracy(SatelliteAgent agent, TopocentricFrame target, Instrument instrument, AbsoluteDate date) throws Exception {
+        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
+        Vector3D satVel = orbitData.getSatVelocity(agent.getSat(), date);
+        Vector3D pointPos = orbitData.getPointPosition(target,date);
+        Vector3D relPos = pointPos.subtract(satPos);
+
+        Vector3D i = satVel.normalize();
+        Vector3D k = satPos.scalarMultiply(-1).normalize();
+        Vector3D j = k.crossProduct(i);
+
+        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )/(satPos.getNorm() * relPos.getNorm()) );
+        double incidenceAngle = FastMath.acos( pointPos.dotProduct( relPos.scalarMultiply(-1) )/(pointPos.getNorm() * relPos.getNorm()) );
+        double range = relPos.getNorm();
+
+        return 0.0;
+    }
+
+    private double getUnitsFactor(String units) throws Exception {
+        switch (units){
+            case Units.SECONDS:
+                return 1;
+            case Units.MINS:
+                return 1.0/60.0;
+            case Units.HRS:
+                return 1.0/3600.0;
+        }
+
+        throw new Exception("Units of " + units + " for temporal resolution requirement not yet supported");
     }
 
     /**
