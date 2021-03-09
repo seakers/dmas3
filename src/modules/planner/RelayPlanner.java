@@ -1,15 +1,15 @@
 package modules.planner;
 
-import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
-import modules.actions.AnnouncementAction;
 import modules.actions.MessageAction;
 import modules.actions.SimulationAction;
 import modules.agents.SatelliteAgent;
+import modules.measurements.MeasurementRequest;
+import modules.measurements.Requirement;
+import modules.measurements.RequirementPerformance;
 import modules.messages.RelayMessage;
 import modules.messages.MeasurementRequestMessage;
-import modules.simulation.Simulation;
 import org.orekit.time.AbsoluteDate;
 import seakers.orekit.object.Satellite;
 
@@ -33,6 +33,10 @@ import java.util.LinkedList;
  * @author a.aguilar
  */
 public class RelayPlanner extends AbstractPlanner{
+    public RelayPlanner(double planningHorizon, int requestThreshold) {
+        super(planningHorizon, requestThreshold);
+    }
+
     /**
      * Creates an initial plan at the beginning of the simulation. Since there are no messages
      * to be relayed at the beginning of the simulation, an empty plan is generated
@@ -178,5 +182,11 @@ public class RelayPlanner extends AbstractPlanner{
         }
 
         return plan;
+    }
+
+    @Override
+    public double calcUtility(MeasurementRequest request, HashMap<Requirement,
+                                RequirementPerformance> performance) {
+        return -1;
     }
 }

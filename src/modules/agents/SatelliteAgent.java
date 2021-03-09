@@ -3,15 +3,20 @@ package modules.agents;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
+import modules.actions.ManeuverAction;
+import modules.actions.MeasurementAction;
 import modules.environment.Environment;
 import modules.actions.SimulationAction;
 import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
 import modules.messages.MeasurementRequestMessage;
+import modules.messages.RelayMessage;
 import modules.messages.filters.GndFilter;
+import modules.orbitData.Attitude;
 import modules.planner.AbstractPlanner;
 import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
+import org.orekit.files.ccsds.OPMFile;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
 import seakers.orekit.coverage.access.RiseSetTime;
@@ -37,17 +42,17 @@ public abstract class SatelliteAgent extends AbstractAgent {
     protected Satellite sat;
 
     /**
+     * satellite's current attitude
+     */
+    protected Attitude attitude;
+
+    /**
      * ground point coverage, station overage, and cross-link access times for this satellite
      */
     protected HashMap<Satellite, TimeIntervalArray> accessesCL;
     protected HashMap<TopocentricFrame, TimeIntervalArray> accessGP;
     protected HashMap<Instrument, HashMap<TopocentricFrame, TimeIntervalArray>> accessGPInst;
     HashMap<GndStation, TimeIntervalArray> accessGS;
-
-    /**
-     * list of measurements requests received by this satellite at the current simulation time
-     */
-    protected ArrayList<MeasurementRequest> requestsDetected;
 
     /**
      * list of measurements performed by spacecraft pending to be downloaded to a the next visible ground station
@@ -86,6 +91,7 @@ public abstract class SatelliteAgent extends AbstractAgent {
      */
     protected HashMap<Satellite, AgentAddress> satAddresses;
     protected HashMap<GndStation, AgentAddress> gndAddresses;
+    protected AgentAddress envAddress;
 
     /**
      * Message Inboxes of different types. One for relay messages and one for measurement
@@ -103,10 +109,12 @@ public abstract class SatelliteAgent extends AbstractAgent {
      * @param orbitData : coverage data of scenario
      * @param planner : planner chosen to be assigned to this satellite
      */
-    public SatelliteAgent(Constellation cons, Satellite sat, OrbitData orbitData,
+    public SatelliteAgent(Constellation cons, Satellite sat, OrbitData orbitData, Attitude attitude,
                           AbstractPlanner planner, SimGroups myGroups, Level loggerLevel){
         this.setName(sat.getName());
         this.sat = sat;
+        this.attitude = attitude;
+
         this.accessesCL = new HashMap<>( orbitData.getAccessesCL().get(cons).get(sat) );
         this.accessGP = new HashMap<>();
         this.accessGPInst = new HashMap<>();
@@ -134,6 +142,7 @@ public abstract class SatelliteAgent extends AbstractAgent {
     @Override
     protected void activate(){
         requestRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SATELLITE);
+        envAddress = getAgentAddressIn(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
         this.plan = planner.initPlan();
     }
 
@@ -290,6 +299,56 @@ public abstract class SatelliteAgent extends AbstractAgent {
                         "Message handling of this type is not yet supported");
             }
         }
+    }
+
+    /**
+     * Logs messages sent to terminal
+     * @param targetAddress : address of target agent
+     * @param message : message being sent to target
+     */
+    protected void logMessageSent(AgentAddress targetAddress, Message message){
+        String targetName;
+        if(this.getTargetSatFromAddress(targetAddress) == null){
+            GndStation targetGnd = this.getTargetGndFromAddress(targetAddress);
+            targetName = targetGnd.getBaseFrame().getName();
+        }
+        else{
+            Satellite targetSat = this.getTargetSatFromAddress(targetAddress);
+            targetName = targetSat.getName();
+        }
+
+        String messageType = "N/A";
+        if (RelayMessage.class.equals(message.getClass())) {
+            messageType = "Relay";
+        }
+        else if (MeasurementRequestMessage.class.equals(message.getClass())) {
+            messageType = "Measurement Request";
+        }
+
+        getLogger().fine("\tSending  " + targetName + " message of type " + messageType + "...");
+    }
+
+    /**
+     * Logs measurement action being performed to terminal
+     * @param action : measurement action to be done
+     */
+    protected void logMeasurementMade(MeasurementAction action){
+        String targetName = action.getTarget().getName();
+        String insName = action.getInstrument().getName();
+
+        getLogger().fine("\tSensing point " + targetName + " with instrument "
+                + insName + " at "  + environment.getCurrentDate().toString() + "...");
+    }
+
+    /**
+     * Logs maneuver action being performed to terminal
+     * @param action : maneuver action to be done
+     */
+    protected void logAttitudeMade(ManeuverAction action){
+        double th0 = Math.toDegrees( action.getInitialRollAngle() );
+        double thf = Math.toDegrees( action.getInitialRollAngle() );
+
+        getLogger().fine("\tPerforming step of maneuver from " + th0 + " [deg] to " + thf + " [deg]");
     }
 
     /**

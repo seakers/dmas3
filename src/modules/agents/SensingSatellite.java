@@ -2,10 +2,7 @@ package modules.agents;
 
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
-import modules.actions.MeasurementAction;
-import modules.actions.MessageAction;
-import modules.actions.NominalAction;
-import modules.actions.UrgentAction;
+import modules.actions.*;
 import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
@@ -14,6 +11,7 @@ import modules.messages.MeasurementRequestMessage;
 import modules.messages.RelayMessage;
 import modules.messages.PlannerMessage;
 import modules.messages.filters.SatFilter;
+import modules.orbitData.Attitude;
 import modules.planner.AbstractPlanner;
 import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
@@ -21,7 +19,9 @@ import seakers.orekit.object.Constellation;
 import seakers.orekit.object.Instrument;
 import seakers.orekit.object.Satellite;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -36,9 +36,12 @@ import java.util.logging.Level;
  */
 public class SensingSatellite extends SatelliteAgent {
 
-    public SensingSatellite(Constellation cons, Satellite sat, OrbitData orbitData,
+    public SensingSatellite(Constellation cons, Satellite sat, OrbitData orbitData, Attitude attitude,
                             AbstractPlanner planner, SimGroups myGroups, Level loggerLevel) {
-        super(cons, sat, orbitData, planner, myGroups, loggerLevel);
+        super(cons, sat, orbitData, attitude, planner, myGroups, loggerLevel);
+
+        measurementsDone = new ArrayList<>();
+        measurementsPendingDownload = new ArrayList<>();
     }
 
     /**
@@ -46,7 +49,7 @@ public class SensingSatellite extends SatelliteAgent {
      */
     @Override
     public void sense() throws Exception {
-        getLogger().finer("\t Hello! This is " + this.getName() + ". I am sensing...");
+        getLogger().finest("\t Hello! This is " + this.getName() + ". I am sensing...");
 
         // read and package incoming messages to be given to planner
             // -read messages from ground stations
@@ -54,29 +57,110 @@ public class SensingSatellite extends SatelliteAgent {
 
             // -read messages from satellites
             readSatelliteMessages();
+    }
+
+    /**
+     * Gives new information from messages or measurements to planner and crates/modifies plan if needed
+     */
+    @Override
+    public void think() throws Exception {
+        getLogger().finest("\t Hello! This is " + this.getName() + ". I am thinking...");
+
+        // package received messages and send to planner
+        HashMap<String, ArrayList<Message>> messages = new HashMap<>();
+        messages.put(MeasurementRequestMessage.class.toString(), requestMessages);
+        messages.put(RelayMessage.class.toString(), relayMessages);
+        messages.put(PlannerMessage.class.toString(), plannerMessages);
+
+        // update plan
+        this.plan = this.planner.makePlan(messages, this);
+
+        // empty planner message arrays
+        emptyMessages();
+    }
+
+    /**
+     * Performs attitude maneuvers or sends messages to other satellites or ground stations if specified by plan
+     */
+    @Override
+    public void execute() throws Exception {
+        getLogger().finest("\t Hello! This is " + this.getName() + ". I am executing...");
 
         // make a measurement if stated in planner
+        while(!plan.isEmpty()
+                && plan.getFirst().getClass().equals(MeasurementAction.class)){
 
-            while(!plan.isEmpty()
-                    && plan.getFirst().getClass().equals(MeasurementAction.class)
-                    && environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) >= 0
-                    && environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) <= 0){
+            if( environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) < 0
+                    || environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) > 0){
+                throw new Exception("Attempting to perform action outside its agreed schedule");
+            }
 
+            if(plan.getFirst().getClass().equals(MeasurementAction.class)){
                 // -perform measurement
+
+                // retrieve action
                 MeasurementAction action = (MeasurementAction) plan.poll();
                 assert action != null;
 
+                // perform measurement
                 Measurement measurement = performMeasurement(action);
 
-                measurementsDone.add(measurement);
+                // save measurements on sat memory
                 measurementsPendingDownload.add(measurement);
+                measurementsDone.add(measurement);
 
-                // -check if a new urgent task was detected
-                requestsDetected = environment.checkDetection();
+                // log to terminal
+                logMeasurementMade(action);
             }
+            else if(plan.getFirst().getClass().equals(MessageAction.class)){
+                // -send message to target
+
+                // retrieve action and target
+                MessageAction action = (MessageAction) plan.poll();
+                assert action != null;
+                AgentAddress targetAddress =  action.getTarget();
+
+                // get all available tasks that can be announced
+                MeasurementRequestMessage message = (MeasurementRequestMessage) action.getMessage();
+
+                // send it to the target agent
+                sendMessage(targetAddress,message);
+
+                // send a copy of the message to environment for comms book-keeping
+                sendMessage(envAddress,message);
+
+                // log to terminal
+                logMessageSent(targetAddress, message);
+            }
+            else if(plan.getFirst().getClass().equals(ManeuverAction.class)){
+                // -perform roll maneuver
+
+                // retrieve action and target
+                ManeuverAction action = (ManeuverAction) plan.poll();
+                assert action != null;
+
+                // perform maneuver up to the current simulation time
+                this.attitude.updateAttitude(action, environment.getCurrentDate());
+
+                // log to terminal
+                logAttitudeMade(action);
+            }
+            else{
+                throw new Exception("Scheduled action of type "
+                        + plan.getFirst().getClass() + " not yet supported.");
+            }
+        }
     }
 
-    public Measurement performMeasurement(MeasurementAction action){
+    /**
+     * Reads and measurement action from the planner and creates a measurement with the specified
+     * instrument at the current time
+     * @param action : measurement action from planner
+     * @return a new object of class measurement containing the request that the measurement is
+     * satisfying and its performance
+     * @throws Exception
+     */
+    public Measurement performMeasurement(MeasurementAction action) throws Exception {
         MeasurementRequest request = action.getRequest();
         Instrument instrument = action.getInstrument();
 
@@ -87,22 +171,6 @@ public class SensingSatellite extends SatelliteAgent {
         double utility = planner.calcUtility(request, performance);
 
         return new Measurement(this, request, performance, environment.getCurrentDate(),utility);
-    }
-
-    /**
-     * Gives new information from messages or measurements to planner and crates/modifies plan if needed
-     */
-    @Override
-    public void think() throws Exception {
-        getLogger().finer("\t Hello! This is " + this.getName() + ". I am thinking...");
-    }
-
-    /**
-     * Performs attitude maneuvers or sends messages to other satellites or ground stations if specified by plan
-     */
-    @Override
-    public void execute() throws Exception {
-        getLogger().finer("\t Hello! This is " + this.getName() + ". I am executing...");
     }
 
     /**
@@ -118,8 +186,8 @@ public class SensingSatellite extends SatelliteAgent {
 
         for(Message message : satMessages) {
             if (PlannerMessage.class.equals(message.getClass())) {
-                RelayMessage relayMessage = (RelayMessage) message;
-                relayMessages.add(relayMessage);
+                PlannerMessage plannerMessage = (PlannerMessage) message;
+                plannerMessages.add(plannerMessage);
 
             } else if (RelayMessage.class.equals(message.getClass())) {
                 RelayMessage relayMessage = (RelayMessage) message;

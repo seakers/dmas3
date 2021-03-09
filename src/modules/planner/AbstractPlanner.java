@@ -3,11 +3,13 @@ package modules.planner;
 import madkit.kernel.Message;
 import modules.actions.SimulationAction;
 import modules.agents.SatelliteAgent;
+import modules.measurements.MeasurementRequest;
+import modules.measurements.Requirement;
+import modules.measurements.RequirementPerformance;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Queue;
 
 public abstract class AbstractPlanner {
     /**
@@ -20,9 +22,24 @@ public abstract class AbstractPlanner {
     public static final String[] PLANNERS = {NONE, TIME, CCBBA, RELAY};
 
     /**
+     * Planning horizon in seconds
+     */
+    protected final double planningHorizon;
+
+    /**
+     * threshold of new measurement requests required to trigger a plan reschedule
+     */
+    protected final int requestThreshold;
+
+    /**
      * List of actions to be given to an agent to be performed
      */
-    private LinkedList<SimulationAction> plan;
+    protected LinkedList<SimulationAction> plan;
+
+    public AbstractPlanner(double planningHorizon, int requestThreshold){
+        this.planningHorizon = planningHorizon;
+        this.requestThreshold = requestThreshold;
+    }
 
     /**
      * Creates an initial plan at the beginning of the simulation
@@ -39,4 +56,14 @@ public abstract class AbstractPlanner {
      */
     public abstract LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
                                                           SatelliteAgent agent) throws Exception;
+
+
+    /**
+     * 
+     * @param request
+     * @param performance
+     * @return
+     */
+    public abstract double calcUtility(MeasurementRequest request,
+                                       HashMap<Requirement, RequirementPerformance> performance);
 }

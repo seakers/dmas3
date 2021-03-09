@@ -7,6 +7,7 @@ import modules.messages.RelayMessage;
 import modules.messages.MeasurementRequestMessage;
 import modules.messages.filters.GndFilter;
 import modules.messages.filters.SatFilter;
+import modules.orbitData.Attitude;
 import modules.planner.AbstractPlanner;
 import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
@@ -29,9 +30,9 @@ import java.util.logging.Level;
  */
 public class CommsSatellite extends SatelliteAgent {
 
-    public CommsSatellite(Constellation cons, Satellite sat, OrbitData orbitData,
+    public CommsSatellite(Constellation cons, Satellite sat, OrbitData orbitData, Attitude attitude,
                           AbstractPlanner planner, SimGroups myGroups, Level loggerLevel) {
-        super(cons, sat, orbitData, planner, myGroups, loggerLevel);
+        super(cons, sat, orbitData, attitude, planner, myGroups, loggerLevel);
     }
 
     /**
@@ -39,13 +40,62 @@ public class CommsSatellite extends SatelliteAgent {
      */
     @Override
     public void sense() throws Exception {
-        getLogger().finer("\t Hello! This is " + this.getName() + ". I am sensing...");
+        getLogger().finest("\t Hello! This is " + this.getName() + ". I am sensing...");
 
         // read messages from ground stations
         readGndStationMessages();
 
         // read messages from satellites
         readSatelliteMessages();
+    }
+
+    /**
+     * Gives new information from messages to planner and crates/modifies plan if needed
+     */
+    @Override
+    public void think() throws Exception {
+        getLogger().finest("\t Hello! This is " + this.getName() + ". I am thinking...");
+
+        // package received messages and send to planner
+        HashMap<String, ArrayList<Message>> messages = new HashMap<>();
+        messages.put(MeasurementRequestMessage.class.toString(), requestMessages);
+        messages.put(RelayMessage.class.toString(), relayMessages);
+
+        // update plan
+        this.plan = this.planner.makePlan(messages, this);
+
+        // empty planner message arrays
+        emptyMessages();
+    }
+
+    /**
+     * Sends messages to other satellites or ground stations if specified by plan
+     */
+    @Override
+    public void execute() throws Exception {
+        getLogger().finest("\t Hello! This is " + this.getName() + ". I am executing...");
+
+        while(!plan.isEmpty()
+                && environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) >= 0
+                && environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) <= 0){
+
+            // retrieve action and target
+            MessageAction action = (MessageAction) plan.poll();
+            assert action != null;
+            AgentAddress targetAddress =  action.getTarget();
+
+            // get all available tasks that can be announced
+            MeasurementRequestMessage message = (MeasurementRequestMessage) action.getMessage();
+
+            // send it to the target agent
+            sendMessage(targetAddress,message);
+
+            // send a copy of the message to environment for comms book-keeping
+            sendMessage(envAddress,message);
+
+            // log to terminal
+            logMessageSent(targetAddress, message);
+        }
     }
 
     /**
@@ -76,78 +126,5 @@ public class CommsSatellite extends SatelliteAgent {
                         + message.getClass().toString() + " not yet supported");
             }
         }
-    }
-
-    /**
-     * Gives new information from messages to planner and crates/modifies plan if needed
-     */
-    @Override
-    public void think() throws Exception {
-        getLogger().finer("\t Hello! This is " + this.getName() + ". I am thinking...");
-
-        // package received messages and send to planner
-        HashMap<String, ArrayList<Message>> messages = new HashMap<>();
-        messages.put(MeasurementRequestMessage.class.toString(), requestMessages);
-        messages.put(RelayMessage.class.toString(), relayMessages);
-
-        // update plan
-        this.plan = this.planner.makePlan(messages, this);
-
-        // empty planner message arrays
-        emptyMessages();
-    }
-
-    /**
-     * Sends messages to other satellites or ground stations if specified by plan
-     */
-    @Override
-    public void execute() throws Exception {
-        getLogger().finer("\t Hello! This is " + this.getName() + ". I am executing...");
-
-        while(!plan.isEmpty()
-                && environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) >= 0
-                && environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) <= 0){
-
-            // retrieve action and target
-            MessageAction action = (MessageAction) plan.poll();
-            assert action != null;
-            AgentAddress targetAddress =  action.getTarget();
-
-            // get all available tasks that can be announced
-            MeasurementRequestMessage message = (MeasurementRequestMessage) action.getMessage();
-
-            // send it to the target agent
-            sendMessage(targetAddress,message);
-
-            // log to terminal
-            logMessageSent(targetAddress, message);
-        }
-    }
-
-    /**
-     * Logs messages sent to terminal
-     * @param targetAddress : address of target agent
-     * @param message : message being sent to target
-     */
-    private void logMessageSent(AgentAddress targetAddress, Message message){
-        String targetName;
-        if(this.getTargetSatFromAddress(targetAddress) == null){
-            GndStation targetGnd = this.getTargetGndFromAddress(targetAddress);
-            targetName = targetGnd.getBaseFrame().getName();
-        }
-        else{
-            Satellite targetSat = this.getTargetSatFromAddress(targetAddress);
-            targetName = targetSat.getName();
-        }
-
-        String messageType = "N/A";
-        if (RelayMessage.class.equals(message.getClass())) {
-            messageType = "Relay";
-        }
-        else if (MeasurementRequestMessage.class.equals(message.getClass())) {
-            messageType = "Measurement Request";
-        }
-
-        getLogger().fine("\tSending  " + targetName + " message of type " + messageType + "...");
     }
 }

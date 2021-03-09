@@ -1,15 +1,14 @@
 package modules.simulation;
 
-import constants.JSONFields;
 import jxl.read.biff.BiffException;
 import madkit.kernel.AbstractAgent;
-import madkit.kernel.Agent;
 import madkit.kernel.AgentAddress;
 import modules.agents.CommsSatellite;
 import modules.agents.GndStationAgent;
 import modules.agents.SatelliteAgent;
 import modules.agents.SensingSatellite;
 import modules.environment.Environment;
+import modules.orbitData.Attitude;
 import modules.orbitData.OrbitData;
 import modules.planner.*;
 import org.json.simple.JSONObject;
@@ -232,12 +231,14 @@ public class Simulation extends AbstractAgent{
 
         for(Satellite sat : senseSats.getSatellites()){
             AbstractPlanner planner = loadSensingPlanner();
-            SensingSatellite sensingSat = new SensingSatellite(senseSats, sat, orbitData, planner, myGroups, loggerLevel);
+            Attitude attitude = new Attitude(0.0,  Math.toRadians(90.0), Math.toRadians(1.0));
+            SensingSatellite sensingSat = new SensingSatellite(senseSats, sat, orbitData, attitude, planner, myGroups, loggerLevel);
             spaceSegment.add(sensingSat);
         }
         for(Satellite sat : commsSats.getSatellites()){
             AbstractPlanner planner = loadCommsPlanner();
-            CommsSatellite commsSat = new CommsSatellite(commsSats, sat, orbitData, planner, myGroups, loggerLevel);
+            Attitude attitude = new Attitude(0.0, 0.0, 0.0);
+            CommsSatellite commsSat = new CommsSatellite(commsSats, sat, orbitData, attitude, planner, myGroups, loggerLevel);
             spaceSegment.add(commsSat);
         }
 
@@ -268,10 +269,12 @@ public class Simulation extends AbstractAgent{
     private AbstractPlanner loadSensingPlanner(){
         AbstractPlanner planner;
         String plannerStr = ((JSONObject) input.get(PLNR)).get(PLNR_NAME).toString();
+        double planningHorizon = Double.parseDouble( ((JSONObject) input.get(PLNR)).get(PLN_HRZN).toString() );
+        int threshold = Integer.parseInt( ((JSONObject) input.get(PLNR)).get(PLN_THRSHLD).toString() );
 
         switch (plannerStr){
             case AbstractPlanner.NONE:
-                planner = new BasicPlanner();
+                planner = new NominalPlanner(planningHorizon, threshold);
                 break;
 //            case AbstractPlanner.TIME:
 //                planner = new TimePriorityPlanner();
@@ -292,7 +295,10 @@ public class Simulation extends AbstractAgent{
      * @return planner : a planner object that creates a schedule given an agent and its known information
      */
     private AbstractPlanner loadCommsPlanner(){
-        return new RelayPlanner();
+        double planningHorizon = Double.parseDouble( ((JSONObject) input.get(PLNR)).get(PLN_HRZN).toString() );
+        int threshold = Integer.parseInt( ((JSONObject) input.get(PLNR)).get(PLN_THRSHLD).toString() );
+
+        return new RelayPlanner(planningHorizon, threshold);
     }
 
     /**

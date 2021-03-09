@@ -428,7 +428,10 @@ public class Environment extends Watcher {
     }
 
     /**
-     *
+     * Calculates the performance of a measurements performed by a given instrument at the current simulation time
+     * @param agent : agent performing the measurement
+     * @param instrument : instrument performing the measurement
+     * @param request : measurement request being satisfied by measurement
      */
     public HashMap<Requirement, RequirementPerformance> calculatePerformance(SatelliteAgent agent,
                                                                              Instrument instrument,
@@ -436,13 +439,20 @@ public class Environment extends Watcher {
         return calculatePerformance(agent, instrument, request, this.getCurrentDate());
     }
 
+    /**
+     * Calculates the performance of a measurements performed by a given instrument at the a given simulation time
+     * @param agent : agent performing the measurement
+     * @param instrument : instrument performing the measurement
+     * @param request : measurement request being satisfied by measurement
+     * @param date : date of measurement
+     */
     public HashMap<Requirement, RequirementPerformance> calculatePerformance(SatelliteAgent agent,
                                                                              Instrument instrument,
                                                                              MeasurementRequest request,
                                                                              AbsoluteDate date) throws Exception {
         HashMap<Requirement, RequirementPerformance> measurementPerformance = new HashMap<>();
 
-        HashMap<String, Requirement> requirements = null;
+        HashMap<String, Requirement> requirements;
         if(request == null){
             requirements = new HashMap<>();
             requirements.put(Requirement.SPATIAL, new Requirement(Requirement.SPATIAL, 500, 500, 500, Units.KM));
@@ -455,7 +465,7 @@ public class Environment extends Watcher {
             Requirement req = requirements.get(reqName);
             TopocentricFrame target = request.getLocation();
             double score;
-            switch(req){
+            switch(reqName){
                 case Requirement.SPATIAL:
                     score = calcSpatialResolution(agent, target, instrument, date);
                     break;
@@ -482,52 +492,61 @@ public class Environment extends Watcher {
         double satResAT;
         double satResCT;
 
-        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
-        Vector3D pointPos = orbitData.getPointPosition(target,date);
-        Vector3D relPos = pointPos.subtract(satPos);
+        // TODO create instrument specific spatial resolution estimation
 
-        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )
-                                                /(satPos.getNorm() * relPos.getNorm()) );
+        return 1e3;
 
-        if(instrument.getClass().equals(SAR.class)){
-            String antennaType = ((SAR) instrument).getAntenna().getType();
-
-            switch(antennaType){
-                case AbstractAntenna.PARAB:
-                    double D = ((SAR) instrument).getAntenna().getDimensions().get(0);
-                    double nLooks = ((SAR) instrument).getnLooks();
-                    double bw = ((SAR) instrument).getBandwidth();
-                    double rangeRes = 3e8/( 2 * bw * Math.sin(lookAngle));
-
-                    satResAT =  D * Math.sqrt( nLooks ) / 2.0;
-                    satResCT = rangeRes;
-                    break;
-                default:
-                    throw new Exception("Instrument antenna of type " + antennaType + " not yet supported");
-            }
-        }
-        else{
-            throw new Exception("Instrument of type " + instrument.getClass() + " not yet supported");
-        }
-
-        return Math.max(satResAT, satResCT);
+//        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
+//        Vector3D pointPos = orbitData.getPointPosition(target,date);
+//        Vector3D relPos = pointPos.subtract(satPos);
+//
+//        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )
+//                                                /(satPos.getNorm() * relPos.getNorm()) );
+//
+//        if(instrument.getClass().equals(SAR.class)){
+//            String antennaType = ((SAR) instrument).getAntenna().getType();
+//
+//            switch(antennaType){
+//                case AbstractAntenna.PARAB:
+//                    double D = ((SAR) instrument).getAntenna().getDimensions().get(0);
+//                    double nLooks = ((SAR) instrument).getnLooks();
+//                    double bw = ((SAR) instrument).getBandwidth();
+//                    double rangeRes = 3e8/( 2 * bw * Math.sin(lookAngle));
+//
+//                    satResAT =  D * Math.sqrt( nLooks ) / 2.0;
+//                    satResCT = rangeRes;
+//                    break;
+//                default:
+//                    throw new Exception("Instrument antenna of type " + antennaType + " not yet supported");
+//            }
+//        }
+//        else{
+//            throw new Exception("Instrument of type " + instrument.getClass() + " not yet supported");
+//        }
+//
+//        return Math.max(satResAT, satResCT);
     }
 
-    private double calcAccuracy(SatelliteAgent agent, TopocentricFrame target, Instrument instrument, AbsoluteDate date) throws Exception {
-        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
-        Vector3D satVel = orbitData.getSatVelocity(agent.getSat(), date);
-        Vector3D pointPos = orbitData.getPointPosition(target,date);
-        Vector3D relPos = pointPos.subtract(satPos);
+    private double calcAccuracy(SatelliteAgent agent, TopocentricFrame target,
+                                Instrument instrument, AbsoluteDate date) throws Exception {
+//        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
+//        Vector3D satVel = orbitData.getSatVelocity(agent.getSat(), date);
+//        Vector3D pointPos = orbitData.getPointPosition(target,date);
+//        Vector3D relPos = pointPos.subtract(satPos);
+//
+//        Vector3D i = satVel.normalize();
+//        Vector3D k = satPos.scalarMultiply(-1).normalize();
+//        Vector3D j = k.crossProduct(i);
+//
+//        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )
+//                /(satPos.getNorm() * relPos.getNorm()) );
+//        double incidenceAngle = FastMath.acos( pointPos.dotProduct( relPos.scalarMultiply(-1) )
+//                /(pointPos.getNorm() * relPos.getNorm()) );
+//        double range = relPos.getNorm();
 
-        Vector3D i = satVel.normalize();
-        Vector3D k = satPos.scalarMultiply(-1).normalize();
-        Vector3D j = k.crossProduct(i);
+        // TODO create instrument specific accuracy estimation
 
-        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )/(satPos.getNorm() * relPos.getNorm()) );
-        double incidenceAngle = FastMath.acos( pointPos.dotProduct( relPos.scalarMultiply(-1) )/(pointPos.getNorm() * relPos.getNorm()) );
-        double range = relPos.getNorm();
-
-        return 0.0;
+        return 1.0;
     }
 
     private double getUnitsFactor(String units) throws Exception {
@@ -547,7 +566,8 @@ public class Environment extends Watcher {
      * Updates simulation time
      */
     public void tic(){
-        // TODO  allow for time to step forward to next action performed by a ground station, satellite, or comms satellite
+        // TODO  allow for time to step forward to next action performed by a ground station,
+        //  satellite, or comms satellite
         this.GVT += this.dt;
     }
 

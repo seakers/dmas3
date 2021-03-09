@@ -68,6 +68,7 @@ public class GndStationAgent extends AbstractAgent {
      */
     private HashMap<Satellite, AgentAddress> satAddresses;
     private HashMap<GndStation, AgentAddress> gndAddresses;
+    protected AgentAddress envAddress;
 
     /**
      * Creates an instance of a ground station
@@ -96,13 +97,14 @@ public class GndStationAgent extends AbstractAgent {
      */
     @Override
     protected void activate(){
-        requestRole(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT);
+        requestRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.GNDSTAT);
+        envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
     }
 
     /**
      * Reads messages from other satellites. Registers when these measurements were done and when they were received
      */
-    public void sense() {
+    public void sense() throws Exception {
         this.environment.registerMeasurements(readMeasurementMessages());
     }
 
@@ -132,6 +134,9 @@ public class GndStationAgent extends AbstractAgent {
 
             // send it to the target agent
             sendMessage(targetAddress,message);
+
+            // send a copy of the message to environment for comms book-keeping
+            sendMessage(envAddress,message);
         }
     }
 
@@ -139,22 +144,28 @@ public class GndStationAgent extends AbstractAgent {
      * Reads incoming messages from satellites and extract measurement information
      * @return measurements : array containing the received messages
      */
-    private ArrayList<Measurement> readMeasurementMessages(){
+    private ArrayList<Measurement> readMeasurementMessages() throws Exception {
         ArrayList<Measurement> measurements = new ArrayList<>();
         List<Message> messages = nextMessages(new SatFilter());
 
         // read every message received from a satellite
         for(Message message : messages){
-            MeasurementMessage measurementMessage = (MeasurementMessage) message;
+            if(message.getClass().equals(MeasurementMessage.class)){
+                MeasurementMessage measurementMessage = (MeasurementMessage) message;
 
-            // obtain measurement information from message
-            Measurement measurement = measurementMessage.getMeasurement();
+                // obtain measurement information from message
+                Measurement measurement = measurementMessage.getMeasurement();
 
-            // set download date
-            measurement.setDownloadDate( environment.getCurrentDate() );
+                // set download date
+                measurement.setDownloadDate( environment.getCurrentDate() );
 
-            // add to list
-            measurements.add(measurement);
+                // add to list
+                measurements.add(measurement);
+            }
+            else{
+                throw new Exception("Message of type " + message.getClass()
+                        + " not yet supported for Ground Stations");
+            }
         }
 
         return measurements;
