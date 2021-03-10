@@ -20,9 +20,7 @@ public class NominalPlanner extends AbstractPlanner {
 
     @Override
     public LinkedList<SimulationAction> initPlan() {
-        GndStation nextGnd = parentAgent.getNextGndAccess();
-        AbsoluteDate nextGndAccessDate = parentAgent.getNextAccess(nextGnd).get(0);
-
+        ArrayList<GndStation> orderedAccess = parentAgent
 
 
         return null;

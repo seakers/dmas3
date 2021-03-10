@@ -13,6 +13,8 @@ import modules.messages.MeasurementRequestMessage;
 import modules.messages.RelayMessage;
 import modules.messages.filters.GndFilter;
 import modules.orbitData.Attitude;
+import modules.orbitData.GPAccess;
+import modules.orbitData.GndAccess;
 import modules.planner.AbstractPlanner;
 import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
@@ -423,5 +425,87 @@ public abstract class SatelliteAgent extends AbstractAgent {
         }
 
         return gndEarliest;
+    }
+
+    public ArrayList<GPAccess> orderGPAccesses(){
+        ArrayList<GPAccess> unordered = new ArrayList<>();
+        ArrayList<GPAccess> ordered = new ArrayList<>();
+
+        for(Instrument ins : accessGPInst.keySet()){
+            for(TopocentricFrame point : accessGPInst.get(ins).keySet()){
+                double t_0 = 0.0;
+                double t_f = 0.0;
+
+                for(RiseSetTime setTime : accessGPInst.get(ins).get(point).getRiseSetTimes()){
+                    if(setTime.isRise()) {
+                        t_0 = setTime.getTime();
+                    }
+                    else {
+                        t_f = setTime.getTime();
+
+                        AbsoluteDate startDate = this.getStartDate().shiftedBy(t_0);
+                        AbsoluteDate endDate = this.getStartDate().shiftedBy(t_f);
+
+                        unordered.add(new GPAccess(this.sat, point, ins, startDate, endDate));
+                    }
+                }
+            }
+        }
+
+        for(GPAccess acc : unordered){
+            if(ordered.size() == 0){
+                ordered.add(acc);
+                continue;
+            }
+
+            int i = 0;
+            for(GPAccess accOrd : ordered){
+                if(acc.getStartDate().compareTo(accOrd.getStartDate()) <= 0) break;
+                i++;
+            }
+            ordered.add(i,acc);
+        }
+
+        return ordered;
+    }
+
+    public ArrayList<GndAccess> orderGndAccesses(){
+        ArrayList<GndAccess> unordered = new ArrayList<>();
+        ArrayList<GndAccess> ordered = new ArrayList<>();
+
+        for(GndStation gnd : accessGS.keySet()){
+            double t_0 = 0.0;
+            double t_f = 0.0;
+
+            for(RiseSetTime setTime : accessGS.get(gnd).getRiseSetTimes()){
+                if(setTime.isRise()) {
+                    t_0 = setTime.getTime();
+                }
+                else {
+                    t_f = setTime.getTime();
+
+                    AbsoluteDate startDate = this.getStartDate().shiftedBy(t_0);
+                    AbsoluteDate endDate = this.getStartDate().shiftedBy(t_f);
+
+                    unordered.add(new GndAccess(this.sat, gnd, startDate, endDate));
+                }
+            }
+        }
+
+        for(GndAccess acc : unordered){
+            if(ordered.size() == 0){
+                ordered.add(acc);
+                continue;
+            }
+
+            int i = 0;
+            for(GndAccess accOrd : ordered){
+                if(acc.getStartDate().compareTo(accOrd.getStartDate()) <= 0) break;
+                i++;
+            }
+            ordered.add(i,acc);
+        }
+
+        return ordered;
     }
 }
