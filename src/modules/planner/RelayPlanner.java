@@ -44,6 +44,7 @@ public class RelayPlanner extends AbstractPlanner{
      */
     @Override
     public LinkedList<SimulationAction> initPlan() {
+        this.plan = new ArrayList<>();
         return new LinkedList<>();
     }
 

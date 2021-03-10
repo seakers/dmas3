@@ -3,10 +3,13 @@ package modules.messages;
 import madkit.kernel.Message;
 import modules.measurements.Measurement;
 
+import java.util.ArrayList;
+
 public class MeasurementMessage extends Message {
-    private final Measurement measurement;
+    private ArrayList<Measurement> measurements;
 
-    public MeasurementMessage(Measurement measurement){ this.measurement = measurement; }
+    public MeasurementMessage(ArrayList<Measurement> measurements){ this.measurements = measurements; }
 
-    public Measurement getMeasurement() { return measurement; }
+    public ArrayList<Measurement> getMeasurements() { return measurements; }
+    public void setMeasurements(ArrayList<Measurement> measurements){this.measurements = new ArrayList<>(measurements);}
 }

@@ -6,12 +6,12 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
 import seakers.orekit.object.Instrument;
 
-abstract public class MeasurementAction extends SimulationAction{
+public class MeasurementAction extends SimulationAction{
     private final TopocentricFrame target;
     private final Instrument instrument;
     private final MeasurementRequest request;
 
-    protected MeasurementAction(AbstractAgent agent, TopocentricFrame target, Instrument instrument, AbsoluteDate startDate, AbsoluteDate endDate, MeasurementRequest request) {
+    public MeasurementAction(AbstractAgent agent, TopocentricFrame target, Instrument instrument, AbsoluteDate startDate, AbsoluteDate endDate, MeasurementRequest request) {
         super(agent, startDate, endDate);
         this.target = target;
         this.instrument = instrument;

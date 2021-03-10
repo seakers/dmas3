@@ -5,12 +5,15 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.Message;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
 import modules.agents.SatelliteAgent;
 import modules.antennas.AbstractAntenna;
 import modules.instruments.SAR;
 import modules.measurements.*;
+import modules.messages.MeasurementMessage;
+import modules.messages.filters.MeasurementFilter;
 import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
 import modules.simulation.Simulation;
@@ -148,12 +151,12 @@ public class Environment extends Watcher {
             printRequests();
 
             // request my role so that the viewers can probe me
-            requestRole(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.ENVIRONMENT);
+            requestRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
 
             // give probe access to agents - Any agent within the group agent can access this environment's properties
-            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "environment"));
-            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT, "environment"));
-            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SCHEDULER, "environment"));
+            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SATELLITE, "environment"));
+            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.GNDSTAT, "environment"));
+            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCHEDULER, "environment"));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -435,8 +438,9 @@ public class Environment extends Watcher {
      */
     public HashMap<Requirement, RequirementPerformance> calculatePerformance(SatelliteAgent agent,
                                                                              Instrument instrument,
+                                                                             TopocentricFrame target,
                                                                              MeasurementRequest request) throws Exception {
-        return calculatePerformance(agent, instrument, request, this.getCurrentDate());
+        return calculatePerformance(agent, instrument, target, request, this.getCurrentDate());
     }
 
     /**
@@ -448,6 +452,7 @@ public class Environment extends Watcher {
      */
     public HashMap<Requirement, RequirementPerformance> calculatePerformance(SatelliteAgent agent,
                                                                              Instrument instrument,
+                                                                             TopocentricFrame target,
                                                                              MeasurementRequest request,
                                                                              AbsoluteDate date) throws Exception {
         HashMap<Requirement, RequirementPerformance> measurementPerformance = new HashMap<>();
@@ -463,7 +468,7 @@ public class Environment extends Watcher {
 
         for(String reqName : requirements.keySet()){
             Requirement req = requirements.get(reqName);
-            TopocentricFrame target = request.getLocation();
+
             double score;
             switch(reqName){
                 case Requirement.SPATIAL:
@@ -569,6 +574,24 @@ public class Environment extends Watcher {
         // TODO  allow for time to step forward to next action performed by a ground station,
         //  satellite, or comms satellite
         this.GVT += this.dt;
+    }
+
+    public void printResults(){
+        ArrayList<Measurement> measurements = readMeasurementMessages();
+
+
+    }
+
+    private ArrayList<Measurement> readMeasurementMessages(){
+        ArrayList<Measurement> measurements = new ArrayList<>();
+        List<Message> messages = nextMessages( new MeasurementFilter());
+
+        for(Message message : messages){
+            ArrayList<Measurement> receivedMeasurements = ((MeasurementMessage) message).getMeasurements();
+            measurements.addAll(receivedMeasurements);
+        }
+
+        return measurements;
     }
 
     /**

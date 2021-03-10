@@ -3,6 +3,7 @@ package modules.agents;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import modules.actions.MessageAction;
+import modules.messages.BookkeepingMessage;
 import modules.messages.RelayMessage;
 import modules.messages.MeasurementRequestMessage;
 import modules.messages.filters.GndFilter;
@@ -90,8 +91,10 @@ public class CommsSatellite extends SatelliteAgent {
             // send it to the target agent
             sendMessage(targetAddress,message);
 
-            // send a copy of the message to environment for comms book-keeping
-            sendMessage(envAddress,message);
+            // send a copy of the message to sim scheduler for comms book-keeping
+            AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
+            BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, message);
+            sendMessage(envAddress,envMessage);
 
             // log to terminal
             logMessageSent(targetAddress, message);

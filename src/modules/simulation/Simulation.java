@@ -139,13 +139,16 @@ public class Simulation extends AbstractAgent{
 
             // 3- launch agents
             launchAgent(environment, createFrame);
-            for(AbstractAgent satAgent : spaceSegment) launchAgent(satAgent, createFrame);
-            for(AbstractAgent gndAgent : gndSegment) launchAgent(gndAgent, false);
+            for(SatelliteAgent satAgent : spaceSegment) launchAgent(satAgent, createFrame);
+            for(GndStationAgent gndAgent : gndSegment) launchAgent(gndAgent, false);
 
             // 4 - give agent addresses to all agents
             HashMap<Satellite, AgentAddress> satAddresses = this.getSatAddresses();
             HashMap<GndStation, AgentAddress> gndAddresses = this.getGndAddresses();
             this.registerAddresses(satAddresses, gndAddresses);
+
+            // 5 - initialize planners
+            for(SatelliteAgent satAgent : spaceSegment) satAgent.initPlanner();
 
             // 5- launch simulation
             launchAgent(new SimScheduler(myGroups, startDate, endDate), true);
@@ -271,7 +274,7 @@ public class Simulation extends AbstractAgent{
         String plannerStr = ((JSONObject) input.get(PLNR)).get(PLNR_NAME).toString();
         double planningHorizon = Double.parseDouble( ((JSONObject) input.get(PLNR)).get(PLN_HRZN).toString() );
         int threshold = Integer.parseInt( ((JSONObject) input.get(PLNR)).get(PLN_THRSHLD).toString() );
-        boolean crossLinks = Boolean.parseBoolean( ((JSONObject) input.get(PLNR)).get(CRSSLNKS).toString() );
+        boolean crossLinks = Boolean.parseBoolean( ((JSONObject) input.get(SIM)).get(CRSSLNKS).toString() );
 
         switch (plannerStr){
             case AbstractPlanner.NONE:

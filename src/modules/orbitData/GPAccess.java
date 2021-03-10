@@ -23,6 +23,7 @@ public class GPAccess {
 
     public Satellite getSat() { return sat; }
     public TopocentricFrame getTarget() { return target; }
+    public Instrument getInstrument(){return instrument;}
     public AbsoluteDate getStartDate() { return startDate; }
     public AbsoluteDate getEndDate() { return endDate; }
 }

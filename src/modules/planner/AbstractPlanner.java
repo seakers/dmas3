@@ -3,6 +3,7 @@ package modules.planner;
 import madkit.kernel.Message;
 import modules.actions.SimulationAction;
 import modules.agents.SatelliteAgent;
+import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
@@ -47,6 +48,16 @@ public abstract class AbstractPlanner {
      * List of actions to be given to an agent to be performed
      */
     protected ArrayList<SimulationAction> plan;
+
+    /**
+     * List of known and active measurement requests
+     */
+    protected ArrayList<MeasurementRequest> activeRequests;
+
+    /**
+     * List of known measurement requests
+     */
+    protected ArrayList<MeasurementRequest> knownRequests;
 
     public AbstractPlanner(double planningHorizon, int requestThreshold, boolean crossLinks){
         this.planningHorizon = planningHorizon;
@@ -93,6 +104,19 @@ public abstract class AbstractPlanner {
         for(SimulationAction action : this.plan){
             if( currentDate.compareTo(action.getStartDate()) >= 0
                 && currentDate.compareTo(action.getEndDate()) <= 0){
+                actions.add(action);
+            }
+        }
+
+        return actions;
+    }
+
+    protected LinkedList<SimulationAction> getOutdatedActions(AbsoluteDate currentDate){
+        LinkedList<SimulationAction> actions = new LinkedList<>();
+
+        for(SimulationAction action : this.plan){
+            if( currentDate.compareTo(action.getEndDate()) > 0
+                    && currentDate.compareTo(action.getEndDate()) <= 0){
                 actions.add(action);
             }
         }

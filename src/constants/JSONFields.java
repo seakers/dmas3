@@ -14,7 +14,7 @@ public class JSONFields {
     public static final String PLNR = "planner";
         public static final String PLNR_NAME = "name";
         public static final String PLN_HRZN = "planningHorizon";
-        public static final String PLN_THRSHLD = "plannerThreshold";
+        public static final String PLN_THRSHLD = "requestThreshold";
 
     public static final String SETTINGS = "settings";
         public static final String TIMESTEP = "dt";

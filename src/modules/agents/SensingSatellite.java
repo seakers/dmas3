@@ -7,14 +7,13 @@ import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
-import modules.messages.MeasurementRequestMessage;
-import modules.messages.RelayMessage;
-import modules.messages.PlannerMessage;
+import modules.messages.*;
 import modules.messages.filters.SatFilter;
 import modules.orbitData.Attitude;
 import modules.planner.AbstractPlanner;
 import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
+import org.orekit.frames.TopocentricFrame;
 import seakers.orekit.object.Constellation;
 import seakers.orekit.object.Instrument;
 import seakers.orekit.object.Satellite;
@@ -87,8 +86,7 @@ public class SensingSatellite extends SatelliteAgent {
         getLogger().finest("\t Hello! This is " + this.getName() + ". I am executing...");
 
         // make a measurement if stated in planner
-        while(!plan.isEmpty()
-                && plan.getFirst().getClass().equals(MeasurementAction.class)){
+        while(!plan.isEmpty()){
 
             if( environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) < 0
                     || environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) > 0){
@@ -121,13 +119,28 @@ public class SensingSatellite extends SatelliteAgent {
                 AgentAddress targetAddress =  action.getTarget();
 
                 // get all available tasks that can be announced
-                MeasurementRequestMessage message = (MeasurementRequestMessage) action.getMessage();
+                Message message = action.getMessage();
+
+                // check if message being sent is a measurement
+                if(message.getClass().equals(MeasurementMessage.class)){
+                    if(this.measurementsPendingDownload.isEmpty()){
+                        // if no measurements have been made before this download access, then skip
+                        continue;
+                    }
+                    else if( ((MeasurementMessage) message).getMeasurements() == null ){
+                        // else package measurements into message and clear pending download list
+                        ((MeasurementMessage) message).setMeasurements(this.measurementsPendingDownload);
+                        this.measurementsPendingDownload = new ArrayList<>();
+                    }
+                }
 
                 // send it to the target agent
                 sendMessage(targetAddress,message);
 
-                // send a copy of the message to environment for comms book-keeping
-                sendMessage(envAddress,message);
+                // send a copy of the message to sim scheduler for comms book-keeping
+                AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
+                BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, message);
+                sendMessage(envAddress,envMessage);
 
                 // log to terminal
                 logMessageSent(targetAddress, message);
@@ -163,9 +176,10 @@ public class SensingSatellite extends SatelliteAgent {
     public Measurement performMeasurement(MeasurementAction action) throws Exception {
         MeasurementRequest request = action.getRequest();
         Instrument instrument = action.getInstrument();
+        TopocentricFrame target = action.getTarget();
 
         // obtain measurement performance
-        HashMap<Requirement, RequirementPerformance> performance = environment.calculatePerformance(this, instrument, request);
+        HashMap<Requirement, RequirementPerformance> performance = environment.calculatePerformance(this, instrument, target, request);
 
         // obtain measurement science/utility score
         double utility = planner.calcUtility(request, performance);

@@ -9,6 +9,7 @@ import modules.actions.SimulationAction;
 import modules.environment.Environment;
 import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
+import modules.messages.BookkeepingMessage;
 import modules.messages.MeasurementMessage;
 import modules.messages.MeasurementRequestMessage;
 import modules.messages.filters.SatFilter;
@@ -135,8 +136,10 @@ public class GndStationAgent extends AbstractAgent {
             // send it to the target agent
             sendMessage(targetAddress,message);
 
-            // send a copy of the message to environment for comms book-keeping
-            sendMessage(envAddress,message);
+            // send a copy of the message to sim scheduler for comms book-keeping
+            AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
+            BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, message);
+            sendMessage(envAddress,envMessage);
         }
     }
 
@@ -150,17 +153,18 @@ public class GndStationAgent extends AbstractAgent {
 
         // read every message received from a satellite
         for(Message message : messages){
-            if(message.getClass().equals(MeasurementMessage.class)){
+            if(message.getClass().equals(MeasurementMessage.class)) {
                 MeasurementMessage measurementMessage = (MeasurementMessage) message;
 
-                // obtain measurement information from message
-                Measurement measurement = measurementMessage.getMeasurement();
+                // obtain measurements information from message
+                ArrayList<Measurement> receivedMeasurements = measurementMessage.getMeasurements();
+                for (Measurement measurement : receivedMeasurements){
+                    // set download date
+                    measurement.setDownloadDate(environment.getCurrentDate());
 
-                // set download date
-                measurement.setDownloadDate( environment.getCurrentDate() );
-
-                // add to list
-                measurements.add(measurement);
+                    // add to list
+                    measurements.add(measurement);
+                }
             }
             else{
                 throw new Exception("Message of type " + message.getClass()

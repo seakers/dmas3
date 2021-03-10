@@ -9,6 +9,7 @@ import modules.environment.Environment;
 import modules.actions.SimulationAction;
 import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
+import modules.messages.MeasurementMessage;
 import modules.messages.MeasurementRequestMessage;
 import modules.messages.RelayMessage;
 import modules.messages.filters.GndFilter;
@@ -93,7 +94,6 @@ public abstract class SatelliteAgent extends AbstractAgent {
      */
     protected HashMap<Satellite, AgentAddress> satAddresses;
     protected HashMap<GndStation, AgentAddress> gndAddresses;
-    protected AgentAddress envAddress;
 
     /**
      * Message Inboxes of different types. One for relay messages and one for measurement
@@ -146,13 +146,14 @@ public abstract class SatelliteAgent extends AbstractAgent {
         // request role as a satellite agent
         requestRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SATELLITE);
 
-        // register the agent address of the environment
-        envAddress = getAgentAddressIn(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
-
         // assign oneself to planner
         this.planner.setParentAgent(this);
+    }
 
-        // ask planner for initial plan to be done at t = 0
+    /**
+     * ask planner for initial plan to be done at t = 0
+     */
+    public void initPlanner(){
         this.plan = planner.initPlan();
     }
 
@@ -333,6 +334,9 @@ public abstract class SatelliteAgent extends AbstractAgent {
         }
         else if (MeasurementRequestMessage.class.equals(message.getClass())) {
             messageType = "Measurement Request";
+        }
+        else if (MeasurementMessage.class.equals(message.getClass())) {
+            messageType = "Measurement Result";
         }
 
         getLogger().fine("\tSending  " + targetName + " message of type " + messageType + "...");
