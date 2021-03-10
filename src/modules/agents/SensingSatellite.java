@@ -73,7 +73,7 @@ public class SensingSatellite extends SatelliteAgent {
         messages.put(PlannerMessage.class.toString(), plannerMessages);
 
         // update plan
-        this.plan = this.planner.makePlan(messages, this);
+        this.plan = this.planner.makePlan(messages, this, environment.getCurrentDate());
 
         // empty planner message arrays
         emptyMessages();

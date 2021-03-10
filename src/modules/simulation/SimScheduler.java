@@ -22,31 +22,33 @@ public class SimScheduler extends Scheduler {
         // 0 : request my role
         requestRole(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SCHEDULER);
 
-        // 1 : make agents listen/sense
-        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "sense");
-        addActivator(agents);
+        // 1 : make ground stations perform their duties
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT, "sense");
         addActivator(agents);
-
-        // 2 : make agents update/create plans
-        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "think");
-        addActivator(agents);
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT, "think");
-        addActivator(agents);
-
-        // 3 : let agents execute plans
-        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "execute");
         addActivator(agents);
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.GNDSTAT, "execute");
         addActivator(agents);
 
-        // 4 : update sim time
+        // 2 : make agents listen/sense
+        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "sense");
+        addActivator(agents);
+
+        // 3 : make agents update/create plans
+        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "think");
+        addActivator(agents);
+
+        // 4 : let agents execute plans
+        agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SATELLITE, "execute");
+        addActivator(agents);
+
+        // 5 : update sim time
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.ENVIRONMENT, "tic");
         addActivator(agents);
         agents = new GenericBehaviorActivator<>(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP, myGroups.SCHEDULER, "tic");
         addActivator(agents);
 
-        // 5 : start the simulation
+        // 6 : start the simulation
         setSimulationState(SimulationState.RUNNING);
     }
 

@@ -141,8 +141,16 @@ public abstract class SatelliteAgent extends AbstractAgent {
      */
     @Override
     protected void activate(){
+        // request role as a satellite agent
         requestRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SATELLITE);
+
+        // register the agent address of the environment
         envAddress = getAgentAddressIn(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
+
+        // assign oneself to planner
+        this.planner.setParentAgent(this);
+
+        // ask planner for initial plan to be done at t = 0
         this.plan = planner.initPlan();
     }
 
@@ -367,5 +375,53 @@ public abstract class SatelliteAgent extends AbstractAgent {
         relayMessages = new ArrayList<>();
         requestMessages = new ArrayList<>();
         plannerMessages = new ArrayList<>();
+    }
+
+    public AbsoluteDate getCurrentDate(){
+        return environment.getCurrentDate();
+    }
+
+    public AbsoluteDate getStartDate(){
+        return environment.getStartDate();
+    }
+
+    public  AbsoluteDate getEndDate(){
+        return environment.getEndDate();
+    }
+
+    public GndStation getNextGndAccess(){
+        return getNextGndAccess(environment.getCurrentDate());
+    }
+
+    private GndStation getNextGndAccess(AbsoluteDate currDate){
+        HashMap<GndStation, AbsoluteDate> nextAccessTimes = new HashMap<>();
+        double t_curr = currDate.durationFrom( environment.getStartDate() );
+
+        for(GndStation gnd : accessGS.keySet()){
+            RiseSetTime earliest = null;
+            for(RiseSetTime t : accessGS.get(gnd).getRiseSetTimes()){
+                if(!t.isRise()) continue;
+
+                if(t_curr < t.getTime()){
+                    earliest = t;
+                    break;
+                }
+            }
+            nextAccessTimes.put(gnd, environment.getStartDate().shiftedBy(earliest.getTime()));
+        }
+
+        GndStation gndEarliest = null;
+        for(GndStation gnd : nextAccessTimes.keySet()){
+            if(gndEarliest == null) {
+                gndEarliest = gnd;
+                continue;
+            }
+
+            AbsoluteDate dateEarliest = nextAccessTimes.get(gndEarliest);
+            AbsoluteDate date = nextAccessTimes.get(gnd);
+            if(dateEarliest.compareTo(date) > 0) dateEarliest = date;
+        }
+
+        return gndEarliest;
     }
 }

@@ -6,6 +6,7 @@ import modules.agents.SatelliteAgent;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
+import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +23,11 @@ public abstract class AbstractPlanner {
     public static final String[] PLANNERS = {NONE, TIME, CCBBA, RELAY};
 
     /**
+     * Parent agent being scheduled
+     */
+    protected SatelliteAgent parentAgent;
+
+    /**
      * Planning horizon in seconds
      */
     protected final double planningHorizon;
@@ -32,13 +38,20 @@ public abstract class AbstractPlanner {
     protected final int requestThreshold;
 
     /**
+     * toggle that allows for planners to create schedules considering
+     * inter-satellite cross links
+     */
+    protected final boolean crossLinks;
+
+    /**
      * List of actions to be given to an agent to be performed
      */
-    protected LinkedList<SimulationAction> plan;
+    protected ArrayList<SimulationAction> plan;
 
-    public AbstractPlanner(double planningHorizon, int requestThreshold){
+    public AbstractPlanner(double planningHorizon, int requestThreshold, boolean crossLinks){
         this.planningHorizon = planningHorizon;
         this.requestThreshold = requestThreshold;
+        this.crossLinks = crossLinks;
     }
 
     /**
@@ -55,15 +68,35 @@ public abstract class AbstractPlanner {
      * @throws Exception
      */
     public abstract LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
-                                                          SatelliteAgent agent) throws Exception;
+                                                          SatelliteAgent agent, AbsoluteDate currentDate) throws Exception;
 
 
     /**
-     * 
-     * @param request
-     * @param performance
-     * @return
+     * Calculates the estimated or projected utility of performing a measurement
+     * of a given performance or quality
+     * @param request : measurement request being answered
+     * @param performance : performance of the measurement being made
+     * @return utility of the measurement
      */
     public abstract double calcUtility(MeasurementRequest request,
                                        HashMap<Requirement, RequirementPerformance> performance);
+
+    /**
+     * Assigns planner to its parent agent
+     * @param agent
+     */
+    public void setParentAgent(SatelliteAgent agent){ this.parentAgent = agent; }
+
+    protected LinkedList<SimulationAction> getAvailableActions(AbsoluteDate currentDate){
+        LinkedList<SimulationAction> actions = new LinkedList<>();
+
+        for(SimulationAction action : this.plan){
+            if( currentDate.compareTo(action.getStartDate()) >= 0
+                && currentDate.compareTo(action.getEndDate()) <= 0){
+                actions.add(action);
+            }
+        }
+
+        return actions;
+    }
 }

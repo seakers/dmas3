@@ -6,23 +6,31 @@ import modules.agents.SatelliteAgent;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
+import org.orekit.time.AbsoluteDate;
+import seakers.orekit.object.GndStation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 public class NominalPlanner extends AbstractPlanner {
-    public NominalPlanner(double planningHorizon, int requestThreshold) {
-        super(planningHorizon, requestThreshold);
+    public NominalPlanner(double planningHorizon, int requestThreshold, boolean crosslinks) {
+        super(planningHorizon, requestThreshold, crosslinks);
     }
 
     @Override
     public LinkedList<SimulationAction> initPlan() {
+        GndStation nextGnd = parentAgent.getNextGndAccess();
+        AbsoluteDate nextGndAccessDate = parentAgent.getNextAccess(nextGnd).get(0);
+
+
+
         return null;
     }
 
     @Override
-    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messages, SatelliteAgent agent) throws Exception {
+    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
+                                                 SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
         return null;
     }
 

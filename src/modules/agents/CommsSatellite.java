@@ -62,7 +62,7 @@ public class CommsSatellite extends SatelliteAgent {
         messages.put(RelayMessage.class.toString(), relayMessages);
 
         // update plan
-        this.plan = this.planner.makePlan(messages, this);
+        this.plan = this.planner.makePlan(messages, this, environment.getCurrentDate());
 
         // empty planner message arrays
         emptyMessages();

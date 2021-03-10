@@ -271,10 +271,11 @@ public class Simulation extends AbstractAgent{
         String plannerStr = ((JSONObject) input.get(PLNR)).get(PLNR_NAME).toString();
         double planningHorizon = Double.parseDouble( ((JSONObject) input.get(PLNR)).get(PLN_HRZN).toString() );
         int threshold = Integer.parseInt( ((JSONObject) input.get(PLNR)).get(PLN_THRSHLD).toString() );
+        boolean crossLinks = Boolean.parseBoolean( ((JSONObject) input.get(PLNR)).get(CRSSLNKS).toString() );
 
         switch (plannerStr){
             case AbstractPlanner.NONE:
-                planner = new NominalPlanner(planningHorizon, threshold);
+                planner = new NominalPlanner(planningHorizon, threshold, crossLinks);
                 break;
 //            case AbstractPlanner.TIME:
 //                planner = new TimePriorityPlanner();

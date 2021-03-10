@@ -34,7 +34,7 @@ import java.util.LinkedList;
  */
 public class RelayPlanner extends AbstractPlanner{
     public RelayPlanner(double planningHorizon, int requestThreshold) {
-        super(planningHorizon, requestThreshold);
+        super(planningHorizon, requestThreshold, true);
     }
 
     /**
@@ -56,10 +56,27 @@ public class RelayPlanner extends AbstractPlanner{
      * @throws Exception
      */
     @Override
-    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap, SatelliteAgent agent) throws Exception {
-        ArrayList<SimulationAction> unordered = generateUnorderedPlan(messageMap, agent);
-        LinkedList<SimulationAction> ordered = orderNewPlan(unordered);
-        return mergePlans(agent.getPlan(), ordered);
+    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
+                                                 SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
+
+        boolean empty = false;
+        for(String str : messageMap.keySet()){
+            if(!messageMap.get(str).isEmpty()){
+                empty = true;
+                break;
+            }
+        }
+
+        // if new messages received, reconsider plan
+        if(!empty) {
+            LinkedList<SimulationAction> unordered = generateUnorderedPlan(messageMap, agent);
+            LinkedList<SimulationAction> ordered = orderNewPlan(unordered);
+
+            this.plan = mergePlans(this.plan, ordered);
+        }
+
+        // return only the actions to be performed in the current date
+        return getAvailableActions(currentDate);
     }
 
     /**
@@ -72,7 +89,8 @@ public class RelayPlanner extends AbstractPlanner{
      * @throws Exception : throws an exception when it receives a type of message it is
      * unsuited to deal with
      */
-    private ArrayList<SimulationAction> generateUnorderedPlan(HashMap<String, ArrayList<Message>> messageMap, SatelliteAgent agent) throws Exception {
+    private LinkedList<SimulationAction> generateUnorderedPlan(HashMap<String, ArrayList<Message>> messageMap,
+                                                              SatelliteAgent agent) throws Exception {
         ArrayList<SimulationAction> actions = new ArrayList<>();
 
         for(String str : messageMap.keySet()){
@@ -121,7 +139,7 @@ public class RelayPlanner extends AbstractPlanner{
             }
         }
 
-        return actions;
+        return new LinkedList<>(actions);
     }
 
     /**
@@ -129,7 +147,7 @@ public class RelayPlanner extends AbstractPlanner{
      * @param actions : array of unordered list of actions to be scheduled to agent
      * @return ordered : a linked list of the scheduled actions in chronological order
      */
-    private LinkedList<SimulationAction> orderNewPlan(ArrayList<SimulationAction> actions){
+    private LinkedList<SimulationAction> orderNewPlan(LinkedList<SimulationAction> actions){
         ArrayList<SimulationAction> ordered = new ArrayList<>();
 
         for(SimulationAction action : actions){
@@ -159,8 +177,9 @@ public class RelayPlanner extends AbstractPlanner{
      * @param newPlan : new plan from incoming messages
      * @return plan : linked list of the new plan to be performed by the agent
      */
-    private LinkedList<SimulationAction> mergePlans(LinkedList<SimulationAction> oldPlan, LinkedList<SimulationAction> newPlan){
-        LinkedList<SimulationAction> plan = new LinkedList<>();
+    private ArrayList<SimulationAction> mergePlans(ArrayList<SimulationAction> oldPlan,
+                                                   LinkedList<SimulationAction> newPlan){
+        ArrayList<SimulationAction> plan = new ArrayList<>();
 
         while(!oldPlan.isEmpty() || !newPlan.isEmpty()){
             if(oldPlan.isEmpty()) {
@@ -172,8 +191,9 @@ public class RelayPlanner extends AbstractPlanner{
                 break;
             }
             else{
-                if(oldPlan.getFirst().getStartDate().compareTo(newPlan.getFirst().getStartDate()) <= 0){
-                    plan.add(oldPlan.poll());
+                if(oldPlan.get(0).getStartDate().compareTo(newPlan.getFirst().getStartDate()) <= 0){
+                    plan.add(oldPlan.get(0));
+                    oldPlan.remove(0);
                 }
                 else{
                     plan.add(newPlan.poll());
