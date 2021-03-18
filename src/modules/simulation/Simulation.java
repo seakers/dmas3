@@ -124,40 +124,33 @@ public class Simulation extends AbstractAgent{
      */
     @Override
     protected void activate(){
-        try {
-            // 0- if frame created, log welcome message
-            setLogger();
+        // 0- if frame created, log welcome message
+        setLogger();
 
-            // 1- create the simulation group
-            myGroups = new SimGroups(input, simID);
-            createGroup(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP);
+        // 1- create the simulation group
+        myGroups = new SimGroups(input, simID);
+        createGroup(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP);
 
-            // 2- generate agents
-            environment = new Environment(input, orbitData, myGroups, simDirectoryAddress);
-            spaceSegment = generateSpaceSegment();
-            gndSegment = generateGroundSegment();
+        // 2- generate agents
+        environment = new Environment(input, orbitData, myGroups, simDirectoryAddress, this);
+        spaceSegment = generateSpaceSegment();
+        gndSegment = generateGroundSegment();
 
-            // 3- launch agents
-            launchAgent(environment, createFrame);
-            for(SatelliteAgent satAgent : spaceSegment) launchAgent(satAgent, createFrame);
-            for(GndStationAgent gndAgent : gndSegment) launchAgent(gndAgent, false);
+        // 3- launch agents
+        launchAgent(environment, createFrame);
+        for(SatelliteAgent satAgent : spaceSegment) launchAgent(satAgent, createFrame);
+        for(GndStationAgent gndAgent : gndSegment) launchAgent(gndAgent, false);
 
-            // 4 - give agent addresses to all agents
-            HashMap<Satellite, AgentAddress> satAddresses = this.getSatAddresses();
-            HashMap<GndStation, AgentAddress> gndAddresses = this.getGndAddresses();
-            this.registerAddresses(satAddresses, gndAddresses);
+        // 4 - give agent addresses to all agents
+        HashMap<Satellite, AgentAddress> satAddresses = this.getSatAddresses();
+        HashMap<GndStation, AgentAddress> gndAddresses = this.getGndAddresses();
+        this.registerAddresses(satAddresses, gndAddresses);
 
-            // 5 - initialize planners
-            for(SatelliteAgent satAgent : spaceSegment) satAgent.initPlanner();
+        // 5 - initialize planners
+        for(SatelliteAgent satAgent : spaceSegment) satAgent.initPlanner();
 
-            // 5- launch simulation
-            launchAgent(new SimScheduler(myGroups, startDate, endDate), true);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (BiffException e) {
-            e.printStackTrace();
-        }
+        // 5- launch simulation
+        launchAgent(new SimScheduler(myGroups, startDate, endDate), true);
     }
 
     /**
@@ -353,4 +346,6 @@ public class Simulation extends AbstractAgent{
                         + " not currently supported for field " + LEVEL);
         }
     }
+
+    public JSONObject getInput(){return this.input;}
 }

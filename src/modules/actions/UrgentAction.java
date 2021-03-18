@@ -7,7 +7,7 @@ import org.orekit.time.AbsoluteDate;
 import seakers.orekit.object.Instrument;
 
 public class UrgentAction extends  MeasurementAction{
-    protected UrgentAction(AbstractAgent agent, MeasurementRequest request, TopocentricFrame target, Instrument instrument, AbsoluteDate startDate, AbsoluteDate endDate) {
-        super(agent, target, instrument, startDate, endDate, request);
+    protected UrgentAction(AbstractAgent agent, MeasurementRequest request, TopocentricFrame target, Instrument instrument, String measurementType, AbsoluteDate startDate, AbsoluteDate endDate) {
+        super(agent, target, instrument, measurementType, startDate, endDate, request);
     }
 }

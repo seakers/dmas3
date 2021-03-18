@@ -9,26 +9,19 @@
   "scenario" : "SCENARIO",
 
   "results" : {
-    "revTime" : {
-      "max" : 100,
-      "min" : 10,
-      "avg" : 50,
-      "std" : 10
+    "coverage": {
+      "revTime": {
+        "max": 100,
+        "min": 10,
+        "avg": 50,
+        "std": 10
+      },
+      "covPtg": 0.1
     },
-    "covPtg" : 0.1,
     "tasks" : {
-      "numTasks" : {
-        "max" : 100,
-        "min" : 10,
-        "avg" : 50,
-        "std" : 10
-      },
-      "numTasksDone" : {
-        "max" : 100,
-        "min" : 10,
-        "avg" : 50,
-        "std" : 10
-      },
+      "urgentRequests" : 30,
+      "urgentTasksDone" : 29,
+      "nominalTasksDone" : 1000,
       "responseTime" : {
         "max" : 100,
         "min" : 10,
@@ -37,13 +30,10 @@
       }
     },
     "utility" : {
-      "totalUtility" : {
-        "max" : 100,
-        "min" : 10,
-        "avg" : 50,
-        "std" : 10
-      },
-      "utilPtg" : {
+      "availableUtility" : 100,
+      "totalUtility" : 50,
+      "utilityPtg" : 0.50,
+      "achievedUtility" : {
         "max" : 100,
         "min" : 10,
         "avg" : 50,
@@ -51,18 +41,8 @@
       }
     },
     "coalitions" : {
-      "coalsAvb" : {
-        "max" : 100,
-        "min" : 10,
-        "avg" : 50,
-        "std" : 10
-      },
-      "coalsFormed" : {
-        "max" : 100,
-        "min" : 10,
-        "avg" : 50,
-        "std" : 10
-      }
+      "coalsAvb" : 30,
+      "coalsFormed" : 30
     }
   }
 }

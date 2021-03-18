@@ -10,8 +10,8 @@ public class GPAccess {
     private final Satellite sat;
     private final TopocentricFrame target;
     private final Instrument instrument;
-    private final AbsoluteDate startDate;
-    private final AbsoluteDate endDate;
+    private AbsoluteDate startDate;
+    private AbsoluteDate endDate;
 
     public GPAccess(Satellite sat, TopocentricFrame target, Instrument instrument, AbsoluteDate startDate, AbsoluteDate endDate) {
         this.sat = sat;
@@ -26,4 +26,6 @@ public class GPAccess {
     public Instrument getInstrument(){return instrument;}
     public AbsoluteDate getStartDate() { return startDate; }
     public AbsoluteDate getEndDate() { return endDate; }
+    public void setStartDate(AbsoluteDate startDate) { this.startDate = startDate; }
+    public void setEndDate(AbsoluteDate endDate) { this.endDate = endDate; }
 }

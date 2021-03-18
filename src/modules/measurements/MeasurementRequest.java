@@ -15,8 +15,10 @@ public class MeasurementRequest {
     private final AbsoluteDate endDate;
     private final String type;
     private final HashMap<String, Requirement> requirements;
+    private final double maxUtility;
 
-    public MeasurementRequest(int id, CoveragePoint location, AbsoluteDate announceDate, AbsoluteDate startDate, AbsoluteDate endDate, String type, HashMap<String, Requirement> requirements, AbsoluteDate simStartDate){
+    public MeasurementRequest(int id, CoveragePoint location, AbsoluteDate announceDate, AbsoluteDate startDate,
+                              AbsoluteDate endDate, String type, HashMap<String, Requirement> requirements, AbsoluteDate simStartDate, double maxUtility){
         this.id = id;
         this.location = location;
         this.announceDate = announceDate;
@@ -25,10 +27,11 @@ public class MeasurementRequest {
         this.type = type;
         this.requirements = new HashMap<>(requirements);
         this.simStartDate = simStartDate;
+        this.maxUtility = maxUtility;
     }
 
     public MeasurementRequest copy(){
-        return new MeasurementRequest(id, location, announceDate, startDate, endDate, type, requirements, simStartDate);
+        return new MeasurementRequest(id, location, announceDate, startDate, endDate, type, requirements, simStartDate, maxUtility);
     }
 
     public String toString(){
@@ -74,4 +77,5 @@ public class MeasurementRequest {
     public AbsoluteDate getEndDate() { return endDate; }
     public String getType() { return type; }
     public HashMap<String, Requirement> getRequirements() { return requirements; }
+    public double getMaxUtility(){return maxUtility;}
 }

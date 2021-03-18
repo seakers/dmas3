@@ -7,6 +7,7 @@ import modules.actions.MeasurementAction;
 import modules.actions.MessageAction;
 import modules.actions.SimulationAction;
 import modules.agents.SatelliteAgent;
+import modules.instruments.SimulationInstrument;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
@@ -24,6 +25,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 public class NominalPlanner extends AbstractPlanner {
+
+    public static final double NominalUtility = 10.0;
+
     public NominalPlanner(double planningHorizon, int requestThreshold, boolean crosslinks) {
         super(planningHorizon, requestThreshold, crosslinks);
 
@@ -40,11 +44,12 @@ public class NominalPlanner extends AbstractPlanner {
             Instrument ins = access.getInstrument();
             if(ins.getName().contains("_FOR")) continue;
 
+            String type = ((SimulationInstrument) ins).getNominalMeasurementType();
             TopocentricFrame target = access.getTarget();
             AbsoluteDate startDate = access.getStartDate();
             AbsoluteDate endDate = access.getEndDate();
 
-            measurementActions.add( new MeasurementAction(parentAgent, target, ins,
+            measurementActions.add( new MeasurementAction(parentAgent, target, ins, type,
                     startDate, endDate, null) );
         }
 
@@ -126,7 +131,7 @@ public class NominalPlanner extends AbstractPlanner {
 
     @Override
     public double calcUtility(MeasurementRequest request, HashMap<Requirement, RequirementPerformance> performance) {
-        if(request == null) return 10.0;
+        if(request == null) return NominalUtility;
         return -1;
     }
 

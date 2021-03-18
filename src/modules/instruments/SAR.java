@@ -5,7 +5,7 @@ import org.orekit.gnss.antenna.Antenna;
 import seakers.orekit.object.Instrument;
 import seakers.orekit.object.fieldofview.FieldOfViewDefinition;
 
-public class SAR extends Instrument {
+public class SAR extends SimulationInstrument {
     private final  double freq;
     private final double peakPower;
     private final double avgPower;
@@ -18,10 +18,10 @@ public class SAR extends Instrument {
     private final String nominalOps;
     private final AbstractAntenna antenna;
 
-    public SAR(String name, FieldOfViewDefinition fov, double mass, double averagePower,
+    public SAR(String name, String nominalMeasurementType, FieldOfViewDefinition fov, double mass, double averagePower,
                double freq, double peakPower, double dutyCycle, double pulseWidth, double prf,
                double bandwidth, double nLooks, double dataRate, String nominalOps, AbstractAntenna antenna) {
-        super(name, fov, mass, averagePower);
+        super(name, nominalMeasurementType, fov, mass, averagePower);
 
         this.freq = freq;
         this.peakPower = peakPower;

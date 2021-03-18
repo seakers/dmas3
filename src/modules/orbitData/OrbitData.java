@@ -1,9 +1,11 @@
 package modules.orbitData;
 
+import constants.MeasurementTypes;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
+import modules.agents.SatelliteAgent;
 import modules.antennas.AbstractAntenna;
 import modules.antennas.ParabolicAntenna;
 import modules.instruments.SAR;
@@ -1344,7 +1346,7 @@ public class OrbitData {
      * @throws OrekitException
      */
     private Instrument readInstrument(Cell[] row, HashMap<String, Integer> columnIndexes, Workbook instrumentsWorkbook,
-                                      double maxRollAngle, double maxRollAcc, boolean nominal) throws OrekitException {
+                                      double maxRollAngle, double maxRollAcc, boolean nominal) throws Exception {
         Instrument ins;
 
         String id = row[columnIndexes.get("ID")].getContents();
@@ -1379,7 +1381,7 @@ public class OrbitData {
     }
 
     private Instrument loadSAR(String name, double mass, Workbook instrumentsWorkbook,
-                               double maxRollAngle, double maxRollAcc, boolean nominal){
+                               double maxRollAngle, double maxRollAcc, boolean nominal) throws Exception {
 
         Sheet instrumentSheet = instrumentsWorkbook.getSheet(name);
         Cell[] parameters = instrumentSheet.getColumn(0);
@@ -1400,6 +1402,17 @@ public class OrbitData {
         double fov_at = Double.parseDouble( values[parameterIndexes.get("FOV-AT")].getContents() );
         double fov_ct = Double.parseDouble( values[parameterIndexes.get("FOV-CT")].getContents() );
         double lookAngle = Double.parseDouble( values[parameterIndexes.get("LookAngle")].getContents() );
+        String nominalType = values[parameterIndexes.get("Nominal Measurement Type")].getContents();
+
+        // check if nominal measurement type is supported
+        boolean found = false;
+        for(int i = 0; i < MeasurementTypes.ALL.length; i++){
+            if(nominalType.equals(MeasurementTypes.ALL[i])){
+                found = true;
+                break;
+            }
+        }
+        if(!found) throw new Exception("Instrument Nominal Measurement Type not yet supported");
 
         AbstractAntenna antenna = loadAntenna(values, parameterIndexes);
 
@@ -1408,9 +1421,11 @@ public class OrbitData {
         switch(scan){
             case "conical":
                 fieldOfRegard = new OffNadirRectangularFOV(0.0,
-                        FastMath.toRadians(fov_ct/2.0 + lookAngle) , FastMath .toRadians(fov_at/2.0), 0.0, earthShape);
+                        FastMath.toRadians(fov_ct/2.0 + lookAngle) ,
+                        FastMath .toRadians(fov_at/2.0), 0.0, earthShape);
 
-                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, bw, nLooks, rb, nominalOps, antenna);
+                return new SAR(name, nominalType, fieldOfRegard, mass, peakPower * dc, freq,
+                        peakPower, dc, pw, prf, bw, nLooks, rb, nominalOps, antenna);
 
             case "side":
                 if(nominal) {
@@ -1423,7 +1438,7 @@ public class OrbitData {
                             maxRollAngle + FastMath.toRadians((fov_ct + scanningAngle) / 2.0 ),
                             FastMath.toRadians(fov_at / 2.0), 0.0, earthShape);
                 }
-                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, bw,
+                return new SAR(name, nominalType, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, bw,
                         nLooks, rb, nominalOps, antenna);
 
             case "none":
@@ -1437,7 +1452,7 @@ public class OrbitData {
                             FastMath.toRadians(maxRollAngle + (fov_ct) / 2.0 ),
                             FastMath.toRadians(fov_at / 2.0), 0.0, earthShape);
                 }
-                return new SAR(name, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, bw,
+                return new SAR(name, nominalType, fieldOfRegard, mass, peakPower * dc, freq, peakPower, dc, pw, prf, bw,
                         nLooks, rb, nominalOps, antenna);
 
             default:
@@ -1518,4 +1533,108 @@ public class OrbitData {
         return statList;
     }
 
+    public JSONObject coverageStats(){
+        JSONObject out = new JSONObject();
+        JSONObject revTime = new JSONObject();
+
+        CoverageStats stats = new CoverageStats(this);
+
+        revTime.put("max", stats.getMaxRevTime());
+        revTime.put("min", stats.getMinRevTime());
+        revTime.put("avg", stats.getAvgRevTime());
+        revTime.put("std", stats.getStdRevTime());
+
+        out.put("revTime", revTime);
+        out.put("covPtg", stats.getCoveragePercentage());
+
+        return out;
+    }
+
+    public HashMap<TopocentricFrame, ArrayList<GPAccess>> orderGPAccesses(){
+        HashMap<TopocentricFrame, ArrayList<GPAccess>> unordered = new HashMap<>();
+        HashMap<TopocentricFrame, ArrayList<GPAccess>> ordered = new HashMap<>();
+
+        for(CoverageDefinition covDef : accessesGP.keySet()){
+            for(Satellite sat : accessesGP.get(covDef).keySet()){
+                if(this.isCommsSat(sat)) continue;
+
+                for(TopocentricFrame point : accessesGP.get(covDef).get(sat).keySet()){
+                    unordered.put(point, new ArrayList<>(accessesGP.get(covDef).get(sat).get(point).numIntervals()));
+
+                    double t_0 = -1.0;
+                    double t_f;
+
+                    for(RiseSetTime setTime : accessesGP.get(covDef).get(sat).get(point)){
+                        if(setTime.isRise()) {
+                            t_0 = setTime.getTime();
+                        }
+                        else {
+                            t_f = setTime.getTime();
+
+                            AbsoluteDate startDate = this.getStartDate().shiftedBy(t_0);
+                            AbsoluteDate endDate = this.getStartDate().shiftedBy(t_f);
+
+                            unordered.get(point).add(new GPAccess(sat, point, null, startDate, endDate));
+                        }
+                    }
+                }
+            }
+        }
+
+        for(TopocentricFrame point : unordered.keySet()) {
+            ordered.put(point, new ArrayList<>());
+
+            for (GPAccess acc : unordered.get(point)) {
+                if (ordered.size() == 0) {
+                    ordered.get(point).add(acc);
+                    continue;
+                }
+
+                boolean skip = false;
+                int i = 0;
+                for (GPAccess accOrd : ordered.get(point)) {
+
+                    if(acc.getEndDate().compareTo(accOrd.getStartDate()) < 0){
+                        break;
+                    }
+                    else if(acc.getStartDate().compareTo(accOrd.getEndDate()) > 0){
+                        i++;
+                        continue;
+                    }
+                    else if(acc.getStartDate().compareTo(accOrd.getStartDate()) < 0){
+                        accOrd.setStartDate(acc.getStartDate());
+
+                        if(acc.getEndDate().compareTo(accOrd.getEndDate()) > 0){
+                            accOrd.setEndDate(acc.getEndDate());
+                        }
+                        skip = true;
+                        break;
+                    }
+                    else if(acc.getEndDate().compareTo(accOrd.getEndDate()) < 0){
+                        skip = true;
+                        break;
+                    }
+                    else{
+                        accOrd.setEndDate(acc.getEndDate());
+                        skip = true;
+                        break;
+                    }
+                }
+
+                if(!skip) ordered.get(point).add(i, acc);
+            }
+        }
+
+        return ordered;
+    }
+
+    public boolean isCommsSat(Satellite sat){
+        for(Constellation cons : constellations){
+            if(cons.getName().contains("_comms")){
+                if(cons.getSatellites().contains(sat)) return true;
+            }
+        }
+
+        return false;
+    }
 }

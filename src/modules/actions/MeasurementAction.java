@@ -10,15 +10,19 @@ public class MeasurementAction extends SimulationAction{
     private final TopocentricFrame target;
     private final Instrument instrument;
     private final MeasurementRequest request;
+    private final String type;
 
-    public MeasurementAction(AbstractAgent agent, TopocentricFrame target, Instrument instrument, AbsoluteDate startDate, AbsoluteDate endDate, MeasurementRequest request) {
+    public MeasurementAction(AbstractAgent agent, TopocentricFrame target, Instrument instrument, String type,
+                             AbsoluteDate startDate, AbsoluteDate endDate, MeasurementRequest request) {
         super(agent, startDate, endDate);
         this.target = target;
         this.instrument = instrument;
         this.request = request;
+        this.type = type;
     }
 
     public TopocentricFrame getTarget() { return target; }
     public Instrument getInstrument() { return instrument; }
     public MeasurementRequest getRequest() { return request; }
+    public String getType(){return this.type;}
 }

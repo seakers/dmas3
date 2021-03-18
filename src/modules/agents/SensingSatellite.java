@@ -20,7 +20,6 @@ import seakers.orekit.object.Satellite;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -177,14 +176,16 @@ public class SensingSatellite extends SatelliteAgent {
         MeasurementRequest request = action.getRequest();
         Instrument instrument = action.getInstrument();
         TopocentricFrame target = action.getTarget();
+        String type = action.getType();
 
         // obtain measurement performance
-        HashMap<Requirement, RequirementPerformance> performance = environment.calculatePerformance(this, instrument, target, request);
+        HashMap<Requirement, RequirementPerformance> performance
+                = environment.calculatePerformance(this, instrument, target, request);
 
         // obtain measurement science/utility score
         double utility = planner.calcUtility(request, performance);
 
-        return new Measurement(this, request, performance, environment.getCurrentDate(),utility);
+        return new Measurement(this, instrument, type, target, request, performance, environment.getCurrentDate(),utility);
     }
 
     /**

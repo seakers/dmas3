@@ -9,22 +9,25 @@ import madkit.kernel.Message;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
 import modules.agents.SatelliteAgent;
-import modules.antennas.AbstractAntenna;
-import modules.instruments.SAR;
 import modules.measurements.*;
+import modules.messages.BookkeepingMessage;
 import modules.messages.MeasurementMessage;
 import modules.messages.filters.MeasurementFilter;
+import modules.messages.filters.PauseFilter;
 import modules.orbitData.OrbitData;
+import modules.planner.NominalPlanner;
 import modules.simulation.SimGroups;
 import modules.simulation.Simulation;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
+import modules.utils.Statistics;
 import org.json.simple.JSONObject;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
+import seakers.orekit.coverage.access.RiseSetTime;
+import seakers.orekit.coverage.access.TimeIntervalArray;
 import seakers.orekit.object.CoverageDefinition;
 import seakers.orekit.object.CoveragePoint;
 import seakers.orekit.object.Instrument;
+import seakers.orekit.object.Satellite;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -103,6 +106,11 @@ public class Environment extends Watcher {
     private final double dt;
 
     /**
+     *
+     */
+    private final Simulation parentSimulation;
+
+    /**
      * Creates an instance of and Environment to be simulated
      * @param input : JSON input file for simulation
      * @param orbitData : coverage and trajectory data for chosen constellation and coverage definitions
@@ -110,7 +118,7 @@ public class Environment extends Watcher {
      * @throws IOException
      * @throws BiffException
      */
-    public Environment(JSONObject input, OrbitData orbitData, SimGroups myGroups, String simDirectoryAddress) throws IOException, BiffException {
+    public Environment(JSONObject input, OrbitData orbitData, SimGroups myGroups, String simDirectoryAddress, Simulation parentSimulation) {
         // Save coverage and cross link data
         this.name = ((JSONObject) input.get(SIM)).get(SCENARIO).toString() + " - Environment";
         this.input = input;
@@ -122,6 +130,7 @@ public class Environment extends Watcher {
         this.GVT = orbitData.getStartDate().durationFrom(orbitData.getStartDate().getDate());
         this.dt = Double.parseDouble( ((JSONObject) input.get(SETTINGS)).get(TIMESTEP).toString() );
         this.measurements = new ArrayList<>();
+        this.parentSimulation = parentSimulation;
     }
 
     /**
@@ -185,8 +194,8 @@ public class Environment extends Watcher {
                 if(covDef.getName().equals(regionName)){
                     // generate specified number of requests at random times and locations within
                     // the coverage definition and simulation start and end times
-                    String type = row[rowIndexes.get("Type")].getContents();
-                    int reqPerDay = Integer.parseInt( row[rowIndexes.get("RequestsPerDay")].getContents() );
+                    String type = row[rowIndexes.get("Measurement Types")].getContents();
+                    int reqPerDay = Integer.parseInt( row[rowIndexes.get("Requests Per Day")].getContents() );
                     double numDays = (orbitData.getEndDate().durationFrom(orbitData.getStartDate()) / (24*3600));
 
                     for(int j = 0; j < reqPerDay*numDays; j++){
@@ -198,7 +207,7 @@ public class Environment extends Watcher {
                         AbsoluteDate startDate = dates.get(1);
                         AbsoluteDate endDate = dates.get(2);
 
-                        MeasurementRequest request = new MeasurementRequest(j, location, announceDate, startDate, endDate, type, requirements, orbitData.getStartDate());
+                        MeasurementRequest request = new MeasurementRequest(j, location, announceDate, startDate, endDate, type, requirements, orbitData.getStartDate(), 100);
                         requests.add(request);
                     }
                 }
@@ -273,7 +282,7 @@ public class Environment extends Watcher {
         HashMap<String, Integer> weightsRowIndexes = readIndexes(weightsSheet.getRow(0));
         for(int i = 1; i < weightsSheet.getRows(); i++){
             Cell[] row = weightsSheet.getRow(i);
-            String type = row[weightsRowIndexes.get("MeasurementType")].getContents();
+            String type = row[weightsRowIndexes.get("Measurement Type")].getContents();
 
             HashMap<String, Requirement> reqs = new HashMap<>();
             Sheet reqSheet = scenarioWorkbook.getSheet(type);
@@ -573,13 +582,278 @@ public class Environment extends Watcher {
     public void tic(){
         // TODO  allow for time to step forward to next action performed by a ground station,
         //  satellite, or comms satellite
-        this.GVT += this.dt;
+        List<Message> pauseMessages = nextMessages( new PauseFilter());
+
+        if(pauseMessages.size() == 0) this.GVT += this.dt;
+        else getLogger().finer("Pause message received. Stopping time for one simulation step");
+
+        getLogger().finest("Current simulation epoch: " + this.GVT);
     }
 
     public void printResults(){
         ArrayList<Measurement> measurements = readMeasurementMessages();
+        JSONObject simPerformance = processResults(measurements);
 
+        printPerformance(simPerformance);
+        printMeasurements(measurements);
+    }
 
+    private JSONObject processResults(ArrayList<Measurement> measurements){
+        JSONObject out = new JSONObject();
+
+        /*
+          "results" : {
+            "coverage": {
+              "revTime": {
+                "max": 100,
+                "min": 10,
+                "avg": 50,
+                "std": 10
+              },
+              "covPtg": 0.1
+            },
+            "tasks" : {
+              "numRequests" : 30,
+              "numTasksDone" : 29,
+              "responseTime" : {
+                "max" : 100,
+                "min" : 10,
+                "avg" : 50,
+                "std" : 10
+              }
+            },
+            "utility" : {
+              "availableUtility" : 100,
+              "totalUtility" : 50,
+              "utilityPtg" : 0.50,
+              "achievedUtility" : {
+                "max" : 100,
+                "min" : 10,
+                "avg" : 50,
+                "std" : 10
+              }
+            },
+            "coalitions" : {
+              "coalsAvb" : 30,
+              "coalsFormed" : 30
+            }
+          }
+         */
+        JSONObject inputs = parentSimulation.getInput();
+
+        out.put("name", parentSimulation.getName());
+        out.put("planer", ((JSONObject) inputs.get(PLNR)).get(PLNR_NAME).toString());
+        JSONObject dates = new JSONObject();
+            dates.put("start", startDate.toString());
+            dates.put("end", endDate.toString());
+        out.put("dates", dates);
+        out.put("scenario", ((JSONObject) inputs.get(SIM)).get(SCENARIO).toString());
+
+        JSONObject resultsJSON = new JSONObject();
+
+        resultsJSON.put("coverage", orbitData.coverageStats());
+        resultsJSON.put("tasks", this.taskStats(measurements));
+        resultsJSON.put("utility", this.utilityStats(measurements));
+        resultsJSON.put("coalitionStats", this.coalStats(measurements));
+
+        out.put("results", resultsJSON);
+
+        return out;
+    }
+
+    private JSONObject coalStats(ArrayList<Measurement> measurements){
+//        "coalitions" : {
+//            "coalsAvb" : 30,
+//            "coalsFormed" : 30
+//        }
+        JSONObject out = new JSONObject();
+        HashMap<MeasurementRequest, ArrayList<Measurement>> map = new HashMap<>();
+
+        for(MeasurementRequest req : requests){
+            map.put(req, new ArrayList<>());
+        }
+
+        for(Measurement measurement : measurements){
+            if(measurement.getRequest() == null) continue;
+
+            map.get(measurement.getRequest()).add(measurement);
+        }
+
+        int coalCount = 0;
+        for(MeasurementRequest req : requests){
+            if(map.get(req).size() > 1) coalCount++;
+            // TODO add checks for time constraints and coalition requirements
+        }
+
+        out.put("coalsFormed", coalCount);
+        out.put("coalsAvailable", countAvailableCoals());
+        out.put("coalsFormedPtg", ((double) coalCount)/((double) countAvailableCoals()));
+
+        return out;
+    }
+
+    private int countAvailableCoals(){
+        // TODO make this count dependent to the type of measurement being requested
+        //  and the instruments available in the constellation
+        int count = 0;
+        for(MeasurementRequest request : requests){
+            count++;
+        }
+        return count;
+    }
+
+    private JSONObject utilityStats(ArrayList<Measurement> measurements){
+        JSONObject out = new JSONObject();
+        ArrayList<Double> utilityAchieved = new ArrayList<>();
+
+        double totalUtility = 0.0;
+        for(Measurement measurement : measurements){
+            utilityAchieved.add(measurement.getUtility());
+            totalUtility += measurement.getUtility();
+        }
+        double availableUtility = calcAvailableUtility();
+
+        out.put("totalUtility", totalUtility);
+        out.put("utilityPtg", totalUtility/availableUtility);
+
+        JSONObject taskUtility = new JSONObject();
+
+        double max = Statistics.getMax(utilityAchieved);
+        double min = Statistics.getMin(utilityAchieved);
+        double avg = Statistics.getMean(utilityAchieved);
+        double std = Statistics.getStd(utilityAchieved);
+
+        taskUtility.put("max", max);
+        taskUtility.put("min", min);
+        taskUtility.put("avg", avg);
+        taskUtility.put("std", std);
+
+        out.put("achievedUtility", taskUtility);
+
+        return out;
+    }
+
+    private double calcAvailableUtility(){
+        double availableUtility = 0.0;
+
+        // Calculate the total utility that would be achieved if agents only did nominal measurements
+        for(CoverageDefinition covDef : orbitData.getAccessesGPIns().keySet()){
+            for(Satellite sat : orbitData.getAccessesGPIns().get(covDef).keySet()){
+                if(orbitData.isCommsSat(sat)) continue;
+                for(Instrument ins : orbitData.getAccessesGPIns().get(covDef).get(sat).keySet()){
+                    if(ins.getName().contains("FOR")) continue;
+
+                    for(TopocentricFrame point : orbitData.getAccessesGPIns().get(covDef).get(sat).get(ins).keySet()){
+                        for(RiseSetTime time : orbitData.getAccessesGPIns().get(covDef).get(sat).get(ins)
+                                .get(point).getRiseSetTimes()){
+
+                            if(time.isRise()){
+                                availableUtility += NominalPlanner.NominalUtility;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // calculate the total maximum utility available from measurement requests
+        for(MeasurementRequest request : this.requests){
+            availableUtility += request.getMaxUtility();
+        }
+
+        return availableUtility;
+    }
+
+    private JSONObject taskStats(ArrayList<Measurement> measurements){
+        JSONObject out = new JSONObject();
+
+        out.put("urgentTaskRequests", this.requests.size());
+        out.put("urgentTasksDone", this.getUrgentMeasurements(measurements).size());
+        out.put("urgentTaskDonePtg", ((double) this.getUrgentMeasurements(measurements).size())/( (double) this.requests.size() ));
+        out.put("nominalTasksDone", this.getNominalMeasurements(measurements).size());
+
+        JSONObject response = this.calcResponseTimes(measurements);
+        out.put("responseTime", response);
+
+        return out;
+    }
+
+    private JSONObject calcResponseTimes(ArrayList<Measurement> measurements){
+        JSONObject out = new JSONObject();
+
+        ArrayList<Double> responseTimes = new ArrayList<>();
+        for(Measurement measurement : getUrgentMeasurements(measurements)){
+            MeasurementRequest request = measurement.getRequest();
+            double response = measurement.getDownloadDate().durationFrom(request.getAnnounceDate());
+
+            responseTimes.add(response);
+        }
+
+        double max = Statistics.getMax(responseTimes);
+        double min = Statistics.getMin(responseTimes);
+        double avg = Statistics.getMean(responseTimes);
+        double std = Statistics.getStd(responseTimes);
+
+        out.put("max", max);
+        out.put("min", min);
+        out.put("avg", avg);
+        out.put("std", std);
+
+        return out;
+    }
+
+    private ArrayList<Measurement> getNominalMeasurements(ArrayList<Measurement> measurements){
+        ArrayList<Measurement> nominal = new ArrayList<>();
+        for(Measurement measurement : measurements){
+            if(measurement.getRequest() == null) nominal.add(measurement);
+        }
+        return nominal;
+    }
+
+    private ArrayList<Measurement> getUrgentMeasurements(ArrayList<Measurement> measurements){
+        ArrayList<Measurement> urgent = new ArrayList<>();
+        for(Measurement measurement : measurements){
+            if(measurement.getRequest() != null) urgent.add(measurement);
+        }
+        return urgent;
+    }
+
+    private void printPerformance(JSONObject performance){
+
+        try{
+            String filename = "results.json";
+            FileWriter writer = new FileWriter(simDirectoryAddress + "/" + filename);
+            writer.write(performance.toJSONString());
+            writer.close();
+
+            getLogger().info("Results saved as " + filename + "\n\tin directory\n\t" + simDirectoryAddress);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void printMeasurements( ArrayList<Measurement> measurements ){
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = simDirectoryAddress + "/" + "measurements.csv";
+        File f = new File(outAddress);
+
+        if(!f.exists()) {
+            // if file does not exist yet, save data
+            try{
+                fileWriter = new FileWriter(outAddress, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            printWriter = new PrintWriter(fileWriter);
+
+            for (Measurement measurement : measurements) {
+                printWriter.print(measurement.toString());
+                printWriter.print("\n");
+            }
+            printWriter.close();
+        }
     }
 
     private ArrayList<Measurement> readMeasurementMessages(){
@@ -587,7 +861,8 @@ public class Environment extends Watcher {
         List<Message> messages = nextMessages( new MeasurementFilter());
 
         for(Message message : messages){
-            ArrayList<Measurement> receivedMeasurements = ((MeasurementMessage) message).getMeasurements();
+            Message originalMessage = ((BookkeepingMessage) message).getOriginalMessage();
+            ArrayList<Measurement> receivedMeasurements = ((MeasurementMessage) originalMessage).getMeasurements();
             measurements.addAll(receivedMeasurements);
         }
 
