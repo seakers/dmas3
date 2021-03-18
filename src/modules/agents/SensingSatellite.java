@@ -138,7 +138,7 @@ public class SensingSatellite extends SatelliteAgent {
 
                 // send a copy of the message to sim scheduler for comms book-keeping
                 AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
-                BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, message);
+                BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, getCurrentDate(), message);
                 sendMessage(envAddress,envMessage);
 
                 // log to terminal

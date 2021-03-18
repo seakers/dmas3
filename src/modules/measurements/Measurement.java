@@ -3,12 +3,14 @@ package modules.measurements;
 import madkit.kernel.AbstractAgent;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
+import seakers.orekit.object.GndStation;
 import seakers.orekit.object.Instrument;
 
 import java.util.HashMap;
 
 public class Measurement {
     private final AbstractAgent measuringAgent;
+    private GndStation gndReceiver;
     private final Instrument instrumentUsed;
     private final String type;
     private final TopocentricFrame target;
@@ -35,15 +37,17 @@ public class Measurement {
     public void setDownloadDate(AbsoluteDate downloadDate){
         this.downloadDate = downloadDate.getDate();
     }
+    public void setGndReceiver(GndStation gnd){this.gndReceiver = gnd;}
 
     public String toString(){
         StringBuilder out = new StringBuilder();
 
         String agentName = measuringAgent.getName();
+        String gndName = gndReceiver.getBaseFrame().getName();
         String targetName = target.getName();
         String instrument =  instrumentUsed.getName();
 
-        out.append(agentName + "," + targetName + "," + instrument + "," + type);
+        out.append(agentName + "," + gndName + "," + targetName + "," + instrument + "," + type);
         if(request != null){
             out.append("," + request.getId() + "," + request.getAnnounceDate() + "," + request.getStartDate() + "," + request.getEndDate());
         }

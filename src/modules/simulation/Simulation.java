@@ -166,6 +166,7 @@ public class Simulation extends AbstractAgent{
         for(GndStationAgent gnd : gndSegment){
             gnd.registerAddresses(satAdd, gndAdd);
         }
+        environment.registerAddresses(satAdd, gndAdd);
     }
 
     /**

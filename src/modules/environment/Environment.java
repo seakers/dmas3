@@ -5,6 +5,7 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
 import madkit.kernel.AbstractAgent;
+import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
@@ -24,10 +25,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
 import seakers.orekit.coverage.access.RiseSetTime;
 import seakers.orekit.coverage.access.TimeIntervalArray;
-import seakers.orekit.object.CoverageDefinition;
-import seakers.orekit.object.CoveragePoint;
-import seakers.orekit.object.Instrument;
-import seakers.orekit.object.Satellite;
+import seakers.orekit.object.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -106,9 +104,15 @@ public class Environment extends Watcher {
     private final double dt;
 
     /**
-     *
+     * Simulation of which this environment is a part of
      */
     private final Simulation parentSimulation;
+
+    /**
+     * Addresses of all satellite and ground station agents present in the simulation
+     */
+    private HashMap<Satellite, AgentAddress> satAddresses;
+    private HashMap<GndStation, AgentAddress> gndAddresses;
 
     /**
      * Creates an instance of and Environment to be simulated
@@ -590,55 +594,70 @@ public class Environment extends Watcher {
         getLogger().finest("Current simulation epoch: " + this.GVT);
     }
 
-    public void printResults(){
-        ArrayList<Measurement> measurements = readMeasurementMessages();
+    public void printResults() throws Exception {
+        List<Message> measurementMessages = nextMessages( new MeasurementFilter() );
+        List<Message> bookKeepingMessages = nextMessages(null);
+
+        ArrayList<Measurement> measurements = readMeasurementMessages(measurementMessages);
         JSONObject simPerformance = processResults(measurements);
 
         printPerformance(simPerformance);
         printMeasurements(measurements);
+        printMessages(measurementMessages, bookKeepingMessages);
+    }
+
+    private void printMessages(List<Message> measurementMessages, List<Message> bookKeepingMessages) throws Exception {
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = simDirectoryAddress + "/" + "messages.csv";
+        File f = new File(outAddress);
+
+        if(!f.exists()) {
+            // if file does not exist yet, save data
+            try{
+                fileWriter = new FileWriter(outAddress, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            printWriter = new PrintWriter(fileWriter);
+
+            List<Message> orderedMessages = sortMessages(measurementMessages, bookKeepingMessages);
+
+            for(Message message : orderedMessages){
+                BookkeepingMessage messageBook = (BookkeepingMessage) message;
+                printWriter.print(messageBook.toString(satAddresses, gndAddresses));
+                printWriter.print("\n");
+            }
+            printWriter.close();
+        }
+    }
+
+    private ArrayList<Message> sortMessages(List<Message> measurementMessages, List<Message> bookKeepingMessages){
+        ArrayList<Message> sorted = new ArrayList<>();
+        ArrayList<Message> unsorted = new ArrayList<>();
+        unsorted.addAll(measurementMessages); unsorted.addAll(bookKeepingMessages);
+
+        for(Message unsort : unsorted){
+            if(sorted.isEmpty()) {
+                sorted.add(unsort);
+                continue;
+            }
+
+            int i = 0;
+            for(Message sort : sorted){
+                if(((BookkeepingMessage) unsort).getSendDate().compareTo( ((BookkeepingMessage) sort).getSendDate() ) < 0){
+                    break;
+                }
+                i++;
+            }
+            sorted.add(i,unsort);
+        }
+
+        return sorted;
     }
 
     private JSONObject processResults(ArrayList<Measurement> measurements){
         JSONObject out = new JSONObject();
-
-        /*
-          "results" : {
-            "coverage": {
-              "revTime": {
-                "max": 100,
-                "min": 10,
-                "avg": 50,
-                "std": 10
-              },
-              "covPtg": 0.1
-            },
-            "tasks" : {
-              "numRequests" : 30,
-              "numTasksDone" : 29,
-              "responseTime" : {
-                "max" : 100,
-                "min" : 10,
-                "avg" : 50,
-                "std" : 10
-              }
-            },
-            "utility" : {
-              "availableUtility" : 100,
-              "totalUtility" : 50,
-              "utilityPtg" : 0.50,
-              "achievedUtility" : {
-                "max" : 100,
-                "min" : 10,
-                "avg" : 50,
-                "std" : 10
-              }
-            },
-            "coalitions" : {
-              "coalsAvb" : 30,
-              "coalsFormed" : 30
-            }
-          }
-         */
         JSONObject inputs = parentSimulation.getInput();
 
         out.put("name", parentSimulation.getName());
@@ -662,10 +681,6 @@ public class Environment extends Watcher {
     }
 
     private JSONObject coalStats(ArrayList<Measurement> measurements){
-//        "coalitions" : {
-//            "coalsAvb" : 30,
-//            "coalsFormed" : 30
-//        }
         JSONObject out = new JSONObject();
         HashMap<MeasurementRequest, ArrayList<Measurement>> map = new HashMap<>();
 
@@ -856,17 +871,26 @@ public class Environment extends Watcher {
         }
     }
 
-    private ArrayList<Measurement> readMeasurementMessages(){
+    private ArrayList<Measurement> readMeasurementMessages(List<Message> measurementMessages){
         ArrayList<Measurement> measurements = new ArrayList<>();
-        List<Message> messages = nextMessages( new MeasurementFilter());
 
-        for(Message message : messages){
+        for(Message message : measurementMessages){
             Message originalMessage = ((BookkeepingMessage) message).getOriginalMessage();
             ArrayList<Measurement> receivedMeasurements = ((MeasurementMessage) originalMessage).getMeasurements();
             measurements.addAll(receivedMeasurements);
         }
 
         return measurements;
+    }
+
+    /**
+     * Saves addresses of all agents in the simulation for future use
+     * @param satAdd : map of each satellite to an address
+     * @param gndAdd : map of each ground station to an address
+     */
+    public void registerAddresses(HashMap<Satellite, AgentAddress> satAdd, HashMap<GndStation, AgentAddress> gndAdd){
+        this.satAddresses = new HashMap<>(satAdd);
+        this.gndAddresses = new HashMap<>(gndAdd);
     }
 
     /**

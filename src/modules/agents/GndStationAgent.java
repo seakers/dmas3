@@ -3,7 +3,6 @@ package modules.agents;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
-import modules.actions.AnnouncementAction;
 import modules.actions.MessageAction;
 import modules.actions.SimulationAction;
 import modules.environment.Environment;
@@ -138,7 +137,7 @@ public class GndStationAgent extends AbstractAgent {
 
             // send a copy of the message to sim scheduler for comms book-keeping
             AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
-            BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, message);
+            BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, getCurrentDate(), message);
             sendMessage(envAddress,envMessage);
         }
     }
@@ -161,6 +160,7 @@ public class GndStationAgent extends AbstractAgent {
                 for (Measurement measurement : receivedMeasurements){
                     // set download date
                     measurement.setDownloadDate(environment.getCurrentDate());
+                    measurement.setGndReceiver(gnd);
 
                     // add to list
                     measurements.add(measurement);
@@ -272,6 +272,10 @@ public class GndStationAgent extends AbstractAgent {
     public void registerAddresses(HashMap<Satellite, AgentAddress> satAdd, HashMap<GndStation, AgentAddress> gndAdd){
         this.satAddresses = new HashMap<>(satAdd);
         this.gndAddresses = new HashMap<>(gndAdd);
+    }
+
+    public AbsoluteDate getCurrentDate(){
+        return environment.getCurrentDate();
     }
 
     /**

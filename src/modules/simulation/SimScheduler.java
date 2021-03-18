@@ -52,7 +52,7 @@ public class SimScheduler extends Scheduler {
         setSimulationState(SimulationState.RUNNING);
     }
 
-    public void tic(){
+    public void tic() throws Exception {
         this.setGVT( environment.getGVT() );
 
         boolean endSim = environment.getStartDate().shiftedBy(environment.getGVT()).compareTo(environment.getEndDate()) >= 0;
