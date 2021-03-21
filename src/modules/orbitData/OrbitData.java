@@ -1574,7 +1574,7 @@ public class OrbitData {
                             AbsoluteDate startDate = this.getStartDate().shiftedBy(t_0);
                             AbsoluteDate endDate = this.getStartDate().shiftedBy(t_f);
 
-                            unordered.get(point).add(new GPAccess(sat, point, null, startDate, endDate));
+                            unordered.get(point).add(new GPAccess(sat, covDef, point, null, startDate, endDate));
                         }
                     }
                 }

@@ -211,7 +211,7 @@ public class Environment extends Watcher {
                         AbsoluteDate startDate = dates.get(1);
                         AbsoluteDate endDate = dates.get(2);
 
-                        MeasurementRequest request = new MeasurementRequest(j, location, announceDate, startDate, endDate, type, requirements, orbitData.getStartDate(), 100);
+                        MeasurementRequest request = new MeasurementRequest(j, covDef, location, announceDate, startDate, endDate, type, requirements, orbitData.getStartDate(), 100);
                         requests.add(request);
                     }
                 }
@@ -864,7 +864,7 @@ public class Environment extends Watcher {
             printWriter = new PrintWriter(fileWriter);
 
             for (Measurement measurement : measurements) {
-                printWriter.print(measurement.toString());
+                printWriter.print(measurement.toString(startDate));
                 printWriter.print("\n");
             }
             printWriter.close();

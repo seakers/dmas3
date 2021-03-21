@@ -96,6 +96,7 @@ function [] = gndPlot(varargin)
     
     di = 60;
     dt = t(di) - t(1);
+    n_made = 0;
     for i = 1:di:length(t)  
         
         % Draw sat position
@@ -152,12 +153,7 @@ function [] = gndPlot(varargin)
         end
         
         [n,~] = (size(messagesSent));
-        messageLines = {};
         messageLines = cell(n,1);
-        
-        if n > 1
-           x = 1; 
-        end
         
         for k = 1:n
             
@@ -168,7 +164,6 @@ function [] = gndPlot(varargin)
                 
                 sender = [sat.Lat(i),sat.Lon(i)];
             else
-                continue;
                 i_sender = find(gndStatNames == messagesSent(k,1));
                 sender = [gndStatData{i_sender+1,3},gndStatData{i_sender+1,4}];
             end
@@ -185,17 +180,53 @@ function [] = gndPlot(varargin)
             end
             
             if messagesSent(k,3) == "Measurement"
-                messageLines{k} = linem([sender(1); reciever(1)],[sender(2); reciever(2)],'--r');
-            elseif messagesSent(k,3) == "Request"
                 messageLines{k} = linem([sender(1); reciever(1)],[sender(2); reciever(2)],'--g');
+            elseif messagesSent(k,3) == "Request"
+                messageLines{k} = linem([sender(1); reciever(1)],[sender(2); reciever(2)],'--r');
             end
         end
         
-        if n > 1
-           x = 1; 
+        % Draw Measurements
+        measurementsMade = [];
+        for j = 1:length(measurements(:,1))
+            if t(i)-dt <= measurements{j,12} ...
+                    && t(i) >= measurements{j,12}
+                measurementsMade = [measurementsMade; 
+                               string(measurements{j,1}), string(measurements{j,3}), ...
+                               string(measurements{j,4}),string(measurements{j,12})]; 
+            end
         end
         
-        % Draw Measurements
+        if length(measurementsMade) > 0
+            x = 1;
+        end 
+        
+        [n,~] = (size(measurementsMade));
+        measurementLines = cell(n,1);
+        
+        for k = 1:n
+            i_sat = find(satNames == measurementsMade(k,1));
+            sat = sats{i_sat};
+
+            sender = [sat.Lat(i),sat.Lon(i)];
+            reciever = [NaN, NaN];
+                            
+            [n,~] = size(gndPts.DefData);
+            covDef = convertStringsToChars(measurementsMade(k,2));
+            pnt = str2double(measurementsMade(k,3));
+            
+            for z = 1:n
+                if prod(gndPts.DefData{z,1} == covDef) && gndPts.DefData{z,2} == pnt
+                   reciever(1) = gndPts.DefData{z,3};
+                   reciever(2) = gndPts.DefData{z,4};
+                   break;
+                end
+            end
+            
+             measurementLines{k} = linem([sender(1); reciever(1)],[sender(2); reciever(2)],'*g');
+             n_made = n_made + 1;
+        end
+        
         
         % Draw and wait
         drawnow;
@@ -204,22 +235,29 @@ function [] = gndPlot(varargin)
         end
         
         % Delete and prep for next iteration
+        tcurr = t(i)/60;
+        title(["Current Time: "+tcurr+" [mins]";
+               "Number of ActiveTasks: "+length(activeTasks);
+               "Number of Measurements Made: " + n_made]);
+        
+        for j = 1:length(messageLines)
+           delete(messageLines{j}) 
+        end
+        
+        for j = 1:length(measurementLines)
+            delete(measurementLines{j})
+        end
+        
         for j = 1:length(sats)
             delete(lines{j})
             delete(points{j})
             delete(circles{j})
-        end
-        for j = 1:length(messageLines)
-           delete(messageLines{j}) 
-        end
+        end        
         
         delete(reqPoints);
         reqPoints = plotm(requests.Lat, requests.Lon, '*', 'Color', [1, 1, 1]*.75,'MarkerSize', 7.5);
 
         t0 = tic;
-        tcurr = t(i)/60;
-        title(["Current Time: "+tcurr+" [mins]";
-               "Number of ActiveTasks: "+length(activeTasks)]);
     end
     
     for j = 1:length(sats)

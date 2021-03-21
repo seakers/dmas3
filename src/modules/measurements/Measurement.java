@@ -3,6 +3,7 @@ package modules.measurements;
 import madkit.kernel.AbstractAgent;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
+import seakers.orekit.object.CoverageDefinition;
 import seakers.orekit.object.GndStation;
 import seakers.orekit.object.Instrument;
 
@@ -13,6 +14,7 @@ public class Measurement {
     private GndStation gndReceiver;
     private final Instrument instrumentUsed;
     private final String type;
+    private final CoverageDefinition targetCovDef;
     private final TopocentricFrame target;
     private final MeasurementRequest request;
     private final HashMap<Requirement, RequirementPerformance> performance;
@@ -20,12 +22,15 @@ public class Measurement {
     private AbsoluteDate downloadDate;
     private final double utility;
 
-    public Measurement(AbstractAgent measuringAgent, Instrument instrumentUsed, String type, TopocentricFrame target, MeasurementRequest request,
+    public Measurement(AbstractAgent measuringAgent, Instrument instrumentUsed,
+                       String type, CoverageDefinition targetCovDef,
+                       TopocentricFrame target, MeasurementRequest request,
                        HashMap<Requirement, RequirementPerformance> performance,
                        AbsoluteDate measurementDate, double utility) {
         this.instrumentUsed = instrumentUsed;
         this.type = type;
         this.measuringAgent = measuringAgent;
+        this.targetCovDef = targetCovDef;
         this.target = target;
         this.request = request;
         this.performance = performance;
@@ -39,22 +44,24 @@ public class Measurement {
     }
     public void setGndReceiver(GndStation gnd){this.gndReceiver = gnd;}
 
-    public String toString(){
+    public String toString(AbsoluteDate simStartDate){
         StringBuilder out = new StringBuilder();
 
         String agentName = measuringAgent.getName();
         String gndName = gndReceiver.getBaseFrame().getName();
+        String targetCovDefName = targetCovDef.getName();
         String targetName = target.getName();
         String instrument =  instrumentUsed.getName();
 
-        out.append(agentName + "," + gndName + "," + targetName + "," + instrument + "," + type);
+        out.append(agentName + "," + gndName + "," + targetCovDefName + ","
+                + targetName + "," + instrument + "," + type);
         if(request != null){
             out.append("," + request.getId() + "," + request.getAnnounceDate() + "," + request.getStartDate() + "," + request.getEndDate());
         }
         else{
             out.append(",nil,nil,nil,nil");
         }
-        out.append("," + measurementDate );
+        out.append("," + measurementDate + "," + measurementDate.durationFrom(simStartDate));
 
         for(Requirement req : performance.keySet()){
             RequirementPerformance perf = performance.get(req);

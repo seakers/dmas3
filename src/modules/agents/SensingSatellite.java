@@ -15,6 +15,7 @@ import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
 import org.orekit.frames.TopocentricFrame;
 import seakers.orekit.object.Constellation;
+import seakers.orekit.object.CoverageDefinition;
 import seakers.orekit.object.Instrument;
 import seakers.orekit.object.Satellite;
 
@@ -175,6 +176,7 @@ public class SensingSatellite extends SatelliteAgent {
     public Measurement performMeasurement(MeasurementAction action) throws Exception {
         MeasurementRequest request = action.getRequest();
         Instrument instrument = action.getInstrument();
+        CoverageDefinition targetCovDef = action.getTargetCovDef();
         TopocentricFrame target = action.getTarget();
         String type = action.getType();
 
@@ -185,7 +187,8 @@ public class SensingSatellite extends SatelliteAgent {
         // obtain measurement science/utility score
         double utility = planner.calcUtility(request, performance);
 
-        return new Measurement(this, instrument, type, target, request, performance, environment.getCurrentDate(),utility);
+        return new Measurement(this, instrument, type, targetCovDef,
+                target, request, performance, environment.getCurrentDate(),utility);
     }
 
     /**

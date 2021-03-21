@@ -54,7 +54,7 @@ public abstract class SatelliteAgent extends AbstractAgent {
      */
     protected HashMap<Satellite, TimeIntervalArray> accessesCL;
     protected HashMap<TopocentricFrame, TimeIntervalArray> accessGP;
-    protected HashMap<Instrument, HashMap<TopocentricFrame, TimeIntervalArray>> accessGPInst;
+    protected HashMap<Instrument, HashMap<CoverageDefinition, HashMap<TopocentricFrame, TimeIntervalArray>>> accessGPInst;
     HashMap<GndStation, TimeIntervalArray> accessGS;
 
     /**
@@ -119,12 +119,15 @@ public abstract class SatelliteAgent extends AbstractAgent {
 
         this.accessesCL = new HashMap<>( orbitData.getAccessesCL().get(cons).get(sat) );
         this.accessGP = new HashMap<>();
-        this.accessGPInst = new HashMap<>();
         for(CoverageDefinition covDef : orbitData.getCovDefs()){
             accessGP.putAll( orbitData.getAccessesGP().get(covDef).get(sat) );
-            for(Instrument ins : sat.getPayload()){
-                accessGPInst.put(ins, orbitData.getAccessesGPIns().get(covDef).get(sat).get(ins));
-            }
+        }
+        this.accessGPInst = new HashMap<>();
+        for(Instrument ins : sat.getPayload()){
+            accessGPInst.put(ins, new HashMap<>());
+            for(CoverageDefinition covDef : orbitData.getCovDefs()){
+                accessGPInst.get(ins).put(covDef, new HashMap<>(orbitData.getAccessesGPIns().get(covDef).get(sat).get(ins)));
+                }
         }
         this.accessGS = new HashMap<>( orbitData.getAccessesGS().get(sat) );
         this.planner = planner;
@@ -436,21 +439,22 @@ public abstract class SatelliteAgent extends AbstractAgent {
         ArrayList<GPAccess> ordered = new ArrayList<>();
 
         for(Instrument ins : accessGPInst.keySet()){
-            for(TopocentricFrame point : accessGPInst.get(ins).keySet()){
-                double t_0 = 0.0;
-                double t_f = 0.0;
+            for(CoverageDefinition covDef : accessGPInst.get(ins).keySet()) {
+                for (TopocentricFrame point : accessGPInst.get(ins).get(covDef).keySet()) {
+                    double t_0 = 0.0;
+                    double t_f = 0.0;
 
-                for(RiseSetTime setTime : accessGPInst.get(ins).get(point).getRiseSetTimes()){
-                    if(setTime.isRise()) {
-                        t_0 = setTime.getTime();
-                    }
-                    else {
-                        t_f = setTime.getTime();
+                    for (RiseSetTime setTime : accessGPInst.get(ins).get(covDef).get(point).getRiseSetTimes()) {
+                        if (setTime.isRise()) {
+                            t_0 = setTime.getTime();
+                        } else {
+                            t_f = setTime.getTime();
 
-                        AbsoluteDate startDate = this.getStartDate().shiftedBy(t_0);
-                        AbsoluteDate endDate = this.getStartDate().shiftedBy(t_f);
+                            AbsoluteDate startDate = this.getStartDate().shiftedBy(t_0);
+                            AbsoluteDate endDate = this.getStartDate().shiftedBy(t_f);
 
-                        unordered.add(new GPAccess(this.sat, point, ins, startDate, endDate));
+                            unordered.add(new GPAccess(this.sat, covDef, point, ins, startDate, endDate));
+                        }
                     }
                 }
             }

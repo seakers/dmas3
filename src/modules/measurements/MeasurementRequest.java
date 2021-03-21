@@ -2,12 +2,14 @@ package modules.measurements;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
+import seakers.orekit.object.CoverageDefinition;
 import seakers.orekit.object.CoveragePoint;
 
 import java.util.HashMap;
 
 public class MeasurementRequest {
     private final int id;
+    private final CoverageDefinition covDef;
     private final CoveragePoint location;
     private final AbsoluteDate simStartDate;
     private final AbsoluteDate announceDate;
@@ -17,9 +19,9 @@ public class MeasurementRequest {
     private final HashMap<String, Requirement> requirements;
     private final double maxUtility;
 
-    public MeasurementRequest(int id, CoveragePoint location, AbsoluteDate announceDate, AbsoluteDate startDate,
-                              AbsoluteDate endDate, String type, HashMap<String, Requirement> requirements, AbsoluteDate simStartDate, double maxUtility){
+    public MeasurementRequest(int id, CoverageDefinition covDef, CoveragePoint location, AbsoluteDate announceDate, AbsoluteDate startDate, AbsoluteDate endDate, String type, HashMap<String, Requirement> requirements, AbsoluteDate simStartDate, double maxUtility){
         this.id = id;
+        this.covDef = covDef;
         this.location = location;
         this.announceDate = announceDate;
         this.startDate = startDate;
@@ -31,7 +33,7 @@ public class MeasurementRequest {
     }
 
     public MeasurementRequest copy(){
-        return new MeasurementRequest(id, location, announceDate, startDate, endDate, type, requirements, simStartDate, maxUtility);
+        return new MeasurementRequest(id, covDef, location, announceDate, startDate, endDate, type, requirements, simStartDate, maxUtility);
     }
 
     public String toString(){

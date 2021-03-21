@@ -17,6 +17,7 @@ import modules.orbitData.GPAccess;
 import modules.orbitData.GndAccess;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
+import seakers.orekit.object.CoverageDefinition;
 import seakers.orekit.object.GndStation;
 import seakers.orekit.object.Instrument;
 
@@ -45,11 +46,12 @@ public class NominalPlanner extends AbstractPlanner {
             if(ins.getName().contains("_FOR")) continue;
 
             String type = ((SimulationInstrument) ins).getNominalMeasurementType();
+            CoverageDefinition targetCovDef = access.getTargetCovDef();
             TopocentricFrame target = access.getTarget();
             AbsoluteDate startDate = access.getStartDate();
             AbsoluteDate endDate = access.getEndDate();
 
-            measurementActions.add( new MeasurementAction(parentAgent, target, ins, type,
+            measurementActions.add( new MeasurementAction(parentAgent, targetCovDef, target, ins, type,
                     startDate, endDate, null) );
         }
 

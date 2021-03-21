@@ -20,6 +20,19 @@ classdef CovDef
             obj.DefData = readcell(obj.DataPath);
         end
         
+        function [lat, lon] = findPoint(covDef, pnt)
+            [n,~] = size(obj.DefData);
+            lat = NaN;
+            lon = MaN;
+            
+            for i = 1:n
+                if obj.DefData{i,1} == covDef && obj.DefData{i,2} == pnt
+                   lat = obj.DefData{i,3};
+                   lon = obj.DefData{i,4};
+                   break;
+                end
+            end
+        end
     end
 end
 
