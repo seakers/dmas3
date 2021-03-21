@@ -152,13 +152,7 @@ function [] = gndPlot(varargin)
         end
         
         [n,~] = (size(messagesSent));
-        messageLines = {};
         messageLines = cell(n,1);
-        
-        if n > 1
-           x = 1; 
-        end
-        
         for k = 1:n
             
             % find position of sender and reciever of message at time t
@@ -168,7 +162,6 @@ function [] = gndPlot(varargin)
                 
                 sender = [sat.Lat(i),sat.Lon(i)];
             else
-                continue;
                 i_sender = find(gndStatNames == messagesSent(k,1));
                 sender = [gndStatData{i_sender+1,3},gndStatData{i_sender+1,4}];
             end
@@ -185,9 +178,9 @@ function [] = gndPlot(varargin)
             end
             
             if messagesSent(k,3) == "Measurement"
-                messageLines{k} = linem([sender(1); reciever(1)],[sender(2); reciever(2)],'--r');
+                messageLines{j,1} = linem([sender(1); reciever(1)],[sender(2); reciever(2)],'--r');
             elseif messagesSent(k,3) == "Request"
-                messageLines{k} = linem([sender(1); reciever(1)],[sender(2); reciever(2)],'--g');
+                messageLines{j,1} = linem([sender(1); reciever(1)],[sender(2); reciever(2)],'--g');
             end
         end
         
@@ -212,7 +205,6 @@ function [] = gndPlot(varargin)
         for j = 1:length(messageLines)
            delete(messageLines{j}) 
         end
-        
         delete(reqPoints);
         reqPoints = plotm(requests.Lat, requests.Lon, '*', 'Color', [1, 1, 1]*.75,'MarkerSize', 7.5);
 

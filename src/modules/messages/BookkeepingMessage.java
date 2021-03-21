@@ -19,7 +19,7 @@ public class BookkeepingMessage extends Message {
         this.sendDate = sendDate;
     }
 
-    public String toString(HashMap<Satellite, AgentAddress> satAddresses, HashMap<GndStation, AgentAddress> gndAddresses) throws Exception {
+    public String toString(HashMap<Satellite, AgentAddress> satAddresses, HashMap<GndStation, AgentAddress> gndAddresses, AbsoluteDate startDate) throws Exception {
         StringBuilder out = new StringBuilder();
 
         if(satAddresses.containsValue(this.getSender()) ){
@@ -93,7 +93,7 @@ public class BookkeepingMessage extends Message {
         else{
             throw new Exception("Message was sent by an agentAddress not corresponding to the simulation satellites");
         }
-        out.append("," + getSendDate());
+        out.append("," + getSendDate() + "," + getSendDate().durationFrom(startDate));
         return out.toString();
     }
 

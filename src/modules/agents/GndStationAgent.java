@@ -109,7 +109,7 @@ public class GndStationAgent extends AbstractAgent {
     }
 
     /**
-     * Does nothing. Initial plan does not change throughout simulation.
+     * Does nothing after initial broadcast plan has been made. Initial plan does not change throughout simulation.
      */
     public void think(){
         if(plan == null) this.plan = this.initPlan();

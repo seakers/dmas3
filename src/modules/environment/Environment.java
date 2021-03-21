@@ -625,7 +625,7 @@ public class Environment extends Watcher {
 
             for(Message message : orderedMessages){
                 BookkeepingMessage messageBook = (BookkeepingMessage) message;
-                printWriter.print(messageBook.toString(satAddresses, gndAddresses));
+                printWriter.print(messageBook.toString(satAddresses, gndAddresses, startDate));
                 printWriter.print("\n");
             }
             printWriter.close();
