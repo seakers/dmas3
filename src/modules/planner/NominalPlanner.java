@@ -71,6 +71,7 @@ public class NominalPlanner extends AbstractPlanner {
                     message, startDate, endDate));
         }
 
+        // merge all plans and order chronologically
         this.plan = mergePlans(measurementActions, messageActions);
 
         LinkedList<SimulationAction> outActions = getAvailableActions(parentAgent.getStartDate());
@@ -80,37 +81,16 @@ public class NominalPlanner extends AbstractPlanner {
     @Override
     public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
                                                  SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
+        // updates list of known requests
         this.knownRequests.addAll( readRequestMessages(messageMap) );
         this.activeRequests = checkActiveRequests(currentDate);
 
+        // return actions to be performed at this time
         LinkedList<SimulationAction> outActions = getAvailableActions(currentDate);
+
+        // remove performed actions from plan
         this.plan.removeAll(outActions);
         return outActions;
-    }
-
-    /**
-     * Returns a list of all new measurement requests sent to the parent spacecraft
-     * @param messageMap : list of messages sent to parent spacecraft
-     * @return array containing all new measurement requests
-     */
-    private ArrayList<MeasurementRequest> readRequestMessages(HashMap<String, ArrayList<Message>> messageMap){
-        ArrayList<MeasurementRequest> knownRequests = new ArrayList<>();
-
-        for(String str : messageMap.keySet()){
-            for(Message message : messageMap.get(str)){
-                if(message.getClass().equals(MeasurementRequestMessage.class)){
-                    MeasurementRequest request = ((MeasurementRequestMessage) message).getRequest();
-                    if(!knownRequests.contains(request)) {
-                        knownRequests.add(request);
-                    }
-                }
-                else{
-                    continue;
-                }
-            }
-        }
-
-        return knownRequests;
     }
 
     /**

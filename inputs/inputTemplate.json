@@ -6,14 +6,17 @@
     "scenario": "ScenarioTemplate",
     "startDate": "2020-01-01T00:00:00Z",
     "endDate": "2020-01-02T00:00:00Z",
-    "crossLinks" : false,
+    "crossLinks" : true,
     "n_sims": 1
   },
 
   "planner": {
-    "name" : "none",
+    "name" : "CCBBA",
     "planningHorizon" : 60.0,
-    "requestThreshold" : 1
+    "requestThreshold" : 1,
+    "arrivalRate" : 0.2,
+    "meanIntervalRate" : 0.005,
+    "communicationLoops" : "Synchronous"
   },
 
   "settings" : {

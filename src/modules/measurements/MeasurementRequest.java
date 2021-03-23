@@ -73,6 +73,7 @@ public class MeasurementRequest {
     }
 
     public int getId() { return id; }
+    public CoverageDefinition getCovDef(){return covDef;}
     public CoveragePoint getLocation() { return location; }
     public AbsoluteDate getAnnounceDate() { return announceDate; }
     public AbsoluteDate getStartDate() { return startDate; }
@@ -80,4 +81,8 @@ public class MeasurementRequest {
     public String getType() { return type; }
     public HashMap<String, Requirement> getRequirements() { return requirements; }
     public double getMaxUtility(){return maxUtility;}
+
+    public boolean equals(MeasurementRequest request){
+        return id == request.getId();
+    }
 }

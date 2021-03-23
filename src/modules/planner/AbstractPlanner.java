@@ -7,6 +7,7 @@ import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
+import modules.messages.MeasurementRequestMessage;
 import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
@@ -18,10 +19,9 @@ public abstract class AbstractPlanner {
      * Types of accepted planners
      */
     public static final String NONE = "none";
-    public static final String TIME = "time";
     public static final String CCBBA = "CCBBA";
     public static final String RELAY = "relay";
-    public static final String[] PLANNERS = {NONE, TIME, CCBBA, RELAY};
+    public static final String[] PLANNERS = {NONE, CCBBA, RELAY};
 
     /**
      * Parent agent being scheduled
@@ -122,5 +122,30 @@ public abstract class AbstractPlanner {
         }
 
         return actions;
+    }
+
+    /**
+     * Returns a list of all new measurement requests sent to the parent spacecraft
+     * @param messageMap : list of messages sent to parent spacecraft
+     * @return array containing all new measurement requests
+     */
+    protected ArrayList<MeasurementRequest> readRequestMessages(HashMap<String, ArrayList<Message>> messageMap){
+        ArrayList<MeasurementRequest> knownRequests = new ArrayList<>();
+
+        for(String str : messageMap.keySet()){
+            for(Message message : messageMap.get(str)){
+                if(message.getClass().equals(MeasurementRequestMessage.class)){
+                    MeasurementRequest request = ((MeasurementRequestMessage) message).getRequest();
+                    if(!knownRequests.contains(request)) {
+                        knownRequests.add(request);
+                    }
+                }
+                else{
+                    continue;
+                }
+            }
+        }
+
+        return knownRequests;
     }
 }

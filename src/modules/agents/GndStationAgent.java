@@ -3,6 +3,7 @@ package modules.agents;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
+import modules.actions.MeasurementAction;
 import modules.actions.MessageAction;
 import modules.actions.SimulationAction;
 import modules.environment.Environment;
@@ -11,6 +12,7 @@ import modules.measurements.MeasurementRequest;
 import modules.messages.BookkeepingMessage;
 import modules.messages.MeasurementMessage;
 import modules.messages.MeasurementRequestMessage;
+import modules.messages.filters.MeasurementRequestMessageFilter;
 import modules.messages.filters.SatFilter;
 import modules.orbitData.GndAccess;
 import modules.orbitData.OrbitData;
@@ -105,6 +107,7 @@ public class GndStationAgent extends AbstractAgent {
      * Reads messages from other satellites. Registers when these measurements were done and when they were received
      */
     public void sense() throws Exception {
+        // register measurements
         this.environment.registerMeasurements(readMeasurementMessages());
     }
 
@@ -200,10 +203,10 @@ public class GndStationAgent extends AbstractAgent {
                 else endDate = acc.getEndDate();
 
                 AgentAddress target = satAddresses.get(acc.getSat());
-                MeasurementRequestMessage announcement = new MeasurementRequestMessage(req);
+                MeasurementRequestMessage announcement = new MeasurementRequestMessage(req, target);
 
-                MessageAction ann = new MessageAction(this, target, announcement, startDate, endDate);
-                plan.add(ann);
+                MessageAction action = new MessageAction(this, target, announcement, startDate, endDate);
+                plan.add(action);
             }
         }
 
@@ -282,4 +285,6 @@ public class GndStationAgent extends AbstractAgent {
      * @return gnd : ground station represented by this agent
      */
     public GndStation getGnd(){return gnd;}
+
+
 }

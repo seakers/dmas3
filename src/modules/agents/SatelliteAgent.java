@@ -13,11 +13,8 @@ import modules.messages.MeasurementMessage;
 import modules.messages.MeasurementRequestMessage;
 import modules.messages.RelayMessage;
 import modules.messages.filters.GndFilter;
-import modules.orbitData.Attitude;
-import modules.orbitData.GPAccess;
-import modules.orbitData.GndAccess;
+import modules.orbitData.*;
 import modules.planner.AbstractPlanner;
-import modules.orbitData.OrbitData;
 import modules.simulation.SimGroups;
 import org.orekit.files.ccsds.OPMFile;
 import org.orekit.frames.TopocentricFrame;
@@ -515,5 +512,13 @@ public abstract class SatelliteAgent extends AbstractAgent {
         }
 
         return ordered;
+    }
+
+    public ArrayList<CLAccess> orderCLAccesses(Satellite sender, Satellite receiver) throws Exception {
+        return environment.getOrbitData().orderCLAccesses(sender,receiver);
+    }
+
+    public boolean isCommsSat(Satellite sat){
+        return environment.getOrbitData().isCommsSat(sat);
     }
 }

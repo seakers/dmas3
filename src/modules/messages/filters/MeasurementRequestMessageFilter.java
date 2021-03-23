@@ -10,10 +10,6 @@ import modules.messages.MeasurementRequestMessage;
 public class MeasurementRequestMessageFilter implements MessageFilter {
     @Override
     public boolean accept(Message message) {
-        if(message.getClass().equals(BookkeepingMessage.class)){
-            Message bookKeepingMessage = ((BookkeepingMessage) message).getOriginalMessage();
-            return bookKeepingMessage.getClass().equals(MeasurementRequest.class);
-        }
-        return false;
+        return message.getClass().equals(MeasurementRequestMessage.class);
     }
 }

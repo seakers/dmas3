@@ -277,9 +277,10 @@ public class Simulation extends AbstractAgent{
 //            case AbstractPlanner.TIME:
 //                planner = new TimePriorityPlanner();
 //                break;
-//            case AbstractPlanner.CCBBA:
-//                planner = new CCBBAPlanner();
-//                break;
+            case AbstractPlanner.CCBBA:
+                boolean syncCommLoops = Boolean.parseBoolean( ((JSONObject) input.get(PLNR)).get(COMMS_LOOPS).toString() );
+                planner = new CCBBAPlanner(planningHorizon, threshold, crossLinks, syncCommLoops);
+                break;
             default:
                 throw new InputMismatchException("Input error. Planner " + plannerStr + " not yet supported.");
         }

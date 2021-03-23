@@ -1554,6 +1554,7 @@ public class OrbitData {
         HashMap<TopocentricFrame, ArrayList<GPAccess>> unordered = new HashMap<>();
         HashMap<TopocentricFrame, ArrayList<GPAccess>> ordered = new HashMap<>();
 
+        // find all accesses, might be out of order
         for(CoverageDefinition covDef : accessesGP.keySet()){
             for(Satellite sat : accessesGP.get(covDef).keySet()){
                 if(this.isCommsSat(sat)) continue;
@@ -1581,6 +1582,7 @@ public class OrbitData {
             }
         }
 
+        // sort accesses chronologically
         for(TopocentricFrame point : unordered.keySet()) {
             ordered.put(point, new ArrayList<>());
 
@@ -1626,6 +1628,89 @@ public class OrbitData {
         }
 
         return ordered;
+    }
+
+    public ArrayList<CLAccess> orderCLAccesses(Satellite sender, Satellite target) throws Exception {
+        ArrayList<Satellite> sats = new ArrayList<>(); sats.add(sender); sats.add(target);
+        Constellation cons = findConstellation(sats);
+        TimeIntervalArray intervalArray = accessesCL.get(cons).get(sender).get(target);
+
+        ArrayList<CLAccess> unordered = new ArrayList<>();
+        double t_0 = -1.0;
+        double t_f;
+        for(RiseSetTime setTime : intervalArray.getRiseSetTimes()){
+            if(setTime.isRise()) {
+                t_0 = setTime.getTime();
+            }
+            else {
+                t_f = setTime.getTime();
+
+                AbsoluteDate startDate = this.getStartDate().shiftedBy(t_0);
+                AbsoluteDate endDate = this.getStartDate().shiftedBy(t_f);
+
+                unordered.add(new CLAccess(sender, target, startDate, endDate) );
+            }
+        }
+
+        ArrayList<CLAccess> ordered = new ArrayList<>();
+
+        for (CLAccess acc : unordered) {
+            if (ordered.size() == 0) {
+                ordered.add(acc);
+                continue;
+            }
+
+            boolean skip = false;
+            int i = 0;
+            for (CLAccess accOrd : ordered) {
+
+                if(acc.getEndDate().compareTo(accOrd.getStartDate()) < 0){
+                    break;
+                }
+                else if(acc.getStartDate().compareTo(accOrd.getEndDate()) > 0){
+                    i++;
+                    continue;
+                }
+                else if(acc.getStartDate().compareTo(accOrd.getStartDate()) < 0){
+                    accOrd.setStartDate(acc.getStartDate());
+
+                    if(acc.getEndDate().compareTo(accOrd.getEndDate()) > 0){
+                        accOrd.setEndDate(acc.getEndDate());
+                    }
+                    skip = true;
+                    break;
+                }
+                else if(acc.getEndDate().compareTo(accOrd.getEndDate()) < 0){
+                    skip = true;
+                    break;
+                }
+                else{
+                    accOrd.setEndDate(acc.getEndDate());
+                    skip = true;
+                    break;
+                }
+            }
+
+            if(!skip) ordered.add(i, acc);
+        }
+
+        return ordered;
+    }
+
+    private Constellation findConstellation(ArrayList<Satellite> sats) throws Exception {
+        for(Constellation constellation : constellations){
+            boolean found = true;
+            for(Satellite sat : sats){
+                if(!constellation.getSatellites().contains(sat)){
+                    found = false;
+                    continue;
+                }
+            }
+
+            if(found) return constellation;
+        }
+
+        throw new Exception("Constellation not found for sats " + sats.toString());
     }
 
     public boolean isCommsSat(Satellite sat){

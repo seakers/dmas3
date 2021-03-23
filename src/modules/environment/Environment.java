@@ -1,5 +1,6 @@
 package modules.environment;
 
+import constants.JSONFields;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
@@ -20,6 +21,7 @@ import modules.planner.NominalPlanner;
 import modules.simulation.SimGroups;
 import modules.simulation.Simulation;
 import modules.utils.Statistics;
+import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.json.simple.JSONObject;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
@@ -171,9 +173,7 @@ public class Environment extends Watcher {
             addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.GNDSTAT, "environment"));
             addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCHEDULER, "environment"));
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (BiffException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -183,42 +183,54 @@ public class Environment extends Watcher {
      * @param scenarioWorkbook : open excel sheet workbook containing scenario information
      * @return requests : ArrayList containing generated measurement requests
      */
-    private ArrayList<MeasurementRequest> generateRequests(Workbook scenarioWorkbook){
+    private ArrayList<MeasurementRequest> generateRequests(Workbook scenarioWorkbook) throws Exception {
         ArrayList<MeasurementRequest> requests = new ArrayList<>();
 
-        Sheet regionsSheet = scenarioWorkbook.getSheet("Regions");
-        HashMap<String, Integer> rowIndexes = readIndexes(regionsSheet.getRow(0));
+        double arrivalRate = Double.parseDouble(((JSONObject) input.get(PLNR)).get(TASK_ARRIVAL_R).toString());
+        double meanInterval = Double.parseDouble(((JSONObject) input.get(PLNR)).get(MEAN_INTERVAL_R).toString());
+        double planningHorizon = Double.parseDouble(((JSONObject) input.get(PLNR)).get(PLN_HRZN).toString());
+        double numReqs = endDate.durationFrom(startDate)*arrivalRate;
 
-        // for every coverage definition, look for its measurement requirement information in scenario excel sheet
-        for(CoverageDefinition covDef : orbitData.getCovDefs()){
-            for(int i = 1; i < regionsSheet.getRows(); i++){
-                Cell[] row = regionsSheet.getRow(i);
-                String regionName = row[rowIndexes.get("Name")].getContents();
+        for(int i = 0; i < numReqs; i++){
+            CoverageDefinition covDef = randomCovDef();
+            assert covDef != null;
+            CoveragePoint location = randomPoint(covDef);
 
-                if(covDef.getName().equals(regionName)){
-                    // generate specified number of requests at random times and locations within
-                    // the coverage definition and simulation start and end times
-                    String type = row[rowIndexes.get("Measurement Types")].getContents();
-                    int reqPerDay = Integer.parseInt( row[rowIndexes.get("Requests Per Day")].getContents() );
-                    double numDays = (orbitData.getEndDate().durationFrom(orbitData.getStartDate()) / (24*3600));
+            String type = covDefMeasurementType(covDef, scenarioWorkbook);
+            HashMap<String, Requirement> requirements = this.measurementTypes.get(type);
 
-                    for(int j = 0; j < reqPerDay*numDays; j++){
-                        CoveragePoint location = randomPoint(covDef);
-                        HashMap<String, Requirement> requirements = this.measurementTypes.get(type);
-
-                        ArrayList<AbsoluteDate> dates = randomDates(requirements.get("Temporal"));
-                        AbsoluteDate announceDate = dates.get(0);
-                        AbsoluteDate startDate = dates.get(1);
-                        AbsoluteDate endDate = dates.get(2);
-
-                        MeasurementRequest request = new MeasurementRequest(j, covDef, location, announceDate, startDate, endDate, type, requirements, orbitData.getStartDate(), 100);
-                        requests.add(request);
-                    }
-                }
+            ArrayList<AbsoluteDate> dates;
+            if(i==0){
+                dates = randomDates(requirements.get("Temporal"), null, planningHorizon, arrivalRate, meanInterval);
             }
+            else {
+                dates = randomDates(requirements.get("Temporal"), requests.get(i-1), planningHorizon, arrivalRate, meanInterval);
+            }
+            AbsoluteDate announceDate = dates.get(0);
+            AbsoluteDate startDate = dates.get(1);
+            AbsoluteDate endDate = dates.get(2);
+
+            MeasurementRequest request = new MeasurementRequest(i, covDef, location,
+                    announceDate, startDate, endDate, type,
+                    requirements, orbitData.getStartDate(), 100);
+            requests.add(request);
         }
 
         return requests;
+    }
+
+    private String covDefMeasurementType(CoverageDefinition covDef, Workbook scenarioWorkbook) throws Exception {
+        Sheet regionsSheet = scenarioWorkbook.getSheet("Regions");
+        HashMap<String, Integer> rowIndexes = readIndexes(regionsSheet.getRow(0));
+
+        for(int i = 1; i < regionsSheet.getRows(); i++){
+            Cell[] row = regionsSheet.getRow(i);
+            String name = row[rowIndexes.get("Name")].getContents();
+
+            if(name.equals(covDef.getName())) return row[rowIndexes.get("Measurement Types")].getContents();
+        }
+
+        throw new Exception("Coverage Deginition " + covDef.getName() + " not found in database");
     }
 
     /**
@@ -228,7 +240,10 @@ public class Environment extends Watcher {
      * @return dates : array of dates containing when the request starts, when it can be announced,
      * and when it stops being available.
      */
-    private ArrayList<AbsoluteDate> randomDates(Requirement tempRequirement){
+    private ArrayList<AbsoluteDate> randomDates(Requirement tempRequirement,
+                                                MeasurementRequest request,
+                                                double planningHorizon,
+                                                double arrivalRate, double meanInterval){
         AbsoluteDate simStartDate = orbitData.getStartDate();
         AbsoluteDate simEndDate = orbitData.getEndDate();
         double simDuration = simEndDate.durationFrom(simStartDate);
@@ -244,15 +259,48 @@ public class Environment extends Watcher {
             throw new InputMismatchException("Temporal requirement units not supported");
         }
 
-        double dt = simDuration * Math.random();
-        AbsoluteDate startDate = simStartDate.shiftedBy(dt);
-        AbsoluteDate announceDate = simStartDate.shiftedBy(dt);
+
+        ExponentialDistribution startDist = new ExponentialDistribution(1/arrivalRate);
+        ExponentialDistribution intervalDist = new ExponentialDistribution(planningHorizon*meanInterval);
+
+        double dt_start = startDist.sample();
+        double dt_interval = intervalDist.sample();
+
+        AbsoluteDate startDate;
+        AbsoluteDate announceDate;
+
+        if(request == null){
+            startDate = simStartDate.shiftedBy(dt_start);
+            announceDate = startDate.shiftedBy(dt_interval);
+        }
+        else{
+            startDate = request.getAnnounceDate().shiftedBy(dt_start);
+            announceDate = startDate.shiftedBy(dt_interval);
+        }
+
         AbsoluteDate endDate = startDate.shiftedBy(availability);
 
         ArrayList<AbsoluteDate> dates = new ArrayList<>();
         dates.add(startDate); dates.add(announceDate); dates.add(endDate);
 
         return dates;
+    }
+
+    /**
+     * Chooses a random point from the coverage definition that belongs to the type of measurement
+     * to be generated
+     * @return pt : a random coverage definition belonging to the scenario
+     */
+    private CoverageDefinition randomCovDef(){
+        int i_rand = (int) (Math.random()*orbitData.getCovDefs().size());
+        int i = 0;
+
+        for(CoverageDefinition covDef : orbitData.getCovDefs()){
+            if(i == i_rand) return covDef;
+            i++;
+        }
+
+        return null;
     }
 
     /**
@@ -901,4 +949,5 @@ public class Environment extends Watcher {
     public AbsoluteDate getStartDate(){return this.startDate;}
     public AbsoluteDate getEndDate(){return this.endDate;}
     public AbsoluteDate getCurrentDate(){ return this.startDate.shiftedBy(this.GVT); }
+    public OrbitData getOrbitData(){ return this.orbitData; }
 }

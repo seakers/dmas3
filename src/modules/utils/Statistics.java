@@ -40,4 +40,17 @@ public class Statistics {
 
         return Math.sqrt( sum/v.size() );
     }
+
+    public static int permutations(int n, int r){
+        return factorial(n)/factorial(n-r);
+    }
+
+    public static int factorial(int n){
+        int out = 1;
+        for(int i = 1; i <= n; i++){
+            out *= i;
+        }
+
+        return out;
+    }
 }
