@@ -8,6 +8,8 @@ import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
 import modules.messages.MeasurementRequestMessage;
+import modules.messages.PlannerMessage;
+import modules.messages.RelayMessage;
 import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
@@ -140,12 +142,49 @@ public abstract class AbstractPlanner {
                         knownRequests.add(request);
                     }
                 }
-                else{
-                    continue;
-                }
             }
         }
 
         return knownRequests;
+    }
+
+    /**
+     * Returns a list of all new messages to be relayed by this spacecraft
+     * @param messageMap : list of messages sent to parent spacecraft
+     * @return array containing all new relay requests
+     */
+    protected ArrayList<RelayMessage> readRelayMessages(HashMap<String, ArrayList<Message>> messageMap){
+        ArrayList<RelayMessage> messages = new ArrayList<>();
+
+        for(String str : messageMap.keySet()){
+            for(Message message : messageMap.get(str)){
+                if(message.getClass().equals(RelayMessage.class)){
+                    RelayMessage relay = ((RelayMessage) message);
+                    messages.add(relay);
+                }
+            }
+        }
+
+        return messages;
+    }
+
+    /**
+     * Returns a list of all new messages to be relayed by this spacecraft
+     * @param messageMap : list of messages sent to parent spacecraft
+     * @return array containing all new relay requests
+     */
+    protected ArrayList<PlannerMessage> readPlannerMessages(HashMap<String, ArrayList<Message>> messageMap){
+        ArrayList<PlannerMessage> messages = new ArrayList<>();
+
+        for(String str : messageMap.keySet()){
+            for(Message message : messageMap.get(str)){
+                if(message.getClass().equals(PlannerMessage.class)){
+                    PlannerMessage relay = ((PlannerMessage) message);
+                    messages.add(relay);
+                }
+            }
+        }
+
+        return messages;
     }
 }

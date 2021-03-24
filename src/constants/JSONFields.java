@@ -17,7 +17,7 @@ public class JSONFields {
         public static final String PLN_THRSHLD = "requestThreshold";
         public static final String TASK_ARRIVAL_R = "arrivalRate";
         public static final String MEAN_INTERVAL_R = "meanIntervalRate";
-        public static final String COMMS_LOOPS = "communicationLoops";
+        public static final String COMMS_LOOPS = "synchronousLoops";
 
     public static final String SETTINGS = "settings";
         public static final String TIMESTEP = "dt";

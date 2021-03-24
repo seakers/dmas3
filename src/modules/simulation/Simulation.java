@@ -124,33 +124,39 @@ public class Simulation extends AbstractAgent{
      */
     @Override
     protected void activate(){
-        // 0- if frame created, log welcome message
-        setLogger();
 
-        // 1- create the simulation group
-        myGroups = new SimGroups(input, simID);
-        createGroup(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP);
+        try {
+            // 0- if frame created, log welcome message
+            setLogger();
 
-        // 2- generate agents
-        environment = new Environment(input, orbitData, myGroups, simDirectoryAddress, this);
-        spaceSegment = generateSpaceSegment();
-        gndSegment = generateGroundSegment();
+            // 1- create the simulation group
+            myGroups = new SimGroups(input, simID);
+            createGroup(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP);
 
-        // 3- launch agents
-        launchAgent(environment, createFrame);
-        for(SatelliteAgent satAgent : spaceSegment) launchAgent(satAgent, createFrame);
-        for(GndStationAgent gndAgent : gndSegment) launchAgent(gndAgent, false);
+            // 2- generate agents
+            environment = new Environment(input, orbitData, myGroups, simDirectoryAddress, this);
+            spaceSegment = generateSpaceSegment();
+            gndSegment = generateGroundSegment();
 
-        // 4 - give agent addresses to all agents
-        HashMap<Satellite, AgentAddress> satAddresses = this.getSatAddresses();
-        HashMap<GndStation, AgentAddress> gndAddresses = this.getGndAddresses();
-        this.registerAddresses(satAddresses, gndAddresses);
+            // 3- launch agents
+            launchAgent(environment, createFrame);
+            for(SatelliteAgent satAgent : spaceSegment) launchAgent(satAgent, createFrame);
+            for(GndStationAgent gndAgent : gndSegment) launchAgent(gndAgent, false);
 
-        // 5 - initialize planners
-        for(SatelliteAgent satAgent : spaceSegment) satAgent.initPlanner();
+            // 4 - give agent addresses to all agents
+            HashMap<Satellite, AgentAddress> satAddresses = this.getSatAddresses();
+            HashMap<GndStation, AgentAddress> gndAddresses = this.getGndAddresses();
+            this.registerAddresses(satAddresses, gndAddresses);
 
-        // 5- launch simulation
-        launchAgent(new SimScheduler(myGroups, startDate, endDate), true);
+            // 5 - initialize planners
+            for(SatelliteAgent satAgent : spaceSegment) satAgent.initPlanner();
+
+            // 5- launch simulation
+            launchAgent(new SimScheduler(myGroups, startDate, endDate), true);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -220,7 +226,7 @@ public class Simulation extends AbstractAgent{
      * in this simulation
      * @return spaceSegment : array containing all satellite agents in the simulation
      */
-    private ArrayList<SatelliteAgent> generateSpaceSegment(){
+    private ArrayList<SatelliteAgent> generateSpaceSegment() throws Exception {
         ArrayList<SatelliteAgent> spaceSegment = new ArrayList<>();
 
         Constellation senseSats = orbitData.getSensingSats();
@@ -263,7 +269,7 @@ public class Simulation extends AbstractAgent{
      * activities for the simulation
      * @return planner : a planner object that creates a schedule given an agent and its known information
      */
-    private AbstractPlanner loadSensingPlanner(){
+    private AbstractPlanner loadSensingPlanner() throws Exception {
         AbstractPlanner planner;
         String plannerStr = ((JSONObject) input.get(PLNR)).get(PLNR_NAME).toString();
         double planningHorizon = Double.parseDouble( ((JSONObject) input.get(PLNR)).get(PLN_HRZN).toString() );
@@ -279,6 +285,8 @@ public class Simulation extends AbstractAgent{
 //                break;
             case AbstractPlanner.CCBBA:
                 boolean syncCommLoops = Boolean.parseBoolean( ((JSONObject) input.get(PLNR)).get(COMMS_LOOPS).toString() );
+                if(!syncCommLoops) throw new Exception("Asynchronous communication loops not yet supported");
+
                 planner = new CCBBAPlanner(planningHorizon, threshold, crossLinks, syncCommLoops);
                 break;
             default:

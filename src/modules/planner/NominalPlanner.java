@@ -56,7 +56,7 @@ public class NominalPlanner extends AbstractPlanner {
         }
 
         // Create a message action for each pass over a ground station
-        ArrayList<GndAccess> orderedGndAccess = parentAgent.orderGndAccesses();
+        ArrayList<GndAccess> orderedGndAccess = parentAgent.getOrderedGndAccesses();
         ArrayList<MessageAction> messageActions = new ArrayList<>(orderedGndAccess.size());
         for(GndAccess access : orderedGndAccess){
 

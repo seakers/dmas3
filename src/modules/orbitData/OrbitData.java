@@ -1490,12 +1490,6 @@ public class OrbitData {
     public HashSet<CoverageDefinition> getCovDefs() { return covDefs; }
     public HashMap<Satellite, Set<GndStation>> getStationAssignment() { return stationAssignment; }
 
-    /**
-     * Other getters
-     */
-    public String getScenarioDir(){ return scenarioDir; }
-    public AbsoluteDate getStartDate(){ return startDate; }
-    public AbsoluteDate getEndDate() { return endDate; }
 
     public Constellation getSensingSats(){
         for(Constellation cons : constellations){
@@ -1521,6 +1515,10 @@ public class OrbitData {
         return satList;
     }
 
+    /**
+     * Returns list of all unique ground stations in this scenario
+     * @return satList : list of gnd stats
+     */
     public ArrayList<GndStation> getUniqueGndStations(){
         ArrayList<GndStation> statList = new ArrayList<>();
 
@@ -1533,6 +1531,10 @@ public class OrbitData {
         return statList;
     }
 
+    /**
+     * Creates a json object with all coverage statistics for this scenario
+     * @return out : JSONObject containing min, max, avg, and standard deviation of revisit times
+     */
     public JSONObject coverageStats(){
         JSONObject out = new JSONObject();
         JSONObject revTime = new JSONObject();
@@ -1550,6 +1552,10 @@ public class OrbitData {
         return out;
     }
 
+    /**
+     * Returns list of accesses of all ground points to be used in coverage statistics calculations
+     * @return Map of a given ground point to a list of chronologically ordered accesses by all sensing satellites
+     */
     public HashMap<TopocentricFrame, ArrayList<GPAccess>> orderGPAccesses(){
         HashMap<TopocentricFrame, ArrayList<GPAccess>> unordered = new HashMap<>();
         HashMap<TopocentricFrame, ArrayList<GPAccess>> ordered = new HashMap<>();
@@ -1630,9 +1636,15 @@ public class OrbitData {
         return ordered;
     }
 
+    /**
+     * Returns an array of all cross-link accesses between two satellites in chronological order
+     * @param sender : sender satellite in access
+     * @param target : target satellite in access
+     * @return array of chronologically ordered cross-link accesses
+     * @throws Exception thrown if constellation for sender sat cannot be determined
+     */
     public ArrayList<CLAccess> orderCLAccesses(Satellite sender, Satellite target) throws Exception {
-        ArrayList<Satellite> sats = new ArrayList<>(); sats.add(sender); sats.add(target);
-        Constellation cons = findConstellation(sats);
+        Constellation cons = findConstellation(sender);
         TimeIntervalArray intervalArray = accessesCL.get(cons).get(sender).get(target);
 
         ArrayList<CLAccess> unordered = new ArrayList<>();
@@ -1697,22 +1709,31 @@ public class OrbitData {
         return ordered;
     }
 
-    private Constellation findConstellation(ArrayList<Satellite> sats) throws Exception {
+    /**
+     * Returns the constellation that a particular satellite belongs to
+     * @param sat : desired satellite to be checked
+     * @return constellation of sat
+     * @throws Exception thrown if no constellation in the simulation contains the satellite
+     */
+    private Constellation findConstellation(Satellite sat) throws Exception {
         for(Constellation constellation : constellations){
             boolean found = true;
-            for(Satellite sat : sats){
-                if(!constellation.getSatellites().contains(sat)){
-                    found = false;
-                    continue;
-                }
+            if(!constellation.getSatellites().contains(sat)){
+                found = false;
+                continue;
             }
 
             if(found) return constellation;
         }
 
-        throw new Exception("Constellation not found for sats " + sats.toString());
+        throw new Exception("Constellation not found for satellite " + sat.toString());
     }
 
+    /**
+     * Checks if a satellite belongs to the communications constellation
+     * @param sat : desired sat to be checked
+     * @return true if belongs to comms constelltion
+     */
     public boolean isCommsSat(Satellite sat){
         for(Constellation cons : constellations){
             if(cons.getName().contains("_comms")){
@@ -1722,4 +1743,11 @@ public class OrbitData {
 
         return false;
     }
+
+    /**
+     * Other getters
+     */
+    public String getScenarioDir(){ return scenarioDir; }
+    public AbsoluteDate getStartDate(){ return startDate; }
+    public AbsoluteDate getEndDate() { return endDate; }
 }

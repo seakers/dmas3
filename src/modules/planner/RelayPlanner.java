@@ -60,6 +60,7 @@ public class RelayPlanner extends AbstractPlanner{
     public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
                                                  SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
 
+        // check for new incoming messages
         boolean empty = false;
         for(String str : messageMap.keySet()){
             if(!messageMap.get(str).isEmpty()){

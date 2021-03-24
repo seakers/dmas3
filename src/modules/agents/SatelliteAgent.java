@@ -8,7 +8,6 @@ import modules.actions.MeasurementAction;
 import modules.environment.Environment;
 import modules.actions.SimulationAction;
 import modules.measurements.Measurement;
-import modules.measurements.MeasurementRequest;
 import modules.messages.MeasurementMessage;
 import modules.messages.MeasurementRequestMessage;
 import modules.messages.RelayMessage;
@@ -16,7 +15,6 @@ import modules.messages.filters.GndFilter;
 import modules.orbitData.*;
 import modules.planner.AbstractPlanner;
 import modules.simulation.SimGroups;
-import org.orekit.files.ccsds.OPMFile;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
 import seakers.orekit.coverage.access.RiseSetTime;
@@ -53,6 +51,7 @@ public abstract class SatelliteAgent extends AbstractAgent {
     protected HashMap<TopocentricFrame, TimeIntervalArray> accessGP;
     protected HashMap<Instrument, HashMap<CoverageDefinition, HashMap<TopocentricFrame, TimeIntervalArray>>> accessGPInst;
     HashMap<GndStation, TimeIntervalArray> accessGS;
+    ArrayList<GndAccess> orderedGndAccesses;
 
     /**
      * list of measurements performed by spacecraft pending to be downloaded to a the next visible ground station
@@ -127,6 +126,7 @@ public abstract class SatelliteAgent extends AbstractAgent {
                 }
         }
         this.accessGS = new HashMap<>( orbitData.getAccessesGS().get(sat) );
+
         this.planner = planner;
         this.plan = new LinkedList<>();
         this.myGroups = myGroups;
@@ -145,6 +145,9 @@ public abstract class SatelliteAgent extends AbstractAgent {
     protected void activate(){
         // request role as a satellite agent
         requestRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SATELLITE);
+
+        // order ground station accesses chronologically for later use
+        this.orderedGndAccesses = orderGndAccesses();
 
         // assign oneself to planner
         this.planner.setParentAgent(this);
@@ -395,11 +398,11 @@ public abstract class SatelliteAgent extends AbstractAgent {
         return environment.getEndDate();
     }
 
-    public GndStation getNextGndAccess(){
-        return getNextGndAccess(environment.getCurrentDate());
+    public GndStation getNextGndAccessPoint(){
+        return getNextGndAccessPoint(environment.getCurrentDate());
     }
 
-    private GndStation getNextGndAccess(AbsoluteDate currDate){
+    private GndStation getNextGndAccessPoint(AbsoluteDate currDate){
         HashMap<GndStation, AbsoluteDate> nextAccessTimes = new HashMap<>();
         double t_curr = currDate.durationFrom( environment.getStartDate() );
 
@@ -474,7 +477,20 @@ public abstract class SatelliteAgent extends AbstractAgent {
         return ordered;
     }
 
-    public ArrayList<GndAccess> orderGndAccesses(){
+    public ArrayList<GndAccess> getOrderedGndAccesses(){
+        return orderedGndAccesses;
+    }
+
+//    public GndAccess getNextGndAccess(AbsoluteDate date){
+//        for(GndAccess access : orderedGndAccesses){
+//            if(access.getStartDate().compareTo(date) >= 0){
+//                return access;
+//            }
+//        }
+//        return null;
+//    }
+
+    private ArrayList<GndAccess> orderGndAccesses(){
         ArrayList<GndAccess> unordered = new ArrayList<>();
         ArrayList<GndAccess> ordered = new ArrayList<>();
 
