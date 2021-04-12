@@ -1,99 +1,420 @@
 package modules.environment;
 
+import constants.JSONFields;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
-import madkit.action.SchedulingAction;
+import jxl.read.biff.BiffException;
 import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.kernel.Watcher;
-import madkit.message.SchedulingMessage;
 import madkit.simulation.probe.PropertyProbe;
-import modules.planner.CCBBA.IterationResults;
-import modules.planner.Planner;
-import modules.planner.plans.Plan;
-import simulation.Architecture;
-import simulation.results.Results;
-import modules.planner.messages.CCBBAResultsMessage;
-import simulation.ProblemStatement;
-import simulation.SimGroups;
-import modules.spacecraft.Spacecraft;
-import modules.spacecraft.instrument.measurements.Measurement;
-import modules.spacecraft.instrument.measurements.MeasurementCapability;
-import org.apache.commons.math3.distribution.NormalDistribution;
+import modules.agents.SatelliteAgent;
+import modules.measurements.*;
+import modules.messages.BookkeepingMessage;
+import modules.messages.MeasurementMessage;
+import modules.messages.filters.MeasurementFilter;
+import modules.messages.filters.PauseFilter;
+import modules.orbitData.OrbitData;
+import modules.planner.NominalPlanner;
+import modules.simulation.SimGroups;
+import modules.simulation.Simulation;
+import modules.utils.Statistics;
+import org.apache.commons.math3.distribution.ExponentialDistribution;
+import org.json.simple.JSONObject;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
+import seakers.orekit.coverage.access.RiseSetTime;
+import seakers.orekit.coverage.access.TimeIntervalArray;
+import seakers.orekit.object.*;
 
 import java.io.File;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.*;
 
+import static constants.JSONFields.*;
+
+/**
+ * Environment class in charge of generating measurement requests and making them available to satellites upon requests and coverage/time availability
+ *
+ * @author a.aguilar
+ */
 public class Environment extends Watcher {
-    private Level loggerLevel;
-    private AbsoluteDate startDate;
-    private AbsoluteDate endDate;
-    private AbsoluteDate currentDate;
-    private AbsoluteDate prevDate;
-    private double timeStep;
-    private ArrayList<Task> environmentTasks;
-    private HashMap<Task,TaskCapability> measurementCapabilities;
-    private String problemStatementDir;
-    private TimeScale utc;
-    private ArrayList<Message> resultsMessages;
-    private String directoryAddress;
-    private ArrayList<Spacecraft> spaceSegment;
-    private long simulationTime;
-    private int terminate = -1;
-    private HashMap<Planner, Plan> latestPlans;
+    /**
+     * Name of the environment
+     */
+    private final String name;
 
-    // Constructor
-    public Environment(ProblemStatement prob, Architecture arch, String directoryAddress, long start) throws Exception {
-        // load info from problem statements
-        setUpLogger(prob.getLoggerLevel());
-        this.startDate = prob.getStartDate().getDate();
-        this.currentDate = prob.getCurrentDate().getDate();
-        this.endDate = prob.getEndDate().getDate();
-        this.timeStep = prob.getTimeStep();
-        this.problemStatementDir = prob.getProblemStatementDir();
-        this.utc = prob.getUtc();
-        this.resultsMessages = new ArrayList<>();
-        this.directoryAddress = directoryAddress;
-        this.spaceSegment = new ArrayList<>(arch.getSpaceSegment());
-        this.simulationTime = start;
-        latestPlans = new HashMap<>();
+    /**
+     * json file object containing input information
+     */
+    private final JSONObject input;
+
+    /**
+     * coverage data of all satellites and ground stations in the scenario
+     */
+    private final OrbitData orbitData;
+
+    /**
+     * Simulation start and end dates
+     */
+    private final AbsoluteDate startDate;
+    private final AbsoluteDate endDate;
+
+    /**
+     * Organization groups and roles available for agents in the simulation
+     */
+    private final SimGroups myGroups;
+
+    /**
+     * Directory where results of this simulation will be printed to
+     */
+    private final String simDirectoryAddress;
+
+    /**
+     * Types of measurements to be performed in the simulation
+     */
+    private HashMap<String, HashMap<String, Requirement>> measurementTypes;
+
+    /**
+     * List of measurement requests to be done during the simulation
+     */
+    private ArrayList<MeasurementRequest> requests;
+
+    /**
+     * List of measurement request to be done during the simulation in chronological order
+     */
+    private ArrayList<MeasurementRequest> orderedRequests;
+
+    /**
+     * List of measurements performed by satellites throughout the simulation
+     */
+    private ArrayList<Measurement> measurements;
+
+    /**
+     * Simulation Global Time
+     */
+    private double GVT;
+
+    /**
+     * Simulation fixed time-step*
+     *  *this time step can be varied to accelerate simulation runtime
+     */
+    private final double dt;
+
+    /**
+     * Simulation of which this environment is a part of
+     */
+    private final Simulation parentSimulation;
+
+    /**
+     * Addresses of all satellite and ground station agents present in the simulation
+     */
+    private HashMap<Satellite, AgentAddress> satAddresses;
+    private HashMap<GndStation, AgentAddress> gndAddresses;
+
+    /**
+     * Creates an instance of and Environment to be simulated
+     * @param input : JSON input file for simulation
+     * @param orbitData : coverage and trajectory data for chosen constellation and coverage definitions
+     * @param myGroups : organization groups and roles available for agents in the simulation
+     * @throws IOException
+     * @throws BiffException
+     */
+    public Environment(JSONObject input, OrbitData orbitData, SimGroups myGroups, String simDirectoryAddress, Simulation parentSimulation) {
+        // Save coverage and cross link data
+        this.name = ((JSONObject) input.get(SIM)).get(SCENARIO).toString() + " - Environment";
+        this.input = input;
+        this.orbitData = orbitData;
+        this.startDate = orbitData.getStartDate();
+        this.endDate = orbitData.getEndDate();
+        this.myGroups = myGroups;
+        this.simDirectoryAddress = simDirectoryAddress;
+        this.GVT = orbitData.getStartDate().durationFrom(orbitData.getStartDate().getDate());
+        this.dt = Double.parseDouble( ((JSONObject) input.get(SETTINGS)).get(TIMESTEP).toString() );
+        this.measurements = new ArrayList<>();
+        this.parentSimulation = parentSimulation;
     }
 
+    /**
+     * Initializes the measurement requests to be performed during the simulation. Claims environment
+     * role in simulation and creates proves so that ground stations and satellites can observe the
+     * environment.
+     *
+     * Triggered only when environment agent is launched.
+     */
     @Override
-    protected void activate() {
+    protected void activate(){
+
         try {
-            // Initiate environment tasks
-            environmentTasks = new ArrayList<>();
-            environmentTasks.addAll( initiateTasks() );
+            // load scenario data
+            String scenarioDir = orbitData.getScenarioDir();
+            String scenarioStr = ((JSONObject) input.get(SIM)).get(SCENARIO).toString();
+            Workbook scenarioWorkbook = Workbook.getWorkbook(new File( scenarioDir + scenarioStr + ".xls"));
 
-            // Initiate capabilities
-            measurementCapabilities = new HashMap<>();
-            for(Task task : environmentTasks){
-                measurementCapabilities.put(task, new TaskCapability(task));
-            }
+            // load requirements
+            this.measurementTypes = loadRequirements(scenarioWorkbook);
 
-            // Add probes
-            // 1 : request my role so that the viewer can probe me
-            requestRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENV_ROLE);
+            // generate measurement requests
+            this.requests = generateRequests(scenarioWorkbook);
+            this.orderedRequests = getOrderedRequests();
 
-            // 2 : give probe access to agents - Any agent within the group agent can access this environment's properties
-            addProbe(new Environment.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT, "environment"));
-            addProbe(new Environment.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER, "environment"));
-            addProbe(new Environment.AgentsProbe(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE, "environment"));
+            // print measurement requests
+            printRequests();
+
+            // request my role so that the viewers can probe me
+            requestRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
+
+            // give probe access to agents - Any agent within the group agent can access this environment's properties
+            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SATELLITE, "environment"));
+            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.GNDSTAT, "environment"));
+            addProbe(new Environment.AgentsProbe(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCHEDULER, "environment"));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Creates list of measurement requests to be made in the duration of the simulation
+     * @param scenarioWorkbook : open excel sheet workbook containing scenario information
+     * @return requests : ArrayList containing generated measurement requests
+     */
+    private ArrayList<MeasurementRequest> generateRequests(Workbook scenarioWorkbook) throws Exception {
+        ArrayList<MeasurementRequest> requests = new ArrayList<>();
+
+        double arrivalRate = Double.parseDouble(((JSONObject) input.get(PLNR)).get(TASK_ARRIVAL_R).toString());
+        double meanInterval = Double.parseDouble(((JSONObject) input.get(PLNR)).get(MEAN_INTERVAL_R).toString());
+        double planningHorizon = Double.parseDouble(((JSONObject) input.get(PLNR)).get(PLN_HRZN).toString());
+        double numReqs = endDate.durationFrom(startDate)*arrivalRate;
+
+        for(int i = 0; i < numReqs; i++){
+            CoverageDefinition covDef = randomCovDef();
+            assert covDef != null;
+            CoveragePoint location = randomPoint(covDef);
+
+            String type = covDefMeasurementType(covDef, scenarioWorkbook);
+            HashMap<String, Requirement> requirements = this.measurementTypes.get(type);
+
+            ArrayList<AbsoluteDate> dates;
+            if(i==0){
+                dates = randomDates(requirements.get("Temporal"), null, planningHorizon, arrivalRate, meanInterval);
+            }
+            else {
+                dates = randomDates(requirements.get("Temporal"), requests.get(i-1), planningHorizon, arrivalRate, meanInterval);
+            }
+            AbsoluteDate announceDate = dates.get(0);
+            AbsoluteDate startDate = dates.get(1);
+            AbsoluteDate endDate = dates.get(2);
+
+            MeasurementRequest request = new MeasurementRequest(i, covDef, location,
+                    announceDate, startDate, endDate, type,
+                    requirements, orbitData.getStartDate(), 100);
+            requests.add(request);
+        }
+
+        return requests;
+    }
+
+    private String covDefMeasurementType(CoverageDefinition covDef, Workbook scenarioWorkbook) throws Exception {
+        Sheet regionsSheet = scenarioWorkbook.getSheet("Regions");
+        HashMap<String, Integer> rowIndexes = readIndexes(regionsSheet.getRow(0));
+
+        for(int i = 1; i < regionsSheet.getRows(); i++){
+            Cell[] row = regionsSheet.getRow(i);
+            String name = row[rowIndexes.get("Name")].getContents();
+
+            if(name.equals(covDef.getName())) return row[rowIndexes.get("Measurement Types")].getContents();
+        }
+
+        throw new Exception("Coverage Deginition " + covDef.getName() + " not found in database");
+    }
+
+    /**
+     * Generates random dates for the announcement, start, and ending of a measurement request.
+     * Duration determined by temporal requirement of measurement.
+     * @param tempRequirement : temporal requirement for measurement
+     * @return dates : array of dates containing when the request starts, when it can be announced,
+     * and when it stops being available.
+     */
+    private ArrayList<AbsoluteDate> randomDates(Requirement tempRequirement,
+                                                MeasurementRequest request,
+                                                double planningHorizon,
+                                                double arrivalRate, double meanInterval){
+        AbsoluteDate simStartDate = orbitData.getStartDate();
+        AbsoluteDate simEndDate = orbitData.getEndDate();
+        double simDuration = simEndDate.durationFrom(simStartDate);
+
+        double availability = tempRequirement.getThreshold();
+        if(tempRequirement.getUnits().equals("hrs")){
+            availability *= 3600;
+        }
+        else if(tempRequirement.getUnits().equals("min")){
+            availability *= 60;
+        }
+        else if(!tempRequirement.getUnits().equals("s")){
+            throw new InputMismatchException("Temporal requirement units not supported");
+        }
+
+
+        ExponentialDistribution startDist = new ExponentialDistribution(1/arrivalRate);
+        ExponentialDistribution intervalDist = new ExponentialDistribution(planningHorizon*meanInterval);
+
+        double dt_start = startDist.sample();
+        double dt_interval = intervalDist.sample();
+
+        AbsoluteDate startDate;
+        AbsoluteDate announceDate;
+
+        if(request == null){
+            startDate = simStartDate.shiftedBy(dt_start);
+            announceDate = startDate.shiftedBy(dt_interval);
+        }
+        else{
+            startDate = request.getAnnounceDate().shiftedBy(dt_start);
+            announceDate = startDate.shiftedBy(dt_interval);
+        }
+
+        AbsoluteDate endDate = startDate.shiftedBy(availability);
+
+        ArrayList<AbsoluteDate> dates = new ArrayList<>();
+        dates.add(startDate); dates.add(announceDate); dates.add(endDate);
+
+        return dates;
+    }
+
+    /**
+     * Chooses a random point from the coverage definition that belongs to the type of measurement
+     * to be generated
+     * @return pt : a random coverage definition belonging to the scenario
+     */
+    private CoverageDefinition randomCovDef(){
+        int i_rand = (int) (Math.random()*orbitData.getCovDefs().size());
+        int i = 0;
+
+        for(CoverageDefinition covDef : orbitData.getCovDefs()){
+            if(i == i_rand) return covDef;
+            i++;
+        }
+
+        return null;
+    }
+
+    /**
+     * Chooses a random point from the coverage definition that belongs to the type of measurement
+     * to be generated
+     * @param covDef : coverage definition of desired measurement
+     * @return pt : a coverage point belonging to covDef
+     */
+    private CoveragePoint randomPoint(CoverageDefinition covDef){
+        int i_rand = (int) (Math.random()*covDef.getNumberOfPoints());
+        int i = 0;
+
+        for(CoveragePoint pt : covDef.getPoints()){
+            if(i == i_rand) return pt;
+            i++;
+        }
+
+        return null;
+    }
+
+    /**
+     * Reads scenario information excel sheet and generates list of requirements for the different
+     * types of measurements to be requested in the simulation
+     * @param scenarioWorkbook : excel sheet workbook containing information of the chosen scenario
+     * @return requirements : hashmap giving a list of requirements of a given type of measurement
+     */
+    private HashMap<String, HashMap<String, Requirement>> loadRequirements( Workbook scenarioWorkbook ){
+        HashMap<String, HashMap<String, Requirement>> requirements = new HashMap<>();
+
+        Sheet weightsSheet = scenarioWorkbook.getSheet("Weights");
+        HashMap<String, Integer> weightsRowIndexes = readIndexes(weightsSheet.getRow(0));
+        for(int i = 1; i < weightsSheet.getRows(); i++){
+            Cell[] row = weightsSheet.getRow(i);
+            String type = row[weightsRowIndexes.get("Measurement Type")].getContents();
+
+            HashMap<String, Requirement> reqs = new HashMap<>();
+            Sheet reqSheet = scenarioWorkbook.getSheet(type);
+            HashMap<String, Integer> reqIndexes = readIndexes(reqSheet.getRow(0));
+            for(int j = 1; j < reqSheet.getRows(); j++){
+                Cell[] reqRow = reqSheet.getRow(j);
+                Requirement req = readRequirement(reqRow, reqIndexes);
+                reqs.put(req.getName(), req);
+            }
+
+            requirements.put(type, reqs);
+        }
+
+        return requirements;
+    }
+
+    /**
+     * Reads measurement requirements from scenario excel sheet row
+     * @param reqRow : row from scenario excel sheet containing info about a particular requirement
+     *               including its type, bounds, and units.
+     * @param reqIndexes : hashmap that returns the index of a particular metric in reqRow
+     * @return a new object of type requirement containing the information from the excel sheet
+     */
+    private Requirement readRequirement(Cell[] reqRow, HashMap<String, Integer> reqIndexes){
+        String name = reqRow[reqIndexes.get("Requirement")].getContents();
+        String boundsStr = reqRow[reqIndexes.get("Bounds")].getContents();
+        String units = reqRow[reqIndexes.get("Units")].getContents();
+
+        String[] bounds = boundsStr.substring(1,boundsStr.length()-1).split(",");
+
+        double goal = Math.min( Double.parseDouble( bounds[2] ), Double.parseDouble( bounds[0]));
+        double breakthrough = Double.parseDouble( bounds[1] );
+        double threshold = Math.max( Double.parseDouble( bounds[2] ), Double.parseDouble( bounds[0]));;
+
+        return new Requirement(name, goal, breakthrough, threshold, units);
+    }
+
+    /**
+     * Creates a hashmap that stores the indexes of the different parameters for databases
+     * @param row : first row or column of data that contains field names
+     * @return hashmap that, given a parameter name, returns the column or row index of said parameter
+     */
+    private HashMap<String, Integer> readIndexes(Cell[] row){
+        HashMap<String,Integer> indexes = new HashMap<>();
+        for(int i = 0; i < row.length; i++){
+            indexes.put(row[i].getContents(), i);
+        }
+        return indexes;
+    }
+
+    /**
+     * Prints the list of generated measurement requests to a csv file located in the results folder of .
+     * this simulation run
+     */
+    private void printRequests(){
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = simDirectoryAddress + "/" + "requests.csv";
+        File f = new File(outAddress);
+        if(!f.exists()) {
+            // if file does not exist yet, save data
+            try{
+                fileWriter = new FileWriter(outAddress, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            printWriter = new PrintWriter(fileWriter);
+
+            for(MeasurementRequest request : requests){
+                String reqStr = request.toString();
+                printWriter.print(reqStr);
+            }
+
+            printWriter.close();
+        }
+    }
+
+    /**
+     * Prove Class that allows for other agents to access the properties and methods of the environment.
+     */
     class AgentsProbe extends PropertyProbe<AbstractAgent, Environment> {
 
         public AgentsProbe(String community, String group, String role, String fieldName) {
@@ -107,440 +428,526 @@ public class Environment extends Watcher {
         }
     }
 
-    // Helper functions
-    private ArrayList<Task> initiateTasks() throws Exception {
-        ArrayList<Task> tasks = new ArrayList<>();
-        Workbook taskDataXls = Workbook.getWorkbook(new File(problemStatementDir + "/Measurement Requirements.xls"));
-        Sheet data = taskDataXls.getSheet("Measurements");
-        int nRows = data.getRows();
-        int nCols = data.getColumns();
-        for(int i = 1; i < nRows; i++){
-            // Create a task per each row
-            Cell[] row = data.getRow(i);
-            String name = row[0].getContents();
-            // load lat and lon
-            double lat = 0.0;
-            if(containsNonNumbers( row[2].getContents() )){
-                if(containsBounds( row[2].getContents())){
-                    String str = row[2].getContents();
-                    String[] bounds = str.substring(1,str.length()-1).split(",");
-                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    double mean = (max + min)/2;
-                    double sd = max - mean;
-
-                    NormalDistribution dist = new NormalDistribution(mean,sd);
-                    lat = dist.sample();
-                }
-                else if(row[2].getContents().equals("RAND")){
-                    NormalDistribution dist = new NormalDistribution(0,25);
-                    lat = dist.sample();
-                }
-                else throw new Exception("Input format not supported");
-            }
-            else{
-                lat = Double.parseDouble( row[2].getContents() );
-            }
-            double lon = 0.0;
-            if(containsNonNumbers( row[3].getContents() )){
-                if(containsBounds( row[3].getContents())){
-                    String str = row[3].getContents();
-                    String[] bounds = str.substring(1,str.length()-1).split(",");
-                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    lon = Math.random() * (max - min) + min;
-                }
-                else if(row[3].getContents().equals("RAND")){
-                    lon = (Math.random() - 0.5) * 360;
-                }
-                else throw new Exception("Input format not supported");
-            }
-            else{
-                lon = Double.parseDouble( row[3].getContents() );
+    /**
+     * Returns the list of measurements requests in chronological order
+     */
+    private ArrayList<MeasurementRequest> getOrderedRequests(){
+        ArrayList<MeasurementRequest> orderedRequests = new ArrayList<>();
+        for(MeasurementRequest req : this.requests){
+            if(orderedRequests.size() == 0) {
+                orderedRequests.add(req);
+                continue;
             }
 
-            double alt = Double.parseDouble( row[4].getContents() );
-            String[] freqString = row[5].getContents().split(",");
-            ArrayList<Measurement> freqs = new ArrayList<>(freqString.length);
-            for(int j = 0; j < freqString.length; j++){
-                double f = Double.parseDouble(freqString[j]);
-                freqs.add(new Measurement(f));
+            int i = 0;
+            for(MeasurementRequest reqOrd : orderedRequests){
+                if(req.getStartDate().compareTo(reqOrd.getStartDate()) <= 0) break;
+                i += 1;
             }
-
-            double spatialResReq = 0.0;
-            if(containsNonNumbers( row[6].getContents()) ){
-                if(containsBounds( row[6].getContents())){
-                    String str = row[6].getContents();
-                    String[] bounds = str.substring(1,str.length()-1).split(",");
-                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    spatialResReq = Math.random() * (max - min) + min;
-                }
-                else throw new Exception("Input format not supported");
-            }
-            else{
-                spatialResReq = Double.parseDouble(row[6].getContents());
-            }
-
-            double snrReq = 0.0;
-            if(containsNonNumbers( row[7].getContents() )){
-                if(containsBounds( row[7].getContents())){
-                    String str = row[7].getContents();
-                    String[] bounds = str.substring(1,str.length()-1).split(",");
-                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    snrReq = Math.random() * (max - min) + min;
-                }
-                else throw new Exception("Input format not supported");
-            }
-            else {
-                snrReq = Double.parseDouble(row[7].getContents());
-            }
-
-
-            int numLooks = (int) Double.parseDouble( row[8].getContents() );
-            String tcorrMin  =  row[9].getContents();
-            String tcorrMax  =  row[10].getContents();
-            String tempResReqMin =  row[11].getContents();
-            String tempResReqMax = row[12].getContents();
-            double urgencyFactor = Double.parseDouble( row[15].getContents() );
-
-            // load start time
-            String startTimeString;
-            AbsoluteDate startTimeDate;
-            if(containsNonDate( row[13].getContents() )){
-                if(row[13].getContents().equals("RAND")){
-                    double simDuration = endDate.durationFrom(startDate);
-                    double startFromEnd = -1*Math.random()*simDuration;
-                    startTimeDate = endDate.shiftedBy(startFromEnd).getDate();
-                }
-                else if(row[13].getContents().equals("SIM")){
-                    startTimeDate = startDate.getDate();
-                }
-                else{
-                    throw new Exception(name + " start time date formate not suppored");
-                }
-            }
-            else{
-                startTimeString = row[13].getContents();
-                startTimeDate = stringToDate(startTimeString);
-            }
-
-            // load end time
-            String endTimeString;
-            AbsoluteDate endTimeDate;
-            if(containsNonDate(  row[14].getContents() )){
-                if(row[14].getContents().equals("RAND")){
-                    double simDuration = endDate.durationFrom(startDate);
-                    double startFromEnd = -1*Math.random()*simDuration;
-                    endTimeDate = startTimeDate.shiftedBy(startFromEnd).getDate();
-                }
-                else if(row[14].getContents().equals("SIM")){
-                    endTimeDate = endDate.getDate();
-                }
-                else{
-                    throw new Exception(name + " end time date formate not suppored");
-                }
-            }
-            else{
-                endTimeString = row[14].getContents();
-                endTimeDate = stringToDate(endTimeString);
-            }
-
-
-            // load score
-            double score = 0.0;
-            if(containsNonNumbers( row[1].getContents() )){
-                if(containsBounds( row[1].getContents())){
-                    String str = row[1].getContents();
-                    String[] bounds = str.substring(1,str.length()-1).split(",");
-                    double max = Math.max( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    double min = Math.min( Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]) );
-                    score = Math.random() * (max - min) + min;
-                }
-                else if(row[1].getContents().equals("RAND")){
-                    if(freqs.size() == 1){
-                        // max score of 30.00, min of 15;
-                        score = Math.random() * 15.0 + 15.0;
-                    }
-                    else if(freqs.size() == 2){
-                        // max score of 70.0, min of 30
-                        score = Math.random() * 40.0 + 30.0;
-                    }
-                    else {
-                        // max score of 100, min of 70
-                        score = Math.random() * 30.0 + 70.0;
-                    }
-                }
-            }
-            else{
-                score = Double.parseDouble( row[1].getContents() );
-            }
-
-            tasks.add( new Task(name, score, lat, lon, alt, freqs,
-                    spatialResReq, snrReq, numLooks, stringToDuration(tcorrMin), stringToDuration(tcorrMax),
-                    stringToDuration(tempResReqMin), stringToDuration(tempResReqMax),
-                    startTimeDate, endTimeDate, timeStep, urgencyFactor));
+            orderedRequests.add(i,req);
         }
 
-        return tasks;
-    }
-    private boolean containsNonNumbers(String str){
-        for(int i = 0; i < str.length(); i++){
-            if(        (str.charAt(i) != '0') && (str.charAt(i) != '1') && (str.charAt(i) != '2') && (str.charAt(i) != '3')
-                    && (str.charAt(i) != '4') && (str.charAt(i) != '5') && (str.charAt(i) != '6') && (str.charAt(i) != '7')
-                    && (str.charAt(i) != '8') && (str.charAt(i) != '9') && (str.charAt(i) != '.') && (str.charAt(i) != '-')
-                    && (str.charAt(i) != '+') && (str.charAt(i) != 'e') && (str.charAt(i) != 'E') && (str.charAt(i) != ' ')){
-                return true;
-            }
+        ArrayList<MeasurementRequest> reqQueue = new ArrayList<>();
+        for(MeasurementRequest req : orderedRequests){
+            reqQueue.add(req);
         }
-        return false;
+        return reqQueue;
     }
 
-    private boolean containsNonDate(String str){
-        // 2020-01-01T00:00:00Z
-        for(int i = 0; i < str.length(); i++){
-            if(        (str.charAt(i) != '0') && (str.charAt(i) != '1') && (str.charAt(i) != '2') && (str.charAt(i) != '3')
-                    && (str.charAt(i) != '4') && (str.charAt(i) != '5') && (str.charAt(i) != '6') && (str.charAt(i) != '7')
-                    && (str.charAt(i) != '8') && (str.charAt(i) != '9') && (str.charAt(i) != '.') && (str.charAt(i) != '-')
-                    && (str.charAt(i) != ':') && (str.charAt(i) != 'Z') && (str.charAt(i) != 'T')){
-                return true;
+    /**
+     * Returns the list of all available measurements requests in chronological order
+     */
+    public LinkedList<MeasurementRequest> getAvailableRequests(){
+        LinkedList<MeasurementRequest> availableRequests = new LinkedList<>();
+
+        for(MeasurementRequest request : this.orderedRequests){
+            if(this.getCurrentDate().compareTo(request.getAnnounceDate()) >= 0
+                    && this.getCurrentDate().compareTo(request.getEndDate()) <= 0){
+                availableRequests.add(request);
             }
         }
-        return false;
+
+        return availableRequests;
     }
 
-    private boolean containsBounds(String str){
-        if(str.charAt(0) == '[' && str.charAt(str.length()-1) == ']'){
-            String[] bounds = str.substring(1,str.length()-1).split(",");
-            for(int i = 0; i < bounds.length; i++){
-                if(containsNonNumbers(bounds[i])) return false;
-            }
-            return true;
-        }
-        return false;
-    }
+    /**
+     * Returns the list of all available measurements requests within a given time window and
+     * returns them in chronological order
+     */
+    public LinkedList<MeasurementRequest> getAvailableRequests(AbsoluteDate startDate, AbsoluteDate endDate){
+        LinkedList<MeasurementRequest> availableRequests = new LinkedList<>();
 
-    private AbsoluteDate stringToDate(String startDate) throws Exception {
-        if(startDate.length() != 20){
-            throw new Exception("Date format not supported");
-        }
-
-        int YYYY = Integer.parseInt(String.valueOf(startDate.charAt(0))
-                + String.valueOf(startDate.charAt(1))
-                + String.valueOf(startDate.charAt(2))
-                + String.valueOf(startDate.charAt(3)));
-        int MM = Integer.parseInt(String.valueOf(startDate.charAt(5))
-                + String.valueOf(startDate.charAt(6)));
-        int DD = Integer.parseInt(String.valueOf(startDate.charAt(8))
-                + String.valueOf(startDate.charAt(9)));
-
-        int hh = Integer.parseInt(String.valueOf(startDate.charAt(11))
-                + String.valueOf(startDate.charAt(12)));
-        int mm = Integer.parseInt(String.valueOf(startDate.charAt(14))
-                + String.valueOf(startDate.charAt(15)));
-        int ss = Integer.parseInt(String.valueOf(startDate.charAt(17))
-                + String.valueOf(startDate.charAt(18)));
-
-        return new AbsoluteDate(YYYY, MM, DD, hh, mm, ss, utc);
-    }
-
-    private void stepTime(){
-        this.currentDate = this.currentDate.shiftedBy(this.timeStep);
-    }
-
-    private double stringToDuration(String duration) throws Exception {
-        StringBuilder YYs = new StringBuilder();
-        StringBuilder MMs = new StringBuilder();
-        StringBuilder DDs = new StringBuilder();
-        int stage = 0;
-
-        for(int i = 0; i < duration.length(); i++){
-            String c = String.valueOf(duration.charAt(i));
-            switch (c) {
-                case "P":
-                    stage = 1;
-                    continue;
-                case "Y":
-                    stage = 2;
-                    continue;
-                case "M":
-                    stage = 3;
-                    continue;
-                case "D":
-                    stage = 4;
-                    continue;
-            }
-
-            switch(stage){
-                case 1:
-                    YYs.append(c);
-                    break;
-                case 2:
-                    MMs.append(c);
-                    break;
-                case 3:
-                    DDs.append(c);
-                case 4:
-                    break;
+        for(MeasurementRequest request : this.orderedRequests){
+            if(request.getEndDate().compareTo(startDate) >= 0 &&
+                request.getAnnounceDate().compareTo(endDate) <= 0){
+                availableRequests.add(request);
             }
         }
-        double YY = Double.parseDouble(YYs.toString());
-        double MM = Double.parseDouble(MMs.toString());
-        double DD = Double.parseDouble(DDs.toString());
 
-        double yy = YY * 365.25 * 24 * 3600;
-        double mm = MM * 365.25/12 * 24 * 3600;
-        double dd = DD * 24 * 3600;
-
-        return yy + mm + dd;
+        return availableRequests;
     }
 
-    private void setUpLogger(String logger) throws Exception {
-        if(logger.equals("OFF")){
-            this.loggerLevel = Level.OFF;
-        }
-        else if(logger.equals("SEVERE")){
-            this.loggerLevel = Level.SEVERE;
-        }
-        else if(logger.equals("WARNING")){
-            this.loggerLevel = Level.WARNING;
-        }
-        else if(logger.equals("INFO")){
-            this.loggerLevel = Level.INFO;
-        }
-        else if(logger.equals("CONFIG")){
-            this.loggerLevel = Level.CONFIG;
-        }
-        else if(logger.equals("FINE")){
-            this.loggerLevel = Level.FINE;
-        }
-        else if(logger.equals("FINER")){
-            this.loggerLevel = Level.FINER;
-        }
-        else if(logger.equals("FINEST")){
-            this.loggerLevel = Level.FINEST;
-        }
-        else if(logger.equals("ALL")){
-            this.loggerLevel = Level.ALL;
+    public void registerMeasurements(ArrayList<Measurement> measurements){
+        this.measurements.addAll(measurements);
+    }
+
+    /**
+     * Calculates the performance of a measurements performed by a given instrument at the current simulation time
+     * @param agent : agent performing the measurement
+     * @param instrument : instrument performing the measurement
+     * @param request : measurement request being satisfied by measurement
+     */
+    public HashMap<Requirement, RequirementPerformance> calculatePerformance(SatelliteAgent agent,
+                                                                             Instrument instrument,
+                                                                             TopocentricFrame target,
+                                                                             MeasurementRequest request) throws Exception {
+        return calculatePerformance(agent, instrument, target, request, this.getCurrentDate());
+    }
+
+    /**
+     * Calculates the performance of a measurements performed by a given instrument at the a given simulation time
+     * @param agent : agent performing the measurement
+     * @param instrument : instrument performing the measurement
+     * @param request : measurement request being satisfied by measurement
+     * @param date : date of measurement
+     */
+    public HashMap<Requirement, RequirementPerformance> calculatePerformance(SatelliteAgent agent,
+                                                                             Instrument instrument,
+                                                                             TopocentricFrame target,
+                                                                             MeasurementRequest request,
+                                                                             AbsoluteDate date) throws Exception {
+        HashMap<Requirement, RequirementPerformance> measurementPerformance = new HashMap<>();
+
+        HashMap<String, Requirement> requirements;
+        if(request == null){
+            requirements = new HashMap<>();
+            requirements.put(Requirement.SPATIAL, new Requirement(Requirement.SPATIAL, 500, 500, 500, Units.KM));
         }
         else{
-            throw new Exception("INPUT ERROR: Logger type not supported");
+            requirements = request.getRequirements();
         }
 
-        getLogger().setLevel(this.loggerLevel);
+        for(String reqName : requirements.keySet()){
+            Requirement req = requirements.get(reqName);
+
+            double score;
+            switch(reqName){
+                case Requirement.SPATIAL:
+                    score = calcSpatialResolution(agent, target, instrument, date);
+                    break;
+                case Requirement.TEMPORAL:
+                    double startDelay = date.durationFrom(request.getStartDate());
+                    double unitsFactor = getUnitsFactor( req.getUnits() );
+                    score = startDelay * unitsFactor;
+                    break;
+                case Requirement.ACCURACY:
+                    score = calcAccuracy(agent, target, instrument, date);
+                    break;
+                default:
+                    throw new Exception("Performance requirement of type " + req.getName() + " not yet supported.");
+            }
+
+            measurementPerformance.put(req, new RequirementPerformance(req, score));
+        }
+
+        return measurementPerformance;
     }
 
-    protected void tic() throws Exception {
-        List<AgentAddress> agents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER);
-        List<AgentAddress> doingAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.CCBBA_DONE);
-        if(doingAgents != null && doingAgents.size() == agents.size()) {
-            if(latestPlans.size() > 0) {
-                // only advance time when agents are done planning
-                AbsoluteDate minDate = null;
-                for (Planner planner : latestPlans.keySet()) {
-                    if(latestPlans.get(planner) != null){
-                        AbsoluteDate planStart = latestPlans.get(planner).getStartDate();
+    private double calcSpatialResolution(SatelliteAgent agent, TopocentricFrame target,
+                                         Instrument instrument, AbsoluteDate date) throws Exception {
+        double satResAT;
+        double satResCT;
 
-                        if (minDate == null) minDate = planStart;
-                        else if (planStart != null && planStart.compareTo(minDate) < 0) minDate = planStart;
+        // TODO create instrument specific spatial resolution estimation
+
+        return 1e3;
+
+//        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
+//        Vector3D pointPos = orbitData.getPointPosition(target,date);
+//        Vector3D relPos = pointPos.subtract(satPos);
+//
+//        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )
+//                                                /(satPos.getNorm() * relPos.getNorm()) );
+//
+//        if(instrument.getClass().equals(SAR.class)){
+//            String antennaType = ((SAR) instrument).getAntenna().getType();
+//
+//            switch(antennaType){
+//                case AbstractAntenna.PARAB:
+//                    double D = ((SAR) instrument).getAntenna().getDimensions().get(0);
+//                    double nLooks = ((SAR) instrument).getnLooks();
+//                    double bw = ((SAR) instrument).getBandwidth();
+//                    double rangeRes = 3e8/( 2 * bw * Math.sin(lookAngle));
+//
+//                    satResAT =  D * Math.sqrt( nLooks ) / 2.0;
+//                    satResCT = rangeRes;
+//                    break;
+//                default:
+//                    throw new Exception("Instrument antenna of type " + antennaType + " not yet supported");
+//            }
+//        }
+//        else{
+//            throw new Exception("Instrument of type " + instrument.getClass() + " not yet supported");
+//        }
+//
+//        return Math.max(satResAT, satResCT);
+    }
+
+    private double calcAccuracy(SatelliteAgent agent, TopocentricFrame target,
+                                Instrument instrument, AbsoluteDate date) throws Exception {
+//        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
+//        Vector3D satVel = orbitData.getSatVelocity(agent.getSat(), date);
+//        Vector3D pointPos = orbitData.getPointPosition(target,date);
+//        Vector3D relPos = pointPos.subtract(satPos);
+//
+//        Vector3D i = satVel.normalize();
+//        Vector3D k = satPos.scalarMultiply(-1).normalize();
+//        Vector3D j = k.crossProduct(i);
+//
+//        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )
+//                /(satPos.getNorm() * relPos.getNorm()) );
+//        double incidenceAngle = FastMath.acos( pointPos.dotProduct( relPos.scalarMultiply(-1) )
+//                /(pointPos.getNorm() * relPos.getNorm()) );
+//        double range = relPos.getNorm();
+
+        // TODO create instrument specific accuracy estimation
+
+        return 1.0;
+    }
+
+    private double getUnitsFactor(String units) throws Exception {
+        switch (units){
+            case Units.SECONDS:
+                return 1;
+            case Units.MINS:
+                return 1.0/60.0;
+            case Units.HRS:
+                return 1.0/3600.0;
+        }
+
+        throw new Exception("Units of " + units + " for temporal resolution requirement not yet supported");
+    }
+
+    /**
+     * Updates simulation time
+     */
+    public void tic(){
+        // TODO  allow for time to step forward to next action performed by a ground station,
+        //  satellite, or comms satellite
+        List<Message> pauseMessages = nextMessages( new PauseFilter());
+
+        if(pauseMessages.size() == 0) this.GVT += this.dt;
+        else getLogger().finer("Pause message received. Stopping time for one simulation step");
+
+        getLogger().finest("Current simulation epoch: " + this.GVT);
+    }
+
+    public void printResults() throws Exception {
+        List<Message> measurementMessages = nextMessages( new MeasurementFilter() );
+        List<Message> bookKeepingMessages = nextMessages(null);
+
+        ArrayList<Measurement> measurements = readMeasurementMessages(measurementMessages);
+        JSONObject simPerformance = processResults(measurements);
+
+        printPerformance(simPerformance);
+        printMeasurements(measurements);
+        printMessages(measurementMessages, bookKeepingMessages);
+    }
+
+    private void printMessages(List<Message> measurementMessages, List<Message> bookKeepingMessages) throws Exception {
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = simDirectoryAddress + "/" + "messages.csv";
+        File f = new File(outAddress);
+
+        if(!f.exists()) {
+            // if file does not exist yet, save data
+            try{
+                fileWriter = new FileWriter(outAddress, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            printWriter = new PrintWriter(fileWriter);
+
+            List<Message> orderedMessages = sortMessages(measurementMessages, bookKeepingMessages);
+
+            for(Message message : orderedMessages){
+                BookkeepingMessage messageBook = (BookkeepingMessage) message;
+                printWriter.print(messageBook.toString(satAddresses, gndAddresses, startDate));
+                printWriter.print("\n");
+            }
+            printWriter.close();
+        }
+    }
+
+    private ArrayList<Message> sortMessages(List<Message> measurementMessages, List<Message> bookKeepingMessages){
+        ArrayList<Message> sorted = new ArrayList<>();
+        ArrayList<Message> unsorted = new ArrayList<>();
+        unsorted.addAll(measurementMessages); unsorted.addAll(bookKeepingMessages);
+
+        for(Message unsort : unsorted){
+            if(sorted.isEmpty()) {
+                sorted.add(unsort);
+                continue;
+            }
+
+            int i = 0;
+            for(Message sort : sorted){
+                if(((BookkeepingMessage) unsort).getSendDate().compareTo( ((BookkeepingMessage) sort).getSendDate() ) < 0){
+                    break;
+                }
+                i++;
+            }
+            sorted.add(i,unsort);
+        }
+
+        return sorted;
+    }
+
+    private JSONObject processResults(ArrayList<Measurement> measurements){
+        JSONObject out = new JSONObject();
+        JSONObject inputs = parentSimulation.getInput();
+
+        out.put("name", parentSimulation.getName());
+        out.put("planer", ((JSONObject) inputs.get(PLNR)).get(PLNR_NAME).toString());
+        JSONObject dates = new JSONObject();
+            dates.put("start", startDate.toString());
+            dates.put("end", endDate.toString());
+        out.put("dates", dates);
+        out.put("scenario", ((JSONObject) inputs.get(SIM)).get(SCENARIO).toString());
+
+        JSONObject resultsJSON = new JSONObject();
+
+        resultsJSON.put("coverage", orbitData.coverageStats());
+        resultsJSON.put("tasks", this.taskStats(measurements));
+        resultsJSON.put("utility", this.utilityStats(measurements));
+        resultsJSON.put("coalitionStats", this.coalStats(measurements));
+
+        out.put("results", resultsJSON);
+
+        return out;
+    }
+
+    private JSONObject coalStats(ArrayList<Measurement> measurements){
+        JSONObject out = new JSONObject();
+        HashMap<MeasurementRequest, ArrayList<Measurement>> map = new HashMap<>();
+
+        for(MeasurementRequest req : requests){
+            map.put(req, new ArrayList<>());
+        }
+
+        for(Measurement measurement : measurements){
+            if(measurement.getRequest() == null) continue;
+
+            map.get(measurement.getRequest()).add(measurement);
+        }
+
+        int coalCount = 0;
+        for(MeasurementRequest req : requests){
+            if(map.get(req).size() > 1) coalCount++;
+            // TODO add checks for time constraints and coalition requirements
+        }
+
+        out.put("coalsFormed", coalCount);
+        out.put("coalsAvailable", countAvailableCoals());
+        out.put("coalsFormedPtg", ((double) coalCount)/((double) countAvailableCoals()));
+
+        return out;
+    }
+
+    private int countAvailableCoals(){
+        // TODO make this count dependent to the type of measurement being requested
+        //  and the instruments available in the constellation
+        int count = 0;
+        for(MeasurementRequest request : requests){
+            count++;
+        }
+        return count;
+    }
+
+    private JSONObject utilityStats(ArrayList<Measurement> measurements){
+        JSONObject out = new JSONObject();
+        ArrayList<Double> utilityAchieved = new ArrayList<>();
+
+        double totalUtility = 0.0;
+        for(Measurement measurement : measurements){
+            utilityAchieved.add(measurement.getUtility());
+            totalUtility += measurement.getUtility();
+        }
+        double availableUtility = calcAvailableUtility();
+
+        out.put("totalUtility", totalUtility);
+        out.put("utilityPtg", totalUtility/availableUtility);
+
+        JSONObject taskUtility = new JSONObject();
+
+        double max = Statistics.getMax(utilityAchieved);
+        double min = Statistics.getMin(utilityAchieved);
+        double avg = Statistics.getMean(utilityAchieved);
+        double std = Statistics.getStd(utilityAchieved);
+
+        taskUtility.put("max", max);
+        taskUtility.put("min", min);
+        taskUtility.put("avg", avg);
+        taskUtility.put("std", std);
+
+        out.put("achievedUtility", taskUtility);
+
+        return out;
+    }
+
+    private double calcAvailableUtility(){
+        double availableUtility = 0.0;
+
+        // Calculate the total utility that would be achieved if agents only did nominal measurements
+        for(CoverageDefinition covDef : orbitData.getAccessesGPIns().keySet()){
+            for(Satellite sat : orbitData.getAccessesGPIns().get(covDef).keySet()){
+                if(orbitData.isCommsSat(sat)) continue;
+                for(Instrument ins : orbitData.getAccessesGPIns().get(covDef).get(sat).keySet()){
+                    if(ins.getName().contains("FOR")) continue;
+
+                    for(TopocentricFrame point : orbitData.getAccessesGPIns().get(covDef).get(sat).get(ins).keySet()){
+                        for(RiseSetTime time : orbitData.getAccessesGPIns().get(covDef).get(sat).get(ins)
+                                .get(point).getRiseSetTimes()){
+
+                            if(time.isRise()){
+                                availableUtility += NominalPlanner.NominalUtility;
+                            }
+                        }
                     }
                 }
-                if(minDate == null){
-                    this.currentDate = this.currentDate.shiftedBy(this.timeStep*60);
-                }
-                else {
-                    this.currentDate = minDate;
-                }
-            }
-            else{
-                this.currentDate = this.currentDate.shiftedBy(this.timeStep*1);
             }
         }
 
-        List<AgentAddress> deadAgents = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.PLANNER_DIE);
-//        List<AgentAddress> spacecraftSensing = getAgentsWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.AGENT_SENSE);
-        int n_agents = 0;
-        if(agents != null) n_agents = agents.size();
-        int n_dead = 0;
-        if(deadAgents != null) n_dead = deadAgents.size();
+        // calculate the total maximum utility available from measurement requests
+        for(MeasurementRequest request : this.requests){
+            availableUtility += request.getMaxUtility();
+        }
 
-        boolean endDateReached = this.currentDate.compareTo(this.endDate) >= 0;
-        if(endDateReached) getLogger().finer("Simulation end-time reached. Terminating sim");
+        return availableUtility;
+    }
 
-        boolean agentsDead = n_agents == n_dead;
-        if(agentsDead) {
-            terminate++;
-            if(terminate > 1) {
-                getLogger().finer("No more tasks available for agents. Terminating sim");
+    private JSONObject taskStats(ArrayList<Measurement> measurements){
+        JSONObject out = new JSONObject();
+
+        out.put("urgentTaskRequests", this.requests.size());
+        out.put("urgentTasksDone", this.getUrgentMeasurements(measurements).size());
+        out.put("urgentTaskDonePtg", ((double) this.getUrgentMeasurements(measurements).size())/( (double) this.requests.size() ));
+        out.put("nominalTasksDone", this.getNominalMeasurements(measurements).size());
+
+        JSONObject response = this.calcResponseTimes(measurements);
+        out.put("responseTime", response);
+
+        return out;
+    }
+
+    private JSONObject calcResponseTimes(ArrayList<Measurement> measurements){
+        JSONObject out = new JSONObject();
+
+        ArrayList<Double> responseTimes = new ArrayList<>();
+        for(Measurement measurement : getUrgentMeasurements(measurements)){
+            MeasurementRequest request = measurement.getRequest();
+            double response = measurement.getDownloadDate().durationFrom(request.getAnnounceDate());
+
+            responseTimes.add(response);
+        }
+
+        double max = Statistics.getMax(responseTimes);
+        double min = Statistics.getMin(responseTimes);
+        double avg = Statistics.getMean(responseTimes);
+        double std = Statistics.getStd(responseTimes);
+
+        out.put("max", max);
+        out.put("min", min);
+        out.put("avg", avg);
+        out.put("std", std);
+
+        return out;
+    }
+
+    private ArrayList<Measurement> getNominalMeasurements(ArrayList<Measurement> measurements){
+        ArrayList<Measurement> nominal = new ArrayList<>();
+        for(Measurement measurement : measurements){
+            if(measurement.getRequest() == null) nominal.add(measurement);
+        }
+        return nominal;
+    }
+
+    private ArrayList<Measurement> getUrgentMeasurements(ArrayList<Measurement> measurements){
+        ArrayList<Measurement> urgent = new ArrayList<>();
+        for(Measurement measurement : measurements){
+            if(measurement.getRequest() != null) urgent.add(measurement);
+        }
+        return urgent;
+    }
+
+    private void printPerformance(JSONObject performance){
+
+        try{
+            String filename = "results.json";
+            FileWriter writer = new FileWriter(simDirectoryAddress + "/" + filename);
+            writer.write(performance.toJSONString());
+            writer.close();
+
+            getLogger().info("Results saved as " + filename + "\n\tin directory\n\t" + simDirectoryAddress);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void printMeasurements( ArrayList<Measurement> measurements ){
+        FileWriter fileWriter = null;
+        PrintWriter printWriter;
+        String outAddress = simDirectoryAddress + "/" + "measurements.csv";
+        File f = new File(outAddress);
+
+        if(!f.exists()) {
+            // if file does not exist yet, save data
+            try{
+                fileWriter = new FileWriter(outAddress, false);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        }
+            printWriter = new PrintWriter(fileWriter);
 
-        if( endDateReached || (terminate > 1)) {
-            // End time reached, terminate sim
-            Results results = new Results(this.environmentTasks, this.spaceSegment, this.measurementCapabilities, this.directoryAddress, this.simulationTime);
-
-            // save results to text files
-            results.print();
-
-            // send terminate command to scheduler
-            SchedulingMessage terminate = new SchedulingMessage(SchedulingAction.SHUTDOWN);
-            sendMessage(getAgentWithRole(SimGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SCH_ROLE), terminate);
-        }
-
-        if(prevDate == null || currentDate.durationFrom(prevDate) >= 60.0) {
-            getLogger().finer("Current simulation time: " + this.currentDate.toString());
-            prevDate = currentDate.getDate();
-        }
-    }
-
-    private boolean compareResults(){
-        ArrayList<IterationResults> results = new ArrayList<>();
-        for(Message message : resultsMessages){
-            CCBBAResultsMessage resMessage = (CCBBAResultsMessage) message;
-            results.add(resMessage.getResults());
-        }
-
-        for(IterationResults res1 : results){
-            for(IterationResults res2 : results){
-                if(res1 == res2){
-                    continue;
-                }
-                if(res1.checkForChanges(res2)){
-                   return false;
-                }
+            for (Measurement measurement : measurements) {
+                printWriter.print(measurement.toString(startDate));
+                printWriter.print("\n");
             }
+            printWriter.close();
         }
-        return true;
     }
 
-    // Getters and Setters
-    public ArrayList<Task> getScenarioTasks(){ return this.environmentTasks; }
-    public AbsoluteDate getStartDate(){ return this.startDate; }
-    public AbsoluteDate getEndDate(){ return this.endDate; }
-    public double getTimeStep(){return this.timeStep;}
-    public ArrayList<Task> getEnvironmentTasks(){return environmentTasks;}
-    public double getGVT(){ return this.currentDate.durationFrom(this.startDate); }
-    public AbsoluteDate getCurrentDate(){return this.currentDate;}
-    public ArrayList<Subtask> getEnvironmentSubtasks(){
-        ArrayList<Subtask> subtasks = new ArrayList<>();
-        for(Task task : this.environmentTasks){
-            ArrayList<Subtask> taskSubtasks = task.getSubtasks();
-            subtasks.addAll(taskSubtasks);
+    private ArrayList<Measurement> readMeasurementMessages(List<Message> measurementMessages){
+        ArrayList<Measurement> measurements = new ArrayList<>();
+
+        for(Message message : measurementMessages){
+            Message originalMessage = ((BookkeepingMessage) message).getOriginalMessage();
+            ArrayList<Measurement> receivedMeasurements = ((MeasurementMessage) originalMessage).getMeasurements();
+            measurements.addAll(receivedMeasurements);
         }
-        return subtasks;
+
+        return measurements;
     }
-    public void updateMeasurementCapability(MeasurementCapability measurementCapability){
-        Task task = measurementCapability.getPlannerBids().get(0).getSubtask().getParentTask();
-        this.measurementCapabilities.get(task).updateSubtaskCapability(measurementCapability);
+
+    /**
+     * Saves addresses of all agents in the simulation for future use
+     * @param satAdd : map of each satellite to an address
+     * @param gndAdd : map of each ground station to an address
+     */
+    public void registerAddresses(HashMap<Satellite, AgentAddress> satAdd, HashMap<GndStation, AgentAddress> gndAdd){
+        this.satAddresses = new HashMap<>(satAdd);
+        this.gndAddresses = new HashMap<>(gndAdd);
     }
-    public void completeSubtask(Subtask subtask){
-        subtask.getParentTask().completeSubtasks(subtask);
-    }
-    public void addResult(Message message){
-        this.resultsMessages.add(message);
-    }
-    public void updateLatestPlan(Planner planner, Plan plan){
-        this.latestPlans.put(planner,plan);
-    }
+
+    /**
+     * General property getters
+     */
+    public double getGVT(){ return this.GVT; }
+    public double getDt(){ return dt; }
+    public AbsoluteDate getStartDate(){return this.startDate;}
+    public AbsoluteDate getEndDate(){return this.endDate;}
+    public AbsoluteDate getCurrentDate(){ return this.startDate.shiftedBy(this.GVT); }
+    public OrbitData getOrbitData(){ return this.orbitData; }
 }
