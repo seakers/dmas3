@@ -12,6 +12,6 @@ public class NominalAction extends MeasurementAction{
                             TopocentricFrame target, Instrument instrument,
                             String measurementType, AbsoluteDate startDate,
                             AbsoluteDate endDate) {
-        super(agent, targetCovDef, target, instrument, measurementType, startDate, endDate, null);
+        super(agent, instrument, null, startDate, endDate);
     }
 }

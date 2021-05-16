@@ -124,8 +124,14 @@ public class GndStationAgent extends AbstractAgent {
     public void execute(){
         // if the scheduled time is reached for next actions in plan, perform actions
         while(!plan.isEmpty()
-        && environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) >= 0
-        && environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) <= 0){
+            && (
+                (environment.getCurrentDate().shiftedBy(-environment.getDt()).compareTo(plan.getFirst().getStartDate()) < 0
+                && environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) <= 0)
+                ||
+                (environment.getCurrentDate().shiftedBy(-environment.getDt()).compareTo(plan.getFirst().getEndDate()) < 0
+                && environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) <= 0)
+            )
+        ){
 
             // retrieve action and target
             MessageAction action = (MessageAction) plan.poll();

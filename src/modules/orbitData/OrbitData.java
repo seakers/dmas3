@@ -1462,10 +1462,12 @@ public class OrbitData {
 
     private AbstractAntenna loadAntenna(Cell[] values, HashMap<String, Integer> parameterIndexes){
         String type = values[parameterIndexes.get("AntennaType")].getContents();
+        double freq = Double.parseDouble( values[parameterIndexes.get("Frequency")].getContents() );
+
         switch (type.toLowerCase()){
             case AbstractAntenna.PARAB:
                 double diameter = Double.parseDouble( values[parameterIndexes.get("Diameter")].getContents() );
-                return new ParabolicAntenna(diameter);
+                return new ParabolicAntenna(diameter,freq);
             default:
                 throw new InputMismatchException("Instrument antenna of type " + type + " not yet supported");
         }
@@ -1742,6 +1744,37 @@ public class OrbitData {
         }
 
         return false;
+    }
+
+    public Vector3D propagateSatPos(Satellite sat, AbsoluteDate date){
+        Propagator prop = null;
+        if(Math.abs( sat.getOrbit().getI() ) <= 0.1){
+            // if orbit is equatorial, use Keplerian propagator
+            prop = pfKep.createPropagator(sat.getOrbit(), sat.getGrossMass());
+        }
+        else{
+            // else use J2 propagator
+            prop = pfJ2.createPropagator(sat.getOrbit(), sat.getGrossMass());
+        }
+
+        ArrayList<PVCoordinates> pvSat = new ArrayList<>();
+        ArrayList<GeodeticPoint> gtSat = new ArrayList<>();
+
+        try {
+            SpacecraftState stat = prop.propagate(date);
+            pvSat.add(stat.getPVCoordinates(earthFrame));
+
+            Vector3D pos = stat.getPVCoordinates(earthFrame).getPosition();
+            return pos;
+        } catch (OrekitException | NullPointerException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public Vector3D propagateGPPos(TopocentricFrame gp, AbsoluteDate date){
+        return gp.getPVCoordinates(date,earthFrame).getPosition();
     }
 
     /**

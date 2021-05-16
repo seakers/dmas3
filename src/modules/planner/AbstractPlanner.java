@@ -23,6 +23,7 @@ public abstract class AbstractPlanner {
     public static final String NONE = "none";
     public static final String CCBBA = "CCBBA";
     public static final String RELAY = "relay";
+    public static final String FIRST_PRIORITY = "firstPriority";
     public static final String[] PLANNERS = {NONE, CCBBA, RELAY};
 
     /**
@@ -65,6 +66,9 @@ public abstract class AbstractPlanner {
         this.planningHorizon = planningHorizon;
         this.requestThreshold = requestThreshold;
         this.crossLinks = crossLinks;
+
+        this.knownRequests = new ArrayList<>();
+        this.activeRequests = new ArrayList<>();
     }
 
     /**
@@ -100,25 +104,19 @@ public abstract class AbstractPlanner {
      */
     public void setParentAgent(SatelliteAgent agent){ this.parentAgent = agent; }
 
-    protected LinkedList<SimulationAction> getAvailableActions(AbsoluteDate currentDate){
+    /**
+     * Returns list of actions available to be performed at a given date
+     * @param date  : date to be checked
+     * @return      : list of available actions
+     */
+    protected LinkedList<SimulationAction> getAvailableActions(AbsoluteDate date){
         LinkedList<SimulationAction> actions = new LinkedList<>();
 
         for(SimulationAction action : this.plan){
-            if( currentDate.compareTo(action.getStartDate()) >= 0
-                && currentDate.compareTo(action.getEndDate()) <= 0){
-                actions.add(action);
+            if(date.compareTo(action.getEndDate()) > 0){
+                break;
             }
-        }
-
-        return actions;
-    }
-
-    protected LinkedList<SimulationAction> getOutdatedActions(AbsoluteDate currentDate){
-        LinkedList<SimulationAction> actions = new LinkedList<>();
-
-        for(SimulationAction action : this.plan){
-            if( currentDate.compareTo(action.getEndDate()) > 0
-                    && currentDate.compareTo(action.getEndDate()) <= 0){
+            else if( date.compareTo(action.getStartDate()) >= 0){
                 actions.add(action);
             }
         }
@@ -127,7 +125,24 @@ public abstract class AbstractPlanner {
     }
 
     /**
-     * Returns a list of all new measurement requests sent to the parent spacecraft
+     * Returns list of actions that can no longer be performed by the agent as their date has passed
+     * @param date
+     * @return
+     */
+    protected LinkedList<SimulationAction> getOutdatedActions(AbsoluteDate date){
+        LinkedList<SimulationAction> actions = new LinkedList<>();
+
+        for(SimulationAction action : this.plan){
+            if( date.compareTo(action.getEndDate()) > 0 ){
+                actions.add(action);
+            }
+        }
+
+        return actions;
+    }
+
+    /**
+     * Returns a list of all NEW measurement requests sent to the parent spacecraft
      * @param messageMap : list of messages sent to parent spacecraft
      * @return array containing all new measurement requests
      */
@@ -138,7 +153,7 @@ public abstract class AbstractPlanner {
             for(Message message : messageMap.get(str)){
                 if(message.getClass().equals(MeasurementRequestMessage.class)){
                     MeasurementRequest request = ((MeasurementRequestMessage) message).getRequest();
-                    if(!knownRequests.contains(request)) {
+                    if(!this.knownRequests.contains(request) && !knownRequests.contains(request)) {
                         knownRequests.add(request);
                     }
                 }
@@ -186,5 +201,53 @@ public abstract class AbstractPlanner {
         }
 
         return messages;
+    }
+
+    /**
+     * Returns a list of all currently available measurement requests at a given date
+     * @param date : desired date
+     * @return array containing all new measurement requests
+     */
+    protected ArrayList<MeasurementRequest> checkActiveRequests(ArrayList<MeasurementRequest> requests, AbsoluteDate date){
+        ArrayList<MeasurementRequest> activeRequests = new ArrayList<>();
+
+        for(MeasurementRequest request : activeRequests){
+            if(date.compareTo( request.getStartDate() ) >= 0
+                    && date.compareTo( request.getEndDate() ) <= 0){
+                activeRequests.add(request);
+            }
+        }
+
+        for(MeasurementRequest request : requests){
+            if(date.compareTo( request.getStartDate() ) >= 0
+                    && date.compareTo( request.getEndDate() ) <= 0){
+                activeRequests.add(request);
+            }
+        }
+
+        return activeRequests;
+    }
+
+    /**
+     * Returns a list of all currently available measurement requests at a given date
+     * @param date : desired date
+     * @return array containing all new measurement requests
+     */
+    protected ArrayList<MeasurementRequest> checkAvailableRequests(ArrayList<MeasurementRequest> requests, AbsoluteDate date){
+        ArrayList<MeasurementRequest> availableRequests = new ArrayList<>();
+
+        for(MeasurementRequest request : activeRequests){
+            if(date.compareTo( request.getEndDate() ) <= 0){
+                availableRequests.add(request);
+            }
+        }
+
+        for(MeasurementRequest request : requests){
+            if(date.compareTo( request.getEndDate() ) <= 0){
+                availableRequests.add(request);
+            }
+        }
+
+        return availableRequests;
     }
 }

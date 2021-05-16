@@ -102,10 +102,10 @@ public abstract class SatelliteAgent extends AbstractAgent {
     /**
      * Creates an instance of a satellite agent. Requires a planner to already be created
      * and this must have the same orekit satellite assignment to this agent.
-     * @param cons : constellation to who this sat belongs to
-     * @param sat : orekit satellite to be represented by this agent
+     * @param cons      : constellation to who this sat belongs to
+     * @param sat       : orekit satellite to be represented by this agent
      * @param orbitData : coverage data of scenario
-     * @param planner : planner chosen to be assigned to this satellite
+     * @param planner   : planner chosen to be assigned to this satellite
      */
     public SatelliteAgent(Constellation cons, Satellite sat, OrbitData orbitData, Attitude attitude,
                           AbstractPlanner planner, SimGroups myGroups, Level loggerLevel){

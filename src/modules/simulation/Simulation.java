@@ -289,6 +289,9 @@ public class Simulation extends AbstractAgent{
 
                 planner = new CCBBAPlanner(planningHorizon, threshold, crossLinks, syncCommLoops);
                 break;
+            case AbstractPlanner.FIRST_PRIORITY:
+                planner = new FirstPriorityPlanner(planningHorizon, threshold, crossLinks, orbitData);
+                break;
             default:
                 throw new InputMismatchException("Input error. Planner " + plannerStr + " not yet supported.");
         }

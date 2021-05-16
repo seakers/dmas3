@@ -22,19 +22,42 @@ import java.util.*;
 import static modules.utils.Statistics.permutations;
 
 public class CCBBAPlanner extends AbstractPlanner{
+    /**
+     * Toggle for using synchronous of asynchronous communication loops
+     * True     = synchronous loops will be used
+     * False    = asynchronous loops will be used
+     */
     private boolean syncCommLoops;
-    private ArrayList<AbsoluteDate> rescheduleTimes;
 
     /**
      * Stores the communication loops for a given target satellites and a given number of satellites in the relay chain
      */
     private HashMap<Satellite, HashMap<Integer, ArrayList<CommsLoop>>> commsLoops;
 
+    /**
+     *
+     */
+    private ArrayList<AbsoluteDate> rescheduleTimes;
+
+    /**
+     * Initializes CCBBA planner
+     * @param planningHorizon   : planning horizon in seconds
+     * @param requestThreshold  : number of new measurement requests that will trigger a new planning cycle
+     * @param crossLinks        : allows for cross-links between sensing satellites
+     * @param syncCommLoops     : toggle for using synchronous or asynchronous communication loops
+     */
     public CCBBAPlanner(double planningHorizon, int requestThreshold, boolean crossLinks, boolean syncCommLoops) {
         super(planningHorizon, requestThreshold, crossLinks);
         this.syncCommLoops = syncCommLoops;
+
+        this.knownRequests = new ArrayList<>();
+        this.activeRequests = new ArrayList<>();
     }
 
+    /**
+     * Initializes plan
+     * @return
+     */
     @Override
     public LinkedList<SimulationAction> initPlan() {
         try {
@@ -44,7 +67,7 @@ public class CCBBAPlanner extends AbstractPlanner{
             // calculate all predetermined times for rescheduling
             rescheduleTimes = calculateReschedulingTimes();
 
-            this.plan = null;
+//            this.plan = nominalPlanner();
         } catch (Exception e) {
             e.printStackTrace();
         }

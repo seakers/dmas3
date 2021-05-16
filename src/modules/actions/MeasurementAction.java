@@ -14,15 +14,14 @@ public class MeasurementAction extends SimulationAction{
     private final MeasurementRequest request;
     private final String type;
 
-    public MeasurementAction(AbstractAgent agent, CoverageDefinition targetCovDef,
-                             TopocentricFrame target, Instrument instrument, String type,
-                             AbsoluteDate startDate, AbsoluteDate endDate, MeasurementRequest request) {
+    public MeasurementAction(AbstractAgent agent, Instrument instrument, MeasurementRequest request,
+                             AbsoluteDate startDate, AbsoluteDate endDate) {
         super(agent, startDate, endDate);
-        this.targetCovDef = targetCovDef;
-        this.target = target;
+        this.targetCovDef = request.getCovDef();
+        this.target = request.getLocation();
         this.instrument = instrument;
         this.request = request;
-        this.type = type;
+        this.type = request.getType();
     }
 
     public CoverageDefinition getTargetCovDef(){return targetCovDef; }
