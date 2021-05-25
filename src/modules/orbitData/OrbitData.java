@@ -50,6 +50,8 @@ import seakers.orekit.scenario.Scenario;
 import seakers.orekit.util.OrekitConfig;
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -168,19 +170,55 @@ public class OrbitData {
         mu = Constants.WGS84_EARTH_MU;
 
         // read json file inputs
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyymmdd_HHmmssSSSS"));
+
         consStr = ((JSONObject) input.get(SIM)).get(CONS).toString();
         gsNetworkStr = ((JSONObject) input.get(SIM)).get(GND_STATS).toString();
         scenarioStr = ((JSONObject) input.get(SIM)).get(SCENARIO).toString();
         startDateStr = ((JSONObject) input.get(SIM)).get(START_DATE).toString();
         endDateStr = ((JSONObject) input.get(SIM)).get(END_DATE).toString();
 
-        // if data has been calculated before, import data
-        String dirName = consStr + "_" + gsNetworkStr + "_" + scenarioStr + "_" + startDateStr + "_" + endDateStr;
-        directoryAddress = coverageDir + dirName;
-
         // Create dates from input file
         startDate = stringToDate(startDateStr);
         endDate = stringToDate(endDateStr);
+
+        String yyyy_s = String.valueOf(startDate.getComponents(utc).getDate().getYear());
+        String mm_s = String.valueOf(startDate.getComponents(utc).getDate().getMonth());
+        String dd_s = String.valueOf(startDate.getComponents(utc).getDate().getDay());
+
+        if(Integer.parseInt(mm_s) < 10) mm_s = "0" + mm_s;
+        if(Integer.parseInt(dd_s) < 10) dd_s = "0" + dd_s;
+
+        String HH_s = String.valueOf(startDate.getComponents(utc).getTime().getHour());
+        String MM_s = String.valueOf(startDate.getComponents(utc).getTime().getMinute());
+        String SS_s = String.valueOf(startDate.getComponents(utc).getTime().getSecond());
+
+        if(Integer.parseInt(HH_s) < 10) HH_s = "0" + HH_s;
+        if(Integer.parseInt(MM_s) < 10) MM_s = "0" + MM_s;
+        if(Double.parseDouble(SS_s) < 10.0) SS_s = "0" + SS_s;
+
+        String startDateStrDir =  yyyy_s + mm_s + dd_s + "-" + HH_s + MM_s + SS_s.replace(".","");
+
+        String yyyy_e = String.valueOf(startDate.getComponents(utc).getDate().getYear());
+        String mm_e = String.valueOf(startDate.getComponents(utc).getDate().getMonth());
+        String dd_e = String.valueOf(startDate.getComponents(utc).getDate().getDay());
+
+        if(Integer.parseInt(mm_e) < 10) mm_e = "0" + mm_e;
+        if(Integer.parseInt(dd_e) < 10) dd_e = "0" + dd_e;
+
+        String HH_e = String.valueOf(startDate.getComponents(utc).getTime().getHour());
+        String MM_e = String.valueOf(startDate.getComponents(utc).getTime().getMinute());
+        String SS_e = String.valueOf(startDate.getComponents(utc).getTime().getSecond());
+
+        if(Integer.parseInt(HH_e) < 10) HH_e = "0" + HH_e;
+        if(Integer.parseInt(MM_e) < 10) MM_e = "0" + MM_e;
+        if(Double.parseDouble(SS_e) < 10.0) SS_e = "0" + SS_e;
+
+        String endDateStrDir =  yyyy_e + mm_e + dd_e + "-" + HH_e + MM_e + SS_e.replace(".","");
+
+        // if data has been calculated before, import data
+        String dirName = consStr + "_" + gsNetworkStr + "_" + scenarioStr + "_" + startDateStrDir + "_" + endDateStrDir;
+        directoryAddress = coverageDir + dirName;
 
         // Initialize Instrument database
         instrumentList = new HashMap<>();

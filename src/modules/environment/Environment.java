@@ -586,7 +586,7 @@ public class Environment extends Watcher {
 
     private double calcAccuracy(SatelliteAgent agent, TopocentricFrame target,
                                 Instrument instrument, AbsoluteDate date) throws Exception {
-        
+
         // TODO create instrument specific spatial resolution estimation
         if(instrument.getClass().toString().equals(SAR.class.toString())){
             Orbit orbit = agent.getSat().getOrbit();
@@ -606,14 +606,13 @@ public class Environment extends Watcher {
             double B = ((SAR) instrument).getBandwidth();
             double k = 1.380649e-23;
             double T = 290;
-            double sigma = 1e-3;
 
-            double N = Pt * n * n * W * W * L * c * sigma * Math.pow(Math.cos(th), 4);
+            double N = Pt * n * n * W * W * L * c * Math.pow(Math.cos(th), 4);
             double D = 8 * Math.PI * lambda * Math.pow(h,3) * B * Math.sin(th) * k * T * B;
-            double SNR_dec = N/D;
-            double SNR = 10*Math.log10(N/D);
+            double sigma_dec = D/N;
+            double sigma = 10*Math.log10(sigma_dec);
 
-            return SNR_dec;
+            return sigma;
         }
         else{
             throw new Exception("Instrument of type " + instrument.getClass().toString()

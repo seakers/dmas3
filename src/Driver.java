@@ -8,7 +8,7 @@ public class Driver extends Dmas {
      * Must specify input json file before executing simulation
      */
     public static void main(String[] args) throws OrekitException {
-        inputFile = "inputTemplate.json";
+        inputFile = "ffss.json";
         executeThisAgent(1, true);
     }
 }
