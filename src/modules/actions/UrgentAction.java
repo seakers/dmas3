@@ -9,9 +9,8 @@ import seakers.orekit.object.Instrument;
 
 public class UrgentAction extends  MeasurementAction{
     protected UrgentAction(AbstractAgent agent, MeasurementRequest request,
-                           CoverageDefinition targetCovDef, TopocentricFrame target,
-                           Instrument instrument, String measurementType,
+                           Instrument instrument,
                            AbsoluteDate startDate, AbsoluteDate endDate) {
-        super(agent, targetCovDef, target, instrument, measurementType, startDate, endDate, request);
+        super(agent, instrument, request, startDate, endDate);
     }
 }

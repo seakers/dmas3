@@ -25,6 +25,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+/**
+ * Creates plans a measurement plan based on the ground points that will be observed by the satellite in its nominal
+ * mode of operations. Does not perform any urgent measurement requests.
+ *
+ * @author a.aguilar
+ */
 public class NominalPlanner extends AbstractPlanner {
 
     public static final double NominalUtility = 10.0;
@@ -45,14 +51,10 @@ public class NominalPlanner extends AbstractPlanner {
             Instrument ins = access.getInstrument();
             if(ins.getName().contains("_FOR")) continue;
 
-            String type = ((SimulationInstrument) ins).getNominalMeasurementType();
-            CoverageDefinition targetCovDef = access.getTargetCovDef();
-            TopocentricFrame target = access.getTarget();
             AbsoluteDate startDate = access.getStartDate();
             AbsoluteDate endDate = access.getEndDate();
 
-            measurementActions.add( new MeasurementAction(parentAgent, targetCovDef, target, ins, type,
-                    startDate, endDate, null) );
+            measurementActions.add( new MeasurementAction(parentAgent,ins, null, startDate, endDate) );
         }
 
         // Create a message action for each pass over a ground station
@@ -74,16 +76,16 @@ public class NominalPlanner extends AbstractPlanner {
         // merge all plans and order chronologically
         this.plan = mergePlans(measurementActions, messageActions);
 
-        LinkedList<SimulationAction> outActions = getAvailableActions(parentAgent.getStartDate());
-        return outActions;
+        return getAvailableActions(parentAgent.getStartDate());
     }
 
     @Override
     public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
                                                  SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
         // updates list of known requests
-        this.knownRequests.addAll( readRequestMessages(messageMap) );
-        this.activeRequests = checkActiveRequests(currentDate);
+        ArrayList<MeasurementRequest> newRequests = readRequestMessages(messageMap);
+        this.knownRequests.addAll( newRequests );
+        this.activeRequests = checkActiveRequests(newRequests, currentDate);
 
         // return actions to be performed at this time
         LinkedList<SimulationAction> outActions = getAvailableActions(currentDate);
@@ -93,30 +95,18 @@ public class NominalPlanner extends AbstractPlanner {
         return outActions;
     }
 
-    /**
-     * Returns a list of all currently available measurement requests at a given date
-     * @param date : desired date
-     * @return array containing all new measurement requests
-     */
-    private ArrayList<MeasurementRequest> checkActiveRequests(AbsoluteDate date){
-        ArrayList<MeasurementRequest> activeRequests = new ArrayList<>();
-
-        for(MeasurementRequest request : knownRequests){
-            if(date.compareTo( request.getStartDate() ) >= 0
-                && date.compareTo( request.getEndDate() ) <= 0){
-                activeRequests.add(request);
-            }
-        }
-
-        return activeRequests;
-    }
-
     @Override
     public double calcUtility(MeasurementRequest request, HashMap<Requirement, RequirementPerformance> performance) {
         if(request == null) return NominalUtility;
         return -1;
     }
 
+    /**
+     * Merges measurements and message actions into a single chronologically arranged plan
+     * @param measurementActions    : list of nominal measurement actions to be performed by satellite
+     * @param messageActions        : list of possible message actions available to satellite
+     * @return
+     */
     private ArrayList<SimulationAction> mergePlans(ArrayList<MeasurementAction> measurementActions, ArrayList<MessageAction> messageActions){
         ArrayList<SimulationAction> merged = new ArrayList<>();
 

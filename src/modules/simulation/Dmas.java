@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -35,7 +36,8 @@ import java.util.logging.Level;
  * particular Earth-observation problem.
  *
  * To run, create an extended object of this class that contains a main() function. In it,
- * ensure that the name of the desired input file is assigned to the inputFile string variable.
+ * ensure that the name of the desired input file is assigned to the inputFile string variable
+ * and use executeThisAgent() function to initiate the simulation.
  *
  * @author a.aguilar
  */
@@ -162,7 +164,8 @@ public class Dmas extends AbstractAgent {
      * Prints out welcome message on terminal
      */
     private void logWelcome(){
-        String str = "\n    ____  __  ______   __________\n" +
+        String str =
+              "\n    ____  __  ______   __________\n" +
                 "   / __ \\/  |/  /   | / ___/__  /\n" +
                 "  / / / / /|_/ / /| | \\__ \\ /_ < \n" +
                 " / /_/ / /  / / ___ |___/ /__/ / \n" +
@@ -207,11 +210,11 @@ public class Dmas extends AbstractAgent {
     private void createDirectory(JSONObject input){
         getLogger().info("Creating simulation results directory...");
 
-        LocalDateTime now = LocalDateTime.now();
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSSS"));
 
         String simName = ((JSONObject) input.get(SIM)).get(SIM_NAME).toString();
 
-        directoryAddress = resultsDir + simName + "_" + now.toString();
+        directoryAddress = resultsDir + simName + "_" + now;
         if(!new File( directoryAddress ).exists()) {
             new File(directoryAddress).mkdir();
             getLogger().config("Simulation results directory created at\n" + directoryAddress);

@@ -11,6 +11,7 @@ import madkit.kernel.Message;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
 import modules.agents.SatelliteAgent;
+import modules.instruments.SAR;
 import modules.measurements.*;
 import modules.messages.BookkeepingMessage;
 import modules.messages.MeasurementMessage;
@@ -22,12 +23,17 @@ import modules.simulation.SimGroups;
 import modules.simulation.Simulation;
 import modules.utils.Statistics;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.json.simple.JSONObject;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import seakers.orekit.coverage.access.RiseSetTime;
 import seakers.orekit.coverage.access.TimeIntervalArray;
 import seakers.orekit.object.*;
+import seakers.orekit.propagation.PropagatorFactory;
+import seakers.orekit.propagation.PropagatorType;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -531,7 +537,7 @@ public class Environment extends Watcher {
             Requirement req = requirements.get(reqName);
 
             double score;
-            switch(reqName){
+            switch(reqName.toLowerCase()){
                 case Requirement.SPATIAL:
                     score = calcSpatialResolution(agent, target, instrument, date);
                     break;
@@ -555,64 +561,63 @@ public class Environment extends Watcher {
 
     private double calcSpatialResolution(SatelliteAgent agent, TopocentricFrame target,
                                          Instrument instrument, AbsoluteDate date) throws Exception {
-        double satResAT;
-        double satResCT;
-
         // TODO create instrument specific spatial resolution estimation
+        if(instrument.getClass().toString().equals(SAR.class.toString())){
+            Orbit orbit = agent.getSat().getOrbit();
 
-        return 1e3;
+            Vector3D satPos = orbitData.propagateSatPos(agent.getSat(), date);
+            Vector3D targetPos = orbitData.propagateGPPos(target, date);
+            Vector3D targetRel = targetPos.subtract(satPos);
 
-//        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
-//        Vector3D pointPos = orbitData.getPointPosition(target,date);
-//        Vector3D relPos = pointPos.subtract(satPos);
-//
-//        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )
-//                                                /(satPos.getNorm() * relPos.getNorm()) );
-//
-//        if(instrument.getClass().equals(SAR.class)){
-//            String antennaType = ((SAR) instrument).getAntenna().getType();
-//
-//            switch(antennaType){
-//                case AbstractAntenna.PARAB:
-//                    double D = ((SAR) instrument).getAntenna().getDimensions().get(0);
-//                    double nLooks = ((SAR) instrument).getnLooks();
-//                    double bw = ((SAR) instrument).getBandwidth();
-//                    double rangeRes = 3e8/( 2 * bw * Math.sin(lookAngle));
-//
-//                    satResAT =  D * Math.sqrt( nLooks ) / 2.0;
-//                    satResCT = rangeRes;
-//                    break;
-//                default:
-//                    throw new Exception("Instrument antenna of type " + antennaType + " not yet supported");
-//            }
-//        }
-//        else{
-//            throw new Exception("Instrument of type " + instrument.getClass() + " not yet supported");
-//        }
-//
-//        return Math.max(satResAT, satResCT);
+            double th_look = Vector3D.angle(satPos.scalarMultiply(-1), targetRel);
+            double pulse_width = ((SAR) instrument).getPulseWidth();
+            double D = ((SAR) instrument).getAntenna().getDimensions().get(0);
+
+            double satResAT = D/2;
+            double satResCT = 3e8 * pulse_width / (2 * Math.sin(th_look));
+
+            return Math.max(satResAT, satResCT);
+        }
+        else{
+            throw new Exception("Instrument of type " + instrument.getClass().toString()
+                    + " not yet supported for Spatial Resolution calculations");
+        }
     }
 
     private double calcAccuracy(SatelliteAgent agent, TopocentricFrame target,
                                 Instrument instrument, AbsoluteDate date) throws Exception {
-//        Vector3D satPos = orbitData.getSatPosition(agent.getSat(), date);
-//        Vector3D satVel = orbitData.getSatVelocity(agent.getSat(), date);
-//        Vector3D pointPos = orbitData.getPointPosition(target,date);
-//        Vector3D relPos = pointPos.subtract(satPos);
-//
-//        Vector3D i = satVel.normalize();
-//        Vector3D k = satPos.scalarMultiply(-1).normalize();
-//        Vector3D j = k.crossProduct(i);
-//
-//        double lookAngle = FastMath.acos( relPos.dotProduct( satPos.scalarMultiply(-1) )
-//                /(satPos.getNorm() * relPos.getNorm()) );
-//        double incidenceAngle = FastMath.acos( pointPos.dotProduct( relPos.scalarMultiply(-1) )
-//                /(pointPos.getNorm() * relPos.getNorm()) );
-//        double range = relPos.getNorm();
 
-        // TODO create instrument specific accuracy estimation
+        // TODO create instrument specific spatial resolution estimation
+        if(instrument.getClass().toString().equals(SAR.class.toString())){
+            Orbit orbit = agent.getSat().getOrbit();
 
-        return 1.0;
+            Vector3D satPos = orbitData.propagateSatPos(agent.getSat(), date);
+            Vector3D targetPos = orbitData.propagateGPPos(target, date);
+            Vector3D targetRel = targetPos.subtract(satPos);
+
+            double Pt = ((SAR) instrument).getPeakPower();
+            double n = 0.6;
+            double W = ((SAR) instrument).getAntenna().getDimensions().get(0);
+            double L = ((SAR) instrument).getAntenna().getDimensions().get(0);
+            double c = 3e8;
+            double th = Vector3D.angle(satPos.scalarMultiply(-1), targetRel);
+            double lambda = 3e8 / ((SAR) instrument).getFreq();
+            double h = satPos.getNorm() - Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+            double B = ((SAR) instrument).getBandwidth();
+            double k = 1.380649e-23;
+            double T = 290;
+
+            double N = Pt * n * n * W * W * L * c * Math.pow(Math.cos(th), 4);
+            double D = 8 * Math.PI * lambda * Math.pow(h,3) * B * Math.sin(th) * k * T * B;
+            double sigma_dec = D/N;
+            double sigma = 10*Math.log10(sigma_dec);
+
+            return sigma;
+        }
+        else{
+            throw new Exception("Instrument of type " + instrument.getClass().toString()
+                    + " not yet supported for Spatial Resolution calculations");
+        }
     }
 
     private double getUnitsFactor(String units) throws Exception {

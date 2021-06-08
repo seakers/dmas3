@@ -86,12 +86,20 @@ public class SensingSatellite extends SatelliteAgent {
         getLogger().finest("\t Hello! This is " + this.getName() + ". I am executing...");
 
         // make a measurement if stated in planner
-        while(!plan.isEmpty()){
+        while(!plan.isEmpty()
+                && (
+                    (environment.getCurrentDate().shiftedBy(-environment.getDt()).compareTo(plan.getFirst().getStartDate()) < 0
+                    && environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) <= 0)
+                    ||
+                    (environment.getCurrentDate().shiftedBy(-environment.getDt()).compareTo(plan.getFirst().getEndDate()) < 0
+                    && environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) <= 0)
+                )
+        ){
 
-            if( environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) < 0
-                    || environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) > 0){
-                throw new Exception("Attempting to perform action outside its agreed schedule");
-            }
+//            if( environment.getCurrentDate().compareTo(plan.getFirst().getStartDate()) < 0
+//                    || environment.getCurrentDate().compareTo(plan.getFirst().getEndDate()) > 0){
+//                throw new Exception("Attempting to perform action outside its agreed schedule");
+//            }
 
             if(plan.getFirst().getClass().equals(MeasurementAction.class)){
                 // -perform measurement
