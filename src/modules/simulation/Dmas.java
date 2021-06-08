@@ -36,7 +36,8 @@ import java.util.logging.Level;
  * particular Earth-observation problem.
  *
  * To run, create an extended object of this class that contains a main() function. In it,
- * ensure that the name of the desired input file is assigned to the inputFile string variable.
+ * ensure that the name of the desired input file is assigned to the inputFile string variable
+ * and use executeThisAgent() function to initiate the simulation.
  *
  * @author a.aguilar
  */
