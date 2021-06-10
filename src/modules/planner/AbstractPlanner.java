@@ -23,8 +23,9 @@ public abstract class AbstractPlanner {
     public static final String NONE = "none";
     public static final String CCBBA = "CCBBA";
     public static final String RELAY = "relay";
+    public static final String RULES = "ruleBased";
     public static final String FIRST_PRIORITY = "firstPriority";
-    public static final String[] PLANNERS = {NONE, CCBBA, RELAY};
+    public static final String[] PLANNERS = {NONE, CCBBA, RELAY, RULES};
 
     /**
      * Parent agent being scheduled

@@ -5,10 +5,9 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-import modules.agents.SatelliteAgent;
-import modules.antennas.AbstractAntenna;
-import modules.antennas.ParabolicAntenna;
-import modules.instruments.SAR;
+import modules.components.antennas.AbstractAntenna;
+import modules.components.antennas.ParabolicAntenna;
+import modules.components.instruments.SAR;
 import modules.simulation.Dmas;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -1498,14 +1497,14 @@ public class OrbitData {
         }
     }
 
-    private AbstractAntenna loadAntenna(Cell[] values, HashMap<String, Integer> parameterIndexes){
+    private ParabolicAntenna loadAntenna(Cell[] values, HashMap<String, Integer> parameterIndexes){
         String type = values[parameterIndexes.get("AntennaType")].getContents();
         double freq = Double.parseDouble( values[parameterIndexes.get("Frequency")].getContents() );
 
         switch (type.toLowerCase()){
             case AbstractAntenna.PARAB:
                 double diameter = Double.parseDouble( values[parameterIndexes.get("Diameter")].getContents() );
-                return new ParabolicAntenna(diameter,freq);
+                return new ParabolicAntenna(0,0,0,0,0,diameter,freq);
             default:
                 throw new InputMismatchException("Instrument antenna of type " + type + " not yet supported");
         }

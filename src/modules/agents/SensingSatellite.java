@@ -3,6 +3,9 @@ package modules.agents;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import modules.actions.*;
+import modules.components.AbstractSubsystem;
+import modules.components.SatelliteDesign;
+import modules.components.instruments.SimulationInstrument;
 import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
@@ -34,10 +37,15 @@ import java.util.logging.Level;
  * @author a.aguilar
  */
 public class SensingSatellite extends SatelliteAgent {
+    private SatelliteDesign design;
 
-    public SensingSatellite(Constellation cons, Satellite sat, OrbitData orbitData, Attitude attitude,
-                            AbstractPlanner planner, SimGroups myGroups, Level loggerLevel) {
+    public SensingSatellite(Constellation cons, Satellite sat, OrbitData orbitData,
+                             Attitude attitude, AbstractPlanner planner,
+                            SimGroups myGroups, Level loggerLevel) {
         super(cons, sat, orbitData, attitude, planner, myGroups, loggerLevel);
+
+        design = new SatelliteDesign(sat, orbitData);
+        design.designSpacecraft();
 
         measurementsDone = new ArrayList<>();
         measurementsPendingDownload = new ArrayList<>();
@@ -165,6 +173,53 @@ public class SensingSatellite extends SatelliteAgent {
 
                 // log to terminal
                 logAttitudeMade(action);
+            }
+            else if(plan.getFirst().getClass().equals(SubsystemAction.class)){
+                // -perform subsystem actuation
+
+                // retrieve action and target
+                SubsystemAction action = (SubsystemAction) plan.poll();
+                boolean status = action.getStatus();
+                boolean failed = action.getFailure();
+
+                AbstractSubsystem.type type = action.getComponent();
+
+                // actuates desired subsystem
+                if(type.equals(AbstractSubsystem.type.ADCS)){
+                    design.getAdcs().setStatus(status);
+                    design.getAdcs().setFailure(failed);
+                }
+                else if(type.equals(AbstractSubsystem.type.COMMS)){
+                    design.getComms().setStatus(status);
+                    design.getComms().setFailure(failed);
+                }
+                else if(type.equals(AbstractSubsystem.type.EPS)){
+                    design.getEps().setFailure(failed);
+                }
+                else if(type.equals(AbstractSubsystem.type.PROP)){
+                    design.getProp().setStatus(status);
+                    design.getProp().setFailure(failed);
+                }
+                else if(type.equals(AbstractSubsystem.type.STR)){
+                    design.getStr().setFailure(failed);
+                }
+                else if(type.equals(AbstractSubsystem.type.THRM)){
+                    design.getThermal().setStatus(status);
+                    design.getThermal().setFailure(failed);
+                }
+                else if(type.equals(AbstractSubsystem.type.ADCS)){
+                    for(Instrument ins : sat.getPayload()){
+                        if(ins.getName().equals(action.getInstrumentName())){
+                            ((SimulationInstrument) ins).setStatus(status);
+                            ((SimulationInstrument) ins).setFail(status);
+                            break;
+                        }
+                    }
+                }
+                else{
+                    throw new Exception("Actuation of subsystem of type "
+                            + type + " not yet supported.");
+                }
             }
             else{
                 throw new Exception("Scheduled action of type "

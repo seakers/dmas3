@@ -1,4 +1,4 @@
-package modules.instruments;
+package modules.components.instruments;
 
 import seakers.orekit.object.Instrument;
 import seakers.orekit.object.fieldofview.FieldOfViewDefinition;

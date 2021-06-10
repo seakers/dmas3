@@ -50,8 +50,8 @@ public abstract class SatelliteAgent extends AbstractAgent {
     protected HashMap<Satellite, TimeIntervalArray> accessesCL;
     protected HashMap<TopocentricFrame, TimeIntervalArray> accessGP;
     protected HashMap<Instrument, HashMap<CoverageDefinition, HashMap<TopocentricFrame, TimeIntervalArray>>> accessGPInst;
-    HashMap<GndStation, TimeIntervalArray> accessGS;
-    ArrayList<GndAccess> orderedGndAccesses;
+    protected HashMap<GndStation, TimeIntervalArray> accessGS;
+    protected ArrayList<GndAccess> orderedGndAccesses;
 
     /**
      * list of measurements performed by spacecraft pending to be downloaded to a the next visible ground station

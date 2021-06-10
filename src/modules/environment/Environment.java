@@ -1,6 +1,5 @@
 package modules.environment;
 
-import constants.JSONFields;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
@@ -11,7 +10,7 @@ import madkit.kernel.Message;
 import madkit.kernel.Watcher;
 import madkit.simulation.probe.PropertyProbe;
 import modules.agents.SatelliteAgent;
-import modules.instruments.SAR;
+import modules.components.instruments.SAR;
 import modules.measurements.*;
 import modules.messages.BookkeepingMessage;
 import modules.messages.MeasurementMessage;
@@ -30,10 +29,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import seakers.orekit.coverage.access.RiseSetTime;
-import seakers.orekit.coverage.access.TimeIntervalArray;
 import seakers.orekit.object.*;
-import seakers.orekit.propagation.PropagatorFactory;
-import seakers.orekit.propagation.PropagatorType;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -571,7 +567,7 @@ public class Environment extends Watcher {
 
             double th_look = Vector3D.angle(satPos.scalarMultiply(-1), targetRel);
             double pulse_width = ((SAR) instrument).getPulseWidth();
-            double D = ((SAR) instrument).getAntenna().getDimensions().get(0);
+            double D = ((SAR) instrument).getAntenna().getDims().get(0);
 
             double satResAT = D/2;
             double satResCT = 3e8 * pulse_width / (2 * Math.sin(th_look));
@@ -597,8 +593,8 @@ public class Environment extends Watcher {
 
             double Pt = ((SAR) instrument).getPeakPower();
             double n = 0.6;
-            double W = ((SAR) instrument).getAntenna().getDimensions().get(0);
-            double L = ((SAR) instrument).getAntenna().getDimensions().get(0);
+            double W = ((SAR) instrument).getAntenna().getDims().get(0);
+            double L = ((SAR) instrument).getAntenna().getDims().get(0);
             double c = 3e8;
             double th = Vector3D.angle(satPos.scalarMultiply(-1), targetRel);
             double lambda = 3e8 / ((SAR) instrument).getFreq();

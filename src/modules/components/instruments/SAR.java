@@ -1,14 +1,10 @@
-package modules.instruments;
+package modules.components.instruments;
 
-import modules.antennas.AbstractAntenna;
-import org.orekit.gnss.antenna.Antenna;
-import seakers.orekit.object.Instrument;
+import modules.components.antennas.AbstractAntenna;
 import seakers.orekit.object.fieldofview.FieldOfViewDefinition;
 
 public class SAR extends SimulationInstrument {
     private final  double freq;
-    private final double peakPower;
-    private final double avgPower;
     private final double dutyCycle;
     private final double pulseWidth;
     private final double prf;
@@ -21,11 +17,9 @@ public class SAR extends SimulationInstrument {
     public SAR(String name, String nominalMeasurementType, FieldOfViewDefinition fov, double mass, double averagePower,
                double freq, double peakPower, double dutyCycle, double pulseWidth, double prf,
                double bandwidth, double nLooks, double dataRate, String nominalOps, AbstractAntenna antenna) {
-        super(name, nominalMeasurementType, fov, mass, averagePower);
+        super(name, nominalMeasurementType, fov, mass, peakPower, averagePower);
 
         this.freq = freq;
-        this.peakPower = peakPower;
-        this.avgPower = averagePower;
         this.dutyCycle = dutyCycle;
         this.pulseWidth = pulseWidth;
         this.prf = prf;
@@ -37,7 +31,7 @@ public class SAR extends SimulationInstrument {
     }
 
     public double getFreq() { return freq; }
-    public double getPeakPower() { return peakPower; }
+    public double getPeakPower() { return power; }
     public double getAvgPower() { return avgPower; }
     public double getDutyCycle() { return dutyCycle; }
     public double getPulseWidth() { return pulseWidth; }

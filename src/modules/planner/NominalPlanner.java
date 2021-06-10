@@ -1,23 +1,18 @@
 package modules.planner;
 
-import madkit.kernel.AbstractAgent;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import modules.actions.MeasurementAction;
 import modules.actions.MessageAction;
 import modules.actions.SimulationAction;
 import modules.agents.SatelliteAgent;
-import modules.instruments.SimulationInstrument;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
 import modules.messages.MeasurementMessage;
-import modules.messages.MeasurementRequestMessage;
 import modules.orbitData.GPAccess;
 import modules.orbitData.GndAccess;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
-import seakers.orekit.object.CoverageDefinition;
 import seakers.orekit.object.GndStation;
 import seakers.orekit.object.Instrument;
 
