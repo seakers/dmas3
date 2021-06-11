@@ -292,6 +292,9 @@ public class Simulation extends AbstractAgent{
             case AbstractPlanner.FIRST_PRIORITY:
                 planner = new FirstPriorityPlanner(planningHorizon, threshold, crossLinks, orbitData);
                 break;
+            case AbstractPlanner.RULES:
+                planner = new RuleBasedPlanner(planningHorizon, threshold, crossLinks);
+                break;
             default:
                 throw new InputMismatchException("Input error. Planner " + plannerStr + " not yet supported.");
         }
