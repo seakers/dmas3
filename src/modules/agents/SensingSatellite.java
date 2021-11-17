@@ -37,10 +37,16 @@ import java.util.logging.Level;
  * @author a.aguilar
  */
 public class SensingSatellite extends SatelliteAgent {
+    private SatelliteDesign design;
+
     public SensingSatellite(Constellation cons, Satellite sat, OrbitData orbitData,
                              Attitude attitude, AbstractPlanner planner,
                             SimGroups myGroups, Level loggerLevel) {
         super(cons, sat, orbitData, attitude, planner, myGroups, loggerLevel);
+
+        design = new SatelliteDesign(sat, orbitData);
+        design.designSpacecraft();
+
         measurementsDone = new ArrayList<>();
         measurementsPendingDownload = new ArrayList<>();
     }

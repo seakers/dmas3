@@ -1,0 +1,24 @@
+{
+  "scenario":"FFSS_scenario",
+  "name":"Simulation-3",
+  "planer":"firstPriority",
+  "dates":{"start":"2020-01-01T00:00:00.000","end":"2020-01-01T06:00:00.000"},
+  "results":{
+    "coverage":{
+      "revTime":{
+        "std":3133.7614339761108,
+        "min":5879.90064483809,
+        "avg":7654.496347812237,
+        "max":17891.092176748876
+      },
+      "covPtg":0.31444991789819376},
+    "coalitionStats":{
+      "coalsFormed":0,
+      "coalsAvailable":346,
+      "coalsFormedPtg":0.0
+    },
+    "utility":{
+      "utilityPtg":0.03398872040923689,
+      "totalUtility":1239.9085205289616,
+      "availableUtility":36480.0,
+      "achievedUtility":{"std":2.9173730801889417,"min":0.012211245340552068,"avg":4.881529608381738,"max":9.983223397364569}},"tasks":{"nominalTasksDone":188,"responseTime":{"std":4960.830381323534,"min":1230.3007437042427,"avg":8920.47378971112,"max":20915.85218213332},"urgentTaskRequests":346,"urgentTasksDone":66,"urgentTaskDonePtg":0.1907514450867052}}}

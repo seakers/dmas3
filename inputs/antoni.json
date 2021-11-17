@@ -1,0 +1,29 @@
+{
+  "simulation" : {
+    "name": "antoni_5_20",
+    "constellation": "antoni_5_20",
+    "groundStationNetwork": "NEN",
+    "scenario": "FFSS_scenario",
+    "startDate": "2020-01-01T00:00:00Z",
+    "endDate": "2020-01-01T06:00:00Z",
+    "crossLinks" : true,
+    "n_sims": 1
+  },
+
+  "planner": {
+    "name" : "firstPriority",
+    "planningHorizon" : 60.0,
+    "requestThreshold" : 1,
+    "arrivalRate" : 0.016,
+    "meanIntervalRate" : 0.005,
+    "synchronousLoops" : true
+  },
+
+  "settings" : {
+    "dt" : 1.0,
+    "gui" : true,
+    "printResults" : true,
+    "loggerLevel" : "FINER",
+    "debug" : true
+  }
+}

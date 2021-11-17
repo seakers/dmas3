@@ -133,7 +133,7 @@ public class Simulation extends AbstractAgent{
             myGroups = new SimGroups(input, simID);
             createGroup(myGroups.MY_COMMUNITY, myGroups.SIMU_GROUP);
 
-            // 2- generate agents
+            // 2- generate environment and agents
             environment = new Environment(input, orbitData, myGroups, simDirectoryAddress, this);
             spaceSegment = generateSpaceSegment();
             gndSegment = generateGroundSegment();

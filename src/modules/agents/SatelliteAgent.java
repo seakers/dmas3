@@ -5,7 +5,6 @@ import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import modules.actions.ManeuverAction;
 import modules.actions.MeasurementAction;
-import modules.components.SatelliteDesign;
 import modules.environment.Environment;
 import modules.actions.SimulationAction;
 import modules.measurements.Measurement;
@@ -101,11 +100,6 @@ public abstract class SatelliteAgent extends AbstractAgent {
     protected ArrayList<Message> plannerMessages;
 
     /**
-     * Design of the spacecraft
-     */
-    protected SatelliteDesign design;
-
-    /**
      * Creates an instance of a satellite agent. Requires a planner to already be created
      * and this must have the same orekit satellite assignment to this agent.
      * @param cons      : constellation to who this sat belongs to
@@ -142,10 +136,6 @@ public abstract class SatelliteAgent extends AbstractAgent {
         relayMessages = new ArrayList<>();
         requestMessages = new ArrayList<>();
         plannerMessages = new ArrayList<>();
-
-        // design satellite
-        design = new SatelliteDesign(sat, orbitData);
-        design.designSpacecraft();
     }
 
     /**
@@ -547,6 +537,4 @@ public abstract class SatelliteAgent extends AbstractAgent {
     public boolean isCommsSat(Satellite sat){
         return environment.getOrbitData().isCommsSat(sat);
     }
-
-    public SatelliteDesign getDesign(){return this.design;}
 }

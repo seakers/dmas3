@@ -147,11 +147,11 @@ public class Dmas extends AbstractAgent {
             }
 
             // 7- Execute simulations
-            for(Simulation sim : sims){
+            for(Simulation sim : sims) {
                 boolean createFrame = false;
-                if(sims.indexOf(sim) == 0
+                if (sims.indexOf(sim) == 0
                         && ((JSONObject) input.get(SETTINGS)).get(GUI).equals(true)) createFrame = true;
-                if(sims.indexOf(sim) == 1) launchAgent(sim, createFrame);
+                if (sims.indexOf(sim) == 1) launchAgent(sim, createFrame);
                 else launchAgent(sim, false);
             }
 

@@ -778,6 +778,7 @@ public class Environment extends Watcher {
         double availableUtility = calcAvailableUtility();
 
         out.put("totalUtility", totalUtility);
+        out.put("availableUtility", availableUtility);
         out.put("utilityPtg", totalUtility/availableUtility);
 
         JSONObject taskUtility = new JSONObject();
