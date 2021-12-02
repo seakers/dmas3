@@ -8,33 +8,34 @@ import seakers.orekit.object.Satellite;
 
 import java.util.HashMap;
 
-public class BookkeepingMessage extends Message {
+public class BookkeepingMessage extends DMASMessage {
     private final Message originalMessage;
-    private final AgentAddress intendedReceiver;
-    private final AbsoluteDate sendDate;
+    private final AgentAddress sender;
+    private final AgentAddress receiver;
 
-    public BookkeepingMessage(AgentAddress intendedReceiver, AbsoluteDate sendDate, Message originalMessage) {
+    public BookkeepingMessage(AgentAddress sender, AgentAddress receiver, AbsoluteDate sendDate, DMASMessage originalMessage) {
+        super(sendDate, originalMessage.getOriginalSender(), originalMessage.getIntendedReceiver());
         this.originalMessage = originalMessage;
-        this.intendedReceiver = intendedReceiver;
-        this.sendDate = sendDate;
+        this.sender = sender;
+        this.receiver = receiver;
     }
 
     public String toString(HashMap<Satellite, AgentAddress> satAddresses, HashMap<GndStation, AgentAddress> gndAddresses, AbsoluteDate startDate) throws Exception {
         StringBuilder out = new StringBuilder();
 
-        if(satAddresses.containsValue(this.getSender()) ){
+        if(satAddresses.containsValue(this.sender) ){
             Satellite sender = null;
             for(Satellite sat : satAddresses.keySet()){
-                if(satAddresses.get(sat).equals( this.getSender() )) {
+                if(satAddresses.get(sat).equals( this.sender )) {
                     sender = sat;
                     break;
                 }
             }
 
-            if(satAddresses.containsValue(this.getIntendedReceiver()) ){
+            if(satAddresses.containsValue(this.receiver) ){
                 Satellite receiver = null;
                 for(Satellite sat : satAddresses.keySet()){
-                    if(satAddresses.get(sat).equals( this.getIntendedReceiver() )) {
+                    if(satAddresses.get(sat).equals( this.receiver )) {
                         receiver = sat;
                         break;
                     }
@@ -42,10 +43,10 @@ public class BookkeepingMessage extends Message {
 
                 out.append(sender.getName() + "," + receiver.getName() + "," + messageType());
             }
-            else if(gndAddresses.containsValue(this.getIntendedReceiver())){
+            else if(gndAddresses.containsValue(this.receiver)){
                 GndStation receiver = null;
                 for(GndStation gnd : gndAddresses.keySet()){
-                    if(gndAddresses.get(gnd).equals( this.getIntendedReceiver() )) {
+                    if(gndAddresses.get(gnd).equals( this.receiver )) {
                         receiver = gnd;
                         break;
                     }
@@ -56,19 +57,19 @@ public class BookkeepingMessage extends Message {
                 throw new Exception("Message was sent to an agentAddress not corresponding to the simulation satellites");
             }
         }
-        else if(gndAddresses.containsValue(this.getSender())){
+        else if(gndAddresses.containsValue(this.sender)){
             GndStation sender = null;
             for(GndStation gnd : gndAddresses.keySet()){
-                if(gndAddresses.get(gnd).equals( this.getSender() )) {
+                if(gndAddresses.get(gnd).equals( this.sender )) {
                     sender = gnd;
                     break;
                 }
             }
 
-            if(satAddresses.containsValue(this.getIntendedReceiver()) ){
+            if(satAddresses.containsValue(this.receiver) ){
                 Satellite receiver = null;
                 for(Satellite sat : satAddresses.keySet()){
-                    if(satAddresses.get(sat).equals( this.getIntendedReceiver() )) {
+                    if(satAddresses.get(sat).equals( this.receiver )) {
                         receiver = sat;
                         break;
                     }
@@ -76,10 +77,10 @@ public class BookkeepingMessage extends Message {
 
                 out.append(sender.getBaseFrame().getName() + "," + receiver.getName() + "," + messageType());
             }
-            else if(gndAddresses.containsValue(this.getIntendedReceiver())){
+            else if(gndAddresses.containsValue(this.receiver)){
                 GndStation receiver = null;
                 for(GndStation gnd : gndAddresses.keySet()){
-                    if(gndAddresses.get(gnd).equals( this.getIntendedReceiver() )) {
+                    if(gndAddresses.get(gnd).equals( this.receiver )) {
                         receiver = gnd;
                         break;
                     }
@@ -116,6 +117,5 @@ public class BookkeepingMessage extends Message {
     }
 
     public Message getOriginalMessage() { return originalMessage; }
-    public AgentAddress getIntendedReceiver() { return intendedReceiver; }
     public AbsoluteDate getSendDate(){ return sendDate; }
 }

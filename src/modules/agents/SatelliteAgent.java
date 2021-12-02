@@ -8,9 +8,7 @@ import modules.actions.MeasurementAction;
 import modules.environment.Environment;
 import modules.actions.SimulationAction;
 import modules.measurements.Measurement;
-import modules.messages.MeasurementMessage;
-import modules.messages.MeasurementRequestMessage;
-import modules.messages.RelayMessage;
+import modules.messages.*;
 import modules.messages.filters.GndFilter;
 import modules.orbitData.*;
 import modules.planner.AbstractPlanner;
@@ -95,9 +93,9 @@ public abstract class SatelliteAgent extends AbstractAgent {
      * Message Inboxes of different types. One for relay messages and one for measurement
      * request messages
      */
-    protected ArrayList<Message> relayMessages;
-    protected ArrayList<Message> requestMessages;
-    protected ArrayList<Message> plannerMessages;
+    protected ArrayList<DMASMessage> relayMessages;
+    protected ArrayList<DMASMessage> requestMessages;
+    protected ArrayList<DMASMessage> plannerMessages;
 
     /**
      * Creates an instance of a satellite agent. Requires a planner to already be created
@@ -307,10 +305,14 @@ public abstract class SatelliteAgent extends AbstractAgent {
                 // if not, add to received messages
                 reqMessage.addReceiver(this.getMyAddress());
                 requestMessages.add(reqMessage);
+
+                // save reception time for book keeping
+                reqMessage.setReceptionDate(this.getCurrentDate());
+                this.sendBookkeepingMessage(reqMessage);
             } else {
                 throw new Exception("Received message of type "
                         + message.getClass().toString() + " from ground station. " +
-                        "Message handling of this type is not yet supported");
+                        "Message handling of message of this type is not yet supported");
             }
         }
     }
@@ -397,6 +399,8 @@ public abstract class SatelliteAgent extends AbstractAgent {
     public  AbsoluteDate getEndDate(){
         return environment.getEndDate();
     }
+
+    public double getTimeStep() { return environment.getDt(); }
 
     public GndStation getNextGndAccessPoint(){
         return getNextGndAccessPoint(environment.getCurrentDate());
@@ -536,5 +540,16 @@ public abstract class SatelliteAgent extends AbstractAgent {
 
     public boolean isCommsSat(Satellite sat){
         return environment.getOrbitData().isCommsSat(sat);
+    }
+
+    protected void sendBookkeepingMessage(DMASMessage message){
+        // send a copy of the received message to sim scheduler for comms book-keeping
+        AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
+        AgentAddress senderAddress = message.getSender();
+        AgentAddress targetAddress = this.getAgentAddressIn(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.SATELLITE);
+
+        BookkeepingMessage envMessage = new BookkeepingMessage(senderAddress, targetAddress, message.getSendDate(), message);
+        envMessage.setReceptionDate(environment.getCurrentDate());
+        sendMessage(envAddress,envMessage);
     }
 }

@@ -9,6 +9,7 @@ import modules.agents.SatelliteAgent;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
+import modules.messages.DMASMessage;
 import modules.messages.MeasurementMessage;
 import modules.orbitData.GPAccess;
 import modules.orbitData.GndAccess;
@@ -60,12 +61,11 @@ public class NominalPlanner extends AbstractPlanner {
             GndStation target = access.getGnd();
             AgentAddress targetAddress = parentAgent.getTargetAddress(target);
 
-            MeasurementMessage message = new MeasurementMessage(null);
+            MeasurementMessage message = new MeasurementMessage(null, null, parentAgent.getMyAddress(), targetAddress);
             AbsoluteDate startDate = access.getStartDate();
             AbsoluteDate endDate = access.getEndDate();
 
-            messageActions.add( new MessageAction(parentAgent, targetAddress,
-                    message, startDate, endDate));
+            messageActions.add( new MessageAction(parentAgent, targetAddress, message, startDate, endDate));
         }
 
         // merge all plans and order chronologically
@@ -75,7 +75,7 @@ public class NominalPlanner extends AbstractPlanner {
     }
 
     @Override
-    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
+    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<DMASMessage>> messageMap,
                                                  SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
         // updates list of known requests
         ArrayList<MeasurementRequest> newRequests = readRequestMessages(messageMap);

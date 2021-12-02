@@ -7,6 +7,7 @@ import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
+import modules.messages.DMASMessage;
 import modules.messages.MeasurementRequestMessage;
 import modules.messages.PlannerMessage;
 import modules.messages.RelayMessage;
@@ -85,7 +86,7 @@ public abstract class AbstractPlanner {
      * @return a linked list of actions to be performed by the agent
      * @throws Exception
      */
-    public abstract LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
+    public abstract LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<DMASMessage>> messageMap,
                                                           SatelliteAgent agent, AbsoluteDate currentDate) throws Exception;
 
 
@@ -147,7 +148,7 @@ public abstract class AbstractPlanner {
      * @param messageMap : list of messages sent to parent spacecraft
      * @return array containing all new measurement requests
      */
-    protected ArrayList<MeasurementRequest> readRequestMessages(HashMap<String, ArrayList<Message>> messageMap){
+    protected ArrayList<MeasurementRequest> readRequestMessages(HashMap<String, ArrayList<DMASMessage>> messageMap){
         ArrayList<MeasurementRequest> knownRequests = new ArrayList<>();
 
         for(String str : messageMap.keySet()){
@@ -169,7 +170,7 @@ public abstract class AbstractPlanner {
      * @param messageMap : list of messages sent to parent spacecraft
      * @return array containing all new relay requests
      */
-    protected ArrayList<RelayMessage> readRelayMessages(HashMap<String, ArrayList<Message>> messageMap){
+    protected ArrayList<RelayMessage> readRelayMessages(HashMap<String, ArrayList<DMASMessage>> messageMap){
         ArrayList<RelayMessage> messages = new ArrayList<>();
 
         for(String str : messageMap.keySet()){
@@ -189,7 +190,7 @@ public abstract class AbstractPlanner {
      * @param messageMap : list of messages sent to parent spacecraft
      * @return array containing all new relay requests
      */
-    protected ArrayList<PlannerMessage> readPlannerMessages(HashMap<String, ArrayList<Message>> messageMap){
+    protected ArrayList<PlannerMessage> readPlannerMessages(HashMap<String, ArrayList<DMASMessage>> messageMap){
         ArrayList<PlannerMessage> messages = new ArrayList<>();
 
         for(String str : messageMap.keySet()){

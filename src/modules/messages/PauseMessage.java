@@ -1,6 +1,9 @@
 package modules.messages;
 
-import madkit.kernel.Message;
+import org.orekit.time.AbsoluteDate;
 
-public class PauseMessage extends Message {
+public class PauseMessage extends DMASMessage {
+    public PauseMessage(AbsoluteDate sendDate){
+        super(sendDate, null, null);
+    }
 }

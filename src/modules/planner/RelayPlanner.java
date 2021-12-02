@@ -8,6 +8,7 @@ import modules.agents.SatelliteAgent;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
+import modules.messages.DMASMessage;
 import modules.messages.RelayMessage;
 import modules.messages.MeasurementRequestMessage;
 import org.orekit.time.AbsoluteDate;
@@ -57,7 +58,7 @@ public class RelayPlanner extends AbstractPlanner{
      * @throws Exception
      */
     @Override
-    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap,
+    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<DMASMessage>> messageMap,
                                                  SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
 
         // check for new incoming messages
@@ -91,39 +92,40 @@ public class RelayPlanner extends AbstractPlanner{
      * @throws Exception : throws an exception when it receives a type of message it is
      * unsuited to deal with
      */
-    private LinkedList<SimulationAction> generateUnorderedPlan(HashMap<String, ArrayList<Message>> messageMap,
+    private LinkedList<SimulationAction> generateUnorderedPlan(HashMap<String, ArrayList<DMASMessage>> messageMap,
                                                               SatelliteAgent agent) throws Exception {
         ArrayList<SimulationAction> actions = new ArrayList<>();
 
         for(String str : messageMap.keySet()){
             if (MeasurementRequestMessage.class.toString().equals(str)) {
                 // if measurement requests are received, send them to all satellites
-                ArrayList<Message> reqMessages = messageMap.get(str);
+                ArrayList<DMASMessage> reqMessages = messageMap.get(str);
 
-                for(Message message : reqMessages){
+                for(DMASMessage message : reqMessages){
                     MeasurementRequestMessage reqMessage = (MeasurementRequestMessage) message;
                     for(Satellite target : agent.getSatAddresses().keySet()){
                         if(target == agent.getSat()) continue;
 
                         AgentAddress targetAddress = agent.getSatAddresses().get(target);
+                        MeasurementRequestMessage newReqMessage = reqMessage.copy(targetAddress);
 
                         ArrayList<AbsoluteDate> nextAccess = agent.getNextAccess(target);
                         AbsoluteDate startDate = nextAccess.get(0);
                         AbsoluteDate endDate = nextAccess.get(1);
 
-                        MessageAction action = new MessageAction(agent, targetAddress, reqMessage, startDate, endDate);
+                        MessageAction action = new MessageAction(agent, targetAddress, newReqMessage, startDate, endDate);
                         actions.add(action);
                     }
                 }
             }
             else if (RelayMessage.class.toString().equals(str)) {
                 // if relay requests are received, send them to their respective targets
-                ArrayList<Message> reqMessages = messageMap.get(str);
+                ArrayList<DMASMessage> reqMessages = messageMap.get(str);
 
-                for(Message message : reqMessages){
+                for(DMASMessage message : reqMessages){
                     RelayMessage relayMessage = (RelayMessage) message;
 
-                    Message messageToSend = relayMessage.getMessageToRelay();
+                    DMASMessage messageToSend = relayMessage.getMessageToRelay();
                     AgentAddress targetAddress = relayMessage.getNextTarget();
 
                     if(targetAddress == agent.getMyAddress()) throw new Exception("Relay Error. Check intended receiver");

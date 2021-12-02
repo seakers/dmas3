@@ -74,7 +74,7 @@ public class SensingSatellite extends SatelliteAgent {
         getLogger().finest("\t Hello! This is " + this.getName() + ". I am thinking...");
 
         // package received messages and send to planner
-        HashMap<String, ArrayList<Message>> messages = new HashMap<>();
+        HashMap<String, ArrayList<DMASMessage>> messages = new HashMap<>();
         messages.put(MeasurementRequestMessage.class.toString(), requestMessages);
         messages.put(RelayMessage.class.toString(), relayMessages);
         messages.put(PlannerMessage.class.toString(), plannerMessages);
@@ -135,7 +135,8 @@ public class SensingSatellite extends SatelliteAgent {
                 AgentAddress targetAddress =  action.getTarget();
 
                 // get all available tasks that can be announced
-                Message message = action.getMessage();
+                DMASMessage message = action.getMessage();
+                message.setSendDate(getCurrentDate());
 
                 // check if message being sent is a measurement
                 if(message.getClass().equals(MeasurementMessage.class)){
@@ -153,10 +154,10 @@ public class SensingSatellite extends SatelliteAgent {
                 // send it to the target agent
                 sendMessage(targetAddress,message);
 
-                // send a copy of the message to sim scheduler for comms book-keeping
-                AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
-                BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, getCurrentDate(), message);
-                sendMessage(envAddress,envMessage);
+//                // send a copy of the message to sim scheduler for comms book-keeping
+//                AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
+//                BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, getCurrentDate(), message);
+//                sendMessage(envAddress,envMessage);
 
                 // log to terminal
                 logMessageSent(targetAddress, message);
@@ -266,6 +267,9 @@ public class SensingSatellite extends SatelliteAgent {
         List<Message> satMessages = nextMessages(new SatFilter());
 
         for(Message message : satMessages) {
+            DMASMessage dmasMessage = (DMASMessage) message;
+            dmasMessage.setReceptionDate(getCurrentDate());
+
             if (PlannerMessage.class.equals(message.getClass())) {
                 PlannerMessage plannerMessage = (PlannerMessage) message;
                 plannerMessages.add(plannerMessage);
@@ -287,6 +291,8 @@ public class SensingSatellite extends SatelliteAgent {
                 throw new Exception("Received message of type "
                         + message.getClass().toString() + " not yet supported");
             }
+
+            this.sendBookkeepingMessage(dmasMessage);
         }
     }
 }

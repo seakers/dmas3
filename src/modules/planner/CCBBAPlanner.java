@@ -1,6 +1,6 @@
 package modules.planner;
 
-import madkit.kernel.AbstractAgent;
+import jmetal.encodings.variable.Int;
 import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import modules.actions.MessageAction;
@@ -9,11 +9,12 @@ import modules.agents.SatelliteAgent;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
+import modules.messages.DMASMessage;
 import modules.messages.PlannerMessage;
 import modules.messages.RelayMessage;
 import modules.orbitData.CLAccess;
 import modules.orbitData.GndAccess;
-import modules.planner.CCBBA.CommsLoop;
+import modules.planner.CCBBA.CommLoop;
 import org.orekit.time.AbsoluteDate;
 import seakers.orekit.object.Satellite;
 
@@ -32,12 +33,12 @@ public class CCBBAPlanner extends AbstractPlanner{
     /**
      * Stores the communication loops for a given target satellites and a given number of satellites in the relay chain
      */
-    private HashMap<Satellite, HashMap<Integer, ArrayList<CommsLoop>>> commsLoops;
+    private LinkedList<CommLoop> commsLoops;
 
     /**
-     *
+     * Stores times when rescheduling will happen either by access to a GS or at the end of a planning horizon
      */
-    private ArrayList<AbsoluteDate> rescheduleTimes;
+    private LinkedList<AbsoluteDate> rescheduleTimes;
 
     /**
      * Initializes CCBBA planner
@@ -61,8 +62,8 @@ public class CCBBAPlanner extends AbstractPlanner{
     @Override
     public LinkedList<SimulationAction> initPlan() {
         try {
-            // calculate all communication loop time windows for all satellites
-            this.commsLoops = generateCommsLoops(crossLinks, syncCommLoops);
+            // calculate all communication loop time windows for all satellites chronologically
+            commsLoops = orderCommsLoops();
 
             // calculate all predetermined times for rescheduling
             rescheduleTimes = calculateReschedulingTimes();
@@ -75,7 +76,7 @@ public class CCBBAPlanner extends AbstractPlanner{
     }
 
     @Override
-    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap, SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
+    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<DMASMessage>> messageMap, SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
 
         // for all received relay requests, schedule message to the next target at the next available access
         ArrayList<RelayMessage> relayReqs = readRelayMessages(messageMap);
@@ -83,7 +84,7 @@ public class CCBBAPlanner extends AbstractPlanner{
         for(Message message : relayReqs){
             RelayMessage relayMessage = (RelayMessage) message;
 
-            Message messageToSend = relayMessage.getMessageToRelay();
+            DMASMessage messageToSend = relayMessage.getMessageToRelay();
             AgentAddress targetAddress = relayMessage.getNextTarget();
 
             if(targetAddress == agent.getMyAddress()) throw new Exception("Relay Error. Check intended receiver");
@@ -100,18 +101,32 @@ public class CCBBAPlanner extends AbstractPlanner{
         ArrayList<MeasurementRequest> receivedReqs = readRequestMessages(messageMap);
         ArrayList<PlannerMessage> plannerMessages = readPlannerMessages(messageMap);
 
-        // -if more than the threshold number of new requests are detected, if planner messages change biding results, if a ground station is accessed, or the end of a planning horizon is reached, reconsider schedule
-
-        // -check if new measurement requests have been received
-        boolean newMeasurementRequests = false;
+        // -check for new measurement requests
         for(MeasurementRequest newReq : receivedReqs){
             if(!knownRequests.contains(newReq)){
                 knownRequests.add(newReq);
-                newMeasurementRequests = true;
             }
         }
 
         // -read incoming planner messages and update
+        for(PlannerMessage plannerMessage : plannerMessages){
+
+        }
+
+        // check if rescheduling is needed
+        boolean thresholdMet = this.requestThreshold <= knownRequests.size();
+        boolean inCommsLoop = commsLoops.getFirst().getStartDate().compareTo(currentDate) <= 0 &&
+                                commsLoops.getFirst().getEndDate().compareTo(currentDate) >= 0;
+        boolean inRescheduleTime = rescheduleTimes.getFirst().compareTo(currentDate) <= 0 &&
+                                rescheduleTimes.getFirst().compareTo(
+                                        currentDate.shiftedBy( parentAgent.getTimeStep())
+                                        ) <= 0;
+        // reschedule measurement requests
+        if( (thresholdMet && inCommsLoop) || inRescheduleTime){
+            // create schedule
+
+        }
+
 
 
         // -return next available actions in plan
@@ -139,7 +154,7 @@ public class CCBBAPlanner extends AbstractPlanner{
      * Calculates the times when the satellite is forced to reconsider its bids. Does this only when the satellite accesses a ground station or reaches the end of a planning horizon interval
      * @return array containing all rescheduling times in chronological order
      */
-    private ArrayList<AbsoluteDate> calculateReschedulingTimes(){
+    private LinkedList<AbsoluteDate> calculateReschedulingTimes(){
         // -based on planning horizon
         ArrayList<AbsoluteDate> rescheduleTimes = new ArrayList<>();
         AbsoluteDate startDate = parentAgent.getStartDate();
@@ -168,7 +183,7 @@ public class CCBBAPlanner extends AbstractPlanner{
             rescheduleTimes.add(i,planDate);
         }
 
-        return rescheduleTimes;
+        return new LinkedList<>(rescheduleTimes);
     }
 
     /**
@@ -179,8 +194,8 @@ public class CCBBAPlanner extends AbstractPlanner{
      *                      under rigid communication constraints" by Guoliang Li)
      * @return
      */
-    private  HashMap<Satellite, HashMap<Integer, ArrayList<CommsLoop>>> generateCommsLoops(boolean crossLinks, boolean syncCommLoops) throws Exception {
-        HashMap<Satellite, HashMap<Integer, ArrayList<CommsLoop>>> loops = new HashMap<>();
+    private  HashMap<Satellite, HashMap<Integer, ArrayList<CommLoop>>> generateCommLoops(boolean crossLinks, boolean syncCommLoops) throws Exception {
+        HashMap<Satellite, HashMap<Integer, ArrayList<CommLoop>>> loops = new HashMap<>();
 
         for(Satellite targetSat : parentAgent.getSatAddresses().keySet()){
             if(targetSat.equals(parentAgent.getSat())
@@ -192,20 +207,20 @@ public class CCBBAPlanner extends AbstractPlanner{
             }
 
             loops.put(targetSat, new HashMap<>());
-            for(int i = 2; i <= parentAgent.getSatAddresses().keySet().size(); i++){
-                if(!crossLinks && i != 3){
+            for(int pathLength = 2; pathLength <= parentAgent.getSatAddresses().keySet().size(); pathLength++){
+                if(!crossLinks && pathLength != 3){
                     continue;
                 }
 
-                ArrayList<CommsLoop> availableLoops = null;
-                ArrayList<ArrayList<Satellite>> paths = generatePaths(targetSat, i, crossLinks);
+                ArrayList<CommLoop> availableLoops = null;
+                ArrayList<ArrayList<Satellite>> paths = generatePaths(targetSat, pathLength, crossLinks);
 
                 for(ArrayList<Satellite> path : paths){
                     availableLoops = generateLoopsForPath(path, syncCommLoops);
                 }
 
                 if(availableLoops != null && availableLoops.size() > 0) {
-                    loops.get(targetSat).put(i, availableLoops);
+                    loops.get(targetSat).put(pathLength, availableLoops);
                 }
             }
         }
@@ -216,12 +231,12 @@ public class CCBBAPlanner extends AbstractPlanner{
     /**
      * Given a path to be analysed, generates an array of communication loops that are available for that path
      * @param path : desired path to be estimated
-     * @param syncCommLoops : if true, requires synchronized comms loops, else it allows for asyncrhonous intervals
-     * @return List of all possible comms loops for a given paths at different times in the simulation
+     * @param syncCommLoops : if true, requires synchronized comm loops, else it allows for asynchronous comm intervals
+     * @return List of all possible comm loops for a given paths at different times in the simulation
      * @throws Exception throws an exception if Cross Link Accesses function fails
      */
-    private ArrayList<CommsLoop> generateLoopsForPath(ArrayList<Satellite> path, boolean syncCommLoops) throws Exception {
-        ArrayList<CommsLoop> loops = new ArrayList<>();
+    private ArrayList<CommLoop> generateLoopsForPath(ArrayList<Satellite> path, boolean syncCommLoops) throws Exception {
+        ArrayList<CommLoop> loops = new ArrayList<>();
         // for every edge in the graph, find an access interval
         ArrayList<ArrayList<CLAccess>> accesses = new ArrayList<>();
         for(int i = 0; i < path.size()-1; i++){
@@ -286,7 +301,7 @@ public class CCBBAPlanner extends AbstractPlanner{
                 AbsoluteDate startDate = accessInterval.get(0);
                 AbsoluteDate endDate = accessInterval.get(1);
 
-                loops.add(new CommsLoop(sender, receiver, path, startDate, endDate, accessDates));
+                loops.add(new CommLoop(sender, receiver, path, startDate, endDate, accessDates));
             }
         }
 
@@ -404,7 +419,39 @@ public class CCBBAPlanner extends AbstractPlanner{
         input[b] = tmp;
     }
 
+    private LinkedList<CommLoop> orderCommsLoops() throws Exception {
+        LinkedList<CommLoop> ordered = new LinkedList();
+        HashMap<Satellite, HashMap<Integer, ArrayList<CommLoop>>> commIntervals
+                = generateCommLoops(crossLinks, syncCommLoops);
 
+        while(!commIntervals.isEmpty()) {
+            Satellite minSat = null;
+            int minPathLength = -1;
+            CommLoop minLoop = null;
+
+            for (Satellite sat : commIntervals.keySet()) {
+                for(Integer pathLength : commIntervals.get(sat).keySet()){
+                    for(CommLoop loop : commIntervals.get(sat).get(pathLength)){
+                        if(minLoop == null || loop.getStartDate().compareTo(minLoop.getStartDate()) < 0){
+                            minSat = sat;
+                            minPathLength = pathLength;
+                            minLoop = loop;
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            ordered.add(minLoop);
+
+            commIntervals.get(minSat).get(minPathLength).remove(minLoop);
+            if(commIntervals.get(minSat).get(minPathLength).isEmpty())
+                commIntervals.get(minSat).remove(minPathLength);
+            if(commIntervals.get(minSat).isEmpty())
+                commIntervals.remove(minSat);
+        }
+        return ordered;
+    }
 
     /**
      * Counts the total amount of acceptable paths of a given size n. Must start from the parent satellite and end in the target satellite

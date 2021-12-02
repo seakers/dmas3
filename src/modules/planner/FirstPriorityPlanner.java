@@ -11,6 +11,7 @@ import modules.measurements.Measurement;
 import modules.measurements.MeasurementRequest;
 import modules.measurements.Requirement;
 import modules.measurements.RequirementPerformance;
+import modules.messages.DMASMessage;
 import modules.messages.MeasurementMessage;
 import modules.orbitData.GPAccess;
 import modules.orbitData.GndAccess;
@@ -67,7 +68,7 @@ public class FirstPriorityPlanner  extends AbstractPlanner {
             GndStation target = access.getGnd();
             AgentAddress targetAddress = parentAgent.getTargetAddress(target);
 
-            MeasurementMessage message = new MeasurementMessage(null);
+            MeasurementMessage message = new MeasurementMessage(null, null, parentAgent.getMyAddress(), targetAddress);
             AbsoluteDate startDate = access.getStartDate();
             AbsoluteDate endDate = access.getEndDate();
 
@@ -84,7 +85,7 @@ public class FirstPriorityPlanner  extends AbstractPlanner {
     }
 
     @Override
-    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<Message>> messageMap, SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
+    public LinkedList<SimulationAction> makePlan(HashMap<String, ArrayList<DMASMessage>> messageMap, SatelliteAgent agent, AbsoluteDate currentDate) throws Exception {
         // updates list of known requests
         ArrayList<MeasurementRequest> newRequests = readRequestMessages(messageMap);
         this.knownRequests.addAll(newRequests);

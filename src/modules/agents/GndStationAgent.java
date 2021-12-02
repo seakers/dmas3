@@ -140,14 +140,15 @@ public class GndStationAgent extends AbstractAgent {
 
             // get all available tasks that can be announced
             MeasurementRequestMessage message = (MeasurementRequestMessage) action.getMessage();
+            message.setSendDate(environment.getCurrentDate());
 
             // send it to the target agent
             sendMessage(targetAddress,message);
 
-            // send a copy of the message to sim scheduler for comms book-keeping
-            AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
-            BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, getCurrentDate(), message);
-            sendMessage(envAddress,envMessage);
+//            // send a copy of the message to sim scheduler for comms book-keeping
+//            AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
+//            BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, getCurrentDate(), message);
+//            sendMessage(envAddress,envMessage);
         }
     }
 
@@ -163,6 +164,18 @@ public class GndStationAgent extends AbstractAgent {
         for(Message message : messages){
             if(message.getClass().equals(MeasurementMessage.class)) {
                 MeasurementMessage measurementMessage = (MeasurementMessage) message;
+                measurementMessage.setReceptionDate(environment.getCurrentDate());
+
+                // send a copy of the message to sim scheduler for comms book-keeping
+                AgentAddress senderAddress = measurementMessage.getSender();
+                AgentAddress targetAddress = measurementMessage.getReceiver();
+                AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
+
+                BookkeepingMessage envMessage = new BookkeepingMessage(senderAddress, targetAddress, measurementMessage.getSendDate(), measurementMessage);
+                envMessage.setReceptionDate(environment.getCurrentDate());
+                sendMessage(envAddress,envMessage);
+
+                // save delay data for comms book-keeping
 
                 // obtain measurements information from message
                 ArrayList<Measurement> receivedMeasurements = measurementMessage.getMeasurements();
@@ -208,8 +221,9 @@ public class GndStationAgent extends AbstractAgent {
                     endDate = req.getEndDate();
                 else endDate = acc.getEndDate();
 
+                AgentAddress myAddress = gndAddresses.get(gnd);
                 AgentAddress target = satAddresses.get(acc.getSat());
-                MeasurementRequestMessage announcement = new MeasurementRequestMessage(req, target);
+                MeasurementRequestMessage announcement = new MeasurementRequestMessage(req, myAddress, target, null);
 
                 MessageAction action = new MessageAction(this, target, announcement, startDate, endDate);
                 plan.add(action);

@@ -1,17 +1,18 @@
 package modules.messages;
 
 import madkit.kernel.AgentAddress;
-import madkit.kernel.Message;
 import modules.measurements.MeasurementRequest;
+import org.orekit.time.AbsoluteDate;
 
 import java.util.ArrayList;
 
-public class MeasurementRequestMessage extends Message {
+public class MeasurementRequestMessage extends DMASMessage {
     private MeasurementRequest request;
     private AgentAddress firstReceiver;
     private ArrayList<AgentAddress> receivers;
 
-    public MeasurementRequestMessage(MeasurementRequest request, AgentAddress intendedReceiver){
+    public MeasurementRequestMessage(MeasurementRequest request, AgentAddress originalSender, AgentAddress intendedReceiver, AbsoluteDate sendDate){
+        super(sendDate, originalSender, intendedReceiver);
         this.request = request;
         this.firstReceiver = intendedReceiver;
         this.receivers = new ArrayList<>();
@@ -27,5 +28,9 @@ public class MeasurementRequestMessage extends Message {
 
         return message.getRequest().equals(request)
                 && message.getFirstReceiver().equals(firstReceiver);
+    }
+
+    public MeasurementRequestMessage copy(AgentAddress target){
+        return new MeasurementRequestMessage(request, originalSender,target, sendDate);
     }
 }

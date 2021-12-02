@@ -4,6 +4,7 @@ import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import modules.actions.MessageAction;
 import modules.messages.BookkeepingMessage;
+import modules.messages.DMASMessage;
 import modules.messages.RelayMessage;
 import modules.messages.MeasurementRequestMessage;
 import modules.messages.filters.SatFilter;
@@ -56,9 +57,17 @@ public class CommsSatellite extends SatelliteAgent {
         getLogger().finest("\t Hello! This is " + this.getName() + ". I am thinking...");
 
         // package received messages and send to planner
-        HashMap<String, ArrayList<Message>> messages = new HashMap<>();
+        HashMap<String, ArrayList<DMASMessage>> messages = new HashMap<>();
         messages.put(MeasurementRequestMessage.class.toString(), requestMessages);
         messages.put(RelayMessage.class.toString(), relayMessages);
+
+        for(String category : messages.keySet()){
+            for(DMASMessage message : messages.get(category)){
+
+                message.setReceptionDate(environment.getCurrentDate());
+                this.sendBookkeepingMessage(message);
+            }
+        }
 
         // update plan
         this.plan = this.planner.makePlan(messages, this, environment.getCurrentDate());
@@ -85,14 +94,10 @@ public class CommsSatellite extends SatelliteAgent {
 
             // get all available tasks that can be announced
             MeasurementRequestMessage message = (MeasurementRequestMessage) action.getMessage();
+            message.setSendDate(environment.getCurrentDate());
 
             // send it to the target agent
             sendMessage(targetAddress,message);
-
-            // send a copy of the message to sim scheduler for comms book-keeping
-            AgentAddress envAddress = getAgentWithRole(myGroups.MY_COMMUNITY, SimGroups.SIMU_GROUP, SimGroups.ENVIRONMENT);
-            BookkeepingMessage envMessage = new BookkeepingMessage(targetAddress, getCurrentDate(), message);
-            sendMessage(envAddress,envMessage);
 
             // log to terminal
             logMessageSent(targetAddress, message);
@@ -109,6 +114,9 @@ public class CommsSatellite extends SatelliteAgent {
         List<Message> satMessages = nextMessages(new SatFilter());
 
         for(Message message : satMessages) {
+            DMASMessage dmasMessage = (DMASMessage) message;
+            dmasMessage.setReceptionDate(this.getCurrentDate());
+
             if (RelayMessage.class.equals(message.getClass())) {
                 RelayMessage relayMessage = (RelayMessage) message;
                 relayMessages.add(relayMessage);
@@ -126,6 +134,8 @@ public class CommsSatellite extends SatelliteAgent {
                 throw new Exception("Received message of type "
                         + message.getClass().toString() + " not yet supported");
             }
+
+            sendBookkeepingMessage(dmasMessage);
         }
     }
 }

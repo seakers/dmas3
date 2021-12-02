@@ -6,7 +6,7 @@ import seakers.orekit.object.Satellite;
 
 import java.util.ArrayList;
 
-public class CommsLoop {
+public class CommLoop {
     private final Satellite sender;
     private final Satellite receiver;
     private final ArrayList<Satellite> path;
@@ -15,7 +15,7 @@ public class CommsLoop {
     private final ArrayList<ArrayList<AbsoluteDate>> accessDates;
 
 
-    public CommsLoop(Satellite sender, Satellite receiver, ArrayList<Satellite> path, AbsoluteDate startDate, AbsoluteDate endDate, ArrayList<ArrayList<AbsoluteDate>> accessDates) {
+    public CommLoop(Satellite sender, Satellite receiver, ArrayList<Satellite> path, AbsoluteDate startDate, AbsoluteDate endDate, ArrayList<ArrayList<AbsoluteDate>> accessDates) {
         this.sender = sender;
         this.receiver = receiver;
         this.path = path;
